@@ -1,0 +1,303 @@
+{
+  "bodies": {
+    "jupiter": {
+      "dominant_pair": "de442|inpop21a",
+      "dominant_pair_counts": {
+        "de440|de442": 8,
+        "de440|inpop21a": 9,
+        "de442|inpop21a": 183
+      },
+      "max_pairwise_spread_arcsec": {
+        "max": 0.006305,
+        "median": 0.003422,
+        "p95": 0.005799
+      },
+      "naif_id": 5,
+      "pairwise_max_arcsec": {
+        "de440|de442": 0.004825,
+        "de440|inpop21a": 0.002165,
+        "de442|inpop21a": 0.006305
+      },
+      "pairwise_median_arcsec": {
+        "de440|de442": 0.002602,
+        "de440|inpop21a": 0.001076,
+        "de442|inpop21a": 0.003422
+      }
+    },
+    "mars": {
+      "dominant_pair": "de442|inpop21a",
+      "dominant_pair_counts": {
+        "de440|de442": 0,
+        "de440|inpop21a": 61,
+        "de442|inpop21a": 139
+      },
+      "max_pairwise_spread_arcsec": {
+        "max": 0.009343,
+        "median": 0.00056,
+        "p95": 0.00237
+      },
+      "naif_id": 4,
+      "pairwise_max_arcsec": {
+        "de440|de442": 0.00089,
+        "de440|inpop21a": 0.008559,
+        "de442|inpop21a": 0.009343
+      },
+      "pairwise_median_arcsec": {
+        "de440|de442": 3.9e-05,
+        "de440|inpop21a": 0.000459,
+        "de442|inpop21a": 0.00056
+      }
+    },
+    "moon": {
+      "dominant_pair": "de440|inpop21a",
+      "dominant_pair_counts": {
+        "de440|de442": 0,
+        "de440|inpop21a": 139,
+        "de442|inpop21a": 61
+      },
+      "max_pairwise_spread_arcsec": {
+        "max": 0.002326,
+        "median": 0.00095,
+        "p95": 0.001975
+      },
+      "naif_id": 301,
+      "pairwise_max_arcsec": {
+        "de440|de442": 0.000227,
+        "de440|inpop21a": 0.002326,
+        "de442|inpop21a": 0.002165
+      },
+      "pairwise_median_arcsec": {
+        "de440|de442": 0.000126,
+        "de440|inpop21a": 0.000937,
+        "de442|inpop21a": 0.000882
+      }
+    },
+    "saturn": {
+      "dominant_pair": "de440|inpop21a",
+      "dominant_pair_counts": {
+        "de440|de442": 0,
+        "de440|inpop21a": 190,
+        "de442|inpop21a": 10
+      },
+      "max_pairwise_spread_arcsec": {
+        "max": 0.002384,
+        "median": 0.000462,
+        "p95": 0.000849
+      },
+      "naif_id": 6,
+      "pairwise_max_arcsec": {
+        "de440|de442": 0.000106,
+        "de440|inpop21a": 0.002309,
+        "de442|inpop21a": 0.002384
+      },
+      "pairwise_median_arcsec": {
+        "de440|de442": 1.6e-05,
+        "de440|inpop21a": 0.000462,
+        "de442|inpop21a": 0.000441
+      }
+    },
+    "sun": {
+      "dominant_pair": "de440|inpop21a",
+      "dominant_pair_counts": {
+        "de440|de442": 0,
+        "de440|inpop21a": 164,
+        "de442|inpop21a": 36
+      },
+      "max_pairwise_spread_arcsec": {
+        "max": 0.000818,
+        "median": 0.000398,
+        "p95": 0.000632
+      },
+      "naif_id": 10,
+      "pairwise_max_arcsec": {
+        "de440|de442": 2.7e-05,
+        "de440|inpop21a": 0.000815,
+        "de442|inpop21a": 0.000818
+      },
+      "pairwise_median_arcsec": {
+        "de440|de442": 8e-06,
+        "de440|inpop21a": 0.000398,
+        "de442|inpop21a": 0.000394
+      }
+    }
+  },
+  "instants_first_last": [
+    "2433373.284405584",
+    "2469770.626097533"
+  ],
+  "kernels": {
+    "de440": {
+      "chains": {
+        "earth": [
+          [
+            3,
+            399
+          ],
+          [
+            0,
+            3
+          ]
+        ],
+        "jupiter": [
+          [
+            0,
+            5
+          ]
+        ],
+        "mars": [
+          [
+            0,
+            4
+          ]
+        ],
+        "moon": [
+          [
+            3,
+            301
+          ],
+          [
+            0,
+            3
+          ]
+        ],
+        "saturn": [
+          [
+            0,
+            6
+          ]
+        ],
+        "sun": [
+          [
+            0,
+            10
+          ]
+        ]
+      }
+    },
+    "de442": {
+      "chains": {
+        "earth": [
+          [
+            3,
+            399
+          ],
+          [
+            0,
+            3
+          ]
+        ],
+        "jupiter": [
+          [
+            0,
+            5
+          ]
+        ],
+        "mars": [
+          [
+            0,
+            4
+          ]
+        ],
+        "moon": [
+          [
+            3,
+            301
+          ],
+          [
+            0,
+            3
+          ]
+        ],
+        "saturn": [
+          [
+            0,
+            6
+          ]
+        ],
+        "sun": [
+          [
+            0,
+            10
+          ]
+        ]
+      }
+    },
+    "inpop21a": {
+      "chains": {
+        "earth": [
+          [
+            0,
+            399
+          ]
+        ],
+        "jupiter": [
+          [
+            0,
+            5
+          ]
+        ],
+        "mars": [
+          [
+            0,
+            4
+          ]
+        ],
+        "moon": [
+          [
+            399,
+            301
+          ],
+          [
+            0,
+            399
+          ]
+        ],
+        "saturn": [
+          [
+            0,
+            6
+          ]
+        ],
+        "sun": [
+          [
+            0,
+            10
+          ]
+        ]
+      }
+    }
+  },
+  "method": {
+    "geocentre": "per kernel, each target's centre chain walked to the solar system barycentre",
+    "jd_tdb_range": [
+      2433282.5,
+      2469807.5
+    ],
+    "mode": "geometric geocentric direction, ICRF",
+    "n_instants": 200,
+    "planets": "mars, jupiter, saturn as system barycentres (NAIF 4, 5, 6)",
+    "seed": 20261006,
+    "spread": "per instant, the largest pairwise angular separation across all kernels",
+    "time_scale": "TDB"
+  },
+  "sanity": {
+    "de440|de442": {
+      "earth_ssb_offset_km_max": 0.247199,
+      "earth_ssb_offset_km_median": 0.175668,
+      "geocentric_sun_offset_km_max": 0.019625,
+      "geocentric_sun_offset_km_median": 0.005455
+    },
+    "de440|inpop21a": {
+      "earth_ssb_offset_km_max": 101.041563,
+      "earth_ssb_offset_km_median": 98.099502,
+      "geocentric_sun_offset_km_max": 0.591201,
+      "geocentric_sun_offset_km_median": 0.288812
+    },
+    "de442|inpop21a": {
+      "earth_ssb_offset_km_max": 101.163057,
+      "earth_ssb_offset_km_median": 98.266233,
+      "geocentric_sun_offset_km_max": 0.593368,
+      "geocentric_sun_offset_km_median": 0.285013
+    }
+  }
+}
