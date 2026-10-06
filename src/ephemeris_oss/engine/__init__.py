@@ -1,0 +1,128 @@
+"""Astronomy engine: JPL SPK positions reduced with IAU 2006 models through ERFA.
+
+The public API wraps these modules; import from ``ephemeris_oss`` rather than
+from here, because names in this subpackage may change between releases.
+"""
+
+from .contracts import (
+    AstronomyDataUnavailable,
+    AstronomyProvider,
+    CalculationSettings,
+    DatasetVersions,
+    Observer,
+    ProviderIdentity,
+)
+from .civil_time import (
+    CalendarSystem,
+    HistoricalTimeResolution,
+    LocalCivilResolution,
+    UtcTimeScalePolicy,
+    calendar_jd,
+    resolve_local_civil_time,
+    resolve_local_mean_time_as_ut1,
+    validate_utc_instant,
+)
+from .apparent import (
+    ApparentPlace,
+    ApparentPlaceError,
+    ApparentPlaceProvenance,
+    BarycentricState,
+    EarthOrientation,
+    GeodeticObserver,
+)
+from .conventions import (
+    AYANAMSA_CATALOG,
+    AYANAMSA_CATALOG_VERSION,
+    HOUSE_CONVENTIONS_VERSION,
+    LUNAR_NODE_CONVENTIONS_VERSION,
+    HouseAngles,
+    HouseLayout,
+)
+from .earth_orientation import (
+    CivilTimeBasis,
+    DeltaTEstimate,
+    EopQuality,
+    EopRecord,
+    IersFinals2000A,
+    ResolvedEarthOrientation,
+    UtcCalendarInstant,
+    estimate_delta_t,
+)
+from .events import (
+    EVENTS_VERSION,
+    EclipseResult,
+    EventSolverError,
+    IngressEvent,
+    OpticalAtmosphere,
+    RiseSetTransitResult,
+    StationEvent,
+)
+from .kernel_registry import KernelArtifact, KernelRegistry
+from .numerical_provider import (
+    EarthOrientationParameters,
+    GeometricState,
+    JplErfaAstronomyProvider,
+    TimeScaleState,
+)
+from .receipt import CalculationReceipt, canonical_hash, canonical_json_bytes
+from .stellar_anchors import (
+    STELLAR_ANCHOR_CATALOG_VERSION,
+    STELLAR_ANCHORS,
+    StellarAnchor,
+)
+
+__all__ = [
+    "AYANAMSA_CATALOG",
+    "AYANAMSA_CATALOG_VERSION",
+    "ApparentPlace",
+    "ApparentPlaceError",
+    "ApparentPlaceProvenance",
+    "AstronomyDataUnavailable",
+    "AstronomyProvider",
+    "BarycentricState",
+    "CalculationReceipt",
+    "CalculationSettings",
+    "CalendarSystem",
+    "CivilTimeBasis",
+    "DeltaTEstimate",
+    "DatasetVersions",
+    "EVENTS_VERSION",
+    "EarthOrientationParameters",
+    "EarthOrientation",
+    "EclipseResult",
+    "EopQuality",
+    "EopRecord",
+    "EventSolverError",
+    "GeodeticObserver",
+    "GeometricState",
+    "HOUSE_CONVENTIONS_VERSION",
+    "HouseAngles",
+    "HouseLayout",
+    "HistoricalTimeResolution",
+    "IersFinals2000A",
+    "IngressEvent",
+    "KernelArtifact",
+    "KernelRegistry",
+    "LUNAR_NODE_CONVENTIONS_VERSION",
+    "LocalCivilResolution",
+    "JplErfaAstronomyProvider",
+    "Observer",
+    "OpticalAtmosphere",
+    "ProviderIdentity",
+    "ResolvedEarthOrientation",
+    "UtcCalendarInstant",
+    "RiseSetTransitResult",
+    "StationEvent",
+    "STELLAR_ANCHOR_CATALOG_VERSION",
+    "STELLAR_ANCHORS",
+    "StellarAnchor",
+    "TimeScaleState",
+    "UtcTimeScalePolicy",
+    "calendar_jd",
+    "canonical_hash",
+    "canonical_json_bytes",
+    "estimate_delta_t",
+    "resolve_local_civil_time",
+    "resolve_local_mean_time_as_ut1",
+    "validate_utc_instant",
+]
