@@ -1,0 +1,61 @@
+[
+  {
+    "bytes": 119799808,
+    "name": "de440",
+    "note": "already in the kernel cache before this study; retrieval time not recorded here",
+    "retrieved_utc": null,
+    "sha256": "a4ce9bf9b3282becc9f4b2ac3cebe03a2ae7599981aabd7265fd8482fff7c4b5",
+    "terms_quote": "Redistribution of SPICE kernels distributed by NAIF is permitted as long as they have not been modified.",
+    "terms_url": "https://naif.jpl.nasa.gov/naif/rules.html",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de440.bsp"
+  },
+  {
+    "bytes": 119771136,
+    "bytes_match_listing": true,
+    "listed_bytes": 119771136,
+    "md5": "446656322267e7b819a26cb08a0d8718",
+    "md5_matches_naif_aa_checksums": true,
+    "name": "de442",
+    "note": "no de442-specific aareadme exists in the planets directory; de442_tech-comments.txt carries no usage terms",
+    "retrieved_utc": "2026-10-06T16:09:54Z",
+    "sha256": "8d5001fab315eeff222cc51f7cf7ffcdb43fb38fb9ac73ff09e09a5b361fd388",
+    "terms_quote": "Redistribution of SPICE kernels distributed by NAIF is permitted as long as they have not been modified.",
+    "terms_url": "https://naif.jpl.nasa.gov/naif/rules.html",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de442.bsp"
+  },
+  {
+    "bytes": 24194181,
+    "bytes_match_listing": true,
+    "listed_bytes": "23M (directory listing); Content-Length 24194181",
+    "name": "inpop21a_TDB_m100_p100_spice.tar.gz",
+    "note": "README.txt in the same directory says use of the data is subject to the conditions on the terms_url page",
+    "retrieved_utc": "2026-10-06T16:10:01Z",
+    "sha256": "63502ef870a173e6573ad41a85d946d2d9e23a73fb66ca51bab1410aac9e7673",
+    "terms_quote": "Requests for the reproduction of data or publications from the site of the IMCCE are made using the form",
+    "terms_url": "https://www.imcce.fr/mentions-legales",
+    "url": "https://ftp.imcce.fr/pub/ephem/planets/inpop21a/inpop21a_TDB_m100_p100_spice.tar.gz"
+  },
+  {
+    "bytes": 22318080,
+    "bytes_match_listing": true,
+    "listed_bytes": 22318080,
+    "name": "inpop21a_TDB_m100_p100_spice.bsp",
+    "note": "extracted from the tarball; listed_bytes is the tar member size",
+    "retrieved_utc": "2026-10-06T16:10:01Z",
+    "sha256": "b78006be15427f667e30031e142ba7ec22945e38334c96f0d6d7a30478f975a9",
+    "terms_quote": "Requests for the reproduction of data or publications from the site of the IMCCE are made using the form",
+    "terms_url": "https://www.imcce.fr/mentions-legales",
+    "url": "https://ftp.imcce.fr/pub/ephem/planets/inpop21a/inpop21a_TDB_m100_p100_spice.tar.gz"
+  },
+  {
+    "bytes": null,
+    "listed_bytes": 154278912,
+    "name": "epm2021",
+    "note": "NOT DOWNLOADED: the terms page refused connections on ports 443 and 80 from two networks on 2026-10-06, and the ftp readme files carry no usage terms",
+    "retrieved_utc": null,
+    "sha256": null,
+    "terms_quote": null,
+    "terms_url": "https://iaaras.ru/en/dept/ephemeris/epm/",
+    "url": "http://ftp.iaaras.ru/pub/epm/EPM2021/SPICE/epm2021.bsp"
+  }
+]
