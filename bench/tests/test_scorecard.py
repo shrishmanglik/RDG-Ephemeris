@@ -51,7 +51,8 @@ def test_unknown_engine_is_an_error(tmp_path, kernel_path):
 def thirty_row_card(tmp_path_factory, kernel_path):
     base = tmp_path_factory.mktemp("card")
     rows = S.make_samples(30, 1, list(S.BODIES), ["E1"], list(S.MODES))
-    assert len(rows) == 30
+    # One row per body and mode: the count follows the mode list, which grew to four.
+    assert len(rows) == len(S.BODIES) * len(S.MODES)
     samples = base / "s.jsonl"
     S.write_samples(rows, samples)
     outs = []
@@ -77,11 +78,11 @@ def test_card_contents(thirty_row_card, kernel_path):
     assert card["verdict"] == "PASS"
     assert card["truth"] == "t2"
     strata = card["engines"]["ours"]["strata"]
-    assert len(strata) == 30
+    assert len(strata) == len(S.BODIES) * len(S.MODES)
     first = strata[sorted(strata)[0]]
     for stat in ("separation_arcsec", "ecliptic_max_component_arcsec"):
         assert set(first[stat]) >= {"n", "median", "p95", "max", "ci95"}
-    assert set(card["engines"]["ours"]["by_mode"]) == {"geometric", "astrometric", "apparent"}
+    assert set(card["engines"]["ours"]["by_mode"]) == set(S.MODES)
     for forbidden in ("time", "date", "host", "platform", "python_version"):
         assert forbidden not in card
     assert str(kernel_path.parent) not in raw
@@ -90,7 +91,7 @@ def test_card_contents(thirty_row_card, kernel_path):
 def test_floor_turns_small_values_into_ties(tmp_path, thirty_row_card, kernel_path):
     samples, _ = thirty_row_card
     floor = tmp_path / "floor.json"
-    floor.write_text(json.dumps({"geometric": 1.0, "astrometric": 1.0, "apparent": 1.0}))
+    floor.write_text(json.dumps({mode: 1.0 for mode in S.MODES}))
     out = tmp_path / "card.json"
     assert C.main(["--samples", str(samples), "--kernel", str(kernel_path), "--out", str(out),
                    "--truth-floor", str(floor)]) == C.EXIT_PASS

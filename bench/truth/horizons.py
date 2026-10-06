@@ -13,6 +13,15 @@ https://ssd-api.jpl.nasa.gov/doc/horizons.html:
   scores directions and distances, so velocity would only enlarge every committed response.
 - ``VEC_CORR`` is 'NONE' (geometric), 'LT' (light-time corrected) or 'LT+S' (light time plus
   stellar aberration).
+
+What ``LT+S`` vectors do not contain: gravitational light deflection. Every stored LT+S response
+says so in its own footer ("corrected for Newtonian down-leg (receive) light-time displacement
+and relativistic stellar aberration"), and the Horizons manual
+(https://ssd.jpl.nasa.gov/horizons/manual.html, read 2026-10-06) lists the vector-table
+corrections as "LT+S (light-time & stellar aberration)", while its observer-table quantities
+name "the gravitational deflection of light" separately. So ``LT+S`` truth scores the
+benchmark mode ``apparent-aberrated`` only; the mode ``apparent`` (with deflection) has no
+Horizons vector equivalent and is scored against T2 alone (``bench/SPEC.md``).
 - ``REF_SYSTEM`` 'ICRF' or 'B1950'; ``OUT_UNITS`` 'KM-S', 'AU-D' or 'KM-D'; ``CSV_FORMAT``
   'YES' or 'NO'; ``TIME_TYPE`` 'UT', 'TT' or 'TDB'.
 - The JSON reply carries ``signature`` {``version``, ``source``} and ``result`` (the text
@@ -46,7 +55,10 @@ USER_AGENT = (
 CHUNK = 100
 MIN_INTERVAL_S = 1.0
 VEC_CORRS = ("NONE", "LT", "LT+S")
-MODE_TO_VEC_CORR = {"geometric": "NONE", "astrometric": "LT", "apparent": "LT+S"}
+# ``apparent`` (with deflection) is absent on purpose: no VEC_CORR value deflects light.
+MODE_TO_VEC_CORR = {"geometric": "NONE", "astrometric": "LT", "apparent-aberrated": "LT+S"}
+# An echoed epoch may differ from the request by at most this many units of its last printed digit.
+ECHO_TOLERANCE_UNITS = 1
 BODY_TO_NAIF = {
     "sun": 10, "moon": 301, "mercury": 199, "venus": 299, "mars": 4,
     "jupiter": 5, "saturn": 6, "uranus": 7, "neptune": 8, "pluto": 9,
@@ -144,10 +156,16 @@ def ephemeris_source(response: bytes) -> str:
     return m.group(1) if m else ""
 
 
-def _echo_matches(echoed: str, requested: str) -> bool:
+def echo_offset_units(echoed: str, requested: str) -> int:
+    """Signed offset of the echo from the request, in units of the echo's last printed digit.
+
+    Horizons reads each TLIST value as a binary double and prints it back with 9 decimals, so
+    an echo can land one unit (1e-9 day, 86.4 us) from the request. The offset is recorded,
+    never applied: every engine and the truth row keep the requested JD.
+    """
     decimals = len(echoed.split(".")[1]) if "." in echoed else 0
     quantum = Decimal(1).scaleb(-decimals)
-    return Decimal(requested).quantize(quantum) == Decimal(echoed)
+    return int((Decimal(echoed) - Decimal(requested).quantize(quantum)) / quantum)
 
 
 def _match_echoes(rows: list[dict], requested: list[str], label: str) -> dict[str, dict]:
@@ -155,16 +173,18 @@ def _match_echoes(rows: list[dict], requested: list[str], label: str) -> dict[st
 
     Horizons prints a TLIST ephemeris in ascending time order, not request order (observed
     on the first pilot request, 2026-10-06), so rows are paired by value: both sides sorted
-    by instant, then each pair must agree to the precision Horizons printed.
+    by instant, then each pair must agree within ``ECHO_TOLERANCE_UNITS`` of the last printed
+    digit. Each paired row carries its ``echo_offset_units``.
     """
     if len(rows) != len(requested):
         raise VoidRun(f"{label}: {len(rows)} rows for {len(requested)} requested epochs")
     by_time = sorted(rows, key=lambda r: Decimal(r["jd_tdb_echoed"]))
     paired: dict[str, dict] = {}
     for row, jd in zip(by_time, sorted(requested, key=Decimal)):
-        if not _echo_matches(row["jd_tdb_echoed"], jd):
-            raise VoidRun(f"{label}: echo {row['jd_tdb_echoed']} != requested {jd}")
-        paired[jd] = row
+        offset = echo_offset_units(row["jd_tdb_echoed"], jd)
+        if abs(offset) > ECHO_TOLERANCE_UNITS:
+            raise VoidRun(f"{label}: echo {row['jd_tdb_echoed']} != requested {jd} ({offset:+d} units)")
+        paired[jd] = dict(row, echo_offset_units=offset)
     return paired
 
 
@@ -232,12 +252,21 @@ def fetch(url: str, out_dir: Path = DEFAULT_DIR) -> dict:
 def verify(manifest_path: Path) -> int:
     """Recheck every stored response against the manifest; raise VoidRun on any mismatch.
 
-    Checks the SHA-256 of each file, then that every echoed JD equals the requested JD to
-    the precision Horizons printed. Returns the number of responses verified.
+    Returns the number of responses verified; ``verify_report`` also lists the echo offsets.
+    """
+    return verify_report(manifest_path)["responses"]
+
+
+def verify_report(manifest_path: Path) -> dict:
+    """Check the SHA-256 of each stored file and every echoed JD; raise VoidRun on a mismatch.
+
+    An echo within ``ECHO_TOLERANCE_UNITS`` of the request passes and is listed under
+    ``echo_offsets`` (sorted by response and requested JD); anything further is VOID.
     """
     manifest_path = Path(manifest_path)
     store = manifest_path.parent
     manifest = _load_manifest(manifest_path)
+    offsets = []
     for entry in manifest["entries"]:
         path = store / f"{entry['sha256']}.json"
         if not path.exists():
@@ -246,8 +275,14 @@ def verify(manifest_path: Path) -> int:
         actual = sha256_hex(raw)
         if actual != entry["sha256"]:
             raise VoidRun(f"sha256 mismatch for {path.name}: file hashes to {actual}")
-        _match_echoes(parse(raw), entry["jd_tdb_requested"], path.name)
-    return len(manifest["entries"])
+        paired = _match_echoes(parse(raw), entry["jd_tdb_requested"], path.name)
+        for jd, row in paired.items():
+            if row["echo_offset_units"]:
+                offsets.append({"sha256": entry["sha256"], "jd_tdb_requested": jd,
+                                "jd_tdb_echoed": row["jd_tdb_echoed"],
+                                "offset_units": row["echo_offset_units"]})
+    offsets.sort(key=lambda o: (o["sha256"], Decimal(o["jd_tdb_requested"])))
+    return {"responses": len(manifest["entries"]), "echo_offsets": offsets}
 
 
 def _group(samples: list[dict], max_per_set: int) -> dict[tuple[str, str], list[dict]]:
@@ -266,6 +301,8 @@ def build_truth(samples_path: Path, max_per_set: int, out_dir: Path = DEFAULT_DI
     samples = [json.loads(line) for line in raw_samples.decode("utf-8").splitlines() if line.strip()]
     truth: dict[str, dict] = {}
     for (body, mode), rows in _group(samples, max_per_set).items():
+        if mode not in MODE_TO_VEC_CORR:
+            continue  # ``apparent`` has no Horizons vector equivalent; T2 alone scores it
         naif, vec_corr = BODY_TO_NAIF[body], MODE_TO_VEC_CORR[mode]
         for i in range(0, len(rows), CHUNK):
             chunk = rows[i:i + CHUNK]
@@ -277,6 +314,7 @@ def build_truth(samples_path: Path, max_per_set: int, out_dir: Path = DEFAULT_DI
                 truth[sample["id"]] = {
                     "id": sample["id"], "x": got["x"], "y": got["y"], "z": got["z"],
                     "jd_echoed": got["jd_tdb_echoed"], "response_sha256": entry["sha256"],
+                    "echo_offset_units": got["echo_offset_units"],
                 }
     verify(Path(out_dir) / "manifest.json")
     out = Path(out_dir) / f"t1-{sample_sha[:12]}.jsonl"

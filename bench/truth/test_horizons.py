@@ -113,13 +113,37 @@ def test_verify_catches_one_altered_byte(tmp_path):
         horizons.verify(store / "manifest.json")
 
 
-def test_verify_catches_echo_mismatch(tmp_path):
+def test_verify_catches_echo_two_units_off(tmp_path):
+    # Two units in the printed last digit (2e-9 day) is outside the rule: VOID.
+    store = _tmp_store(tmp_path)
+    m = json.loads((store / "manifest.json").read_text(encoding="utf-8"))
+    m["entries"][0]["jd_tdb_requested"][1] = "2451546.500000002"
+    (store / "manifest.json").write_text(json.dumps(m), encoding="utf-8")
+    with pytest.raises(horizons.VoidRun, match="echo"):
+        horizons.verify(store / "manifest.json")
+
+
+def test_verify_accepts_echo_one_unit_off_and_records_it(tmp_path):
+    # Inverted 2026-10-06: a one-unit echo (1e-9 day, 86.4 us) used to VOID. It now passes,
+    # and the offset is recorded per row; the instant every engine uses stays the request.
     store = _tmp_store(tmp_path)
     m = json.loads((store / "manifest.json").read_text(encoding="utf-8"))
     m["entries"][0]["jd_tdb_requested"][1] = "2451546.500000001"
     (store / "manifest.json").write_text(json.dumps(m), encoding="utf-8")
-    with pytest.raises(horizons.VoidRun, match="echo"):
-        horizons.verify(store / "manifest.json")
+    assert horizons.verify(store / "manifest.json") == 1
+    report = horizons.verify_report(store / "manifest.json")
+    assert report["responses"] == 1
+    assert report["echo_offsets"] == [{
+        "sha256": m["entries"][0]["sha256"],
+        "jd_tdb_requested": "2451546.500000001",
+        "jd_tdb_echoed": "2451546.500000000",
+        "offset_units": -1,
+    }]
+
+
+def test_clean_store_records_no_echo_offsets(tmp_path):
+    store = _tmp_store(tmp_path)
+    assert horizons.verify_report(store / "manifest.json") == {"responses": 1, "echo_offsets": []}
 
 
 def _real_responses() -> list[Path]:

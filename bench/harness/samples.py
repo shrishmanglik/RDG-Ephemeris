@@ -20,7 +20,7 @@ import numpy as np
 BODIES: tuple[str, ...] = (
     "sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto",
 )
-MODES: tuple[str, ...] = ("geometric", "astrometric", "apparent")
+MODES: tuple[str, ...] = ("geometric", "astrometric", "apparent-aberrated", "apparent")
 
 
 def _jan1(year: int) -> float:

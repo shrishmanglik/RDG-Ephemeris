@@ -59,6 +59,34 @@ def test_mode_effects_have_physical_size(kernel_path):
     for engine in (E.ours, E.t2_skyfield):
         out = engine(rows, kernel_path)
         light_time = T.separation_arcsec(out["geometric"], out["astrometric"])
-        aberration = T.separation_arcsec(out["astrometric"], out["apparent"])
+        aberration = T.separation_arcsec(out["astrometric"], out["apparent-aberrated"])
+        deflection = T.separation_arcsec(out["apparent-aberrated"], out["apparent"])
         assert 1.0 < light_time < 120.0
         assert 5.0 < aberration < 25.0
+        # Solar deflection of Mars on 2000-01-01: milliarcseconds, never zero.
+        assert 1e-4 < deflection < 0.05
+
+
+def test_ours_agrees_with_skyfield_apparent_aberrated(small_rows, both):
+    # No deflection on either side, so the Sun-only versus Sun+Jupiter+Saturn choice cannot enter.
+    ours, t2 = both
+    rows = [r for r in small_rows if r["mode"] == "apparent-aberrated"]
+    seps = {r["id"]: float(T.separations_arcsec(np.array([ours[r["id"]]]), np.array([t2[r["id"]]]))[0])
+            for r in rows}
+    assert max(v for i, v in seps.items() if not i.startswith("moon-")) < 1e-4
+    # Open finding, not a tolerance: the Moon's light-time direction differs from Skyfield's by up
+    # to about 0.4 mas in every light-time mode, cause not yet found (first seen 2026-10-06). This
+    # bound pins today's size so a regression shows; it is never quoted as an accuracy figure.
+    assert max(v for i, v in seps.items() if i.startswith("moon-")) < 5e-4
+
+
+def test_erfa_aberration_matches_engine_aberration(small_rows, both, kernel_path):
+    # The adapter used for runners without an aberrated-only mode must equal the native path.
+    ours, _ = both
+    rows = [r for r in small_rows if r["mode"] == "apparent-aberrated"]
+    # Each mode draws its own instants, so the natural direction is computed at the same instant.
+    natural = E.ours([dict(r, mode="astrometric") for r in rows], kernel_path)
+    added = E.erfa_aberrate(rows, natural, kernel_path)
+    seps = T.separations_arcsec(np.array([ours[r["id"]] for r in rows]),
+                                np.array([added[r["id"]] for r in rows]))
+    assert float(seps.max()) < 1e-4

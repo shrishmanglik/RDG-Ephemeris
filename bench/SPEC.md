@@ -8,8 +8,10 @@ reader can rerun it and get the same bytes. Nothing in `bench/` ships in the whe
 - **T1, JPL Horizons.** The vectors API (`https://ssd.jpl.nasa.gov/api/horizons.api`), `EPHEM_TYPE=VECTORS`,
   `CENTER='500@399'` (geocentre), `REF_PLANE=FRAME`, `REF_SYSTEM=ICRF`, `OUT_UNITS=AU-D`, `CSV_FORMAT=YES`,
   `TIME_TYPE=TDB`, `TLIST_TYPE=JD`, `TLIST` = exact JD TDB values written with 9 decimals. `VEC_CORR` is `NONE`
-  (geometric), `LT` (astrometric) or `LT+S` (apparent direction). The echoed epoch of every row is recorded and
-  must equal the requested JD to the printed precision, or the response is VOID. Raw responses are committed under
+  (geometric), `LT` (astrometric) or `LT+S` (`apparent-aberrated`: light time and stellar aberration; Horizons
+  vectors carry no light deflection, so the mode `apparent` has no T1 row). The echoed epoch of every row is recorded
+  and must equal the requested JD within one unit of its last printed digit (1e-9 day), with any offset recorded and
+  never applied, or the response is VOID. Raw responses are committed under
   `bench/data/horizons/` named by their SHA-256, with a manifest (`manifest.json`) listing request URL, retrieval
   time, sha256 and the DE version Horizons reports. At most 1 request per second; at most 300 instants per stratum set.
 - **T2, raw kernel.** Skyfield (MIT) reading the same DE440/DE441 file through jplephem: an independent reader of the
@@ -24,7 +26,9 @@ Seeded (`seed` recorded in every result), strata = body x era x mode.
   outer planets as system barycentres, the engine's documented choice).
 - Eras: `E1` 1900-2026 (births), `E2` 2026-2040 (transits), `E3` 1550-1899, `E4` 2041-2649 (both DE440). DE441 eras
   (before 1550, after 2649) are added only when DE441 is provisioned.
-- Modes: `geometric`, `astrometric`, `apparent`.
+- Modes: `geometric`, `astrometric`, `apparent-aberrated` (light time and aberration, no deflection), `apparent`
+  (adds gravitational deflection; scored against T2 only, which deflects by Sun, Jupiter and Saturn while the engine
+  deflects by the Sun only).
 - Sample file: JSON Lines, one object per row: `{"id", "body", "era", "mode", "jd_tdb"}`; `jd_tdb` as a decimal string
   with 9 decimals so every engine and Horizons receive the identical instant. The sample file's SHA-256 is part of
   every scorecard.
