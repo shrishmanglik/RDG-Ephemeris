@@ -50,7 +50,6 @@ from .earth_orientation import (
 )
 from .events import (
     EVENTS_VERSION,
-    EclipseResult,
     EventSolverError,
     IngressEvent,
     OpticalAtmosphere,
@@ -89,7 +88,6 @@ __all__ = [
     "EVENTS_VERSION",
     "EarthOrientationParameters",
     "EarthOrientation",
-    "EclipseResult",
     "EopQuality",
     "EopRecord",
     "EventSolverError",

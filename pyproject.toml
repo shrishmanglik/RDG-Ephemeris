@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ephemeris-oss"
+description = "JPL-grade planetary positions, ayanamsas, houses and rise/set with a receipt on every result."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "The AGI Studio" }]
+dependencies = ["numpy>=1.26", "pyerfa>=2.0.1", "jplephem>=2.21", "tzdata>=2024.1"]
+dynamic = ["version"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Astronomy",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[project.scripts]
+ephemeris-oss = "ephemeris_oss.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "ephemeris_oss._version.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

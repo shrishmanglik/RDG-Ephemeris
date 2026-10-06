@@ -1,0 +1,34 @@
+ephemeris-oss
+Copyright 2026 The AGI Studio
+Built by The AGI Studio (theagistudio.com).
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+Licence choice is a draft pending the maintainer's decision.
+
+Third-party software
+--------------------
+
+This package depends on, and does not bundle, the following libraries. Each is
+installed separately under its own licence.
+
+1. pyerfa (BSD-3-Clause)
+   Python wrapper for the ERFA library. ERFA is derived from the IAU SOFA
+   library but is not SOFA. Nothing in this package is endorsed by the
+   International Astronomical Union or by the SOFA Board.
+
+2. jplephem (MIT License)
+   Reader for JPL SPK ephemeris kernel files.
+
+3. numpy (BSD-3-Clause, with some bundled components under other permissive
+   licences; see the numpy distribution for details)
+
+4. tzdata (Apache-2.0)
+   IANA time zone database packaged for Python, used where the operating
+   system provides none.
+
+Ephemeris kernels
+-----------------
+
+JPL planetary ephemerides are downloaded from NASA NAIF at run time and are not
+redistributed in this package. Their use does not imply endorsement of this
+package by NASA, JPL or NAIF.
