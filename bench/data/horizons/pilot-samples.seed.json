@@ -1,0 +1,14 @@
+{
+ "bodies": [
+  "moon",
+  "sun",
+  "mars"
+ ],
+ "generator": "random.Random(seed).randint over [2415020.5, 2466154.5] in 1e-9 day steps, 10 per body, shared by both modes",
+ "modes": [
+  "geometric",
+  "apparent"
+ ],
+ "rows": 60,
+ "seed": 20261006
+}
