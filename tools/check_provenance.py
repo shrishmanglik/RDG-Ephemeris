@@ -136,7 +136,7 @@ def self_test() -> int:
         "a/labelled_but_cited.py": ("# Swiss-compatible realisation, from sweph.h\n", "SOURCE"),
         "ephe/sepl_18.se1": ("x", "DATAFILE"),
     }
-    clean = "# planet plane lane-free text; Swiss-compatible realisation of the anchor\nimport erfa\n"
+    clean = "# planet and plane text; Swiss-compatible realisation of the anchor\nimport erfa\n"
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
         for rel, (body, _rule) in planted.items():

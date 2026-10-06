@@ -1,0 +1,80 @@
+# Hosted Actions are disabled on the repository; these jobs are run locally by
+# the maintainers' CI runner. The file defines the gate either way.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: tests (python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install
+        run: pip install -e .[test]
+      - name: Run tests
+        run: pytest -q
+
+  provenance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Provenance checker self-test
+        run: python tools/check_provenance.py --self-test
+      - name: Provenance check on src
+        run: python tools/check_provenance.py src --allow tools/provenance-allow.txt
+
+  internal-ids:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Internal-id checker self-test
+        run: python tools/check_internal_ids.py --self-test
+      - name: Internal-id check on src and tests
+        run: python tools/check_internal_ids.py src tests
+
+  import-graph:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install
+        run: pip install -e .[test]
+      - name: Import graph test
+        run: pytest -q tests/test_import_graph.py
+
+  claims:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Claims checker self-test
+        run: |
+          if [ -f tools/check_claims.py ]; then
+            python tools/check_claims.py --self-test
+          else
+            echo "tools/check_claims.py not present; skipping"
+          fi

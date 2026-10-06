@@ -1529,6 +1529,8 @@ class JplErfaAstronomyProvider(AstronomyProvider):
             )
         )
 
+    # Internal: eclipse candidates are unexported and unverified until the eclipse
+    # benchmark passes; the public Engine does not offer them.
     def solar_eclipses(
         self,
         *,
@@ -1559,6 +1561,8 @@ class JplErfaAstronomyProvider(AstronomyProvider):
                 )
         return tuple(results)
 
+    # Internal: eclipse candidates are unexported and unverified until the eclipse
+    # benchmark passes; the public Engine does not offer them.
     def lunar_eclipses(
         self,
         *,
