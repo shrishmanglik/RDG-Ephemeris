@@ -220,17 +220,22 @@ class Engine:
         civil time, UTC, UT1 or Earth orientation. Nodes use their separately
         declared definition interface rather than this physical-body method.
         """
+        normalized_bodies = tuple(body.strip().lower() for body in bodies)
         try:
-            raw = self._provider.planet_positions_tt(jd_tt=jd_tt, bodies=tuple(bodies))
+            raw = self._provider.planet_positions_tt(jd_tt=jd_tt, bodies=normalized_bodies)
         except (AstronomyDataUnavailable, ValueError) as error:
             raise _error(error) from error
         positions = raw["positions"]
-        value = {body.strip().lower(): dict(positions[self._key(positions, body)]) for body in bodies}
+        value = {body: dict(positions[self._key(positions, body)]) for body in normalized_bodies}
+        targets = {body: self._provider._body(body)[0] for body in normalized_bodies}
+        request = {"jd_tt": raw["jd_tt"], "bodies": list(normalized_bodies), "targets": targets}
         receipt = {
             "package": __version__, "time_scale": "TT", "jd_tt": raw["jd_tt"],
             "jd_tdb": raw["jd_tdb"], "utc_inferred": False,
             "frame": raw["frame"], "kernel_sha256": raw["kernel_sha256"],
             "apparent_model": "solar-only finite-distance; opaque solar photosphere",
+            "bodies": request["bodies"], "targets": targets,
+            "request_sha256": _digest(request), "result_sha256": _digest(value),
         }
         return Result(value=value, receipt=receipt, receipt_sha256=_digest(receipt))
 

@@ -1,0 +1,47 @@
+FF                                                                       [100%]
+================================== FAILURES ===================================
+_________ test_tt_receipt_binds_normalized_bodies_targets_and_result __________
+
+    def test_tt_receipt_binds_normalized_bodies_targets_and_result():
+        kernel = Path.home() / ".agi/assets/jpl/de440-a4ce9bf9b328.bsp"
+        with Engine.load(kernels={"DE440": kernel}, eop=None) as engine:
+            sun = engine.positions_tt(2451545.0, bodies=("sun",))
+            moon = engine.positions_tt(2451545.0, bodies=("moon",))
+            normalized = engine.positions_tt(2451545.0, bodies=(" Sun ",))
+            combined = engine.positions_tt(2451545.0, bodies=("sun", "mars", "jupiter", "saturn"))
+>       assert sun.value != moon.value and sun.receipt_sha256 != moon.receipt_sha256
+E       AssertionError: assert ({'sun': {'longitude_deg': 280.36816528227325, 'latitude_deg': 0.00022740705195981536}} != {'moon': {'longitude_deg': 223.31486994325894, 'latitude_deg': 5.1708719007495985}} and 'disabled-receipt-detector' != 'disabled-receipt-detector')
+E        +  where {'sun': {'longitude_deg': 280.36816528227325, 'latitude_deg': 0.00022740705195981536}} = Result(value={'sun': {'longitude_deg': 280.36816528227325, 'latitude_deg': 0.00022740705195981536}}, receipt={'package...'disabled-receipt-detector', 'result_sha256': 'disabled-receipt-detector'}, receipt_sha256='disabled-receipt-detector').value
+E        +  and   {'moon': {'longitude_deg': 223.31486994325894, 'latitude_deg': 5.1708719007495985}} = Result(value={'moon': {'longitude_deg': 223.31486994325894, 'latitude_deg': 5.1708719007495985}}, receipt={'package': ...'disabled-receipt-detector', 'result_sha256': 'disabled-receipt-detector'}, receipt_sha256='disabled-receipt-detector').value
+E        +  and   'disabled-receipt-detector' = Result(value={'sun': {'longitude_deg': 280.36816528227325, 'latitude_deg': 0.00022740705195981536}}, receipt={'package...'disabled-receipt-detector', 'result_sha256': 'disabled-receipt-detector'}, receipt_sha256='disabled-receipt-detector').receipt_sha256
+E        +  and   'disabled-receipt-detector' = Result(value={'moon': {'longitude_deg': 223.31486994325894, 'latitude_deg': 5.1708719007495985}}, receipt={'package': ...'disabled-receipt-detector', 'result_sha256': 'disabled-receipt-detector'}, receipt_sha256='disabled-receipt-detector').receipt_sha256
+
+tests\test_measured_tt_api.py:42: AssertionError
+____ test_tt_receipt_changes_when_same_request_returns_a_different_result _____
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000002177E5CE650>
+
+    def test_tt_receipt_changes_when_same_request_returns_a_different_result(monkeypatch):
+        kernel = Path.home() / ".agi/assets/jpl/de440-a4ce9bf9b328.bsp"
+        with Engine.load(kernels={"DE440": kernel}, eop=None) as engine:
+            original = engine.positions_tt(2451545.0, bodies=("sun",))
+            calculate = engine._provider.planet_positions_tt
+
+            def changed_result(**kwargs):
+                raw = calculate(**kwargs)
+                raw["positions"]["Sun"]["longitude_deg"] += 0.25
+                return raw
+
+            monkeypatch.setattr(engine._provider, "planet_positions_tt", changed_result)
+            changed = engine.positions_tt(2451545.0, bodies=("sun",))
+        assert original.value != changed.value
+>       assert original.receipt_sha256 != changed.receipt_sha256
+E       AssertionError: assert 'disabled-receipt-detector' != 'disabled-receipt-detector'
+E        +  where 'disabled-receipt-detector' = Result(value={'sun': {'longitude_deg': 280.36816528227325, 'latitude_deg': 0.00022740705195981536}}, receipt={'package...'disabled-receipt-detector', 'result_sha256': 'disabled-receipt-detector'}, receipt_sha256='disabled-receipt-detector').receipt_sha256
+E        +  and   'disabled-receipt-detector' = Result(value={'sun': {'longitude_deg': 280.61816528227325, 'latitude_deg': 0.00022740705195981536}}, receipt={'package...'disabled-receipt-detector', 'result_sha256': 'disabled-receipt-detector'}, receipt_sha256='disabled-receipt-detector').receipt_sha256
+
+tests\test_measured_tt_api.py:74: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_measured_tt_api.py::test_tt_receipt_binds_normalized_bodies_targets_and_result
+FAILED tests/test_measured_tt_api.py::test_tt_receipt_changes_when_same_request_returns_a_different_result
+2 failed, 2 deselected in 1.17s

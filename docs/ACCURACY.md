@@ -16,18 +16,38 @@ Measured author-side results, pending independent reproduction. Errors are sampl
 
 R1 limits: P95 at most 0.02 arcseconds and sampled maximum at most 0.1 arcseconds. All seven rows pass these limits. Mars/Jupiter/Saturn are the compact-DE440 system barycentres (NAIF 4/5/6); this table does not assert physical-centre accuracy for those three.
 
-| Node definition | Typical residual | Worst residual | Reference |
+The node table below is the preserved legacy measurement. Its mean-node
+comparator used the old coefficients despite naming equation 47.7. Those rows
+do not qualify the current mean-node definition. The original raw records in
+`../bench/studies/E2-accuracy/raw-t2.json` remain unchanged.
+
+| Legacy node definition | Typical residual | Worst residual | Reference |
 |---|---:|---:|---|
 | True Rahu | 1.38436462e-06 | 5.9393642e-06 | Independent Skyfield DE440 orbit plane, mean ecliptic of date |
-| Mean Rahu | 4.09272616e-10 | 3.68345354e-09 | Independent Decimal Meeus eq. 47.7 |
+| Mean Rahu | 4.09272616e-10 | 3.68345354e-09 | Legacy Decimal polynomial, superseded |
 | True Ketu | Same orbit-axis residual as True Rahu | 2.04636308e-10 antipode residual | Exact opposite axis |
 | Mean Ketu | Same definition residual as Mean Rahu | 2.04636308e-10 antipode residual | Exact opposite axis |
 
-Nodes are derived definitions. JPL does not publish a Vedic Rahu/Ketu longitude. True-node limit is 0.1 arcsecond; mean-node definition limit is 0.001 arcsecond. Both pass.
+The current policy is `ephemeris-oss-lunar-nodes-1.1.0-meeus47.7`, using
+Meeus, *Astronomical Algorithms*, second edition, equation 47.7 in TT.
+Replaying all 3,612 monthly TT samples against an independent Decimal
+evaluation gives a median residual of 4.09272616e-10 arcseconds and a maximum
+of 3.27418093e-09 arcseconds for mean Rahu, below its unchanged 0.001 arcsecond
+definition limit. New raw output, the legacy hash, source hash and scorer hash
+are in `../bench/studies/E2-accuracy/meeus47.7/mean-nodes.json`; reproduce it
+with `replay_mean_node.py` in the same folder's parent.
+
+Nodes are derived definitions. JPL does not publish a Vedic Rahu/Ketu longitude.
+The true-node limit remains 0.1 arcsecond. The current mean-node replay is a
+definition check; a full physical-body and node replay on one package source
+remains required for a new composed qualification.
 
 The original independent check failed at occulted Mercury in November 2094 (0.676583 arcseconds). The original failed table remains in the private Astro review packet; this package carries the corrected public numerical rows and JPL receipts. Seven neighbouring samples isolate the difference to solar occultation; the engine now follows the observed Horizons convention there. This is a stated model change, not a lowered error ceiling.
 
-This table proves the sampled Tier-A positions and node definitions only. It does not prove civil-time/Delta-T accuracy, every instant in the interval, superiority to Swiss, or all BAR-v1 release rows. R3 through R10 still require one-source qualification. R10 has not passed, so production cutover is withheld.
+The physical-body rows above retain their original source binding; the new
+mean-node rows have their own source binding. These component records do not
+prove civil-time/Delta-T accuracy, every instant in the interval, superiority
+to Swiss, or a complete release qualification. Production cutover is withheld.
 
 [Horizons manual and quantity 45](https://ssd.jpl.nasa.gov/horizons/manual.html) Â· [Skyfield apparent-coordinate API](https://rhodesmill.org/skyfield/api-position.html)
 

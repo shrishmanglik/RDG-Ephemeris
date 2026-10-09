@@ -37,6 +37,10 @@ classical physical grahas. It does not infer UTC, UT1, civil time or an
 Earth-orientation model. Rahu/Ketu are derived definitions through the node
 interface, rather than physical JPL targets.
 
+The TT receipt binds the normalized body list, explicit NAIF targets, TT
+instant, kernel hash and returned numeric result. Repeated identical inputs
+produce the same receipt; a changed request or result changes its hash.
+
 The existing `positions(datetime, ...)` interface accepts UTC only in its
 declared 1960..2026 window. Houses, topocentric coordinates and rise/set also
 need verified Earth-orientation data or an explicitly supplied model. Missing
@@ -50,6 +54,10 @@ over 1800..2100 per physical graha on DE440 and 300 independent Horizons
 instants per graha. It lists median, P95, worst sampled error and worst date in
 arcseconds. Mars, Jupiter and Saturn use compact-kernel system barycentres.
 Node rows are definition-derived. Horizons' responses identify DE441.
+
+The original node rows remain as legacy evidence. The mean-node policy now
+matches Meeus equation 47.7; its new Decimal reference replay and exact source
+binding sit beside the unchanged legacy records in the accuracy study.
 
 The corrected sample set passes the stated 0.02 arcsecond P95 and 0.1 arcsecond
 maximum position limits. This is sampled component validation, not a claim of

@@ -1,0 +1,1 @@
+{"version": "ephemeris-oss-lunar-nodes-1.1.0-meeus47.7", "samples": 3612, "median_arcsec": 4.092726157978177e-10, "max_arcsec": 3.2741809263825417e-09, "status": "PASS"}

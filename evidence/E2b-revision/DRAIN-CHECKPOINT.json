@@ -1,0 +1,9 @@
+{
+  "state": "RESUMED_REPAIR_CHECKPOINT; CURRENT_FULL_CHECKS_NOT_RUN",
+  "base_head": "c81da6867658541b84999320d824c0788a56b181",
+  "scope": "The four E3 REVISE findings only; source and raw data preserved before the restart",
+  "current_validation": "NOT_RUN; waiting for the one normal E2b-drain slot",
+  "source_switch": "NONE",
+  "merge": "NONE",
+  "public_release": "NONE"
+}

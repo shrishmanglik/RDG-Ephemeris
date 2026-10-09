@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from decimal import Decimal, localcontext
 
 import erfa
 import pytest
@@ -42,7 +43,7 @@ def test_lahiri_is_derived_from_the_published_iae_anchor_not_calibrated():
 def test_catalog_is_versioned_complete_and_has_explicit_sources() -> None:
     assert AYANAMSA_CATALOG_VERSION == "ephemeris-oss-ayanamsa-anchors-1.3.0"
     assert HOUSE_CONVENTIONS_VERSION == "ephemeris-oss-houses-1.1.0-iau2006"
-    assert LUNAR_NODE_CONVENTIONS_VERSION == "ephemeris-oss-lunar-nodes-1.0.0"
+    assert LUNAR_NODE_CONVENTIONS_VERSION == "ephemeris-oss-lunar-nodes-1.1.0-meeus47.7"
     assert set(AYANAMSA_CATALOG) == {
         "lahiri",
         "raman",
@@ -116,9 +117,23 @@ def test_ayanamsa_and_sidereal_conversion_fail_closed_and_wrap() -> None:
 def test_mean_lunar_node_matches_polynomial_anchor_and_regresses() -> None:
     at_epoch = mean_lunar_node_longitude_degrees(J2000_TT_JD)
     ten_days_later = mean_lunar_node_longitude_degrees(J2000_TT_JD + 10.0)
-    assert at_epoch == pytest.approx(125.04455501, abs=1e-12)
+    assert at_epoch == pytest.approx(125.0445479, abs=1e-12)
     signed_motion = (ten_days_later - at_epoch + 180.0) % 360.0 - 180.0
     assert signed_motion < 0.0
+
+
+@pytest.mark.parametrize("jd_tt", [2415021.0, 2451545.0, 2488069.0])
+def test_mean_lunar_node_matches_independent_meeus_47_7_decimal_reference(jd_tt):
+    # Meeus, Astronomical Algorithms, second edition, eq. 47.7 in TT.
+    # Decimal evaluates the published equation independently of engine arithmetic.
+    with localcontext() as context:
+        context.prec = 40
+        t = (Decimal(str(jd_tt)) - Decimal("2451545.0")) / Decimal(36525)
+        expected = float((Decimal("125.0445479") - Decimal("1934.1362891") * t
+                          + Decimal("0.0020754") * t**2 + t**3 / Decimal(467441)
+                          - t**4 / Decimal(60616000)) % Decimal(360)) % 360.0
+    actual = mean_lunar_node_longitude_degrees(jd_tt)
+    assert _angular_difference(actual, expected) * 3600 < 0.001
 
 
 def test_osculating_lunar_node_comes_from_state_vector_plane() -> None:
