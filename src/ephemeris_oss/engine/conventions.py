@@ -58,7 +58,7 @@ JULIAN_CENTURY_DAYS = 36525.0
 AYANAMSA_VALID_CENTURIES = 4.0
 AYANAMSA_CATALOG_VERSION = "ephemeris-oss-ayanamsa-anchors-1.3.0"
 HOUSE_CONVENTIONS_VERSION = "ephemeris-oss-houses-1.1.0-iau2006"
-LUNAR_NODE_CONVENTIONS_VERSION = "ephemeris-oss-lunar-nodes-1.0.0"
+LUNAR_NODE_CONVENTIONS_VERSION = "ephemeris-oss-lunar-nodes-1.1.0-meeus47.7"
 
 
 @dataclass(frozen=True)

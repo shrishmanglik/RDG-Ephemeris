@@ -1,9 +1,8 @@
 ephemeris-oss
-Copyright 2026 The AGI Studio
+Copyright 2026 The Million Dollar AI Studio Ltd.
 Built by The AGI Studio (theagistudio.com).
 
 Licensed under the Apache License, Version 2.0 (see LICENSE).
-Licence choice is a draft pending the maintainer's decision.
 
 Third-party software
 --------------------
@@ -32,3 +31,5 @@ Ephemeris kernels
 JPL planetary ephemerides are downloaded from NASA NAIF at run time and are not
 redistributed in this package. Their use does not imply endorsement of this
 package by NASA, JPL or NAIF.
+
+US Naval Observatory data used only in the separate accuracy study are public-domain government data; the study and bulk kernels are not bundled in the wheel.

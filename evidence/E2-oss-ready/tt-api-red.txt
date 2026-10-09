@@ -1,0 +1,24 @@
+FF                                                                       [100%]
+================================== FAILURES ===================================
+___________ test_explicit_tt_api_is_available_without_inventing_utc ___________
+
+    def test_explicit_tt_api_is_available_without_inventing_utc():
+>       assert hasattr(Engine, "positions_tt"), "the measured TT path is not packaged"
+E       AssertionError: the measured TT path is not packaged
+E       assert False
+E        +  where False = hasattr(Engine, 'positions_tt')
+
+tests\test_measured_tt_api.py:11: AssertionError
+_________ test_measured_sun_moon_tt_result_has_a_reproducible_receipt _________
+
+    def test_measured_sun_moon_tt_result_has_a_reproducible_receipt():
+>       assert hasattr(Engine, "positions_tt"), "the measured TT path is not packaged"
+E       AssertionError: the measured TT path is not packaged
+E       assert False
+E        +  where False = hasattr(Engine, 'positions_tt')
+
+tests\test_measured_tt_api.py:15: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_measured_tt_api.py::test_explicit_tt_api_is_available_without_inventing_utc
+FAILED tests/test_measured_tt_api.py::test_measured_sun_moon_tt_result_has_a_reproducible_receipt
+2 failed in 0.91s

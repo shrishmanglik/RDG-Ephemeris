@@ -1,0 +1,61 @@
+FFF                                                                      [100%]
+================================== FAILURES ===================================
+_ test_wheel_rejects_bulk_kernel_and_private_state[ephemeris_oss/data/de440.bsp] _
+
+tmp_path = WindowsPath('C:/Users/Shris/AppData/Local/Temp/pytest-of-Shris/pytest-4660/test_wheel_rejects_bulk_kernel0')
+path = 'ephemeris_oss/data/de440.bsp'
+
+    @pytest.mark.parametrize("path", ["ephemeris_oss/data/de440.bsp", "ephemeris_oss/state/clients.sqlite", "ephemeris_oss/.env"])
+    def test_wheel_rejects_bulk_kernel_and_private_state(tmp_path, path):
+        wheel = tmp_path / "planted.whl"
+        with zipfile.ZipFile(wheel, "w") as archive:
+            archive.writestr("ephemeris_oss/__init__.py", "VALUE = 1\n")
+            archive.writestr(path, b"TEST_ONLY")
+>       assert wheel_gate.scan(wheel), f"distribution accepted {path}"
+E       AssertionError: distribution accepted ephemeris_oss/data/de440.bsp
+E       assert []
+E        +  where [] = <function scan at 0x00000223F0EA3F60>(WindowsPath('C:/Users/Shris/AppData/Local/Temp/pytest-of-Shris/pytest-4660/test_wheel_rejects_bulk_kernel0/planted.whl'))
+E        +    where <function scan at 0x00000223F0EA3F60> = wheel_gate.scan
+
+tests\test_distribution_data.py:20: AssertionError
+_ test_wheel_rejects_bulk_kernel_and_private_state[ephemeris_oss/state/clients.sqlite] _
+
+tmp_path = WindowsPath('C:/Users/Shris/AppData/Local/Temp/pytest-of-Shris/pytest-4660/test_wheel_rejects_bulk_kernel1')
+path = 'ephemeris_oss/state/clients.sqlite'
+
+    @pytest.mark.parametrize("path", ["ephemeris_oss/data/de440.bsp", "ephemeris_oss/state/clients.sqlite", "ephemeris_oss/.env"])
+    def test_wheel_rejects_bulk_kernel_and_private_state(tmp_path, path):
+        wheel = tmp_path / "planted.whl"
+        with zipfile.ZipFile(wheel, "w") as archive:
+            archive.writestr("ephemeris_oss/__init__.py", "VALUE = 1\n")
+            archive.writestr(path, b"TEST_ONLY")
+>       assert wheel_gate.scan(wheel), f"distribution accepted {path}"
+E       AssertionError: distribution accepted ephemeris_oss/state/clients.sqlite
+E       assert []
+E        +  where [] = <function scan at 0x00000223F0EA3F60>(WindowsPath('C:/Users/Shris/AppData/Local/Temp/pytest-of-Shris/pytest-4660/test_wheel_rejects_bulk_kernel1/planted.whl'))
+E        +    where <function scan at 0x00000223F0EA3F60> = wheel_gate.scan
+
+tests\test_distribution_data.py:20: AssertionError
+____ test_wheel_rejects_bulk_kernel_and_private_state[ephemeris_oss/.env] _____
+
+tmp_path = WindowsPath('C:/Users/Shris/AppData/Local/Temp/pytest-of-Shris/pytest-4660/test_wheel_rejects_bulk_kernel2')
+path = 'ephemeris_oss/.env'
+
+    @pytest.mark.parametrize("path", ["ephemeris_oss/data/de440.bsp", "ephemeris_oss/state/clients.sqlite", "ephemeris_oss/.env"])
+    def test_wheel_rejects_bulk_kernel_and_private_state(tmp_path, path):
+        wheel = tmp_path / "planted.whl"
+        with zipfile.ZipFile(wheel, "w") as archive:
+            archive.writestr("ephemeris_oss/__init__.py", "VALUE = 1\n")
+            archive.writestr(path, b"TEST_ONLY")
+>       assert wheel_gate.scan(wheel), f"distribution accepted {path}"
+E       AssertionError: distribution accepted ephemeris_oss/.env
+E       assert []
+E        +  where [] = <function scan at 0x00000223F0EA3F60>(WindowsPath('C:/Users/Shris/AppData/Local/Temp/pytest-of-Shris/pytest-4660/test_wheel_rejects_bulk_kernel2/planted.whl'))
+E        +    where <function scan at 0x00000223F0EA3F60> = wheel_gate.scan
+
+tests\test_distribution_data.py:20: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_distribution_data.py::test_wheel_rejects_bulk_kernel_and_private_state[ephemeris_oss/data/de440.bsp]
+FAILED tests/test_distribution_data.py::test_wheel_rejects_bulk_kernel_and_private_state[ephemeris_oss/state/clients.sqlite]
+FAILED tests/test_distribution_data.py::test_wheel_rejects_bulk_kernel_and_private_state[ephemeris_oss/.env]
+3 failed in 0.31s

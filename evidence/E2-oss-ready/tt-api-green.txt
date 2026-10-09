@@ -1,0 +1,24 @@
+.F                                                                       [100%]
+================================== FAILURES ===================================
+_________ test_measured_sun_moon_tt_result_has_a_reproducible_receipt _________
+
+    def test_measured_sun_moon_tt_result_has_a_reproducible_receipt():
+        assert hasattr(Engine, "positions_tt"), "the measured TT path is not packaged"
+        kernel = Path.home() / ".agi/assets/jpl/de440-a4ce9bf9b328.bsp"
+        with Engine.load(kernels={"DE440": kernel}, eop=None) as engine:
+            first = engine.positions_tt(2451545.0, bodies=("sun", "moon"))
+            second = engine.positions_tt(2451545.0, bodies=("sun", "moon"))
+        assert set(first.value) == {"sun", "moon"}
+        assert first.value == second.value
+        assert first.receipt_sha256 == second.receipt_sha256
+        assert first.receipt["time_scale"] == "TT"
+        assert first.receipt["utc_inferred"] is False
+        from skyfield.api import load, load_file
+        from skyfield.framelib import ecliptic_frame
+>       with load_file(str(kernel)) as reference:
+E       TypeError: 'SpiceKernel' object does not support the context manager protocol
+
+tests\test_measured_tt_api.py:27: TypeError
+=========================== short test summary info ===========================
+FAILED tests/test_measured_tt_api.py::test_measured_sun_moon_tt_result_has_a_reproducible_receipt
+1 failed, 1 passed in 1.03s

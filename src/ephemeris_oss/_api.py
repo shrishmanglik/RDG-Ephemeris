@@ -211,6 +211,29 @@ class Engine:
                 return key
         raise EphemerisError(f"engine returned no position for {body!r}")
 
+    def positions_tt(
+        self, jd_tt: float, bodies: Sequence[str]
+    ) -> Result[dict[str, dict[str, Any]]]:
+        """Apparent geocentric true-ecliptic positions at an explicit TT instant.
+
+        This is the entry point measured over 1800..2100. It does not infer
+        civil time, UTC, UT1 or Earth orientation. Nodes use their separately
+        declared definition interface rather than this physical-body method.
+        """
+        try:
+            raw = self._provider.planet_positions_tt(jd_tt=jd_tt, bodies=tuple(bodies))
+        except (AstronomyDataUnavailable, ValueError) as error:
+            raise _error(error) from error
+        positions = raw["positions"]
+        value = {body.strip().lower(): dict(positions[self._key(positions, body)]) for body in bodies}
+        receipt = {
+            "package": __version__, "time_scale": "TT", "jd_tt": raw["jd_tt"],
+            "jd_tdb": raw["jd_tdb"], "utc_inferred": False,
+            "frame": raw["frame"], "kernel_sha256": raw["kernel_sha256"],
+            "apparent_model": "solar-only finite-distance; opaque solar photosphere",
+        }
+        return Result(value=value, receipt=receipt, receipt_sha256=_digest(receipt))
+
     def ayanamsa(self, t: Instant, system: str = "lahiri", mode: str = "mean") -> Result[float]:
         """The named ayanamsa at ``t``; ``mode="true"`` adds nutation in longitude."""
 

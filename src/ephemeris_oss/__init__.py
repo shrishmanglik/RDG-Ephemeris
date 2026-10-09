@@ -1,4 +1,4 @@
-"""JPL-grade positions, ayanamsas, houses, nodes and rise/set with a receipt on every result.
+"""Positions derived from JPL kernels, with explicit conventions and calculation receipts.
 
 Start with :meth:`Engine.load`; everything else hangs off the engine::
 

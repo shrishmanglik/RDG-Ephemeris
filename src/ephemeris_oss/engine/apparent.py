@@ -30,6 +30,8 @@ from typing import Callable
 import erfa
 import numpy as np
 
+from .events import SUN_RADIUS_KM
+
 AU_KM = 149_597_870.7
 C_KM_PER_SECOND = 299_792.458
 C_KM_PER_DAY = C_KM_PER_SECOND * 86_400.0
@@ -143,7 +145,7 @@ class ApparentPlaceProvenance:
     ephemeris_source: str
     ephemeris_version: str
     light_time_model: str = "iterative-retarded-target/reception-observer"
-    deflection_model: str = "ERFA-eraLd-solar-finite-distance"
+    deflection_model: str = "ERFA-eraLd-solar-finite-distance-opaque-sun-v1"
     aberration_model: str = "ERFA-eraAb-special-relativistic"
     observer_model: str = "WGS84+IAU-2006/2000A"
     eop_source: str | None = None
@@ -180,7 +182,9 @@ StateAtTdb = Callable[[float], BarycentricState]
 
 def _finite_vector(value: Vector3 | np.ndarray, name: str) -> np.ndarray:
     vector = np.asarray(value, dtype=np.float64)
-    if vector.shape != (3,) or not np.all(np.isfinite(vector)):
+    if vector.shape != (3,) or not (
+        math.isfinite(vector[0]) and math.isfinite(vector[1]) and math.isfinite(vector[2])
+    ):
         raise ValueError(f"{name} must be a finite three-vector")
     return vector
 
@@ -332,6 +336,16 @@ def apply_solar_gravitational_deflection(
         return direction, None, False
     if observer_distance_km == 0.0:
         raise ApparentPlaceError("observer cannot coincide with the solar deflector")
+
+    # Horizons' apparent-coordinate convention retains light-time/aberration
+    # but omits point-mass bending for a source hidden by the photosphere.
+    # Only the finite ray segment counts: an inferior-conjunction source in
+    # front of the Sun must not be classified as occulted.
+    projection = float(np.dot(sun_position - observer_position, direction))
+    if 0.0 < projection < geometric_distance_km:
+        closest = observer_position + projection * direction - sun_position
+        if float(np.dot(closest, closest)) < SUN_RADIUS_KM * SUN_RADIUS_KM:
+            return direction, deflector_tdb_jd, False
 
     _, body_to_target = _unit(sun_to_target, "Sun-to-target vector")
     _, body_to_observer = _unit(sun_to_observer, "Sun-to-observer vector")
