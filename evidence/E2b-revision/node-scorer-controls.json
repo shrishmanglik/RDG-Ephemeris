@@ -1,0 +1,22 @@
+{
+  "negative_control_repeats": 2,
+  "clean_control_repeats": 2,
+  "disabled_detector_rejected": true,
+  "same_source_byte_identical_replay": true,
+  "results": [
+    {
+      "bad_input_refused": true
+    },
+    {
+      "clean_passed": true,
+      "sha256": "50e40bff54392fdad6531f34919af28f77e99182dd634a8c619b0997c62ae80b"
+    },
+    {
+      "bad_input_refused": true
+    },
+    {
+      "clean_passed": true,
+      "sha256": "50e40bff54392fdad6531f34919af28f77e99182dd634a8c619b0997c62ae80b"
+    }
+  ]
+}

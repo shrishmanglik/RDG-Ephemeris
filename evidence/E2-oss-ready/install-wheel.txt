@@ -1,0 +1,6 @@
+Processing c:\users\shris\appdata\local\temp\e2-oss-distributions\ephemeris_oss-0.2.0.dev1-py3-none-any.whl
+Installing collected packages: ephemeris-oss
+Successfully installed ephemeris-oss-0.2.0.dev1
+
+[notice] A new release of pip is available: 24.0 -> 26.2.1
+[notice] To update, run: C:\Users\Shris\AppData\Local\Temp\E2-validation-py311\Scripts\python.exe -m pip install --upgrade pip

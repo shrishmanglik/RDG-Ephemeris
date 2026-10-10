@@ -16,7 +16,12 @@ import tempfile
 import zipfile
 from pathlib import Path
 
-BANNED_NAMES = (re.compile(r"\.se1$", re.I), re.compile(r"(^|/)bench/"), re.compile(r"(^|/)comparators/"))
+BANNED_NAMES = (
+    re.compile(r"\.(se1|bsp|sqlite|sqlite3|db)$", re.I),
+    re.compile(r"(^|/)\.env($|\.)", re.I),
+    re.compile(r"(^|/)bench/"),
+    re.compile(r"(^|/)comparators/"),
+)
 BANNED_TEXT = re.compile(rb"swisseph|sweph", re.I)
 
 

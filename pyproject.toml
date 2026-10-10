@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ephemeris-oss"
-description = "JPL-grade planetary positions, ayanamsas, houses and rise/set with a receipt on every result."
+description = "Planetary positions from JPL kernels, with explicit conventions and calculation receipts."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "Apache-2.0"
@@ -18,7 +18,7 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-test = ["pytest>=8"]
+test = ["pytest>=8", "skyfield==1.55"]
 
 [project.scripts]
 ephemeris-oss = "ephemeris_oss.cli:main"

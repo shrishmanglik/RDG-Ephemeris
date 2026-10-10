@@ -58,7 +58,7 @@ JULIAN_CENTURY_DAYS = 36525.0
 AYANAMSA_VALID_CENTURIES = 4.0
 AYANAMSA_CATALOG_VERSION = "ephemeris-oss-ayanamsa-anchors-1.3.0"
 HOUSE_CONVENTIONS_VERSION = "ephemeris-oss-houses-1.1.0-iau2006"
-LUNAR_NODE_CONVENTIONS_VERSION = "ephemeris-oss-lunar-nodes-1.0.0"
+LUNAR_NODE_CONVENTIONS_VERSION = "ephemeris-oss-lunar-nodes-1.1.0-meeus47.7"
 
 
 @dataclass(frozen=True)
@@ -385,7 +385,8 @@ def tropical_to_sidereal(
 def mean_lunar_node_longitude_degrees(jd_tt: float) -> float:
     """Mean ascending lunar-node longitude in the mean ecliptic of date.
 
-    This is the Meeus chapter-47 polynomial and is not the osculating node.
+    Meeus, Astronomical Algorithms, second edition, eq. 47.7 in TT.
+    This mean node is not the osculating node.
     The same bounded 1600-2400 policy is applied because no extrapolated node
     is accepted silently by the dark provider.
     """
@@ -393,7 +394,7 @@ def mean_lunar_node_longitude_degrees(jd_tt: float) -> float:
     _validate_tt_jd(jd_tt)
     t = (jd_tt - J2000_TT_JD) / JULIAN_CENTURY_DAYS
     longitude = (
-        125.04455501 - 1934.1361849 * t + 0.0020762 * t**2 + t**3 / 467410.0 - t**4 / 60616000.0
+        125.0445479 - 1934.1362891 * t + 0.0020754 * t**2 + t**3 / 467441.0 - t**4 / 60616000.0
     )
     return normalize_degrees(longitude)
 

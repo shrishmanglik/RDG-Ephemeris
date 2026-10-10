@@ -1,0 +1,124 @@
+FFFFFF                                                                   [100%]
+================================== FAILURES ===================================
+_________ test_tt_receipt_binds_normalized_bodies_targets_and_result __________
+
+    def test_tt_receipt_binds_normalized_bodies_targets_and_result():
+        kernel = Path.home() / ".agi/assets/jpl/de440-a4ce9bf9b328.bsp"
+        with Engine.load(kernels={"DE440": kernel}, eop=None) as engine:
+            sun = engine.positions_tt(2451545.0, bodies=("sun",))
+            moon = engine.positions_tt(2451545.0, bodies=("moon",))
+            normalized = engine.positions_tt(2451545.0, bodies=(" Sun ",))
+            combined = engine.positions_tt(2451545.0, bodies=("sun", "mars", "jupiter", "saturn"))
+>       assert sun.value != moon.value and sun.receipt_sha256 != moon.receipt_sha256
+E       AssertionError: assert ({'sun': {'longitude_deg': 280.36816528227325, 'latitude_deg': 0.00022740705195981536}} != {'moon': {'longitude_deg': 223.31486994325894, 'latitude_deg': 5.1708719007495985}} and '03f259c3e8042421c9a4fb21ccbac8a343f4ed9486fbcf8242a675bd30014625' != '03f259c3e8042421c9a4fb21ccbac8a343f4ed9486fbcf8242a675bd30014625')
+E        +  where {'sun': {'longitude_deg': 280.36816528227325, 'latitude_deg': 0.00022740705195981536}} = Result(value={'sun': {'longitude_deg': 280.36816528227325, 'latitude_deg': 0.00022740705195981536}}, receipt={'package...istance; opaque solar photosphere'}, receipt_sha256='03f259c3e8042421c9a4fb21ccbac8a343f4ed9486fbcf8242a675bd30014625').value
+E        +  and   {'moon': {'longitude_deg': 223.31486994325894, 'latitude_deg': 5.1708719007495985}} = Result(value={'moon': {'longitude_deg': 223.31486994325894, 'latitude_deg': 5.1708719007495985}}, receipt={'package': ...istance; opaque solar photosphere'}, receipt_sha256='03f259c3e8042421c9a4fb21ccbac8a343f4ed9486fbcf8242a675bd30014625').value
+E        +  and   '03f259c3e8042421c9a4fb21ccbac8a343f4ed9486fbcf8242a675bd30014625' = Result(value={'sun': {'longitude_deg': 280.36816528227325, 'latitude_deg': 0.00022740705195981536}}, receipt={'package...istance; opaque solar photosphere'}, receipt_sha256='03f259c3e8042421c9a4fb21ccbac8a343f4ed9486fbcf8242a675bd30014625').receipt_sha256
+E        +  and   '03f259c3e8042421c9a4fb21ccbac8a343f4ed9486fbcf8242a675bd30014625' = Result(value={'moon': {'longitude_deg': 223.31486994325894, 'latitude_deg': 5.1708719007495985}}, receipt={'package': ...istance; opaque solar photosphere'}, receipt_sha256='03f259c3e8042421c9a4fb21ccbac8a343f4ed9486fbcf8242a675bd30014625').receipt_sha256
+
+tests\test_measured_tt_api.py:42: AssertionError
+____ test_tt_receipt_changes_when_same_request_returns_a_different_result _____
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000022573E30450>
+
+    def test_tt_receipt_changes_when_same_request_returns_a_different_result(monkeypatch):
+        kernel = Path.home() / ".agi/assets/jpl/de440-a4ce9bf9b328.bsp"
+        with Engine.load(kernels={"DE440": kernel}, eop=None) as engine:
+            original = engine.positions_tt(2451545.0, bodies=("sun",))
+            calculate = engine._provider.planet_positions_tt
+
+            def changed_result(**kwargs):
+                raw = calculate(**kwargs)
+                raw["positions"]["Sun"]["longitude_deg"] += 0.25
+                return raw
+
+            monkeypatch.setattr(engine._provider, "planet_positions_tt", changed_result)
+            changed = engine.positions_tt(2451545.0, bodies=("sun",))
+        assert original.value != changed.value
+>       assert original.receipt_sha256 != changed.receipt_sha256
+E       AssertionError: assert '03f259c3e8042421c9a4fb21ccbac8a343f4ed9486fbcf8242a675bd30014625' != '03f259c3e8042421c9a4fb21ccbac8a343f4ed9486fbcf8242a675bd30014625'
+E        +  where '03f259c3e8042421c9a4fb21ccbac8a343f4ed9486fbcf8242a675bd30014625' = Result(value={'sun': {'longitude_deg': 280.36816528227325, 'latitude_deg': 0.00022740705195981536}}, receipt={'package...istance; opaque solar photosphere'}, receipt_sha256='03f259c3e8042421c9a4fb21ccbac8a343f4ed9486fbcf8242a675bd30014625').receipt_sha256
+E        +  and   '03f259c3e8042421c9a4fb21ccbac8a343f4ed9486fbcf8242a675bd30014625' = Result(value={'sun': {'longitude_deg': 280.61816528227325, 'latitude_deg': 0.00022740705195981536}}, receipt={'package...istance; opaque solar photosphere'}, receipt_sha256='03f259c3e8042421c9a4fb21ccbac8a343f4ed9486fbcf8242a675bd30014625').receipt_sha256
+
+tests\test_measured_tt_api.py:74: AssertionError
+________ test_mean_lunar_node_matches_polynomial_anchor_and_regresses _________
+
+    def test_mean_lunar_node_matches_polynomial_anchor_and_regresses() -> None:
+        at_epoch = mean_lunar_node_longitude_degrees(J2000_TT_JD)
+        ten_days_later = mean_lunar_node_longitude_degrees(J2000_TT_JD + 10.0)
+>       assert at_epoch == pytest.approx(125.0445479, abs=1e-12)
+E       assert 125.04455501 == 125.0445479 ± 1.0e-12
+E
+E         comparison failed
+E         Obtained: 125.04455501
+E         Expected: 125.0445479 ± 1.0e-12
+
+tests\test_astronomy_conventions.py:120: AssertionError
+_ test_mean_lunar_node_matches_independent_meeus_47_7_decimal_reference[2415021.0] _
+
+jd_tt = 2415021.0
+
+    @pytest.mark.parametrize("jd_tt", [2415021.0, 2451545.0, 2488069.0])
+    def test_mean_lunar_node_matches_independent_meeus_47_7_decimal_reference(jd_tt):
+        # Meeus, Astronomical Algorithms, second edition, eq. 47.7 in TT.
+        # Decimal evaluates the published equation independently of engine arithmetic.
+        with localcontext() as context:
+            context.prec = 40
+            t = (Decimal(str(jd_tt)) - Decimal("2451545.0")) / Decimal("36525")
+            expected = float((Decimal("125.0445479") - Decimal("1934.1362891") * t
+                              + Decimal("0.0020754") * t**2 + t**3 / Decimal("467441")
+                              - t**4 / Decimal("60616000")) % Decimal("360")) % 360.0
+        actual = mean_lunar_node_longitude_degrees(jd_tt)
+>       assert _angular_difference(actual, expected) * 3600 < 0.001
+E       assert (9.628733266708878e-05 * 3600) < 0.001
+E        +  where 9.628733266708878e-05 = _angular_difference(259.12986007778363, 259.1299563651163)
+
+tests\test_astronomy_conventions.py:136: AssertionError
+_ test_mean_lunar_node_matches_independent_meeus_47_7_decimal_reference[2451545.0] _
+
+jd_tt = 2451545.0
+
+    @pytest.mark.parametrize("jd_tt", [2415021.0, 2451545.0, 2488069.0])
+    def test_mean_lunar_node_matches_independent_meeus_47_7_decimal_reference(jd_tt):
+        # Meeus, Astronomical Algorithms, second edition, eq. 47.7 in TT.
+        # Decimal evaluates the published equation independently of engine arithmetic.
+        with localcontext() as context:
+            context.prec = 40
+            t = (Decimal(str(jd_tt)) - Decimal("2451545.0")) / Decimal("36525")
+            expected = float((Decimal("125.0445479") - Decimal("1934.1362891") * t
+                              + Decimal("0.0020754") * t**2 + t**3 / Decimal("467441")
+                              - t**4 / Decimal("60616000")) % Decimal("360")) % 360.0
+        actual = mean_lunar_node_longitude_degrees(jd_tt)
+>       assert _angular_difference(actual, expected) * 3600 < 0.001
+E       assert (7.110000012744422e-06 * 3600) < 0.001
+E        +  where 7.110000012744422e-06 = _angular_difference(125.04455501, 125.0445479)
+
+tests\test_astronomy_conventions.py:136: AssertionError
+_ test_mean_lunar_node_matches_independent_meeus_47_7_decimal_reference[2488069.0] _
+
+jd_tt = 2488069.0
+
+    @pytest.mark.parametrize("jd_tt", [2415021.0, 2451545.0, 2488069.0])
+    def test_mean_lunar_node_matches_independent_meeus_47_7_decimal_reference(jd_tt):
+        # Meeus, Astronomical Algorithms, second edition, eq. 47.7 in TT.
+        # Decimal evaluates the published equation independently of engine arithmetic.
+        with localcontext() as context:
+            context.prec = 40
+            t = (Decimal(str(jd_tt)) - Decimal("2451545.0")) / Decimal("36525")
+            expected = float((Decimal("125.0445479") - Decimal("1934.1362891") * t
+                              + Decimal("0.0020754") * t**2 + t**3 / Decimal("467441")
+                              - t**4 / Decimal("60616000")) % Decimal("360")) % 360.0
+        actual = mean_lunar_node_longitude_degrees(jd_tt)
+>       assert _angular_difference(actual, expected) * 3600 < 0.001
+E       assert (0.00011210724534294059 * 3600) < 0.001
+E        +  where 0.00011210724534294059 = _angular_difference(350.96340208185575, 350.9632899746104)
+
+tests\test_astronomy_conventions.py:136: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_measured_tt_api.py::test_tt_receipt_binds_normalized_bodies_targets_and_result
+FAILED tests/test_measured_tt_api.py::test_tt_receipt_changes_when_same_request_returns_a_different_result
+FAILED tests/test_astronomy_conventions.py::test_mean_lunar_node_matches_polynomial_anchor_and_regresses
+FAILED tests/test_astronomy_conventions.py::test_mean_lunar_node_matches_independent_meeus_47_7_decimal_reference[2415021.0]
+FAILED tests/test_astronomy_conventions.py::test_mean_lunar_node_matches_independent_meeus_47_7_decimal_reference[2451545.0]
+FAILED tests/test_astronomy_conventions.py::test_mean_lunar_node_matches_independent_meeus_47_7_decimal_reference[2488069.0]
+6 failed, 32 deselected in 1.74s

@@ -12,11 +12,14 @@ import threading
 from collections import deque
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, timedelta, timezone
+from functools import lru_cache
 from typing import Any, Callable, Mapping, Sequence
 
 import erfa
 import numpy as np
 from jplephem.spk import SPK
+
+from .._version import __version__
 
 from .contracts import (
     AstronomyDataUnavailable,
@@ -123,10 +126,8 @@ BODY_TARGETS: Mapping[str, tuple[int, str, str]] = {
     "mercury": (199, "Mercury", "center"),
     "venus": (299, "Venus", "center"),
     "earth": (399, "Earth", "center"),
-    # Outer planets use planetary system barycenters (NAIF 4, 5, 6, 7, 8, 9), as
-    # the DE files carry them (NAIF aareadme_de430-de431: Mars barycentre to mass
-    # centre about 20 cm). Pluto's barycentre differs measurably from Pluto's
-    # centre because of Charon (Skyfield, "Planets and their moons").
+    # Outer planets use planetary system barycenters (NAIF 4, 5, 6, 7, 8, 9),
+    # matching the standard compact DE440 target convention.
     "mars": (4, "Mars", "barycenter"),
     "jupiter": (5, "Jupiter", "barycenter"),
     "saturn": (6, "Saturn", "barycenter"),
@@ -260,7 +261,7 @@ class _SpkGraph:
 class JplErfaAstronomyProvider(AstronomyProvider):
     """Geometric JPL state vectors and IAU 2006/2000A transformations."""
 
-    _identity = ProviderIdentity("ephemeris-oss", "0.4.0-dark")
+    _identity = ProviderIdentity("ephemeris-oss", __version__)
 
     def __init__(
         self,
@@ -478,6 +479,7 @@ class JplErfaAstronomyProvider(AstronomyProvider):
         precomputed_observer_state: BarycentricState | None = None,
         precomputed_eop: EarthOrientationParameters | None = None,
         precomputed_sun_func: Callable[[float], BarycentricState] | None = None,
+        precomputed_target_func: Callable[[float], BarycentricState] | None = None,
         kernel_year: int | None = None,
     ) -> tuple[Any, EarthOrientationParameters | None]:
         if kernel_year is None:
@@ -488,11 +490,16 @@ class JplErfaAstronomyProvider(AstronomyProvider):
             raise AstronomyDataUnavailable("topocentric output requires UTC and Earth orientation")
 
         def state_at(requested_body: str) -> Callable[[float], BarycentricState]:
-            return lambda jd: self.barycentric_state_at_tdb(
-                body=requested_body,
-                tdb=(J2000_JD, jd - J2000_JD),
-                kernel_year=kernel_year,
-            )
+            @lru_cache(maxsize=16)
+            def at(jd: float) -> BarycentricState:
+                return self.barycentric_state_at_tdb(
+                    body=requested_body,
+                    tdb=(J2000_JD, jd - J2000_JD),
+                    kernel_year=kernel_year,
+                )
+            # The cache dies with this solve. It only avoids an identical
+            # converged state being read again; no chart output is cached.
+            return at
 
         earth_state = (
             precomputed_earth_state
@@ -530,7 +537,7 @@ class JplErfaAstronomyProvider(AstronomyProvider):
         artifact = self._kernel_registry.artifact_for_tdb_jd(times.tdb_jd)
         sun_func = precomputed_sun_func or state_at("sun")
         result = apparent_place(
-            target_state_at_tdb=state_at(body),
+            target_state_at_tdb=precomputed_target_func or state_at(body),
             sun_state_at_tdb=sun_func,
             observer_barycentric_state=observer_state,
             reception_tdb_jd=times.tdb_jd,
@@ -926,6 +933,14 @@ class JplErfaAstronomyProvider(AstronomyProvider):
             _target, display_name, _kind = self._body(requested_body)
             selected_artifact = self._kernel_registry.artifact_for_tdb_jd(times.tdb_jd)
             if use_apparent:
+                @lru_cache(maxsize=16)
+                def target_state(jd: float) -> BarycentricState:
+                    return self.barycentric_state_at_tdb(
+                        body=requested_body,
+                        tdb=(J2000_JD, jd - J2000_JD),
+                        kernel_year=k_year,
+                    )
+
                 apparent, eop = self._apparent_state(
                     body=requested_body,
                     instant_utc=instant_utc,
@@ -937,15 +952,12 @@ class JplErfaAstronomyProvider(AstronomyProvider):
                     precomputed_observer_state=pre_observer_state,
                     precomputed_eop=pre_eop,
                     precomputed_sun_func=pre_sun_func,
+                    precomputed_target_func=target_state,
                 )
                 used_eop = eop or used_eop
                 icrf = np.asarray(apparent.apparent_vector_km, dtype=np.float64)
                 tau = apparent.light_time_seconds / 86400.0
-                st = self.barycentric_state_at_tdb(
-                    body=requested_body,
-                    tdb=(J2000_JD, times.tdb_jd - tau - J2000_JD),
-                    kernel_year=k_year,
-                )
+                st = target_state(times.tdb_jd - tau)
                 obs_vel = (
                     pre_observer_state.velocity_km_per_day
                     if pre_observer_state
@@ -1277,9 +1289,8 @@ class JplErfaAstronomyProvider(AstronomyProvider):
         )
         altitude = math.degrees(math.atan2(up, math.hypot(east, north)))
         if atmosphere is not None:
-            # Horizon refraction: the Swiss-compatible convention 0.55988864426 deg
-            # (33.593', not 34') at 1013.25 hPa and 15 C, scaled by pressure and
-            # temperature. See events.refracted_altitude_degrees for its status.
+            # Horizon atmospheric refraction: Swiss-compatible convention:
+            # 33.59 arcminutes (0.5598886 deg) at 1013.25 hPa, 15 C scaled by pressure and temperature
             p = atmosphere.pressure_hpa
             t = atmosphere.temperature_c
             r0 = 0.55988864426 * (p / 1013.25) * (288.15 / (273.15 + t)) if p > 0.0 else 0.0
@@ -1529,8 +1540,6 @@ class JplErfaAstronomyProvider(AstronomyProvider):
             )
         )
 
-    # Internal: eclipse candidates are unexported and unverified until the eclipse
-    # benchmark passes; the public Engine does not offer them.
     def solar_eclipses(
         self,
         *,
@@ -1561,8 +1570,6 @@ class JplErfaAstronomyProvider(AstronomyProvider):
                 )
         return tuple(results)
 
-    # Internal: eclipse candidates are unexported and unverified until the eclipse
-    # benchmark passes; the public Engine does not offer them.
     def lunar_eclipses(
         self,
         *,
