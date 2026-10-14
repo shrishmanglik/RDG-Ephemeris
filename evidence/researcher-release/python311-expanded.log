@@ -1,0 +1,767 @@
+........................................................................ [ 25%]
+........................................................................ [ 51%]
+.................ssss...........FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF [ 77%]
+F...............................................................         [100%]
+================================== FAILURES ===================================
+_ test_house_cusps_agree_under_identical_angles[120.0-43.65-23.44-whole_sign-W] _
+
+system = 'whole_sign', code = b'W', armc = 120.0, latitude = 43.65
+obliquity = 23.44
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+_ test_house_cusps_agree_under_identical_angles[120.0-43.65-23.44-placidus-P] _
+
+system = 'placidus', code = b'P', armc = 120.0, latitude = 43.65
+obliquity = 23.44
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+__ test_house_cusps_agree_under_identical_angles[120.0-43.65-23.44-equal-E] ___
+
+system = 'equal', code = b'E', armc = 120.0, latitude = 43.65, obliquity = 23.44
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+___ test_house_cusps_agree_under_identical_angles[120.0-43.65-23.44-koch-K] ___
+
+system = 'koch', code = b'K', armc = 120.0, latitude = 43.65, obliquity = 23.44
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+_ test_house_cusps_agree_under_identical_angles[120.0-43.65-23.44-sripati-S] __
+
+system = 'sripati', code = b'S', armc = 120.0, latitude = 43.65
+obliquity = 23.44
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+_ test_house_cusps_agree_under_identical_angles[120.0-43.65-23.44-campanus-C] _
+
+system = 'campanus', code = b'C', armc = 120.0, latitude = 43.65
+obliquity = 23.44
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+_ test_house_cusps_agree_under_identical_angles[120.0-43.65-23.44-regiomontanus-R] _
+
+system = 'regiomontanus', code = b'R', armc = 120.0, latitude = 43.65
+obliquity = 23.44
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+_ test_house_cusps_agree_under_identical_angles[120.0-43.65-23.44-porphyry-O] _
+
+system = 'porphyry', code = b'O', armc = 120.0, latitude = 43.65
+obliquity = 23.44
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+_ test_house_cusps_agree_under_identical_angles[359.9--33.8-23.42-whole_sign-W] _
+
+system = 'whole_sign', code = b'W', armc = 359.9, latitude = -33.8
+obliquity = 23.42
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+_ test_house_cusps_agree_under_identical_angles[359.9--33.8-23.42-placidus-P] _
+
+system = 'placidus', code = b'P', armc = 359.9, latitude = -33.8
+obliquity = 23.42
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+__ test_house_cusps_agree_under_identical_angles[359.9--33.8-23.42-equal-E] ___
+
+system = 'equal', code = b'E', armc = 359.9, latitude = -33.8, obliquity = 23.42
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+___ test_house_cusps_agree_under_identical_angles[359.9--33.8-23.42-koch-K] ___
+
+system = 'koch', code = b'K', armc = 359.9, latitude = -33.8, obliquity = 23.42
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+_ test_house_cusps_agree_under_identical_angles[359.9--33.8-23.42-sripati-S] __
+
+system = 'sripati', code = b'S', armc = 359.9, latitude = -33.8
+obliquity = 23.42
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+_ test_house_cusps_agree_under_identical_angles[359.9--33.8-23.42-campanus-C] _
+
+system = 'campanus', code = b'C', armc = 359.9, latitude = -33.8
+obliquity = 23.42
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+_ test_house_cusps_agree_under_identical_angles[359.9--33.8-23.42-regiomontanus-R] _
+
+system = 'regiomontanus', code = b'R', armc = 359.9, latitude = -33.8
+obliquity = 23.42
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+_ test_house_cusps_agree_under_identical_angles[359.9--33.8-23.42-porphyry-O] _
+
+system = 'porphyry', code = b'O', armc = 359.9, latitude = -33.8
+obliquity = 23.42
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+_ test_house_cusps_agree_under_identical_angles[0.1-65.0-23.46-whole_sign-W] __
+
+system = 'whole_sign', code = b'W', armc = 0.1, latitude = 65.0
+obliquity = 23.46
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+__ test_house_cusps_agree_under_identical_angles[0.1-65.0-23.46-placidus-P] ___
+
+system = 'placidus', code = b'P', armc = 0.1, latitude = 65.0, obliquity = 23.46
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+____ test_house_cusps_agree_under_identical_angles[0.1-65.0-23.46-equal-E] ____
+
+system = 'equal', code = b'E', armc = 0.1, latitude = 65.0, obliquity = 23.46
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+____ test_house_cusps_agree_under_identical_angles[0.1-65.0-23.46-koch-K] _____
+
+system = 'koch', code = b'K', armc = 0.1, latitude = 65.0, obliquity = 23.46
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+___ test_house_cusps_agree_under_identical_angles[0.1-65.0-23.46-sripati-S] ___
+
+system = 'sripati', code = b'S', armc = 0.1, latitude = 65.0, obliquity = 23.46
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+__ test_house_cusps_agree_under_identical_angles[0.1-65.0-23.46-campanus-C] ___
+
+system = 'campanus', code = b'C', armc = 0.1, latitude = 65.0, obliquity = 23.46
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+_ test_house_cusps_agree_under_identical_angles[0.1-65.0-23.46-regiomontanus-R] _
+
+system = 'regiomontanus', code = b'R', armc = 0.1, latitude = 65.0
+obliquity = 23.46
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+__ test_house_cusps_agree_under_identical_angles[0.1-65.0-23.46-porphyry-O] ___
+
+system = 'porphyry', code = b'O', armc = 0.1, latitude = 65.0, obliquity = 23.46
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+_ test_house_cusps_agree_under_identical_angles[195.0--60.0-23.43-whole_sign-W] _
+
+system = 'whole_sign', code = b'W', armc = 195.0, latitude = -60.0
+obliquity = 23.43
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+_ test_house_cusps_agree_under_identical_angles[195.0--60.0-23.43-placidus-P] _
+
+system = 'placidus', code = b'P', armc = 195.0, latitude = -60.0
+obliquity = 23.43
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+__ test_house_cusps_agree_under_identical_angles[195.0--60.0-23.43-equal-E] ___
+
+system = 'equal', code = b'E', armc = 195.0, latitude = -60.0, obliquity = 23.43
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+___ test_house_cusps_agree_under_identical_angles[195.0--60.0-23.43-koch-K] ___
+
+system = 'koch', code = b'K', armc = 195.0, latitude = -60.0, obliquity = 23.43
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+_ test_house_cusps_agree_under_identical_angles[195.0--60.0-23.43-sripati-S] __
+
+system = 'sripati', code = b'S', armc = 195.0, latitude = -60.0
+obliquity = 23.43
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+_ test_house_cusps_agree_under_identical_angles[195.0--60.0-23.43-campanus-C] _
+
+system = 'campanus', code = b'C', armc = 195.0, latitude = -60.0
+obliquity = 23.43
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+_ test_house_cusps_agree_under_identical_angles[195.0--60.0-23.43-regiomontanus-R] _
+
+system = 'regiomontanus', code = b'R', armc = 195.0, latitude = -60.0
+obliquity = 23.43
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+_ test_house_cusps_agree_under_identical_angles[195.0--60.0-23.43-porphyry-O] _
+
+system = 'porphyry', code = b'O', armc = 195.0, latitude = -60.0
+obliquity = 23.43
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+_ test_house_cusps_agree_under_identical_angles[75.0-0.0-23.45-whole_sign-W] __
+
+system = 'whole_sign', code = b'W', armc = 75.0, latitude = 0.0
+obliquity = 23.45
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+__ test_house_cusps_agree_under_identical_angles[75.0-0.0-23.45-placidus-P] ___
+
+system = 'placidus', code = b'P', armc = 75.0, latitude = 0.0, obliquity = 23.45
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+____ test_house_cusps_agree_under_identical_angles[75.0-0.0-23.45-equal-E] ____
+
+system = 'equal', code = b'E', armc = 75.0, latitude = 0.0, obliquity = 23.45
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+____ test_house_cusps_agree_under_identical_angles[75.0-0.0-23.45-koch-K] _____
+
+system = 'koch', code = b'K', armc = 75.0, latitude = 0.0, obliquity = 23.45
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+___ test_house_cusps_agree_under_identical_angles[75.0-0.0-23.45-sripati-S] ___
+
+system = 'sripati', code = b'S', armc = 75.0, latitude = 0.0, obliquity = 23.45
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+__ test_house_cusps_agree_under_identical_angles[75.0-0.0-23.45-campanus-C] ___
+
+system = 'campanus', code = b'C', armc = 75.0, latitude = 0.0, obliquity = 23.45
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+_ test_house_cusps_agree_under_identical_angles[75.0-0.0-23.45-regiomontanus-R] _
+
+system = 'regiomontanus', code = b'R', armc = 75.0, latitude = 0.0
+obliquity = 23.45
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+__ test_house_cusps_agree_under_identical_angles[75.0-0.0-23.45-porphyry-O] ___
+
+system = 'porphyry', code = b'O', armc = 75.0, latitude = 0.0, obliquity = 23.45
+
+    @pytest.mark.parametrize("system,code", [
+        ("whole_sign", b"W"), ("placidus", b"P"), ("equal", b"E"), ("koch", b"K"),
+        ("sripati", b"S"), ("campanus", b"C"), ("regiomontanus", b"R"), ("porphyry", b"O"),
+    ])
+    @pytest.mark.parametrize("armc,latitude,obliquity", [
+        (120., 43.65, 23.44), (359.9, -33.8, 23.42), (0.1, 65., 23.46),
+        (195., -60., 23.43), (75., 0., 23.45),
+    ])
+    def test_house_cusps_agree_under_identical_angles(system, code, armc, latitude, obliquity):
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:30: ModuleNotFoundError
+________________ test_lahiri_mean_and_true_agree_1900_to_2100 _________________
+
+    def test_lahiri_mean_and_true_agree_1900_to_2100():
+>       import swisseph as swe
+E       ModuleNotFoundError: No module named 'swisseph'
+
+bench\comparators\swiss\test_agreement_houses_lahiri.py:42: ModuleNotFoundError
+============================== warnings summary ===============================
+tests/test_jpl_erfa_numerical_provider.py::test_pre_utc_time_scale_conversion_fails_closed
+  C:\AGI\worktrees\ephemeris-oss-staging\E2-oss-ready\.venv-release\Lib\site-packages\erfa\core.py:133: ErfaWarning: ERFA function "dtf2d" yielded 1 of "dubious year (Note 6)"
+    warn(f'ERFA function "{func_name}" yielded {wmsg}', ErfaWarning)
+
+tests/test_jpl_erfa_numerical_provider.py::test_reverse_julian_day_enforces_versioned_utc_window[1900]
+  C:\AGI\worktrees\ephemeris-oss-staging\E2-oss-ready\.venv-release\Lib\site-packages\erfa\core.py:133: ErfaWarning: ERFA function "d2dtf" yielded 1 of "dubious year (Note 5)"
+    warn(f'ERFA function "{func_name}" yielded {wmsg}', ErfaWarning)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[120.0-43.65-23.44-whole_sign-W]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[120.0-43.65-23.44-placidus-P]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[120.0-43.65-23.44-equal-E]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[120.0-43.65-23.44-koch-K]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[120.0-43.65-23.44-sripati-S]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[120.0-43.65-23.44-campanus-C]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[120.0-43.65-23.44-regiomontanus-R]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[120.0-43.65-23.44-porphyry-O]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[359.9--33.8-23.42-whole_sign-W]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[359.9--33.8-23.42-placidus-P]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[359.9--33.8-23.42-equal-E]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[359.9--33.8-23.42-koch-K]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[359.9--33.8-23.42-sripati-S]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[359.9--33.8-23.42-campanus-C]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[359.9--33.8-23.42-regiomontanus-R]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[359.9--33.8-23.42-porphyry-O]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[0.1-65.0-23.46-whole_sign-W]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[0.1-65.0-23.46-placidus-P]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[0.1-65.0-23.46-equal-E]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[0.1-65.0-23.46-koch-K]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[0.1-65.0-23.46-sripati-S]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[0.1-65.0-23.46-campanus-C]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[0.1-65.0-23.46-regiomontanus-R]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[0.1-65.0-23.46-porphyry-O]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[195.0--60.0-23.43-whole_sign-W]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[195.0--60.0-23.43-placidus-P]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[195.0--60.0-23.43-equal-E]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[195.0--60.0-23.43-koch-K]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[195.0--60.0-23.43-sripati-S]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[195.0--60.0-23.43-campanus-C]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[195.0--60.0-23.43-regiomontanus-R]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[195.0--60.0-23.43-porphyry-O]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[75.0-0.0-23.45-whole_sign-W]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[75.0-0.0-23.45-placidus-P]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[75.0-0.0-23.45-equal-E]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[75.0-0.0-23.45-koch-K]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[75.0-0.0-23.45-sripati-S]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[75.0-0.0-23.45-campanus-C]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[75.0-0.0-23.45-regiomontanus-R]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_house_cusps_agree_under_identical_angles[75.0-0.0-23.45-porphyry-O]
+FAILED bench/comparators/swiss/test_agreement_houses_lahiri.py::test_lahiri_mean_and_true_agree_1900_to_2100
+41 failed, 235 passed, 4 skipped, 2 warnings in 41.40s

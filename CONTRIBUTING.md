@@ -4,6 +4,7 @@
 
 ```bash
 pip install -e .[test]
+ephemeris-oss kernels fetch --verify
 pytest -q
 ```
 
@@ -46,14 +47,17 @@ Every numeric constant in `src/` must do one of the following:
   convention`, together with the reason the value is chosen for compatibility
   rather than derived from a primary source.
 
-A constant with neither is rejected by the provenance check.
+Reviewers inspect these citations. The automated provenance checker detects
+copyleft-source markers; it does not establish the scientific origin of every
+number by itself.
 
 ## Claims
 
-No number may appear in documentation, docstrings, the README or release notes
-unless it has an entry in `claims.yaml` that states how it is reproduced. This
-covers accuracy figures, speed figures, date ranges and comparisons with other
-libraries. Do not make security, production or endorsement claims.
+Every numerical claim names its reproducible command, fixture, source hash and
+measurement scope. Retain raw output and limits beside the claim. No standalone
+claims registry is currently implemented. Do not make security, production or
+endorsement claims. Reproduce the researcher benchmark rather than inferring
+human productivity or business savings from it.
 
 ## Tests
 
@@ -76,4 +80,4 @@ Also confirm:
 - no secrets, credentials, private data or downloaded kernel files are
   committed;
 - every new constant is cited or labelled as above;
-- every new number in prose has a `claims.yaml` entry.
+- every new number in prose names reproducible evidence and its limits.

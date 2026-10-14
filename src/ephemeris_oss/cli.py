@@ -63,7 +63,7 @@ def _chart(args: argparse.Namespace) -> int:
             try:
                 houses = eng.houses(t, args.lat, args.lon, system=args.houses, ayanamsa=args.ayanamsa)
                 payload["houses"] = _jsonable(houses.value)
-            except EphemerisError as error:
+            except (EphemerisError, ValueError) as error:
                 payload["houses"] = {"type": "Unavailable", "reason": str(error)}
     if args.json:
         json.dump(_jsonable(payload), sys.stdout, indent=2, sort_keys=True, default=str)
@@ -93,16 +93,23 @@ def main(argv: list[str] | None = None) -> int:
     c.add_argument("--ayanamsa", default=None, help="e.g. lahiri; omit for tropical")
     c.add_argument("--json", action="store_true")
 
-    commands.add_parser("bench", help="how to run the benchmark harness")
+    b = commands.add_parser("bench", help="measure public TT body batching")
+    b.add_argument("--kernel", help="explicit DE440 file; otherwise use the verified package cache")
+    b.add_argument("--samples", type=int, choices=range(2, 257), default=32)
+    b.add_argument("--rounds", type=int, choices=range(2, 9), default=2)
     args = parser.parse_args(argv)
     try:
         if args.command == "kernels":
             return _kernels(args)
         if args.command == "chart":
             return _chart(args)
-        print("The benchmark harness lives in the source repository under bench/ and is not part of the wheel.")
+        from .researcher_benchmark import measure
+        configured = {"DE440": Path(args.kernel)} if args.kernel else "auto"
+        with Engine.load(kernels=configured, cache_dir=args.cache, eop=None) as engine:
+            json.dump(measure(engine, samples=args.samples, rounds=args.rounds), sys.stdout, indent=2)
+        print()
         return 0
-    except EphemerisError as error:
+    except (EphemerisError, ValueError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 2
 

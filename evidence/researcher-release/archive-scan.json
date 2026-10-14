@@ -1,0 +1,12 @@
+{
+  "ephemeris_oss-0.2.0.dev1-py3-none-any.whl": {
+    "issues": [],
+    "sha256": "d077ccf82481561e2844001050d44395bb4cb832a4e5ed0caaa1bfd6da9ab5d1",
+    "bytes": 76654
+  },
+  "ephemeris_oss-0.2.0.dev1.tar.gz": {
+    "issues": [],
+    "sha256": "ca941945bd1f12a6c408bf511759fb425f4d47bc772871676d9aea35b7a14e22",
+    "bytes": 103096
+  }
+}

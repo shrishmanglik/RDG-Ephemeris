@@ -42,13 +42,13 @@ The true-node limit remains 0.1 arcsecond. The current mean-node replay is a
 definition check; a full physical-body and node replay on one package source
 remains required for a new composed qualification.
 
-The original independent check failed at occulted Mercury in November 2094 (0.676583 arcseconds). The original failed table remains in the private Astro review packet; this package carries the corrected public numerical rows and JPL receipts. Seven neighbouring samples isolate the difference to solar occultation; the engine now follows the observed Horizons convention there. This is a stated model change, not a lowered error ceiling.
+The original independent check failed at occulted Mercury in November 2094 (0.676583 arcseconds). The original failed table remains in the retained staging diagnostic; this package carries the corrected public numerical rows and JPL receipts. Seven neighbouring samples isolate the difference to solar occultation; the engine now follows the observed Horizons convention there. This is a stated model change, not a lowered error ceiling.
 
 The physical-body rows above retain their original source binding; the new
 mean-node rows have their own source binding. These component records do not
 prove civil-time/Delta-T accuracy, every instant in the interval, superiority
 to Swiss, or a complete release qualification. Production cutover is withheld.
 
-[Horizons manual and quantity 45](https://ssd.jpl.nasa.gov/horizons/manual.html) Â· [Skyfield apparent-coordinate API](https://rhodesmill.org/skyfield/api-position.html)
+[Horizons manual and quantity 45](https://ssd.jpl.nasa.gov/horizons/manual.html) · [Skyfield apparent-coordinate API](https://rhodesmill.org/skyfield/api-position.html)
 
-Public numerical reference data: ../bench/studies/E2-accuracy/raw-t1.json, raw-t2.json, manifest.json and horizons/receipts.json. Engine-function equivalence is recorded in ../evidence/E2-oss-ready/engine-function-equivalence.json. Raw studies are excluded from the wheel.
+Retained numerical reference data (not bundled in the distribution): ../bench/studies/E2-accuracy/raw-t1.json, raw-t2.json, manifest.json and horizons/receipts.json. Engine-function equivalence is recorded in ../evidence/E2-oss-ready/engine-function-equivalence.json. Raw studies are excluded from the wheel.

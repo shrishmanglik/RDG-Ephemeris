@@ -1,26 +1,19 @@
-# ephemeris_oss public interface (P1 draft, scratch)
+# Public deterministic interface
 
-Deep module: `Engine` hides kernel discovery, SHA-256 verification, DE440/DE441 split by date, EOP parsing,
-time-scale policy, IAU 2006 frame chains and the provider constructor's eight version strings.
+`Engine` owns kernel verification, explicit time/frame conventions, numerical
+calculation and source-bound receipts. Callers need not assemble providers.
 
 ```python
-from ephemeris_oss import Engine, Undefined, Instant
+from ephemeris_oss import Engine
 
-eng = Engine.load(kernels="auto", eop="auto", cache_dir=None)   # "auto": user cache, fetched by `kernels fetch --verify`
-                                                                  # or an explicit Path / mapping id->Path
-r = eng.positions(t, bodies=("sun", "moon"), frame="ecliptic-of-date", apparent=True, observer=None)
-r.values["moon"].longitude_deg ; r.receipt                       # Result[T]: values + receipt
-eng.ayanamsa(t, system="lahiri", mode="mean")                    # -> Result[float]
-eng.houses(t, lat, lon, system="placidus")                       # -> Result[Houses | Undefined]
-eng.nodes(t, kind="mean")                                        # -> Result[float]
-eng.rise_set(date, place, body="sun", event="rise")              # -> Result[RiseSet | Undefined]
-ephemeris_oss.time.from_civil(...), ephemeris_oss.time.delta_t(...)
+with Engine.load(kernels="auto", eop=None) as engine:
+    result = engine.positions_tt(2451545.0, bodies=("sun", "moon"))
+    print(result.value["moon"]["longitude_deg"])
+    print(result.receipt)
 ```
 
-Errors: `EphemerisError` (bad input, missing kernel). Undefined geometry is a value (`Undefined(reason)`), never an
-exception and never a silent fallback system.
-
-Hidden: provider construction, kernel registry, EOP resolver, version strings, receipts' hashing.
-Deletion test: without `Engine` every caller rebuilds the 8-argument provider and the registry; deep.
-Seam test: no second implementation; no abstract base added.
-Eclipse functions: not exported (internal until R7).
+`positions()` accepts a timezone-aware UTC datetime in the documented validity
+window. `ayanamsa()`, `houses()`, `nodes()` and `rise_set()` use their documented
+input types and return a Result with value and receipt. Observer/Earth-orientation
+inputs are explicit. Undefined geometry stays an Undefined value with a reason.
+No model may supply missing numerical facts.

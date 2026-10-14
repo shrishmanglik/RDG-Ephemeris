@@ -1,0 +1,14 @@
+........................................................................ [ 38%]
+........................................................................ [ 77%]
+.................ssss....................                                [100%]
+============================== warnings summary ===============================
+tests/test_jpl_erfa_numerical_provider.py::test_pre_utc_time_scale_conversion_fails_closed
+  C:\AGI\worktrees\ephemeris-oss-staging\E2-oss-ready\.venv-wheel\Lib\site-packages\erfa\core.py:133: ErfaWarning: ERFA function "dtf2d" yielded 1 of "dubious year (Note 6)"
+    warn(f'ERFA function "{func_name}" yielded {wmsg}', ErfaWarning)
+
+tests/test_jpl_erfa_numerical_provider.py::test_reverse_julian_day_enforces_versioned_utc_window[1900]
+  C:\AGI\worktrees\ephemeris-oss-staging\E2-oss-ready\.venv-wheel\Lib\site-packages\erfa\core.py:133: ErfaWarning: ERFA function "d2dtf" yielded 1 of "dubious year (Note 5)"
+    warn(f'ERFA function "{func_name}" yielded {wmsg}', ErfaWarning)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+181 passed, 4 skipped, 2 warnings in 20.71s

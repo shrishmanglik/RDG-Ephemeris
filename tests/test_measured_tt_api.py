@@ -13,9 +13,9 @@ def test_explicit_tt_api_is_available_without_inventing_utc():
     assert hasattr(Engine, "positions_tt"), "the measured TT path is not packaged"
 
 
-def test_measured_sun_moon_tt_result_has_a_reproducible_receipt():
+def test_measured_sun_moon_tt_result_has_a_reproducible_receipt(kernel_path):
     assert hasattr(Engine, "positions_tt"), "the measured TT path is not packaged"
-    kernel = Path.home() / ".agi/assets/jpl/de440-a4ce9bf9b328.bsp"
+    kernel = kernel_path
     with Engine.load(kernels={"DE440": kernel}, eop=None) as engine:
         first = engine.positions_tt(2451545.0, bodies=("sun", "moon"))
         second = engine.positions_tt(2451545.0, bodies=("sun", "moon"))
@@ -32,8 +32,8 @@ def test_measured_sun_moon_tt_result_has_a_reproducible_receipt():
     assert first.value["sun"]["longitude_deg"] == pytest.approx(longitude.degrees, abs=0.1 / 3600)
 
 
-def test_tt_receipt_binds_normalized_bodies_targets_and_result():
-    kernel = Path.home() / ".agi/assets/jpl/de440-a4ce9bf9b328.bsp"
+def test_tt_receipt_binds_normalized_bodies_targets_and_result(kernel_path):
+    kernel = kernel_path
     with Engine.load(kernels={"DE440": kernel}, eop=None) as engine:
         sun = engine.positions_tt(2451545.0, bodies=("sun",))
         moon = engine.positions_tt(2451545.0, bodies=("moon",))
@@ -57,8 +57,8 @@ def test_tt_receipt_binds_normalized_bodies_targets_and_result():
         assert result.receipt_sha256 == canonical_hash(result.receipt)
 
 
-def test_tt_receipt_changes_when_same_request_returns_a_different_result(monkeypatch):
-    kernel = Path.home() / ".agi/assets/jpl/de440-a4ce9bf9b328.bsp"
+def test_tt_receipt_changes_when_same_request_returns_a_different_result(monkeypatch, kernel_path):
+    kernel = kernel_path
     with Engine.load(kernels={"DE440": kernel}, eop=None) as engine:
         original = engine.positions_tt(2451545.0, bodies=("sun",))
         calculate = engine._provider.planet_positions_tt

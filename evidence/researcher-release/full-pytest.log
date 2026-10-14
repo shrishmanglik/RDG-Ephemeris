@@ -1,0 +1,67 @@
+........................................................................ [ 30%]
+........................................................................ [ 60%]
+.................ssss................................................... [ 90%]
+................F...F.                                                   [100%]
+================================== FAILURES ===================================
+_____________ test_engine_mean_node_matches_its_own_coefficients ______________
+
+    def test_engine_mean_node_matches_its_own_coefficients() -> None:
+        jd = np.linspace(2415020.5, 2488069.5, 41)
+        ours = np.array([N.engine_mean_node(float(j)) for j in jd])
+        diffs = N.wrapped_diff_arcsec(ours, N.polynomial(N.ENGINE_COEFFICIENTS, jd))
+>       assert float(np.max(np.abs(diffs))) < N.MEAN_NODE_TOLERANCE_ARCSEC
+E       AssertionError: assert 0.40359129716307507 < 0.001
+E        +  where 0.40359129716307507 = float(np.float64(0.40359129716307507))
+E        +    where np.float64(0.40359129716307507) = <function max at 0x0000018B7FCBFAB0>(array([0.34663945, 0.32816443, 0.30967502, 0.29117121, 0.272653  ,\n       0.25412041, 0.23557342, 0.21701204, 0.198436...517018 , 0.27063757, 0.28958774,\n       0.30855232, 0.3275313 , 0.34652469, 0.36553249, 0.38455469,\n       0.4035913 ]))
+E        +      where <function max at 0x0000018B7FCBFAB0> = np.max
+E        +      and   array([0.34663945, 0.32816443, 0.30967502, 0.29117121, 0.272653  ,\n       0.25412041, 0.23557342, 0.21701204, 0.198436...517018 , 0.27063757, 0.28958774,\n       0.30855232, 0.3275313 , 0.34652469, 0.36553249, 0.38455469,\n       0.4035913 ]) = <ufunc 'absolute'>(array([ 0.34663945,  0.32816443,  0.30967502,  0.29117121,  0.272653  ,\n        0.25412041,  0.23557342,  0.21701204, ... -0.27063757, -0.28958774,\n       -0.30855232, -0.3275313 , -0.34652469, -0.36553249, -0.38455469,\n       -0.4035913 ]))
+E        +        where <ufunc 'absolute'> = np.abs
+E        +  and   0.001 = N.MEAN_NODE_TOLERANCE_ARCSEC
+
+bench\rows\test_rows.py:69: AssertionError
+_____________________ test_delta_t_row_control_and_clean ______________________
+
+eop = WindowsPath('C:/Users/Shris/.agi/assets/iers/finals2000A-9fbc14ae5e71.all')
+
+    def test_delta_t_row_control_and_clean(eop: Path) -> None:
+>       clean = D.build(eop)
+                ^^^^^^^^^^^^
+
+bench\rows\test_rows.py:91:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+bench\rows\delta_t.py:174: in build
+    eop_path = engine_eop_path(eop, mjds) + control_offset_seconds
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+bench\rows\delta_t.py:131: in engine_eop_path
+    out[i] = tt_minus_utc - provider._resolve_eop(instant).dut1_seconds
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <ephemeris_oss.engine.numerical_provider.JplErfaAstronomyProvider object at 0x0000018B1EB5DD90>
+instant_utc = datetime.datetime(1973, 1, 2, 0, 0, tzinfo=datetime.timezone.utc)
+
+    def _resolve_eop(
+        self, instant_utc: datetime | UtcCalendarInstant
+    ) -> EarthOrientationParameters:
+        if self._earth_orientation_resolver is None:
+>           raise AstronomyDataUnavailable("operation requires versioned Earth-orientation data")
+E           ephemeris_oss.engine.contracts.AstronomyDataUnavailable: operation requires versioned Earth-orientation data
+
+src\ephemeris_oss\engine\numerical_provider.py:749: AstronomyDataUnavailable
+============================== warnings summary ===============================
+tests/test_jpl_erfa_numerical_provider.py::test_pre_utc_time_scale_conversion_fails_closed
+  C:\AGI\worktrees\ephemeris-oss-staging\E2-oss-ready\.venv-release\Lib\site-packages\erfa\core.py:133: ErfaWarning: ERFA function "dtf2d" yielded 1 of "dubious year (Note 6)"
+    warn(f'ERFA function "{func_name}" yielded {wmsg}', ErfaWarning)
+
+tests/test_jpl_erfa_numerical_provider.py::test_reverse_julian_day_enforces_versioned_utc_window[1900]
+  C:\AGI\worktrees\ephemeris-oss-staging\E2-oss-ready\.venv-release\Lib\site-packages\erfa\core.py:133: ErfaWarning: ERFA function "d2dtf" yielded 1 of "dubious year (Note 5)"
+    warn(f'ERFA function "{func_name}" yielded {wmsg}', ErfaWarning)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+SKIPPED [2] tests\test_jpl_erfa_numerical_provider.py:446: real DE440 and split DE441 kernels not supplied
+SKIPPED [1] tests\test_jpl_erfa_numerical_provider.py:483: real DE440 and split DE441 kernels not supplied
+SKIPPED [1] tests\test_jpl_erfa_numerical_provider.py:504: real DE440 and split DE441 kernels not supplied
+FAILED bench/rows/test_rows.py::test_engine_mean_node_matches_its_own_coefficients
+FAILED bench/rows/test_rows.py::test_delta_t_row_control_and_clean - ephemeri...
+2 failed, 232 passed, 4 skipped, 2 warnings in 14.70s

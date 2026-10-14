@@ -1,0 +1,10 @@
+Processing .\dist\ephemeris_oss-0.2.0.dev1-py3-none-any.whl
+Installing collected packages: ephemeris-oss
+  Attempting uninstall: ephemeris-oss
+    Found existing installation: ephemeris-oss 0.2.0.dev1
+    Uninstalling ephemeris-oss-0.2.0.dev1:
+      Successfully uninstalled ephemeris-oss-0.2.0.dev1
+Successfully installed ephemeris-oss-0.2.0.dev1
+
+[notice] A new release of pip is available: 26.0.1 -> 26.2.1
+[notice] To update, run: C:\AGI\worktrees\ephemeris-oss-staging\E2-oss-ready\.venv-wheel\Scripts\python.exe -m pip install --upgrade pip

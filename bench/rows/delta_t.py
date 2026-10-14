@@ -119,7 +119,10 @@ def measured_series(records: dict[int, dict[str, float | None]]) -> tuple[np.nda
 def engine_eop_path(eop: Path, mjds: np.ndarray) -> np.ndarray:
     from ephemeris_oss import Engine
 
-    engine = Engine.load(kernels={}, eop="auto", cache_dir=eop.parent)
+    from ephemeris_oss.engine.earth_orientation import IersFinals2000A
+    digest = hashlib.sha256(eop.read_bytes()).hexdigest()
+    snapshot = IersFinals2000A.from_file(eop, expected_sha256=digest, version=f"iers-finals-{digest}")
+    engine = Engine.load(kernels={}, eop=snapshot)
     try:
         provider = engine._provider
         out = np.empty(len(mjds))
