@@ -18,7 +18,7 @@ Instants: TT drawn uniformly over 1900-01-01 to 2100-12-31 with a seeded generat
 TT plus ERFA ``dtdb`` at the geocentre, and both sides read the kernel at that TDB.
 
 Mean node. The engine says it evaluates the Meeus chapter 47 polynomial. Its coefficients
-are not those of Meeus (2nd edition, 1998) eq. 47.7, so the row reports the engine against
+now match Meeus (2nd edition, 1998) eq. 47.7. The legacy coefficients are retained separately. The row reports the engine against
 the cited Meeus polynomial (the target), against its own coefficient set re-evaluated here
 (an implementation check), and the difference curve between the two polynomials.
 
@@ -56,7 +56,8 @@ EXIT_PASS, EXIT_FAIL, EXIT_VOID = 0, 1, 2
 # (c0, c1, c2, 1/c3 divisor, 1/c4 divisor) for
 # c0 + c1 T + c2 T^2 + T^3 / d3 - T^4 / d4, degrees, T in Julian centuries of TT from J2000.
 MEEUS_2ED_47_7 = (125.0445479, -1934.1362891, 0.0020754, 467441.0, 60616000.0)
-ENGINE_COEFFICIENTS = (125.04455501, -1934.1361849, 0.0020762, 467410.0, 60616000.0)
+LEGACY_ENGINE_COEFFICIENTS = (125.04455501, -1934.1361849, 0.0020762, 467410.0, 60616000.0)
+ENGINE_COEFFICIENTS = MEEUS_2ED_47_7
 
 
 def polynomial(coefficients: Sequence[float], jd_tt: np.ndarray | float) -> np.ndarray:
@@ -170,13 +171,13 @@ def true_node_target(diffs_arcsec: np.ndarray, seed: int = SEED) -> dict[str, An
 
 
 def polynomial_difference_curve() -> dict[str, Any]:
-    """Meeus 2nd ed. eq. 47.7 minus the engine's coefficient set, in arcseconds."""
+    """Meeus 2nd ed. eq. 47.7 minus the preserved legacy coefficient set, in arcseconds."""
 
     jd = np.linspace(JD_TT_START, JD_TT_END, 2001)
-    curve = wrapped_diff_arcsec(polynomial(MEEUS_2ED_47_7, jd), polynomial(ENGINE_COEFFICIENTS, jd))
+    curve = wrapped_diff_arcsec(polynomial(MEEUS_2ED_47_7, jd), polynomial(LEGACY_ENGINE_COEFFICIENTS, jd))
 
     def at(jd_tt: float) -> float:
-        return float(wrapped_diff_arcsec(polynomial(MEEUS_2ED_47_7, jd_tt), polynomial(ENGINE_COEFFICIENTS, jd_tt)))
+        return float(wrapped_diff_arcsec(polynomial(MEEUS_2ED_47_7, jd_tt), polynomial(LEGACY_ENGINE_COEFFICIENTS, jd_tt)))
 
     return {
         "at_1900_arcsec": at(JD_TT_START),
@@ -207,7 +208,7 @@ def build(kernel: Path, count: int = COUNT, seed: int = SEED, control_offset_arc
         "own_coefficients_verdict": "PASS" if float(vs_own.max()) <= MEAN_NODE_TOLERANCE_ARCSEC else "FAIL",
         "coefficients": {"engine": list(ENGINE_COEFFICIENTS), "meeus_2ed_47_7": list(MEEUS_2ED_47_7),
                          "form": "c0 + c1*T + c2*T^2 + T^3/d3 - T^4/d4 degrees, T Julian centuries TT from J2000"},
-        "difference_curve_meeus_minus_engine": polynomial_difference_curve(),
+        "difference_curve_meeus_minus_legacy_engine": polynomial_difference_curve(),
     }
     from ephemeris_oss.engine.kernel_registry import DE440_SHA256
 

@@ -1,0 +1,16 @@
+include LICENSE NOTICE README.md CONTRIBUTING.md SECURITY.md CODE_OF_CONDUCT.md
+recursive-include src *.py
+recursive-include tests *.py
+include tools/check_wheel.py
+prune bench
+prune evidence
+prune docs
+prune .venv-release
+prune .venv-wheel
+prune .venv-sdist
+global-exclude *.bsp *.se1 *.sqlite *.db *.pyc .env
+
+include docs/ACCURACY.md docs/design/api.md docs/researcher-benchmark.json
+
+exclude tests/test_release_archives.py
+exclude tools/verify_release.py

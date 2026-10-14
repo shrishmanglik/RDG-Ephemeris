@@ -1,0 +1,40 @@
+F.                                                                       [100%]
+================================== FAILURES ===================================
+___________ test_benchmark_cli_reports_repeated_matched_tt_workload ___________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001E6E1514210>
+capsys = <_pytest.capture.CaptureFixture object at 0x000001E6FFB69BD0>
+
+    def test_benchmark_cli_reports_repeated_matched_tt_workload(monkeypatch, capsys):
+        monkeypatch.setattr(cli.Engine, "load", lambda **kw: EngineFixture())
+>       assert cli.main(["bench", "--samples", "2", "--rounds", "2"]) == 0
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_researcher_benchmark.py:14:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\ephemeris_oss\cli.py:97: in main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\Shris\AppData\Local\Programs\Python\Python311\Lib\argparse.py:1877: in parse_args
+    self.error(msg % ' '.join(argv))
+C:\Users\Shris\AppData\Local\Programs\Python\Python311\Lib\argparse.py:2640: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = ArgumentParser(prog='ephemeris-oss', usage=None, description='Command line: ``ephemeris-oss kernels fetch --verify``, ``chart --json``, ``bench``.', formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = 'ephemeris-oss: error: unrecognized arguments: --samples 2 --rounds 2\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+C:\Users\Shris\AppData\Local\Programs\Python\Python311\Lib\argparse.py:2627: SystemExit
+---------------------------- Captured stderr call -----------------------------
+usage: ephemeris-oss [-h] [--cache CACHE] {kernels,chart,bench} ...
+ephemeris-oss: error: unrecognized arguments: --samples 2 --rounds 2
+=========================== short test summary info ===========================
+FAILED tests/test_researcher_benchmark.py::test_benchmark_cli_reports_repeated_matched_tt_workload
+1 failed, 1 passed in 0.55s

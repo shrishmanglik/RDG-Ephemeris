@@ -1,0 +1,252 @@
+* Creating isolated environment: venv+pip...
+* Installing packages in isolated environment:
+  - setuptools>=77
+* Getting build dependencies for sdist...
+running egg_info
+writing src\ephemeris_oss.egg-info\PKG-INFO
+writing dependency_links to src\ephemeris_oss.egg-info\dependency_links.txt
+writing entry points to src\ephemeris_oss.egg-info\entry_points.txt
+writing requirements to src\ephemeris_oss.egg-info\requires.txt
+writing top-level names to src\ephemeris_oss.egg-info\top_level.txt
+reading manifest file 'src\ephemeris_oss.egg-info\SOURCES.txt'
+reading manifest template 'MANIFEST.in'
+no previously-included directories found matching 'bench'
+no previously-included directories found matching 'evidence'
+no previously-included directories found matching '.venv-release'
+no previously-included directories found matching '.venv-wheel'
+no previously-included directories found matching '.venv-sdist'
+warning: no previously-included files matching '*.bsp' found anywhere in distribution
+warning: no previously-included files matching '*.se1' found anywhere in distribution
+warning: no previously-included files matching '*.sqlite' found anywhere in distribution
+warning: no previously-included files matching '*.db' found anywhere in distribution
+warning: no previously-included files matching '*.pyc' found anywhere in distribution
+warning: no previously-included files matching '.env' found anywhere in distribution
+warning: no previously-included files found matching 'tools\verify_release.py'
+adding license file 'LICENSE'
+adding license file 'NOTICE'
+writing manifest file 'src\ephemeris_oss.egg-info\SOURCES.txt'
+* Installed build dependency versions:
+  - setuptools==84.0.0
+* Building sdist...
+running sdist
+running egg_info
+writing src\ephemeris_oss.egg-info\PKG-INFO
+writing dependency_links to src\ephemeris_oss.egg-info\dependency_links.txt
+writing entry points to src\ephemeris_oss.egg-info\entry_points.txt
+writing requirements to src\ephemeris_oss.egg-info\requires.txt
+writing top-level names to src\ephemeris_oss.egg-info\top_level.txt
+reading manifest file 'src\ephemeris_oss.egg-info\SOURCES.txt'
+reading manifest template 'MANIFEST.in'
+no previously-included directories found matching 'bench'
+no previously-included directories found matching 'evidence'
+no previously-included directories found matching '.venv-release'
+no previously-included directories found matching '.venv-wheel'
+no previously-included directories found matching '.venv-sdist'
+warning: no previously-included files matching '*.bsp' found anywhere in distribution
+warning: no previously-included files matching '*.se1' found anywhere in distribution
+warning: no previously-included files matching '*.sqlite' found anywhere in distribution
+warning: no previously-included files matching '*.db' found anywhere in distribution
+warning: no previously-included files matching '*.pyc' found anywhere in distribution
+warning: no previously-included files matching '.env' found anywhere in distribution
+warning: no previously-included files found matching 'tools\verify_release.py'
+adding license file 'LICENSE'
+adding license file 'NOTICE'
+writing manifest file 'src\ephemeris_oss.egg-info\SOURCES.txt'
+running check
+creating ephemeris_oss-0.2.0.dev1
+creating ephemeris_oss-0.2.0.dev1\docs
+creating ephemeris_oss-0.2.0.dev1\docs\design
+creating ephemeris_oss-0.2.0.dev1\src\ephemeris_oss
+creating ephemeris_oss-0.2.0.dev1\src\ephemeris_oss.egg-info
+creating ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+creating ephemeris_oss-0.2.0.dev1\tests
+creating ephemeris_oss-0.2.0.dev1\tools
+copying files to ephemeris_oss-0.2.0.dev1...
+copying CODE_OF_CONDUCT.md -> ephemeris_oss-0.2.0.dev1
+copying CONTRIBUTING.md -> ephemeris_oss-0.2.0.dev1
+copying LICENSE -> ephemeris_oss-0.2.0.dev1
+copying MANIFEST.in -> ephemeris_oss-0.2.0.dev1
+copying NOTICE -> ephemeris_oss-0.2.0.dev1
+copying README.md -> ephemeris_oss-0.2.0.dev1
+copying SECURITY.md -> ephemeris_oss-0.2.0.dev1
+copying pyproject.toml -> ephemeris_oss-0.2.0.dev1
+copying docs\ACCURACY.md -> ephemeris_oss-0.2.0.dev1\docs
+copying docs\researcher-benchmark.json -> ephemeris_oss-0.2.0.dev1\docs
+copying docs\design\api.md -> ephemeris_oss-0.2.0.dev1\docs\design
+copying src\ephemeris_oss\__init__.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss
+copying src\ephemeris_oss\_api.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss
+copying src\ephemeris_oss\_version.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss
+copying src\ephemeris_oss\cli.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss
+copying src\ephemeris_oss\kernels.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss
+copying src\ephemeris_oss\researcher_benchmark.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss
+copying src\ephemeris_oss\time.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss
+copying src\ephemeris_oss.egg-info\PKG-INFO -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss.egg-info
+copying src\ephemeris_oss.egg-info\SOURCES.txt -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss.egg-info
+copying src\ephemeris_oss.egg-info\dependency_links.txt -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss.egg-info
+copying src\ephemeris_oss.egg-info\entry_points.txt -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss.egg-info
+copying src\ephemeris_oss.egg-info\requires.txt -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss.egg-info
+copying src\ephemeris_oss.egg-info\top_level.txt -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss.egg-info
+copying src\ephemeris_oss\engine\__init__.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\apparent.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\civil_time.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\contracts.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\conventions.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\earth_orientation.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\events.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\kernel_registry.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\numerical_provider.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\receipt.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\stellar_anchors.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying tests\conftest.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_api.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_apparent_place.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_astronomy_conventions.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_astronomy_events.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_astronomy_provider_foundation.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_civil_time.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_distribution_data.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_earth_orientation.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_import_graph.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_jpl_erfa_numerical_provider.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_kernels.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_measured_tt_api.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_researcher_benchmark.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tools\check_wheel.py -> ephemeris_oss-0.2.0.dev1\tools
+Writing ephemeris_oss-0.2.0.dev1\setup.cfg
+Creating tar archive
+removing 'ephemeris_oss-0.2.0.dev1' (and everything under it)
+* Building wheel from sdist
+* Creating isolated environment: venv+pip...
+* Installing packages in isolated environment:
+  - setuptools>=77
+* Getting build dependencies for wheel...
+running egg_info
+writing src\ephemeris_oss.egg-info\PKG-INFO
+writing dependency_links to src\ephemeris_oss.egg-info\dependency_links.txt
+writing entry points to src\ephemeris_oss.egg-info\entry_points.txt
+writing requirements to src\ephemeris_oss.egg-info\requires.txt
+writing top-level names to src\ephemeris_oss.egg-info\top_level.txt
+reading manifest file 'src\ephemeris_oss.egg-info\SOURCES.txt'
+reading manifest template 'MANIFEST.in'
+no previously-included directories found matching 'bench'
+no previously-included directories found matching 'evidence'
+no previously-included directories found matching '.venv-release'
+no previously-included directories found matching '.venv-wheel'
+no previously-included directories found matching '.venv-sdist'
+warning: no previously-included files matching '*.bsp' found anywhere in distribution
+warning: no previously-included files matching '*.se1' found anywhere in distribution
+warning: no previously-included files matching '*.sqlite' found anywhere in distribution
+warning: no previously-included files matching '*.db' found anywhere in distribution
+warning: no previously-included files matching '*.pyc' found anywhere in distribution
+warning: no previously-included files matching '.env' found anywhere in distribution
+warning: no previously-included files found matching 'tests\test_release_archives.py'
+warning: no previously-included files found matching 'tools\verify_release.py'
+adding license file 'LICENSE'
+adding license file 'NOTICE'
+writing manifest file 'src\ephemeris_oss.egg-info\SOURCES.txt'
+* Installed build dependency versions:
+  - setuptools==84.0.0
+* Building wheel...
+running bdist_wheel
+running build
+running build_py
+creating build\lib\ephemeris_oss
+copying src\ephemeris_oss\cli.py -> build\lib\ephemeris_oss
+copying src\ephemeris_oss\kernels.py -> build\lib\ephemeris_oss
+copying src\ephemeris_oss\researcher_benchmark.py -> build\lib\ephemeris_oss
+copying src\ephemeris_oss\time.py -> build\lib\ephemeris_oss
+copying src\ephemeris_oss\_api.py -> build\lib\ephemeris_oss
+copying src\ephemeris_oss\_version.py -> build\lib\ephemeris_oss
+copying src\ephemeris_oss\__init__.py -> build\lib\ephemeris_oss
+creating build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\apparent.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\civil_time.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\contracts.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\conventions.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\earth_orientation.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\events.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\kernel_registry.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\numerical_provider.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\receipt.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\stellar_anchors.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\__init__.py -> build\lib\ephemeris_oss\engine
+running egg_info
+writing src\ephemeris_oss.egg-info\PKG-INFO
+writing dependency_links to src\ephemeris_oss.egg-info\dependency_links.txt
+writing entry points to src\ephemeris_oss.egg-info\entry_points.txt
+writing requirements to src\ephemeris_oss.egg-info\requires.txt
+writing top-level names to src\ephemeris_oss.egg-info\top_level.txt
+reading manifest file 'src\ephemeris_oss.egg-info\SOURCES.txt'
+reading manifest template 'MANIFEST.in'
+no previously-included directories found matching 'bench'
+no previously-included directories found matching 'evidence'
+no previously-included directories found matching '.venv-release'
+no previously-included directories found matching '.venv-wheel'
+no previously-included directories found matching '.venv-sdist'
+warning: no previously-included files matching '*.bsp' found anywhere in distribution
+warning: no previously-included files matching '*.se1' found anywhere in distribution
+warning: no previously-included files matching '*.sqlite' found anywhere in distribution
+warning: no previously-included files matching '*.db' found anywhere in distribution
+warning: no previously-included files matching '*.pyc' found anywhere in distribution
+warning: no previously-included files matching '.env' found anywhere in distribution
+warning: no previously-included files found matching 'tests\test_release_archives.py'
+warning: no previously-included files found matching 'tools\verify_release.py'
+adding license file 'LICENSE'
+adding license file 'NOTICE'
+writing manifest file 'src\ephemeris_oss.egg-info\SOURCES.txt'
+installing to build\bdist.win-amd64\wheel
+running install
+running install_lib
+creating build\bdist.win-amd64\wheel
+creating build\bdist.win-amd64\wheel\ephemeris_oss
+copying build\lib\ephemeris_oss\cli.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss
+creating build\bdist.win-amd64\wheel\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\apparent.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\civil_time.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\contracts.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\conventions.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\earth_orientation.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\events.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\kernel_registry.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\numerical_provider.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\receipt.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\stellar_anchors.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\__init__.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\kernels.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss
+copying build\lib\ephemeris_oss\researcher_benchmark.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss
+copying build\lib\ephemeris_oss\time.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss
+copying build\lib\ephemeris_oss\_api.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss
+copying build\lib\ephemeris_oss\_version.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss
+copying build\lib\ephemeris_oss\__init__.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss
+running install_egg_info
+Copying src\ephemeris_oss.egg-info to build\bdist.win-amd64\wheel\.\ephemeris_oss-0.2.0.dev1-py3.11.egg-info
+running install_scripts
+creating build\bdist.win-amd64\wheel\ephemeris_oss-0.2.0.dev1.dist-info\WHEEL
+creating 'C:\\AGI\\worktrees\\ephemeris-oss-staging\\E2-oss-ready\\dist\\.tmp-t37excx4\\ephemeris_oss-0.2.0.dev1-py3-none-any.whl' and adding 'build\\bdist.win-amd64\\wheel' to it
+adding 'ephemeris_oss/__init__.py'
+adding 'ephemeris_oss/_api.py'
+adding 'ephemeris_oss/_version.py'
+adding 'ephemeris_oss/cli.py'
+adding 'ephemeris_oss/kernels.py'
+adding 'ephemeris_oss/researcher_benchmark.py'
+adding 'ephemeris_oss/time.py'
+adding 'ephemeris_oss/engine/__init__.py'
+adding 'ephemeris_oss/engine/apparent.py'
+adding 'ephemeris_oss/engine/civil_time.py'
+adding 'ephemeris_oss/engine/contracts.py'
+adding 'ephemeris_oss/engine/conventions.py'
+adding 'ephemeris_oss/engine/earth_orientation.py'
+adding 'ephemeris_oss/engine/events.py'
+adding 'ephemeris_oss/engine/kernel_registry.py'
+adding 'ephemeris_oss/engine/numerical_provider.py'
+adding 'ephemeris_oss/engine/receipt.py'
+adding 'ephemeris_oss/engine/stellar_anchors.py'
+adding 'ephemeris_oss-0.2.0.dev1.dist-info/licenses/LICENSE'
+adding 'ephemeris_oss-0.2.0.dev1.dist-info/licenses/NOTICE'
+adding 'ephemeris_oss-0.2.0.dev1.dist-info/METADATA'
+adding 'ephemeris_oss-0.2.0.dev1.dist-info/WHEEL'
+adding 'ephemeris_oss-0.2.0.dev1.dist-info/entry_points.txt'
+adding 'ephemeris_oss-0.2.0.dev1.dist-info/top_level.txt'
+adding 'ephemeris_oss-0.2.0.dev1.dist-info/RECORD'
+removing build\bdist.win-amd64\wheel
+Successfully built ephemeris_oss-0.2.0.dev1.tar.gz and ephemeris_oss-0.2.0.dev1-py3-none-any.whl

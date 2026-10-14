@@ -1,0 +1,22 @@
+Processing .\dist\ephemeris_oss-0.2.0.dev1.tar.gz
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: ephemeris-oss
+  Building wheel for ephemeris-oss (pyproject.toml): started
+  Building wheel for ephemeris-oss (pyproject.toml): finished with status 'done'
+  Created wheel for ephemeris-oss: filename=ephemeris_oss-0.2.0.dev1-py3-none-any.whl size=76651 sha256=af3eb38646455000717bfdb8ac4bbadb7cae63e38d2a13479dc9f8dcca03b8ea
+  Stored in directory: c:\users\shris\appdata\local\pip\cache\wheels\34\31\28\372158cffc711fcf10048ec2a45be936198023ff98f4a373aa
+Successfully built ephemeris-oss
+Installing collected packages: ephemeris-oss
+  Attempting uninstall: ephemeris-oss
+    Found existing installation: ephemeris-oss 0.2.0.dev1
+    Uninstalling ephemeris-oss-0.2.0.dev1:
+      Successfully uninstalled ephemeris-oss-0.2.0.dev1
+Successfully installed ephemeris-oss-0.2.0.dev1
+
+[notice] A new release of pip is available: 26.0.1 -> 26.2.1
+[notice] To update, run: C:\AGI\worktrees\ephemeris-oss-staging\E2-oss-ready\.venv-wheel\Scripts\python.exe -m pip install --upgrade pip

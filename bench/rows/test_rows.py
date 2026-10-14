@@ -69,7 +69,7 @@ def test_engine_mean_node_matches_its_own_coefficients() -> None:
     assert float(np.max(np.abs(diffs))) < N.MEAN_NODE_TOLERANCE_ARCSEC
 
 
-def test_engine_mean_node_differs_from_meeus_second_edition() -> None:
+def test_legacy_mean_node_differs_from_current_meeus_definition() -> None:
     curve = N.polynomial_difference_curve()
     assert curve["max_abs_arcsec_1900_2100"] > N.MEAN_NODE_TOLERANCE_ARCSEC
 

@@ -25,6 +25,8 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Install
         run: pip install -e .[test]
+      - name: Provision declared DE440 input
+        run: ephemeris-oss kernels fetch --verify
       - name: Run tests
         run: pytest -q
 
@@ -64,17 +66,20 @@ jobs:
       - name: Import graph test
         run: pytest -q tests/test_import_graph.py
 
-  claims:
+  distribution:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - name: Claims checker self-test
-        run: |
-          if [ -f tools/check_claims.py ]; then
-            python tools/check_claims.py --self-test
-          else
-            echo "tools/check_claims.py not present; skipping"
-          fi
+      - name: Install build tool
+        run: pip install build
+      - name: Build source and wheel distributions
+        run: python -m build
+      - name: Distribution boundary controls
+        run: python tools/check_wheel.py --self-test
+      - name: Inspect built wheel
+        run: python tools/check_wheel.py dist/*.whl
+      - name: Inspect both release archives
+        run: python tools/verify_release.py dist/*.whl dist/*.tar.gz
