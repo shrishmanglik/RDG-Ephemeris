@@ -32,8 +32,8 @@ PATTERNS: tuple[tuple[str, str], ...] = (
 )
 COMPILED = tuple((name, re.compile(pattern, re.IGNORECASE)) for name, pattern in PATTERNS)
 SKIP_DIRS = {".git", "__pycache__", ".pytest_cache", ".venv", "node_modules", "build", "dist"}
-# The checker names its own patterns; scanning itself would always fail.
-SELF_NAMES = {"check_internal_ids.py"}
+# The checker and archive gate name their own patterns; scanning them would always fail.
+SELF_NAMES = {"check_internal_ids.py", "verify_release.py"}
 
 
 def scan(root: Path) -> list[str]:
