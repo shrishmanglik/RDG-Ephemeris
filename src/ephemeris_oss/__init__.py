@@ -14,8 +14,10 @@ never a silent switch to another system.
 
 from __future__ import annotations
 
+from . import jyotish
 from ._api import EarthOrientation, Engine, EphemerisError, Houses, Result, Undefined
 from ._version import __version__
+from .jyotish import VedicChartAnalysis, compute_vedic_chart_analysis
 
 __all__ = [
     "EarthOrientation",
@@ -24,5 +26,8 @@ __all__ = [
     "Houses",
     "Result",
     "Undefined",
+    "VedicChartAnalysis",
     "__version__",
+    "compute_vedic_chart_analysis",
+    "jyotish",
 ]
