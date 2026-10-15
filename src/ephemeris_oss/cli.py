@@ -270,6 +270,68 @@ def _eclipses(args: argparse.Namespace) -> int:
     return 0
 
 
+def _panchang(args: argparse.Namespace) -> int:
+    from .almanac import generate_monthly_panchang
+
+    sheet = generate_monthly_panchang(
+        args.year,
+        args.month,
+        latitude_deg=args.lat,
+        longitude_deg=args.lon,
+        tz_offset_hours=args.tz_offset,
+    )
+    if args.json:
+        json.dump(_jsonable(sheet), sys.stdout, indent=2, sort_keys=True, default=str)
+        print()
+    else:
+        for d in sheet.days:
+            vrata_str = f" | {', '.join(d.vratas)}" if d.vratas else ""
+            print(
+                f"{d.civil_date} ({d.vara_name:11s}) | Tithi {d.tithi_number:02d} {d.tithi_name:18s} | "
+                f"{d.nakshatra_name:16s}{vrata_str}"
+            )
+    return 0
+
+
+def _siddhanta(args: argparse.Namespace) -> int:
+    from .jyotish_siddhanta import surya_siddhanta_true_positions
+
+    t = _instant(args.at)
+    jd_ut = _datetime_to_jd(t)
+    report = surya_siddhanta_true_positions(jd_ut)
+    if args.json:
+        json.dump(_jsonable(report), sys.stdout, indent=2, sort_keys=True, default=str)
+        print()
+    else:
+        print(f"Ahargana (Kali Yuga days): {report.ahargana_days:.4f}")
+        for body, pos in report.positions.items():
+            print(
+                f"{body:8s} | Madhyama={pos.mean_longitude_deg:8.4f} deg | "
+                f"Spashta={pos.true_longitude_deg:8.4f} deg ({pos.rasi_name})"
+            )
+    return 0
+
+
+def _table(args: argparse.Namespace) -> int:
+    from .almanac import generate_ephemeris_table
+
+    t_start = _instant(args.start)
+    t_end = _instant(args.end)
+    table = generate_ephemeris_table(
+        _datetime_to_jd(t_start),
+        _datetime_to_jd(t_end),
+        step_days=args.step_days,
+    )
+    if args.format == "csv":
+        print(table.to_csv(), end="")
+    elif args.format == "json":
+        json.dump(_jsonable(table), sys.stdout, indent=2, sort_keys=True, default=str)
+        print()
+    else:
+        print(table.to_markdown())
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="ephemeris-oss", description=__doc__)
     parser.add_argument("--cache", default=None, help="data directory (default: user cache)")
@@ -328,6 +390,24 @@ def main(argv: list[str] | None = None) -> int:
     ec.add_argument("--lon", type=float, help="optional observer longitude for local circumstances")
     ec.add_argument("--json", action="store_true")
 
+    pc = commands.add_parser("panchang", help="generate monthly sunrise-anchored Drik Panchang calendar")
+    pc.add_argument("--year", type=int, required=True)
+    pc.add_argument("--month", type=int, required=True)
+    pc.add_argument("--lat", type=float, default=28.6139)
+    pc.add_argument("--lon", type=float, default=77.2090)
+    pc.add_argument("--tz-offset", type=float, default=5.5)
+    pc.add_argument("--json", action="store_true")
+
+    sd = commands.add_parser("siddhanta", help="compute classical Surya Siddhanta epicyclic planetary positions")
+    sd.add_argument("--at", required=True, help="ISO 8601 instant with offset")
+    sd.add_argument("--json", action="store_true")
+
+    tb = commands.add_parser("table", help="generate tabular ephemeris grid in markdown, csv, or json")
+    tb.add_argument("--start", required=True, help="ISO 8601 start instant with offset")
+    tb.add_argument("--end", required=True, help="ISO 8601 end instant with offset")
+    tb.add_argument("--step-days", type=float, default=1.0)
+    tb.add_argument("--format", choices=("markdown", "csv", "json"), default="markdown")
+
     b = commands.add_parser("bench", help="measure public TT body batching")
     b.add_argument("--kernel", help="explicit DE440 file; otherwise use the verified package cache")
     b.add_argument("--samples", type=int, choices=range(2, 257), default=32)
@@ -346,6 +426,12 @@ def main(argv: list[str] | None = None) -> int:
             return _svg(args)
         if args.command == "eclipses":
             return _eclipses(args)
+        if args.command == "panchang":
+            return _panchang(args)
+        if args.command == "siddhanta":
+            return _siddhanta(args)
+        if args.command == "table":
+            return _table(args)
         from .researcher_benchmark import measure
 
         configured = {"DE440": Path(args.kernel)} if args.kernel else "auto"
