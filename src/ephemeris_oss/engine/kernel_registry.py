@@ -15,6 +15,11 @@ DE440_START_JD = 2287184.5
 DE440_END_JD = 2688976.5
 DE440_SHA256 = "a4ce9bf9b3282becc9f4b2ac3cebe03a2ae7599981aabd7265fd8482fff7c4b5"
 DE440_SIZE_BYTES = 119799808
+COMPACT_DE440 = "COMPACT-DE440"
+COMPACT_DE440_START_YEAR = 1800
+COMPACT_DE440_END_YEAR = 2100
+COMPACT_DE440_START_JD = 2378432.5
+COMPACT_DE440_END_JD = 2488512.5
 DE441_PART_2_START_JD = 2440400.5
 DE441_PART_1 = "DE441-PART1"
 DE441_PART_2 = "DE441-PART2"
@@ -42,6 +47,9 @@ class KernelRegistry:
     def artifact_for_year(self, year: int) -> KernelArtifact:
         identifier = self.identifier_for_year(year)
         artifact = self._artifacts.get(identifier)
+        if artifact is None and identifier == "DE440":
+            if COMPACT_DE440_START_YEAR <= year <= COMPACT_DE440_END_YEAR:
+                artifact = self._artifacts.get(COMPACT_DE440)
         if artifact is None and identifier == "DE441":
             split_identifier = DE441_PART_1 if year < DE440_START_YEAR else DE441_PART_2
             artifact = self._artifacts.get(split_identifier)
@@ -56,6 +64,9 @@ class KernelRegistry:
             "DE440" if DE440_START_JD <= tdb_jd <= DE440_END_JD else "DE441"
         )
         artifact = self._artifacts.get(identifier)
+        if artifact is None and identifier == "DE440":
+            if COMPACT_DE440_START_JD <= tdb_jd <= COMPACT_DE440_END_JD:
+                artifact = self._artifacts.get(COMPACT_DE440)
         if artifact is None and identifier == "DE441":
             split_identifier = (
                 DE441_PART_1 if tdb_jd < DE441_PART_2_START_JD else DE441_PART_2

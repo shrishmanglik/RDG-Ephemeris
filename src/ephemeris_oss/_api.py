@@ -99,31 +99,58 @@ class Engine:
         """
 
         directory = _kernels.cache_dir(cache_dir)
-        if kernels == "auto":
-            chosen = {
-                identifier: _kernels.cached_path(spec, directory)
-                for identifier, spec in _kernels.KERNELS.items()
-                if _kernels.cached_path(spec, directory).exists()
-            }
-            if "DE440" not in chosen:
+        if kernels == "compact":
+            from .compact_kernel import (
+                COMPACT_KERNEL_ID,
+                COMPACT_KERNEL_PATH,
+                COMPACT_KERNEL_SHA256,
+            )
+
+            if not COMPACT_KERNEL_PATH.is_file():
+                raise EphemerisError(f"{COMPACT_KERNEL_ID}: {COMPACT_KERNEL_PATH} does not exist")
+            actual = _kernels.sha256_file(COMPACT_KERNEL_PATH)
+            if actual != COMPACT_KERNEL_SHA256:
                 raise EphemerisError(
-                    f"no DE440 kernel in {directory}; run `ephemeris-oss kernels fetch --verify`"
+                    f"{COMPACT_KERNEL_ID}: SHA-256 mismatch for {COMPACT_KERNEL_PATH}: "
+                    f"expected {COMPACT_KERNEL_SHA256}, got {actual}"
                 )
-        elif isinstance(kernels, Mapping):
-            chosen = {str(key): Path(value) for key, value in kernels.items()}
+            artifacts: dict[str, KernelArtifact] = {
+                COMPACT_KERNEL_ID: KernelArtifact(
+                    COMPACT_KERNEL_ID, COMPACT_KERNEL_PATH, actual
+                )
+            }
         else:
-            raise EphemerisError("kernels must be 'auto' or a mapping of kernel id to path")
-        artifacts: dict[str, KernelArtifact] = {}
-        for identifier, path in chosen.items():
-            spec = _kernels.KERNELS.get(identifier)
-            if spec is None:
-                raise EphemerisError(f"unknown kernel id {identifier!r}; known: {sorted(_kernels.KERNELS)}")
-            if not path.is_file():
-                raise EphemerisError(f"{identifier}: {path} does not exist")
-            actual = _kernels.sha256_file(path)
-            if actual != spec.sha256:
-                raise EphemerisError(f"{identifier}: SHA-256 mismatch for {path}: expected {spec.sha256}, got {actual}")
-            artifacts[identifier] = KernelArtifact(identifier, path, actual)
+            if kernels == "auto":
+                chosen = {
+                    identifier: _kernels.cached_path(spec, directory)
+                    for identifier, spec in _kernels.KERNELS.items()
+                    if _kernels.cached_path(spec, directory).exists()
+                }
+                if "DE440" not in chosen:
+                    raise EphemerisError(
+                        f"no DE440 kernel in {directory}; run `ephemeris-oss kernels fetch --verify`"
+                    )
+            elif isinstance(kernels, Mapping):
+                chosen = {str(key): Path(value) for key, value in kernels.items()}
+            else:
+                raise EphemerisError(
+                    "kernels must be 'auto', 'compact', or a mapping of kernel id to path"
+                )
+            artifacts = {}
+            for identifier, path in chosen.items():
+                spec = _kernels.KERNELS.get(identifier)
+                if spec is None:
+                    raise EphemerisError(
+                        f"unknown kernel id {identifier!r}; known: {sorted(_kernels.KERNELS)}"
+                    )
+                if not path.is_file():
+                    raise EphemerisError(f"{identifier}: {path} does not exist")
+                actual = _kernels.sha256_file(path)
+                if actual != spec.sha256:
+                    raise EphemerisError(
+                        f"{identifier}: SHA-256 mismatch for {path}: expected {spec.sha256}, got {actual}"
+                    )
+                artifacts[identifier] = KernelArtifact(identifier, path, actual)
 
         resolver, eop_version = cls._eop_resolver(eop, directory)
         provider = JplErfaAstronomyProvider(
@@ -229,7 +256,7 @@ class Engine:
         value = {body: dict(positions[self._key(positions, body)]) for body in normalized_bodies}
         targets = {body: self._provider._body(body)[0] for body in normalized_bodies}
         request = {"jd_tt": raw["jd_tt"], "bodies": list(normalized_bodies), "targets": targets}
-        receipt = {
+        receipt: dict[str, Any] = {
             "package": __version__, "time_scale": "TT", "jd_tt": raw["jd_tt"],
             "jd_tdb": raw["jd_tdb"], "utc_inferred": False,
             "frame": raw["frame"], "kernel_sha256": raw["kernel_sha256"],
@@ -237,6 +264,8 @@ class Engine:
             "bodies": request["bodies"], "targets": targets,
             "request_sha256": _digest(request), "result_sha256": _digest(value),
         }
+        if "kernel_mode" in raw:
+            receipt["kernel_mode"] = raw["kernel_mode"]
         return Result(value=value, receipt=receipt, receipt_sha256=_digest(receipt))
 
     def ayanamsa(self, t: Instant, system: str = "lahiri", mode: str = "mean") -> Result[float]:

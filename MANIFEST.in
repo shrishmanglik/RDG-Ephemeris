@@ -1,5 +1,6 @@
 include LICENSE NOTICE README.md CONTRIBUTING.md SECURITY.md CODE_OF_CONDUCT.md
 recursive-include src *.py
+recursive-include src/ephemeris_oss/data *.zlib
 recursive-include tests *.py
 include tools/check_wheel.py
 prune bench

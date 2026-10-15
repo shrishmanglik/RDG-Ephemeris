@@ -49,7 +49,8 @@ def _kernels(args: argparse.Namespace) -> int:
 
 def _chart(args: argparse.Namespace) -> int:
     t = _instant(args.at)
-    with Engine.load(cache_dir=args.cache) as eng:
+    kernel_mode = "compact" if getattr(args, "compact", False) else "auto"
+    with Engine.load(kernels=kernel_mode, cache_dir=args.cache) as eng:
         positions = eng.positions(t, bodies=BODIES, ayanamsa=args.ayanamsa)
         payload: dict[str, Any] = {
             "at": t.isoformat(),
@@ -91,6 +92,7 @@ def main(argv: list[str] | None = None) -> int:
     c.add_argument("--lon", type=float)
     c.add_argument("--houses", default="placidus")
     c.add_argument("--ayanamsa", default=None, help="e.g. lahiri; omit for tropical")
+    c.add_argument("--compact", action="store_true", help="use the embedded compact Chebyshev DE440 kernel")
     c.add_argument("--json", action="store_true")
 
     b = commands.add_parser("bench", help="measure public TT body batching")

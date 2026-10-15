@@ -48,6 +48,7 @@ class DatasetVersions:
     earth_orientation_quality: str | None = None
     earth_orientation_lower_mjd: float | None = None
     earth_orientation_upper_mjd: float | None = None
+    kernel_mode: str | None = None
 
 
 @dataclass(frozen=True)

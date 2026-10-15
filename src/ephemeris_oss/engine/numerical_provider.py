@@ -337,9 +337,16 @@ class JplErfaAstronomyProvider(AstronomyProvider):
             lon, lat, _ = self._spherical(frame @ np.asarray(apparent.apparent_vector_km))
             positions[self._body(key)[1]] = {"longitude_deg": (lon + nutation) % 360,
                                             "latitude_deg": lat}
-        return {"jd_tt": jd_tt, "jd_tdb": times.tdb_jd, "positions": positions,
-                "frame": "apparent-geocentric-true-ecliptic-of-date",
-                "kernel_sha256": artifact.sha256.lower()}
+        result_payload: dict[str, Any] = {
+            "jd_tt": jd_tt,
+            "jd_tdb": times.tdb_jd,
+            "positions": positions,
+            "frame": "apparent-geocentric-true-ecliptic-of-date",
+            "kernel_sha256": artifact.sha256.lower(),
+        }
+        if artifact.identifier == "COMPACT-DE440":
+            result_payload["kernel_mode"] = "compact-chebyshev-de440"
+        return result_payload
 
     def __enter__(self) -> "JplErfaAstronomyProvider":
         return self
@@ -413,7 +420,12 @@ class JplErfaAstronomyProvider(AstronomyProvider):
             if cached is not None:
                 return artifact, cached[1]
             path = self._kernel_registry.verified_path_for_tdb_jd(tdb_jd)
-            kernel = SPK.open(str(path))
+            if artifact.identifier == "COMPACT-DE440":
+                from ..compact_kernel import CompactChebyshevKernel
+
+                kernel: Any = CompactChebyshevKernel.open(path)
+            else:
+                kernel = SPK.open(str(path))
             graph = _SpkGraph(kernel)
             self._open_kernels[artifact.identifier] = (kernel, graph)
             return artifact, graph
@@ -1036,6 +1048,11 @@ class JplErfaAstronomyProvider(AstronomyProvider):
             earth_orientation_quality=(used_eop.quality if used_eop else None),
             earth_orientation_lower_mjd=(used_eop.lower_mjd if used_eop else None),
             earth_orientation_upper_mjd=(used_eop.upper_mjd if used_eop else None),
+            kernel_mode=(
+                "compact-chebyshev-de440"
+                if selected_artifact.identifier == "COMPACT-DE440"
+                else None
+            ),
         )
         request = {
             "instant_utc": instant_utc,
@@ -1189,6 +1206,11 @@ class JplErfaAstronomyProvider(AstronomyProvider):
             earth_orientation_quality=eop.quality,
             earth_orientation_lower_mjd=eop.lower_mjd,
             earth_orientation_upper_mjd=eop.upper_mjd,
+            kernel_mode=(
+                "compact-chebyshev-de440"
+                if artifact.identifier == "COMPACT-DE440"
+                else None
+            ),
         )
         receipt = CalculationReceipt.from_request(
             provider=self.identity,

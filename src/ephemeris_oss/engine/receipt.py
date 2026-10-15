@@ -79,6 +79,7 @@ class CalculationReceipt:
     earth_orientation_quality: str | None = None
     earth_orientation_lower_mjd: float | None = None
     earth_orientation_upper_mjd: float | None = None
+    kernel_mode: str | None = None
 
     @classmethod
     def from_request(
@@ -116,6 +117,7 @@ class CalculationReceipt:
             earth_orientation_quality=datasets.earth_orientation_quality,
             earth_orientation_lower_mjd=datasets.earth_orientation_lower_mjd,
             earth_orientation_upper_mjd=datasets.earth_orientation_upper_mjd,
+            kernel_mode=datasets.kernel_mode,
         )
 
     def payload(self) -> dict[str, Any]:
