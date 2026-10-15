@@ -303,8 +303,8 @@ def _siddhanta(args: argparse.Namespace) -> int:
         json.dump(_jsonable(report), sys.stdout, indent=2, sort_keys=True, default=str)
         print()
     else:
-        print(f"Ahargana (Kali Yuga days): {report.ahargana_days:.4f}")
-        for body, pos in report.positions.items():
+        print(f"Ahargana (Kali Yuga days): {report.ahargana:.4f}")
+        for body, pos in report.planets.items():
             print(
                 f"{body:8s} | Madhyama={pos.mean_longitude_deg:8.4f} deg | "
                 f"Spashta={pos.true_longitude_deg:8.4f} deg ({pos.rasi_name})"

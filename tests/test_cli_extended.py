@@ -177,7 +177,7 @@ def test_cli_panchang_siddhanta_and_table(capsys: pytest.CaptureFixture[str]) ->
     rc_s = main(["siddhanta", "--at", "2026-01-01T00:00:00Z", "--json"])
     assert rc_s == 0
     s_payload = json.loads(capsys.readouterr().out)
-    assert "positions" in s_payload
+    assert "planets" in s_payload
     assert len(s_payload["receipt_sha256"]) == 64
 
     rc_t = main(
