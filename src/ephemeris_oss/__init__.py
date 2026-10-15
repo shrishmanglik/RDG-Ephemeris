@@ -14,20 +14,43 @@ never a silent switch to another system.
 
 from __future__ import annotations
 
-from . import jyotish
+from . import (
+    compact_kernel,
+    fact_sheet,
+    jyotish,
+    jyotish_advanced,
+    jyotish_jaimini,
+    jyotish_transit,
+    rust_bridge,
+)
 from ._api import EarthOrientation, Engine, EphemerisError, Houses, Result, Undefined
 from ._version import __version__
+from .engine import eclipses, phenomena, uncertainty_envelope
+from .fact_sheet import AIFactSheet, HallucinationAudit, compile_ai_fact_sheet, verify_ai_interpretation
 from .jyotish import VedicChartAnalysis, compute_vedic_chart_analysis
 
 __all__ = [
+    "AIFactSheet",
     "EarthOrientation",
     "Engine",
     "EphemerisError",
+    "HallucinationAudit",
     "Houses",
     "Result",
     "Undefined",
     "VedicChartAnalysis",
     "__version__",
+    "compact_kernel",
+    "compile_ai_fact_sheet",
     "compute_vedic_chart_analysis",
+    "eclipses",
+    "fact_sheet",
     "jyotish",
+    "jyotish_advanced",
+    "jyotish_jaimini",
+    "jyotish_transit",
+    "phenomena",
+    "rust_bridge",
+    "uncertainty_envelope",
+    "verify_ai_interpretation",
 ]
