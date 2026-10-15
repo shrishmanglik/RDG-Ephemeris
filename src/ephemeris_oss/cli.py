@@ -1,4 +1,4 @@
-"""Command line: ``ephemeris-oss kernels``, ``chart``, ``jyotish``, ``eclipses``, ``fact-sheet``, ``bench``."""
+"""Command line: ``ephemeris-oss kernels``, ``chart``, ``jyotish``, ``eclipses``, ``fact-sheet``, ``svg``, ``bench``."""
 
 from __future__ import annotations
 
@@ -20,6 +20,12 @@ from .engine.eclipses import (
 )
 from .fact_sheet import compile_ai_fact_sheet
 from .jyotish.dasha import jd_to_iso_utc
+from .visualization import (
+    render_circular_wheel_svg,
+    render_east_indian_svg,
+    render_north_indian_svg,
+    render_south_indian_svg,
+)
 
 BODIES = (
     "sun",
@@ -181,6 +187,46 @@ def _fact_sheet(args: argparse.Namespace) -> int:
     return 0
 
 
+def _svg(args: argparse.Namespace) -> int:
+    t = _instant(args.at)
+    kernel_mode = "compact" if getattr(args, "compact", False) else "auto"
+    with Engine.load(kernels=kernel_mode, cache_dir=args.cache) as eng:
+        positions = eng.positions(t, bodies=JYOTISH_BODIES, ayanamsa=args.ayanamsa)
+        houses = eng.houses(t, args.lat, args.lon, system="whole_sign", ayanamsa=args.ayanamsa)
+        asc_lon = (
+            float(houses.value.ascendant_deg)
+            if isinstance(houses.value, Houses)
+            else 0.0
+        )
+        lons = {b: float(place["longitude_deg"]) for b, place in positions.value.items()}
+        retros = {
+            b
+            for b, place in positions.value.items()
+            if b not in ("sun", "moon") and float(place.get("longitude_speed_deg_per_day", 0.0)) < 0.0
+        }
+    if args.style == "north_indian":
+        artifact = render_north_indian_svg(
+            lons, asc_lon, varga=args.varga, theme=args.theme, retrograde_planets=retros
+        )
+    elif args.style == "south_indian":
+        artifact = render_south_indian_svg(
+            lons, asc_lon, varga=args.varga, theme=args.theme, retrograde_planets=retros
+        )
+    elif args.style == "east_indian":
+        artifact = render_east_indian_svg(
+            lons, asc_lon, varga=args.varga, theme=args.theme, retrograde_planets=retros
+        )
+    else:
+        artifact = render_circular_wheel_svg(
+            lons, asc_lon, theme=args.theme, retrograde_planets=retros
+        )
+    if args.out:
+        Path(args.out).write_text(artifact.svg, encoding="utf-8")
+    else:
+        print(artifact.svg)
+    return 0
+
+
 def _eclipses(args: argparse.Namespace) -> int:
     t_start = _instant(args.start)
     t_end = _instant(args.end)
@@ -260,6 +306,21 @@ def main(argv: list[str] | None = None) -> int:
     fs.add_argument("--compact", action="store_true", help="use the embedded compact Chebyshev DE440 kernel")
     fs.add_argument("--max-bytes", type=int, default=3000)
 
+    sv = commands.add_parser("svg", help="render publication-grade Kundali SVG chart")
+    sv.add_argument("--at", required=True, help="ISO 8601 instant with offset")
+    sv.add_argument("--lat", type=float, default=28.6139)
+    sv.add_argument("--lon", type=float, default=77.2090)
+    sv.add_argument("--ayanamsa", default="lahiri")
+    sv.add_argument(
+        "--style",
+        choices=("north_indian", "south_indian", "east_indian", "wheel"),
+        default="north_indian",
+    )
+    sv.add_argument("--varga", default="D1")
+    sv.add_argument("--theme", choices=("obsidian", "parchment"), default="obsidian")
+    sv.add_argument("--compact", action="store_true")
+    sv.add_argument("--out", default=None, help="optional output .svg file path")
+
     ec = commands.add_parser("eclipses", help="find solar and lunar eclipses in a date window")
     ec.add_argument("--start", required=True, help="ISO 8601 start instant with offset")
     ec.add_argument("--end", required=True, help="ISO 8601 end instant with offset")
@@ -281,6 +342,8 @@ def main(argv: list[str] | None = None) -> int:
             return _jyotish(args)
         if args.command == "fact-sheet":
             return _fact_sheet(args)
+        if args.command == "svg":
+            return _svg(args)
         if args.command == "eclipses":
             return _eclipses(args)
         from .researcher_benchmark import measure

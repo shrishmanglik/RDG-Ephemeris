@@ -1,8 +1,9 @@
-"""Tests for expanded CLI subcommands (jyotish, fact-sheet, eclipses) and top-level exports."""
+"""Tests for expanded CLI subcommands (jyotish, fact-sheet, eclipses, svg) and top-level exports."""
 
 from __future__ import annotations
 
 import json
+import xml.etree.ElementTree as ET
 import pytest
 
 import ephemeris_oss
@@ -28,11 +29,14 @@ def test_top_level_exports_complete() -> None:
         "jyotish",
         "jyotish_advanced",
         "jyotish_jaimini",
+        "jyotish_nadi",
+        "jyotish_rectification",
         "jyotish_transit",
         "phenomena",
         "rust_bridge",
         "uncertainty_envelope",
         "verify_ai_interpretation",
+        "visualization",
     }
     assert expected.issubset(set(ephemeris_oss.__all__))
     for name in expected:
@@ -104,6 +108,30 @@ def test_cli_fact_sheet_compact_under_3kb(capsys: pytest.CaptureFixture[str]) ->
     assert len(out.encode("utf-8")) <= 2800
     parsed = json.loads(out)
     assert parsed["schema_version"] == "ephemeris-oss.fact-sheet.v1"
+
+
+def test_cli_svg_renders_valid_xml(capsys: pytest.CaptureFixture[str]) -> None:
+    rc = main(
+        [
+            "svg",
+            "--at",
+            "2026-10-06T12:00:00Z",
+            "--lat",
+            "28.6139",
+            "--lon",
+            "77.2090",
+            "--style",
+            "north_indian",
+            "--varga",
+            "D9",
+            "--compact",
+        ]
+    )
+    assert rc == 0
+    svg_text = capsys.readouterr().out.strip()
+    root = ET.fromstring(svg_text)
+    assert root.tag.endswith("svg")
+    assert root.attrib["data-varga"] == "D9"
 
 
 def test_cli_eclipses_json(capsys: pytest.CaptureFixture[str]) -> None:

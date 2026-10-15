@@ -20,8 +20,11 @@ from . import (
     jyotish,
     jyotish_advanced,
     jyotish_jaimini,
+    jyotish_nadi,
+    jyotish_rectification,
     jyotish_transit,
     rust_bridge,
+    visualization,
 )
 from ._api import EarthOrientation, Engine, EphemerisError, Houses, Result, Undefined
 from ._version import __version__
@@ -48,9 +51,12 @@ __all__ = [
     "jyotish",
     "jyotish_advanced",
     "jyotish_jaimini",
+    "jyotish_nadi",
+    "jyotish_rectification",
     "jyotish_transit",
     "phenomena",
     "rust_bridge",
     "uncertainty_envelope",
     "verify_ai_interpretation",
+    "visualization",
 ]
