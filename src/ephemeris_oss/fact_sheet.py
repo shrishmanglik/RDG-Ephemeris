@@ -16,12 +16,27 @@ import re
 from typing import Any, Mapping
 
 from .jyotish import compute_vedic_chart_analysis
-from .jyotish.nakshatra import NAKSHATRA_SPAN_DEG, NAKSHATRAS, PADA_SPAN_DEG, evaluate_nakshatra
-from .jyotish.vargas import RASI_LORDS, RASI_NAMES, compute_all_vargas
-from .jyotish_advanced.kp import compute_kp_sublord
+from .jyotish.nakshatra import NAKSHATRA_NAMES, nakshatra_position
+from .jyotish.vargas import RASI_LORDS, is_vargottama, varga_sign
+from .jyotish_advanced.kp import kp_coordinate_lords
 from .jyotish_advanced.yogas import evaluate_classical_yogas
 
 SCHEMA_VERSION = "ephemeris-oss.fact-sheet.v1"
+
+ENGLISH_SIGN_NAMES: tuple[str, ...] = (
+    "Aries",
+    "Taurus",
+    "Gemini",
+    "Cancer",
+    "Leo",
+    "Virgo",
+    "Libra",
+    "Scorpio",
+    "Sagittarius",
+    "Capricorn",
+    "Aquarius",
+    "Pisces",
+)
 
 SIGN_ALIASES: dict[str, int] = {
     "aries": 0,
@@ -94,7 +109,7 @@ BODY_ALIASES: dict[str, str] = {
 }
 
 NAKSHATRA_ALIASES: dict[str, int] = {}
-for _idx, _name in enumerate(NAKSHATRAS):
+for _idx, _name in enumerate(NAKSHATRA_NAMES):
     _clean = _name.lower()
     NAKSHATRA_ALIASES[_clean] = _idx
     NAKSHATRA_ALIASES[_clean.replace(" ", "")] = _idx
@@ -206,27 +221,7 @@ def compile_ai_fact_sheet(
     latitude_deg: float = 0.0,
     max_bytes: int = 3000,
 ) -> AIFactSheet:
-    """Compile a deterministic Vedic astrological fact sheet guaranteed under ``max_bytes``.
-
-    Parameters
-    ----------
-    planet_longitudes:
-        Sidereal ecliptic longitudes in degrees ``[0, 360)`` keyed by lowercase body name.
-    ascendant_lon_deg:
-        Sidereal ascendant (Lagna) longitude in degrees ``[0, 360)``.
-    planet_speeds_deg_per_day:
-        Optional daily longitudinal speeds in degrees/day (negative indicates retrograde).
-    birth_jd_ut:
-        Optional birth Julian Day (UT) for Panchanga, Vimshottari Dasha, and Shadbala.
-    query_jd_ut:
-        Optional target Julian Day (UT) for active Mahadasha/Antardasha lookup.
-    sunrise_jd_ut, sunset_jd_ut:
-        Optional local sunrise and sunset Julian Days (UT).
-    latitude_deg:
-        Observer geodetic latitude in degrees.
-    max_bytes:
-        Maximum UTF-8 JSON byte budget (defaults to 3,000 bytes / < 3 KB).
-    """
+    """Compile a deterministic Vedic astrological fact sheet guaranteed under ``max_bytes``."""
     if max_bytes < 512:
         raise ValueError("max_bytes must be at least 512 bytes")
 
@@ -239,21 +234,21 @@ def compile_ai_fact_sheet(
     }
     asc_lon = float(ascendant_lon_deg) % 360.0
     asc_sign_idx = int(asc_lon // 30.0) % 12
-    asc_nak = evaluate_nakshatra(asc_lon)
-    asc_vargas = compute_all_vargas(asc_lon)
-    asc_kp = compute_kp_sublord(asc_lon)
+    asc_nak = nakshatra_position(asc_lon)
+    asc_d9_idx = varga_sign(asc_lon, "D9").sign_index
+    asc_kp = kp_coordinate_lords(asc_lon)
 
     asc_summary: dict[str, Any] = {
         "lon": round(asc_lon, 4),
-        "sign": RASI_NAMES[asc_sign_idx],
+        "sign": ENGLISH_SIGN_NAMES[asc_sign_idx],
         "sign_idx": asc_sign_idx,
-        "lord": RASI_LORDS[asc_sign_idx],
+        "lord": RASI_LORDS[asc_sign_idx].lower(),
         "deg_in_sign": round(asc_lon % 30.0, 4),
-        "nakshatra": asc_nak.nakshatra_name,
-        "nak_idx": asc_nak.nakshatra_index,
+        "nakshatra": asc_nak.name,
+        "nak_idx": asc_nak.index,
         "pada": asc_nak.pada,
-        "d9_sign": RASI_NAMES[asc_vargas.d9_navamsa.sign_index],
-        "d9_sign_idx": asc_vargas.d9_navamsa.sign_index,
+        "d9_sign": ENGLISH_SIGN_NAMES[asc_d9_idx],
+        "d9_sign_idx": asc_d9_idx,
         "kp_sub": asc_kp.sub_lord,
     }
 
@@ -290,25 +285,26 @@ def compile_ai_fact_sheet(
         lon = norm_lons[body]
         sign_idx = int(lon // 30.0) % 12
         house_num = ((sign_idx - asc_sign_idx) % 12) + 1
-        nak = evaluate_nakshatra(lon)
-        vargas = compute_all_vargas(lon)
-        kp = compute_kp_sublord(lon)
+        nak = nakshatra_position(lon)
+        d9_idx = varga_sign(lon, "D9").sign_index
+        d10_idx = varga_sign(lon, "D10").sign_index
+        kp = kp_coordinate_lords(lon)
         spd = speeds.get(body, -0.05 if body in ("rahu", "ketu") else 0.0)
         is_retro = bool(spd < 0.0) if body not in ("sun", "moon") else False
 
         bodies_summary[body] = {
             "lon": round(lon, 4),
-            "sign": RASI_NAMES[sign_idx],
+            "sign": ENGLISH_SIGN_NAMES[sign_idx],
             "sign_idx": sign_idx,
             "house": house_num,
             "deg": round(lon % 30.0, 2),
-            "nakshatra": nak.nakshatra_name,
-            "nak_idx": nak.nakshatra_index,
+            "nakshatra": nak.name,
+            "nak_idx": nak.index,
             "pada": nak.pada,
-            "d9_sign": RASI_NAMES[vargas.d9_navamsa.sign_index],
-            "d9_sign_idx": vargas.d9_navamsa.sign_index,
-            "d10_sign": RASI_NAMES[vargas.d10_dasamsa.sign_index],
-            "vargottama": vargas.is_vargottama,
+            "d9_sign": ENGLISH_SIGN_NAMES[d9_idx],
+            "d9_sign_idx": d9_idx,
+            "d10_sign": ENGLISH_SIGN_NAMES[d10_idx],
+            "vargottama": is_vargottama(lon),
             "retro": is_retro,
             "kp_sub": kp.sub_lord,
         }
@@ -327,7 +323,7 @@ def compile_ai_fact_sheet(
     yogas_report = evaluate_classical_yogas(norm_lons, asc_lon)
     active_yogas = [
         {"name": y.name, "cat": y.category, "strength": round(y.strength_score, 2)}
-        for y in yogas_report.present_yogas[:10]
+        for y in yogas_report.active_yogas[:10]
     ]
 
     panchanga_summary: dict[str, Any] | None = None
@@ -335,43 +331,36 @@ def compile_ai_fact_sheet(
     strength_summary: dict[str, Any] | None = None
 
     if birth_jd_ut is not None and "sun" in norm_lons and "moon" in norm_lons:
+        cap_speeds = {k.capitalize(): v for k, v in speeds.items()} if speeds else None
         analysis = compute_vedic_chart_analysis(
             planet_longitudes=norm_lons,
-            ascendant_lon_deg=asc_lon,
-            birth_jd_ut=birth_jd_ut,
-            query_jd_ut=query_jd_ut,
-            planet_speeds=speeds if speeds else None,
+            lagna_lon_deg=asc_lon,
+            jd_ut=birth_jd_ut,
+            query_jd=query_jd_ut,
+            planet_speeds_deg_per_day=cap_speeds,
             sunrise_jd_ut=sunrise_jd_ut,
             sunset_jd_ut=sunset_jd_ut,
-            latitude_deg=latitude_deg,
         )
         if analysis.panchanga is not None:
             p = analysis.panchanga
             panchanga_summary = {
                 "tithi": p.tithi.name,
                 "paksha": p.tithi.paksha,
-                "vara": p.vara.weekday_name,
-                "nakshatra": p.nakshatra.nakshatra_name,
+                "vara": p.vara.english_name,
+                "nakshatra": p.nakshatra.name,
                 "yoga": p.yoga.name,
                 "karana": p.karana.name,
             }
-        if analysis.vimshottari_Active_slice is not None:
-            levels = analysis.vimshottari_Active_slice.levels
+        if analysis.vimshottari_active_5_levels is not None:
+            levels = analysis.vimshottari_active_5_levels
             dasha_summary = {
-                "mahadasha": levels[0].lord if len(levels) > 0 else None,
-                "antardasha": levels[1].lord if len(levels) > 1 else None,
-                "pratyantardasha": levels[2].lord if len(levels) > 2 else None,
-            }
-        elif len(analysis.vimshottari_mahadashas) > 0:
-            first_md = analysis.vimshottari_mahadashas[0]
-            dasha_summary = {
-                "mahadasha": first_md.lord,
-                "antardasha": first_md.children[0].lord if first_md.children else None,
-                "pratyantardasha": None,
+                "mahadasha": levels[0].lord.lower() if len(levels) > 0 else None,
+                "antardasha": levels[1].lord.lower() if len(levels) > 1 else None,
+                "pratyantardasha": levels[2].lord.lower() if len(levels) > 2 else None,
             }
         if analysis.shadbala is not None:
             strength_summary = {
-                b: round(s.total_rupas, 2)
+                b.lower(): round(s.total_rupas, 2)
                 for b, s in analysis.shadbala.planets.items()
             }
 
@@ -389,19 +378,38 @@ def compile_ai_fact_sheet(
     if strength_summary is not None:
         payload["shadbala_rupas"] = strength_summary
 
-    # Progressive compaction guard to guarantee byte_length <= max_bytes
-    json_str = json.dumps(payload, sort_keys=True, separators=(",", ":"))
-    if len(json_str.encode("utf-8")) > max_bytes and "active_yogas" in payload:
-        payload["active_yogas"] = payload["active_yogas"][:5]
-        json_str = json.dumps(payload, sort_keys=True, separators=(",", ":"))
-    if len(json_str.encode("utf-8")) > max_bytes and "borderline_warnings" in payload:
-        payload["borderline_warnings"] = payload["borderline_warnings"][:3]
-        json_str = json.dumps(payload, sort_keys=True, separators=(",", ":"))
-    if len(json_str.encode("utf-8")) > max_bytes:
+    # Progressive compaction guard to guarantee final byte_length <= max_bytes
+    # Reserve 90 bytes for the trailing "receipt_sha256":"<64-char-hex>" field.
+    target_budget = max(400, max_bytes - 90)
+
+    def _cur_size() -> int:
+        return len(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8"))
+
+    if _cur_size() > target_budget and "active_yogas" in payload:
+        payload["active_yogas"] = payload["active_yogas"][:4]
+    if _cur_size() > target_budget and "borderline_warnings" in payload:
+        payload["borderline_warnings"] = payload["borderline_warnings"][:2]
+    if _cur_size() > target_budget:
         for b_info in payload["bodies"].values():
             b_info.pop("d10_sign", None)
             b_info.pop("kp_sub", None)
-        json_str = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    if _cur_size() > target_budget:
+        payload.pop("active_yogas", None)
+        payload.pop("shadbala_rupas", None)
+    if _cur_size() > target_budget:
+        payload.pop("panchanga", None)
+        payload.pop("borderline_warnings", None)
+        for b_info in payload["bodies"].values():
+            b_info.pop("vargottama", None)
+            b_info.pop("lon", None)
+            b_info.pop("deg", None)
+    if _cur_size() > target_budget:
+        payload.pop("dasha", None)
+        payload["ascendant"].pop("deg_in_sign", None)
+        payload["ascendant"].pop("kp_sub", None)
+        for b_info in payload["bodies"].values():
+            b_info.pop("pada", None)
+            b_info.pop("d9_sign", None)
 
     receipt = _sha256_json(payload)
     payload["receipt_sha256"] = receipt
@@ -443,11 +451,11 @@ _RE_SIGN_LAGNA = re.compile(
     re.IGNORECASE,
 )
 _RE_HOUSE_NUM = re.compile(
-    rf"\b{_BODY_PATTERN}\s+(?:is\s+|resides\s+|sits\s+|placed\s+|occupies\s+)?(?:in\s+)?(?:the\s+)?(?P<house>1[0-2]|[1-9])(?:st|nd|rd|th)?\s+(?:house|bhava)\b",
+    rf"\b{_BODY_PATTERN}\s+[^\.\,\;\n]{{0,35}}?\b(?:in\s+)?(?:the\s+)?(?P<house>1[0-2]|[1-9])(?:st|nd|rd|th)?\s+(?:house|bhava)\b",
     re.IGNORECASE,
 )
 _RE_HOUSE_WORD = re.compile(
-    rf"\b{_BODY_PATTERN}\s+(?:is\s+|resides\s+|sits\s+|placed\s+|occupies\s+)?(?:in\s+)?(?:the\s+)?(?P<house_word>first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth)\s+(?:house|bhava)\b",
+    rf"\b{_BODY_PATTERN}\s+[^\.\,\;\n]{{0,35}}?\b(?:in\s+)?(?:the\s+)?(?P<house_word>first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth)\s+(?:house|bhava)\b",
     re.IGNORECASE,
 )
 _RE_RETRO_PREFIX = re.compile(
@@ -468,19 +476,7 @@ def verify_ai_interpretation(
     text: str,
     fact_sheet: AIFactSheet | Mapping[str, Any],
 ) -> HallucinationAudit:
-    """Deterministically audit natural-language astrological text against ``fact_sheet``.
-
-    Scans ``text`` for explicit claims about:
-    1. D1 Rasi sign placements (including ``<Sign> Ascendant/Lagna``)
-    2. D9 Navamsa sign placements
-    3. House (Bhava) placements (``1..12`` or ordinal words ``first..twelfth``)
-    4. Nakshatra placements across all 27 Nakshatras
-    5. Retrograde / Direct planetary motion
-    6. Active Vimshottari Mahadasha and Antardasha lords
-
-    Returns a :class:`HallucinationAudit` where ``passed`` is ``True`` if and only
-    if zero contradictions are found.
-    """
+    """Deterministically audit natural-language astrological text against ``fact_sheet``."""
     payload: Mapping[str, Any] = (
         fact_sheet.payload if isinstance(fact_sheet, AIFactSheet) else fact_sheet
     )
@@ -508,8 +504,8 @@ def verify_ai_interpretation(
         if not b_data or "d9_sign_idx" not in b_data:
             continue
         actual_idx = int(b_data["d9_sign_idx"])
-        expected_name = RASI_NAMES[actual_idx]
-        claimed_name = RASI_NAMES[claimed_idx]
+        expected_name = ENGLISH_SIGN_NAMES[actual_idx]
+        claimed_name = ENGLISH_SIGN_NAMES[claimed_idx]
         ok = claimed_idx == actual_idx
         checks.append(
             ClaimCheckResult(
@@ -528,7 +524,7 @@ def verify_ai_interpretation(
     # 2. Check D1 Sign placements
     for match in _RE_SIGN_PLACEMENT.finditer(text):
         if any(
-             not (match.end() <= s_start or match.start() >= s_end)
+            not (match.end() <= s_start or match.start() >= s_end)
             for s_start, s_end in d9_spans
         ):
             continue
@@ -540,8 +536,8 @@ def verify_ai_interpretation(
         if not b_data or "sign_idx" not in b_data:
             continue
         actual_idx = int(b_data["sign_idx"])
-        expected_name = RASI_NAMES[actual_idx]
-        claimed_name = RASI_NAMES[claimed_idx]
+        expected_name = ENGLISH_SIGN_NAMES[actual_idx]
+        claimed_name = ENGLISH_SIGN_NAMES[claimed_idx]
         ok = claimed_idx == actual_idx
         checks.append(
             ClaimCheckResult(
@@ -563,8 +559,8 @@ def verify_ai_interpretation(
         claimed_idx = SIGN_ALIASES[raw_sign]
         if "sign_idx" in asc:
             actual_idx = int(asc["sign_idx"])
-            expected_name = RASI_NAMES[actual_idx]
-            claimed_name = RASI_NAMES[claimed_idx]
+            expected_name = ENGLISH_SIGN_NAMES[actual_idx]
+            claimed_name = ENGLISH_SIGN_NAMES[claimed_idx]
             ok = claimed_idx == actual_idx
             checks.append(
                 ClaimCheckResult(
@@ -639,8 +635,8 @@ def verify_ai_interpretation(
         if not b_data or "nak_idx" not in b_data:
             continue
         actual_nak_idx = int(b_data["nak_idx"])
-        claimed_nak = NAKSHATRAS[nak_idx]
-        expected_nak = NAKSHATRAS[actual_nak_idx]
+        claimed_nak = NAKSHATRA_NAMES[nak_idx]
+        expected_nak = NAKSHATRA_NAMES[actual_nak_idx]
         ok = nak_idx == actual_nak_idx
         checks.append(
             ClaimCheckResult(
@@ -736,6 +732,7 @@ def verify_ai_interpretation(
 __all__ = [
     "AIFactSheet",
     "ClaimCheckResult",
+    "ENGLISH_SIGN_NAMES",
     "HallucinationAudit",
     "SCHEMA_VERSION",
     "compile_ai_fact_sheet",
