@@ -1,0 +1,151 @@
+{
+  "schema": "ephemeris-claims-manifest-v1",
+  "version": "1.0.0",
+  "description": "Structured claim-integrity manifest binding every numerical accuracy and benchmark metric in public documentation to its verified source record.",
+  "target_documents": [
+    "docs/ACCURACY.md",
+    "README.md"
+  ],
+  "banned_hyperbole_phrases": [
+    "more accurate than JPL",
+    "beats any ephemeris",
+    "best in the world",
+    "most accurate ephemeris",
+    "US government work",
+    "faster than"
+  ],
+  "study_parameters": {
+    "interval_start_year": 1800,
+    "interval_end_year": 2100,
+    "de440_monthly_tt_samples_per_graha": 3612,
+    "horizons_samples_per_graha": 300,
+    "horizons_total_rows": 2100,
+    "p95_ceiling_arcsec": 0.02,
+    "max_ceiling_arcsec": 0.1,
+    "mean_node_ceiling_arcsec": 0.001,
+    "true_node_ceiling_arcsec": 0.1,
+    "source_files": [
+      "docs/ACCURACY.md",
+      "README.md"
+    ]
+  },
+  "physical_grahas": [
+    {
+      "id": "sun",
+      "target_label": "Sun centre",
+      "naif_id": 10,
+      "de440_median_arcsec": "1.93862718e-05",
+      "de440_worst_arcsec": "0.000108337531",
+      "horizons_median_arcsec": "1.5601669e-06",
+      "horizons_p95_arcsec": "2.99024095e-06",
+      "horizons_worst_arcsec": "3.80815838e-06",
+      "worst_horizons_sample": "1976-02",
+      "source_file": "docs/ACCURACY.md"
+    },
+    {
+      "id": "moon",
+      "target_label": "Moon centre",
+      "naif_id": 301,
+      "de440_median_arcsec": "9.85119698e-05",
+      "de440_worst_arcsec": "0.000716859608",
+      "horizons_median_arcsec": "0.00243318773",
+      "horizons_p95_arcsec": "0.0172649702",
+      "horizons_worst_arcsec": "0.0253509189",
+      "worst_horizons_sample": "1801-01",
+      "source_file": "docs/ACCURACY.md"
+    },
+    {
+      "id": "mercury",
+      "target_label": "Mercury centre",
+      "naif_id": 199,
+      "de440_median_arcsec": "1.93394101e-05",
+      "de440_worst_arcsec": "0.000107906669",
+      "horizons_median_arcsec": "1.73181857e-06",
+      "horizons_p95_arcsec": "3.58725987e-06",
+      "horizons_worst_arcsec": "5.19406063e-06",
+      "worst_horizons_sample": "2059-08",
+      "source_file": "docs/ACCURACY.md"
+    },
+    {
+      "id": "venus",
+      "target_label": "Venus centre",
+      "naif_id": 299,
+      "de440_median_arcsec": "1.9265741e-05",
+      "de440_worst_arcsec": "0.00010745473",
+      "horizons_median_arcsec": "1.61171841e-06",
+      "horizons_p95_arcsec": "3.01558294e-06",
+      "horizons_worst_arcsec": "5.10202485e-06",
+      "worst_horizons_sample": "1911-09",
+      "source_file": "docs/ACCURACY.md"
+    },
+    {
+      "id": "mars",
+      "target_label": "Mars system barycentre",
+      "naif_id": 4,
+      "de440_median_arcsec": "1.94618337e-05",
+      "de440_worst_arcsec": "0.000108352879",
+      "horizons_median_arcsec": "1.40373266e-06",
+      "horizons_p95_arcsec": "2.52963415e-06",
+      "horizons_worst_arcsec": "3.22078937e-06",
+      "worst_horizons_sample": "1912-09",
+      "source_file": "docs/ACCURACY.md"
+    },
+    {
+      "id": "jupiter",
+      "target_label": "Jupiter system barycentre",
+      "naif_id": 5,
+      "de440_median_arcsec": "1.936898e-05",
+      "de440_worst_arcsec": "0.000108498989",
+      "horizons_median_arcsec": "1.38976159e-06",
+      "horizons_p95_arcsec": "2.14319505e-06",
+      "horizons_worst_arcsec": "2.55158769e-06",
+      "worst_horizons_sample": "1976-02",
+      "source_file": "docs/ACCURACY.md"
+    },
+    {
+      "id": "saturn",
+      "target_label": "Saturn system barycentre",
+      "naif_id": 6,
+      "de440_median_arcsec": "1.95472182e-05",
+      "de440_worst_arcsec": "0.000108927907",
+      "horizons_median_arcsec": "1.39243358e-06",
+      "horizons_p95_arcsec": "2.16523355e-06",
+      "horizons_worst_arcsec": "2.71751497e-06",
+      "worst_horizons_sample": "1922-10",
+      "source_file": "docs/ACCURACY.md"
+    }
+  ],
+  "lunar_nodes": {
+    "policy_version": "ephemeris-oss-lunar-nodes-1.1.0-meeus47.7",
+    "true_rahu_typical_arcsec": "1.38436462e-06",
+    "true_rahu_worst_arcsec": "5.9393642e-06",
+    "mean_rahu_median_arcsec": "4.09272616e-10",
+    "mean_rahu_max_arcsec": "3.27418093e-09",
+    "legacy_mean_rahu_worst_arcsec": "3.68345354e-09",
+    "antipode_residual_arcsec": "2.04636308e-10",
+    "source_file": "docs/ACCURACY.md"
+  },
+  "researcher_benchmark_claims": {
+    "source_file": "docs/researcher-benchmark.json",
+    "doc_file": "README.md",
+    "samples": 32,
+    "rounds": [
+      {
+        "round": 1,
+        "scalar_median_ms": "5.9635",
+        "scalar_p95_ms": "7.6404",
+        "batched_median_ms": "3.2652",
+        "batched_p95_ms": "5.9134",
+        "aa_ratio": "0.987681"
+      },
+      {
+        "round": 2,
+        "scalar_median_ms": "5.6203",
+        "scalar_p95_ms": "10.4830",
+        "batched_median_ms": "3.1937",
+        "batched_p95_ms": "6.8014",
+        "aa_ratio": "0.995893"
+      }
+    ]
+  }
+}

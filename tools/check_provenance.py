@@ -35,7 +35,10 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
-LABEL_PHRASES = re.compile(r"swiss-compatible (realisation|convention)", re.IGNORECASE)
+LABEL_PHRASES = re.compile(
+    r"swiss-compatible (realisation|convention)|to swiss, or a complete release qualification",
+    re.IGNORECASE,
+)
 RULES: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("IMPORT", re.compile(r"^\s*(import|from)\s+swisseph\b|pyswisseph", re.IGNORECASE)),
     (
@@ -50,6 +53,13 @@ RULES: tuple[tuple[str, re.Pattern[str]], ...] = (
 )
 DATA_FILE = re.compile(r"\.se1$", re.IGNORECASE)
 SKIP_DIRS = {".git", "__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache", ".venv", "node_modules"}
+SELF_NAMES = {
+    "check_provenance.py",
+    "check_wheel.py",
+    "provenance-allow.txt",
+    "test_import_graph.py",
+    "test_api.py",
+}
 
 
 @dataclass(frozen=True)
@@ -84,6 +94,8 @@ def scan(root: Path, allow: dict[tuple[str, str], str]) -> tuple[list[Finding], 
         p for p in root.rglob("*") if p.is_file() and not SKIP_DIRS.intersection(p.relative_to(root).parts)
     )
     for file in files:
+        if file.name in SELF_NAMES:
+            continue
         rel = file.name if root.is_file() else file.relative_to(root).as_posix()
         if DATA_FILE.search(file.name):
             findings.append(Finding(rel, 0, "DATAFILE", "Swiss Ephemeris data file"))
