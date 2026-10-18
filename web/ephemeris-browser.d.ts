@@ -353,10 +353,27 @@ export function computeShadbala(
 ): Record<PhysicalGrahaId, ShadbalaPlanetSummary>;
 export function jdToYmdString(jdUtc: number): string;
 export function computeVimshottariDasha(jdUtc: number, moonSiderealDeg: number): VimshottariDashaResult;
+export interface ClientKundaliBenchmarkResult {
+  readonly iterations: number;
+  readonly medianMs: number;
+  readonly p95Ms: number;
+  readonly sub2msQualified: boolean;
+  readonly sampleReceiptSha256: string;
+}
+
 export function sha256Hex(asciiString: string): string;
 export function fnv1a64Hex(str: string): string;
 export function computeReceipt(requestPayload: Record<string, unknown>, numericSummary: Record<string, unknown>): CalculationReceipt;
 export function computeChart(options?: ChartInputOptions): CompleteChartResult;
+export function evaluateChebyshevSegment3D(
+  coeffsRevX: ArrayLike<number>,
+  coeffsRevY: ArrayLike<number>,
+  coeffsRevZ: ArrayLike<number>,
+  jdTdb: number,
+  startJd: number,
+  spanDays: number
+): [number, number, number, number, number, number];
+export function benchmarkClientKundali(iterations?: number): ClientKundaliBenchmarkResult;
 
 export const EphemerisBrowser: {
   readonly ENGINE_VERSION: string;
@@ -389,6 +406,8 @@ export const EphemerisBrowser: {
   readonly fnv1a64Hex: typeof fnv1a64Hex;
   readonly computeReceipt: typeof computeReceipt;
   readonly computeChart: typeof computeChart;
+  readonly evaluateChebyshevSegment3D: typeof evaluateChebyshevSegment3D;
+  readonly benchmarkClientKundali: typeof benchmarkClientKundali;
 };
 
 export default EphemerisBrowser;

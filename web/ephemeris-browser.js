@@ -1617,6 +1617,99 @@ export function computeChart(options = {}) {
   };
 }
 
+function evaluateChebyshev1DClenshaw(coeffsRev, tau, spanDays) {
+  const n = coeffsRev ? coeffsRev.length : 0;
+  if (n === 0) {
+    return [0.0, 0.0];
+  }
+  if (n === 1) {
+    return [Number(coeffsRev[0]), 0.0];
+  }
+  const s2 = 2.0 * tau;
+  let w0 = 0.0;
+  let w1 = 0.0;
+  let dw0 = 0.0;
+  let dw1 = 0.0;
+  for (let i = 0; i < n - 1; i++) {
+    const w2 = w1;
+    w1 = w0;
+    w0 = Number(coeffsRev[i]) + (s2 * w1 - w2);
+
+    const dw2 = dw1;
+    dw1 = dw0;
+    dw0 = 2.0 * w1 + dw1 * s2 - dw2;
+  }
+  const position = Number(coeffsRev[n - 1]) + (tau * w0 - w1);
+  const scale = spanDays !== 0.0 ? 2.0 / spanDays : 0.0;
+  const velocity = (w0 + tau * dw0 - dw1) * scale;
+  return [position, velocity];
+}
+
+/**
+ * Evaluate a 3D Chebyshev polynomial segment (backward Clenshaw recurrence on [-1, 1])
+ * where each axis array is ordered from highest degree down to constant term c_0.
+ * Returns [x, y, z, vx, vy, vz] in km and km/day.
+ */
+export function evaluateChebyshevSegment3D(coeffsRevX, coeffsRevY, coeffsRevZ, jdTdb, startJd, spanDays) {
+  const span = Number(spanDays);
+  if (!Number.isFinite(span) || span <= 0.0) {
+    throw new Error("spanDays must be a positive finite number");
+  }
+  const offset = Number(jdTdb) - Number(startJd);
+  const tau = (2.0 * offset) / span - 1.0;
+  const [x, vx] = evaluateChebyshev1DClenshaw(coeffsRevX, tau, span);
+  const [y, vy] = evaluateChebyshev1DClenshaw(coeffsRevY, tau, span);
+  const [z, vz] = evaluateChebyshev1DClenshaw(coeffsRevZ, tau, span);
+  return [x, y, z, vx, vy, vz];
+}
+
+/**
+ * Benchmark complete client-side Kundali chart calculation across `iterations` epochs,
+ * returning latency statistics and a sample SHA-256 calculation receipt.
+ */
+export function benchmarkClientKundali(iterations = 32) {
+  const count = Math.max(1, Math.floor(Number(iterations) || 32));
+  const nowFn = () => (typeof performance !== "undefined" ? performance.now() : Date.now());
+
+  // Warm up JIT before timed sample loop
+  for (let w = 0; w < 2; w++) {
+    computeChart({ jdTt: 2451545.0 + w * 7.0, latitudeDeg: 28.6139, longitudeDeg: 77.2090, ayanamsa: "lahiri" });
+  }
+
+  const timings = [];
+  let sampleReceiptSha256 = "";
+  for (let i = 0; i < count; i++) {
+    const t0 = nowFn();
+    const chart = computeChart({
+      jdTt: 2451545.0 + i * 29.530588,
+      latitudeDeg: 28.6139,
+      longitudeDeg: 77.2090,
+      ayanamsa: "lahiri",
+      nodeMode: "mean"
+    });
+    const t1 = nowFn();
+    timings.push(Math.max(0.001, t1 - t0));
+    if (i === 0) {
+      sampleReceiptSha256 = chart.receipt.sha256;
+    }
+  }
+
+  timings.sort((a, b) => a - b);
+  const mid = Math.floor(timings.length / 2);
+  const rawMedian = timings.length % 2 === 1 ? timings[mid] : 0.5 * (timings[mid - 1] + timings[mid]);
+  const p95Idx = Math.min(timings.length - 1, Math.max(0, Math.ceil(timings.length * 0.95) - 1));
+  const medianMs = Number(rawMedian.toFixed(4));
+  const p95Ms = Number(timings[p95Idx].toFixed(4));
+
+  return {
+    iterations: count,
+    medianMs,
+    p95Ms,
+    sub2msQualified: medianMs < 2.0,
+    sampleReceiptSha256
+  };
+}
+
 export const EphemerisBrowser = Object.freeze({
   ENGINE_VERSION,
   AYANAMSA_CATALOG_VERSION,
@@ -1651,7 +1744,9 @@ export const EphemerisBrowser = Object.freeze({
   sha256Hex,
   fnv1a64Hex,
   computeReceipt,
-  computeChart
+  computeChart,
+  evaluateChebyshevSegment3D,
+  benchmarkClientKundali
 });
 
 // Pre-warm JIT so every caller invocation executes in < 2 ms
