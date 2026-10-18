@@ -15,6 +15,8 @@ never a silent switch to another system.
 from __future__ import annotations
 
 from . import (
+    adapter,
+    almanac,
     compact_kernel,
     fact_sheet,
     jyotish,
@@ -22,38 +24,55 @@ from . import (
     jyotish_jaimini,
     jyotish_nadi,
     jyotish_rectification,
+    jyotish_siddhanta,
     jyotish_transit,
     rust_bridge,
     visualization,
 )
 from ._api import EarthOrientation, Engine, EphemerisError, Houses, Result, Undefined
 from ._version import __version__
-from .engine import eclipses, phenomena, uncertainty_envelope
+from .adapter import (
+    AnalyticalEphemerisProvider,
+    CompleteKundaliBundle,
+    EphemerisAdapter,
+    HouseSystemResult,
+    PlanetCoordinateResult,
+    normalize_ephemeris_source,
+)
+from .engine import phenomena, uncertainty_envelope
 from .fact_sheet import AIFactSheet, HallucinationAudit, compile_ai_fact_sheet, verify_ai_interpretation
 from .jyotish import VedicChartAnalysis, compute_vedic_chart_analysis
 
 __all__ = [
     "AIFactSheet",
+    "AnalyticalEphemerisProvider",
+    "CompleteKundaliBundle",
     "EarthOrientation",
     "Engine",
+    "EphemerisAdapter",
     "EphemerisError",
     "HallucinationAudit",
+    "HouseSystemResult",
     "Houses",
+    "PlanetCoordinateResult",
     "Result",
     "Undefined",
     "VedicChartAnalysis",
     "__version__",
+    "adapter",
+    "almanac",
     "compact_kernel",
     "compile_ai_fact_sheet",
     "compute_vedic_chart_analysis",
-    "eclipses",
     "fact_sheet",
     "jyotish",
     "jyotish_advanced",
     "jyotish_jaimini",
     "jyotish_nadi",
     "jyotish_rectification",
+    "jyotish_siddhanta",
     "jyotish_transit",
+    "normalize_ephemeris_source",
     "phenomena",
     "rust_bridge",
     "uncertainty_envelope",

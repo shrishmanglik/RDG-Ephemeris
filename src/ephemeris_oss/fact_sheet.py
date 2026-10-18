@@ -221,7 +221,7 @@ def compile_ai_fact_sheet(
     latitude_deg: float = 0.0,
     max_bytes: int = 3000,
 ) -> AIFactSheet:
-    """Compile a deterministic Vedic astrological fact sheet guaranteed under ``max_bytes``."""
+    """Compile a deterministic Jyotish fact sheet guaranteed under ``max_bytes``."""
     if max_bytes < 512:
         raise ValueError("max_bytes must be at least 512 bytes")
 
@@ -443,7 +443,7 @@ _RE_D9_PLACEMENT = re.compile(
     re.IGNORECASE,
 )
 _RE_SIGN_PLACEMENT = re.compile(
-    rf"\b{_BODY_PATTERN}\s+(?:is\s+|resides\s+|sits\s+|placed\s+|positioned\s+)?in\s+(?:the\s+sign\s+of\s+)?{_SIGN_PATTERN}(?!\s+(?:in\s+)?(?:navamsa|navamsha|d-?9))\b",
+    rf"\b{_BODY_PATTERN}\s+(?:is\s+)?(?:resides\s+|sits\s+|placed\s+|positioned\s+)?in\s+(?:the\s+sign\s+of\s+)?{_SIGN_PATTERN}(?!\s+(?:in\s+)?(?:navamsa|navamsha|d-?9))\b",
     re.IGNORECASE,
 )
 _RE_SIGN_LAGNA = re.compile(

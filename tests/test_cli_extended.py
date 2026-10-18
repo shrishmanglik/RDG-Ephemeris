@@ -13,25 +13,33 @@ from ephemeris_oss.cli import main
 def test_top_level_exports_complete() -> None:
     expected = {
         "AIFactSheet",
+        "AnalyticalEphemerisProvider",
+        "CompleteKundaliBundle",
         "EarthOrientation",
         "Engine",
+        "EphemerisAdapter",
         "EphemerisError",
         "HallucinationAudit",
+        "HouseSystemResult",
         "Houses",
+        "PlanetCoordinateResult",
         "Result",
         "Undefined",
         "VedicChartAnalysis",
+        "adapter",
+        "almanac",
         "compact_kernel",
         "compile_ai_fact_sheet",
         "compute_vedic_chart_analysis",
-        "eclipses",
         "fact_sheet",
         "jyotish",
         "jyotish_advanced",
         "jyotish_jaimini",
         "jyotish_nadi",
         "jyotish_rectification",
+        "jyotish_siddhanta",
         "jyotish_transit",
+        "normalize_ephemeris_source",
         "phenomena",
         "rust_bridge",
         "uncertainty_envelope",
@@ -157,3 +165,34 @@ def test_cli_eclipses_json(capsys: pytest.CaptureFixture[str]) -> None:
     assert payload["solar_eclipses"][0]["local_circumstances"]["classification"] == "total"
     assert len(payload["lunar_eclipses"]) == 1
     assert payload["lunar_eclipses"][0]["classification"] == "penumbral"
+
+
+def test_cli_panchang_siddhanta_and_table(capsys: pytest.CaptureFixture[str]) -> None:
+    rc_p = main(["panchang", "--year", "2026", "--month", "1", "--json"])
+    assert rc_p == 0
+    p_payload = json.loads(capsys.readouterr().out)
+    assert p_payload["year"] == 2026
+    assert len(p_payload["days"]) == 31
+
+    rc_s = main(["siddhanta", "--at", "2026-01-01T00:00:00Z", "--json"])
+    assert rc_s == 0
+    s_payload = json.loads(capsys.readouterr().out)
+    assert "planets" in s_payload
+    assert len(s_payload["receipt_sha256"]) == 64
+
+    rc_t = main(
+        [
+            "table",
+            "--start",
+            "2026-01-01T00:00:00Z",
+            "--end",
+            "2026-01-03T00:00:00Z",
+            "--step-days",
+            "1.0",
+            "--format",
+            "csv",
+        ]
+    )
+    assert rc_t == 0
+    csv_out = capsys.readouterr().out
+    assert "jd_ut,iso_utc" in csv_out
