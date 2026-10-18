@@ -221,7 +221,7 @@ def compile_ai_fact_sheet(
     latitude_deg: float = 0.0,
     max_bytes: int = 3000,
 ) -> AIFactSheet:
-    """Compile a deterministic Vedic astrological fact sheet guaranteed under ``max_bytes``."""
+    """Compile a deterministic Jyotish fact sheet guaranteed under ``max_bytes``."""
     if max_bytes < 512:
         raise ValueError("max_bytes must be at least 512 bytes")
 
