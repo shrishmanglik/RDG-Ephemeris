@@ -443,7 +443,7 @@ _RE_D9_PLACEMENT = re.compile(
     re.IGNORECASE,
 )
 _RE_SIGN_PLACEMENT = re.compile(
-    rf"\b{_BODY_PATTERN}\s+(?:is\s+|resides\s+|sits\s+|placed\s+|positioned\s+)?in\s+(?:the\s+sign\s+of\s+)?{_SIGN_PATTERN}(?!\s+(?:in\s+)?(?:navamsa|navamsha|d-?9))\b",
+    rf"\b{_BODY_PATTERN}\s+(?:is\s+)?(?:resides\s+|sits\s+|placed\s+|positioned\s+)?in\s+(?:the\s+sign\s+of\s+)?{_SIGN_PATTERN}(?!\s+(?:in\s+)?(?:navamsa|navamsha|d-?9))\b",
     re.IGNORECASE,
 )
 _RE_SIGN_LAGNA = re.compile(

@@ -618,27 +618,32 @@ class EphemerisAdapter:
         vertex_final = normalize_degrees(tropical_vertex - total_offset)
 
         norm_sys = str(system or "whole_sign").strip().lower().replace("-", "_")
-        if norm_sys in {"whole_sign", "whole", "w", "equal", "equal_house", "e"}:
-            layout = house_layout(
-                norm_sys,
-                ascendant_deg=asc_final,
-                midheaven_deg=mc_final,
-            )
-            cusps_final = tuple(float(c) for c in layout.cusps_deg)
-            canonical_sys = layout.system
-        else:
-            layout = house_layout(
-                norm_sys,
-                ascendant_deg=angles.ascendant_deg,
-                midheaven_deg=angles.midheaven_deg,
-                local_apparent_sidereal_deg=angles.local_apparent_sidereal_deg,
-                latitude_deg=lat,
-                true_obliquity_deg=angles.true_obliquity_deg,
-            )
-            cusps_final = tuple(
-                normalize_degrees(float(c) - total_offset) for c in layout.cusps_deg
-            )
-            canonical_sys = layout.system
+        try:
+            if norm_sys in {"whole_sign", "whole", "w", "equal", "equal_house", "e"}:
+                layout = house_layout(
+                    norm_sys,
+                    ascendant_deg=asc_final,
+                    midheaven_deg=mc_final,
+                )
+                cusps_final = tuple(float(c) for c in layout.cusps_deg)
+                canonical_sys = layout.system
+            else:
+                layout = house_layout(
+                    norm_sys,
+                    ascendant_deg=angles.ascendant_deg,
+                    midheaven_deg=angles.midheaven_deg,
+                    local_apparent_sidereal_deg=angles.local_apparent_sidereal_deg,
+                    latitude_deg=lat,
+                    true_obliquity_deg=angles.true_obliquity_deg,
+                )
+                cusps_final = tuple(
+                    normalize_degrees(float(c) - total_offset) for c in layout.cusps_deg
+                )
+                canonical_sys = layout.system
+        except Exception as error:
+            if isinstance(error, EphemerisError):
+                raise
+            raise EphemerisError(str(error)) from error
 
         receipt_payload = {
             "schema": "ephemeris-oss.adapter.houses_ut.v1",
