@@ -1,0 +1,33 @@
+{
+  "name": "@theagistudio/jyotish-wasm",
+  "version": "0.2.0",
+  "description": "Clean-room zero-dependency WebAssembly and ES module Jyotish and Chebyshev ephemeris engine with sub-2ms client-side Kundali calculation and SHA-256 receipts.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./ephemeris-browser.js",
+  "types": "./ephemeris-browser.d.ts",
+  "exports": {
+    ".": {
+      "types": "./ephemeris-browser.d.ts",
+      "import": "./ephemeris-browser.js",
+      "default": "./ephemeris-browser.js"
+    }
+  },
+  "files": [
+    "ephemeris-browser.js",
+    "ephemeris-browser.d.ts"
+  ],
+  "sideEffects": false,
+  "dependencies": {},
+  "keywords": [
+    "ephemeris",
+    "jyotish",
+    "chebyshev",
+    "clenshaw",
+    "wasm",
+    "astronomy",
+    "shodashvarga",
+    "panchanga",
+    "kundali"
+  ]
+}

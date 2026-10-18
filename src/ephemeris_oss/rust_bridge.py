@@ -15,13 +15,16 @@ import ctypes
 import math
 import struct
 from pathlib import Path
-from typing import Sequence
+from typing import Any, Sequence
+
+import numpy as np
 
 J2000_JD = 2451545.0
 JULIAN_CENTURY_DAYS = 36525.0
 
 EXPECTED_WASM_EXPORTS: tuple[str, ...] = (
     "ephemeris_normalize_deg",
+    "eoss_eval_chebyshev_1d",
     "ephemeris_chebyshev_state_3d",
     "ephemeris_tdb_minus_tt_seconds",
     "ephemeris_mean_lunar_node_deg",
@@ -66,6 +69,90 @@ def evaluate_chebyshev_1d(coeffs: Sequence[float], tau: float) -> tuple[float, f
     value = tau * b_kplus1 - b_kplus2 + float(coeffs[0])
     d_value_d_tau = b_kplus1 + tau * db_kplus1 - db_kplus2
     return value, d_value_d_tau
+
+
+def evaluate_chebyshev_clenshaw_1d(
+    coeffs_rev: Sequence[float], tau: float, span_days: float
+) -> tuple[float, float]:
+    """Evaluate a reverse-ordered 1D Chebyshev series `coeffs_rev` (highest degree down to c_0)
+    at normalized coordinate `tau` in `[-1, 1]` over `span_days`, returning `(position, velocity_per_day)`.
+    """
+    n = len(coeffs_rev)
+    if n == 0:
+        return 0.0, 0.0
+    if n == 1:
+        return float(coeffs_rev[0]), 0.0
+    tau_f = float(tau)
+    s2 = 2.0 * tau_f
+    w0 = 0.0
+    w1 = 0.0
+    dw0 = 0.0
+    dw1 = 0.0
+    for i in range(n - 1):
+        w2 = w1
+        w1 = w0
+        w0 = float(coeffs_rev[i]) + (s2 * w1 - w2)
+
+        dw2 = dw1
+        dw1 = dw0
+        dw0 = 2.0 * w1 + dw1 * s2 - dw2
+
+    position = float(coeffs_rev[n - 1]) + (tau_f * w0 - w1)
+    scale = (2.0 / float(span_days)) if span_days != 0.0 else 0.0
+    velocity = (w0 + tau_f * dw0 - dw1) * scale
+    return position, velocity
+
+
+def evaluate_chebyshev_clenshaw_3d(
+    coeffs_rev_3d: Any,
+    jd_tdb: float,
+    start_jd: float,
+    intlen_days: float,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Evaluate 3D Chebyshev position (km) and velocity (km/day) via backward Clenshaw recurrence,
+    matching `CompactChebyshevSegment.compute_and_differentiate` to machine precision (< 1e-9 km).
+    Accepts `coeffs_rev_3d` with shape `(degree, 3, n_intervals)`, `(degree, 3)`, or `(3, degree)`.
+    """
+    intlen = float(intlen_days)
+    if intlen <= 0.0:
+        raise ValueError("intlen_days must be positive")
+    arr = np.asarray(coeffs_rev_3d, dtype=np.float64)
+    t_rel = float(jd_tdb) - float(start_jd)
+    if arr.ndim == 3:
+        n_intervals = int(arr.shape[2])
+        idx_f, offset = divmod(t_rel, intlen)
+        idx = int(idx_f)
+        if idx == n_intervals and abs(offset) <= 1e-12:
+            idx -= 1
+            offset += intlen
+        if idx < 0 or idx >= n_intervals:
+            raise ValueError(f"jd_tdb {jd_tdb} outside segment interval range")
+        tau = 2.0 * offset / intlen - 1.0
+        axes_coeffs = (arr[:, 0, idx], arr[:, 1, idx], arr[:, 2, idx])
+    elif arr.ndim == 2:
+        if isinstance(coeffs_rev_3d, (tuple, list)) and len(coeffs_rev_3d) == 3 and arr.shape[0] == 3:
+            axes_coeffs = (arr[0, :], arr[1, :], arr[2, :])
+        elif arr.shape[1] == 3 and arr.shape[0] != 3:
+            axes_coeffs = (arr[:, 0], arr[:, 1], arr[:, 2])
+        elif arr.shape[0] == 3:
+            axes_coeffs = (arr[0, :], arr[1, :], arr[2, :])
+        else:
+            raise ValueError(f"unsupported 2D coeffs_rev_3d shape: {arr.shape}")
+        if -1e-9 <= t_rel <= intlen + 1e-9:
+            offset = t_rel
+        else:
+            _, offset = divmod(t_rel, intlen)
+        tau = 2.0 * offset / intlen - 1.0
+    else:
+        raise ValueError(f"coeffs_rev_3d must be 2D or 3D, got shape {arr.shape}")
+
+    pos = np.empty(3, dtype=np.float64)
+    vel = np.empty(3, dtype=np.float64)
+    for axis in range(3):
+        p, v = evaluate_chebyshev_clenshaw_1d(axes_coeffs[axis], tau, intlen)
+        pos[axis] = p
+        vel[axis] = v
+    return pos, vel
 
 
 def chebyshev_state_3d(
@@ -252,6 +339,15 @@ def load_native_cdylib(dll_path: str | Path) -> ctypes.CDLL:
     lib = ctypes.CDLL(str(dll_path))
     lib.ephemeris_normalize_deg.argtypes = [ctypes.c_double]
     lib.ephemeris_normalize_deg.restype = ctypes.c_double
+
+    lib.eoss_eval_chebyshev_1d.argtypes = [
+        ctypes.POINTER(ctypes.c_double),
+        ctypes.c_size_t,
+        ctypes.c_double,
+        ctypes.c_double,
+        ctypes.POINTER(ctypes.c_double),
+    ]
+    lib.eoss_eval_chebyshev_1d.restype = ctypes.c_double
 
     lib.ephemeris_chebyshev_state_3d.argtypes = [
         ctypes.POINTER(ctypes.c_double),

@@ -39,9 +39,16 @@ from .adapter import (
     PlanetCoordinateResult,
     normalize_ephemeris_source,
 )
+from .almanac import (
+    RegionalPanchangReport,
+    compute_lunar_month_amanta_purnimanta,
+    compute_regional_panchang,
+    compute_regional_solar_calendar,
+)
 from .engine import phenomena, uncertainty_envelope
 from .fact_sheet import AIFactSheet, HallucinationAudit, compile_ai_fact_sheet, verify_ai_interpretation
 from .jyotish import VedicChartAnalysis, compute_vedic_chart_analysis
+from .rust_bridge import evaluate_chebyshev_clenshaw_3d
 
 __all__ = [
     "AIFactSheet",
@@ -55,6 +62,7 @@ __all__ = [
     "HouseSystemResult",
     "Houses",
     "PlanetCoordinateResult",
+    "RegionalPanchangReport",
     "Result",
     "Undefined",
     "VedicChartAnalysis",
@@ -63,7 +71,11 @@ __all__ = [
     "almanac",
     "compact_kernel",
     "compile_ai_fact_sheet",
+    "compute_lunar_month_amanta_purnimanta",
+    "compute_regional_panchang",
+    "compute_regional_solar_calendar",
     "compute_vedic_chart_analysis",
+    "evaluate_chebyshev_clenshaw_3d",
     "fact_sheet",
     "jyotish",
     "jyotish_advanced",

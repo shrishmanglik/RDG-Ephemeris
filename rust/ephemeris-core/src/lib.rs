@@ -53,6 +53,68 @@ pub fn evaluate_chebyshev_1d(coeffs: &[f64], tau: f64) -> (f64, f64) {
     (value, d_value_d_tau)
 }
 
+/// Evaluate a reverse-ordered 1D Chebyshev series `coeffs_rev` (ordered from highest degree
+/// `m = degree - 1` down to constant term `m = 0`) at normalized coordinate `tau` in `[-1.0, 1.0]`
+/// over interval length `span_days`, returning `(position, velocity_per_day)`.
+pub fn evaluate_chebyshev_clenshaw_1d(coeffs_rev: &[f64], tau: f64, span_days: f64) -> (f64, f64) {
+    let n = coeffs_rev.len();
+    if n == 0 {
+        return (0.0, 0.0);
+    }
+    if n == 1 {
+        return (coeffs_rev[0], 0.0);
+    }
+    let s2 = 2.0 * tau;
+    let mut w0 = 0.0;
+    let mut w1 = 0.0;
+    let mut dw0 = 0.0;
+    let mut dw1 = 0.0;
+
+    for &coeff in &coeffs_rev[..n - 1] {
+        let w2 = w1;
+        w1 = w0;
+        w0 = coeff + (s2 * w1 - w2);
+
+        let dw2 = dw1;
+        dw1 = dw0;
+        dw0 = 2.0 * w1 + dw1 * s2 - dw2;
+    }
+
+    let position = coeffs_rev[n - 1] + (tau * w0 - w1);
+    let scale = if span_days != 0.0 { 2.0 / span_days } else { 0.0 };
+    let velocity = (w0 + tau * dw0 - dw1) * scale;
+    (position, velocity)
+}
+
+/// C-ABI / WebAssembly export evaluating a reverse-ordered 1D Chebyshev series `coeffs_ptr`
+/// of length `degree` at `tau` in `[-1.0, 1.0]` over `span_days`.
+/// Returns position and writes velocity (`d_pos / d_t`) to `out_vel_ptr` when non-null.
+#[no_mangle]
+pub extern "C" fn eoss_eval_chebyshev_1d(
+    coeffs_ptr: *const f64,
+    degree: usize,
+    tau: f64,
+    span_days: f64,
+    out_vel_ptr: *mut f64,
+) -> f64 {
+    if coeffs_ptr.is_null() || degree == 0 {
+        if !out_vel_ptr.is_null() {
+            unsafe {
+                *out_vel_ptr = 0.0;
+            }
+        }
+        return 0.0;
+    }
+    let coeffs_rev = unsafe { slice::from_raw_parts(coeffs_ptr, degree) };
+    let (pos, vel) = evaluate_chebyshev_clenshaw_1d(coeffs_rev, tau, span_days);
+    if !out_vel_ptr.is_null() {
+        unsafe {
+            *out_vel_ptr = vel;
+        }
+    }
+    pos
+}
+
 /// Evaluate a 3D Chebyshev state `(x, y, z, vx, vy, vz)` over interval `[t_start, t_end]`.
 /// `coeffs_xyz` must contain `3 * degree_count` contiguous `f64` elements (`X`, then `Y`, then `Z`).
 /// Writes 6 `f64` outputs `[x, y, z, vx_per_day, vy_per_day, vz_per_day]` to `out_state6`.
@@ -367,6 +429,17 @@ mod tests {
         let (val, der) = evaluate_chebyshev_1d(&coeffs, x);
         assert!((val - expected_val).abs() < 1e-14);
         assert!((der - expected_der).abs() < 1e-14);
+
+        let coeffs_rev = [0.25, -0.5, 2.0, 3.0];
+        let span_days = 8.0;
+        let (pos_rev, vel_rev) = evaluate_chebyshev_clenshaw_1d(&coeffs_rev, x, span_days);
+        assert!((pos_rev - expected_val).abs() < 1e-14);
+        assert!((vel_rev - expected_der * (2.0 / span_days)).abs() < 1e-14);
+
+        let mut c_vel = 0.0;
+        let c_pos = eoss_eval_chebyshev_1d(coeffs_rev.as_ptr(), coeffs_rev.len(), x, span_days, &mut c_vel);
+        assert!((c_pos - pos_rev).abs() < 1e-15);
+        assert!((c_vel - vel_rev).abs() < 1e-15);
     }
 
     #[test]
