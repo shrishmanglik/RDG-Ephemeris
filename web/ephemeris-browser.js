@@ -1710,6 +1710,371 @@ export function benchmarkClientKundali(iterations = 32) {
   };
 }
 
+const ZERO_COPY_SHODASHVARGA_DIVS = Object.freeze([1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60]);
+const ZERO_COPY_VIMSHOTTARI_YEARS = Object.freeze([7, 20, 6, 10, 7, 18, 16, 19, 17]);
+const ZERO_COPY_BAV_MASKS = Object.freeze([
+  [0x07cb, 0x0624, 0x07cb, 0x0f34, 0x0530, 0x0860, 0x07cb, 0x0e2c],
+  [0x06e4, 0x0665, 0x0736, 0x06dd, 0x0ec9, 0x075c, 0x0434, 0x0624],
+  [0x0634, 0x0424, 0x06cb, 0x0434, 0x0e20, 0x0ca0, 0x07c9, 0x0625],
+  [0x0d30, 0x06aa, 0x07cb, 0x0f35, 0x0ca0, 0x059f, 0x07cb, 0x06ab],
+  [0x07cf, 0x0552, 0x06cb, 0x073b, 0x06cf, 0x0732, 0x0834, 0x077b],
+  [0x0c80, 0x0d9f, 0x0d34, 0x0534, 0x0790, 0x079f, 0x079c, 0x059f],
+  [0x06cb, 0x0424, 0x0e34, 0x0fa0, 0x0c30, 0x0c20, 0x0434, 0x062d],
+  [0x0e2c, 0x0e24, 0x0625, 0x06ab, 0x077b, 0x059f, 0x062d, 0x0224]
+]);
+
+export function computeKpSubIndex249(siderealLonDeg) {
+  const lon = normalizeDegrees(siderealLonDeg);
+  let cursorNinths = 0;
+  let number = 1;
+  for (let nakIdx = 0; nakIdx < 27; nakIdx++) {
+    const starLordIdx = nakIdx % 9;
+    for (let step = 0; step < 9; step++) {
+      const subLordIdx = (starLordIdx + step) % 9;
+      const subSpanNinths = ZERO_COPY_VIMSHOTTARI_YEARS[subLordIdx];
+      const subStartNinths = cursorNinths;
+      const subEndNinths = cursorNinths + subSpanNinths;
+      cursorNinths = subEndNinths;
+
+      const startRasi = Math.floor(subStartNinths / 270);
+      const endRasi = Math.floor((subEndNinths - 1) / 270);
+      if (startRasi === endRasi) {
+        const startDeg = subStartNinths / 9.0;
+        const endDeg = subEndNinths / 9.0;
+        if ((lon >= startDeg && lon < endDeg) || (number === 249 && Math.abs(lon - 360.0) < 1e-12)) {
+          return number;
+        }
+        number += 1;
+      } else {
+        const boundaryNinths = (startRasi + 1) * 270;
+        const startDeg = subStartNinths / 9.0;
+        const boundaryDeg = boundaryNinths / 9.0;
+        const endDeg = subEndNinths / 9.0;
+        if (lon >= startDeg && lon < boundaryDeg) {
+          return number;
+        }
+        number += 1;
+        if ((lon >= boundaryDeg && lon < endDeg) || (number === 249 && Math.abs(lon - 360.0) < 1e-12)) {
+          return number;
+        }
+        number += 1;
+      }
+    }
+  }
+  return 249;
+}
+
+const _fallbackArenaBuffer = new ArrayBuffer(1480);
+let _wasmExports = null;
+let _decompressedKernelBytes = null;
+
+function solvePlacidusCuspTropicalDeg(ramcRad, phiRad, epsRad, fraction, isNocturnal) {
+  const tanPhi = Math.tan(phiRad);
+  const cosEps = Math.cos(epsRad);
+  const sinEps = Math.sin(epsRad);
+  let ra = ramcRad + (isNocturnal ? Math.PI - fraction * (Math.PI * 0.5) : fraction * (Math.PI * 0.5));
+  for (let iter = 0; iter < 10; iter++) {
+    const lon = Math.atan2(Math.sin(ra), Math.cos(ra) * cosEps);
+    const sinDelta = Math.max(-1.0, Math.min(1.0, Math.sin(lon) * sinEps));
+    const cosDelta = Math.sqrt(Math.max(1e-12, 1.0 - sinDelta * sinDelta));
+    const tanDelta = sinDelta / cosDelta;
+    const arg = -tanPhi * tanDelta;
+    if (Math.abs(arg) >= 0.999999) {
+      return null;
+    }
+    const sda = Math.acos(arg);
+    if (isNocturnal) {
+      const sna = Math.PI - sda;
+      ra = ramcRad + Math.PI - fraction * sna;
+    } else {
+      ra = ramcRad + fraction * sda;
+    }
+  }
+  return normalizeDegrees(Math.atan2(Math.sin(ra), Math.cos(ra) * cosEps) * RAD2DEG);
+}
+
+/**
+ * Return true when the compiled Rust WebAssembly zero-copy arena has been instantiated.
+ */
+export function isWasmArenaInitialized() {
+  return Boolean(_wasmExports);
+}
+
+/**
+ * Initialize the zero-copy WebAssembly Ephemeris & Jyotish linear-memory arena.
+ * Supports decompressing `de440_compact.bin.zlib` via `DecompressionStream('deflate')`
+ * and instantiating compiled `.wasm` binaries (`\0asm`), validating all required exports.
+ */
+export async function initEphemerisWasm(kernelBytes) {
+  if (!kernelBytes) {
+    return;
+  }
+  let rawInput = kernelBytes;
+  if (typeof rawInput === "string" && typeof fetch === "function") {
+    const resp = await fetch(rawInput);
+    if (!resp.ok) {
+      throw new Error(`Failed to fetch WebAssembly module from ${rawInput}: HTTP ${resp.status}`);
+    }
+    rawInput = await resp.arrayBuffer();
+  }
+  let u8 = rawInput instanceof Uint8Array ? rawInput : new Uint8Array(rawInput);
+  // Check for zlib header (0x78 0x01, 0x78 0x5e, 0x78 0x9c, 0x78 0xda) and decompress via DecompressionStream('deflate')
+  if (
+    u8.byteLength >= 2 &&
+    u8[0] === 0x78 &&
+    (u8[1] === 0x01 || u8[1] === 0x5e || u8[1] === 0x9c || u8[1] === 0xda) &&
+    typeof DecompressionStream !== "undefined" &&
+    typeof Response !== "undefined"
+  ) {
+    const stream = new Blob([u8]).stream().pipeThrough(new DecompressionStream("deflate"));
+    const decompressedBuf = await new Response(stream).arrayBuffer();
+    u8 = new Uint8Array(decompressedBuf);
+    _decompressedKernelBytes = u8;
+  }
+  if (u8.byteLength >= 8 && u8[0] === 0x00 && u8[1] === 0x61 && u8[2] === 0x73 && u8[3] === 0x6d) {
+    const instantiated = await WebAssembly.instantiate(u8, {});
+    const instance = instantiated.instance || instantiated;
+    const exportsObj = instance && instance.exports ? instance.exports : null;
+    if (
+      !exportsObj ||
+      !(exportsObj.memory instanceof WebAssembly.Memory) ||
+      typeof exportsObj.wasm_arena_request_ptr !== "function" ||
+      typeof exportsObj.wasm_arena_output_ptr !== "function" ||
+      typeof exportsObj.wasm_compute_full_kundali !== "function"
+    ) {
+      throw new Error(
+        "Incompatible WebAssembly module: missing required zero-copy arena exports (memory, wasm_arena_request_ptr, wasm_arena_output_ptr, wasm_compute_full_kundali)"
+      );
+    }
+    _wasmExports = exportsObj;
+  } else {
+    _decompressedKernelBytes = u8;
+  }
+}
+
+/**
+ * Compute a complete Kundali chart in place inside a zero-copy 1416-byte linear-memory arena
+ * (`BatchNatalRequest` = 64 bytes, `FullKundaliOutput` = 1416 bytes) with zero JSON serialization.
+ */
+export function computeFullChartZeroCopy(request = {}) {
+  const isTypedReq = request instanceof Float64Array;
+  const jdUtc = Number(isTypedReq ? request[0] : (request.jdUtc ?? 2451545.0));
+  const decimalYear = 2000.0 + (jdUtc - J2000_JD) / 365.2425;
+  const defaultDeltaT = estimateDeltaTSeconds(decimalYear);
+  const rawDeltaT = isTypedReq ? Number(request[2] ?? 0.0) : Number(request.deltaTSec ?? 0.0);
+  const deltaTSec = Math.abs(rawDeltaT) > 1e-6 ? rawDeltaT : defaultDeltaT;
+  const rawJdTt = isTypedReq ? Number(request[1] ?? 0.0) : Number(request.jdTt ?? 0.0);
+  const jdTt = rawJdTt > 1000000.0 ? rawJdTt : jdUtc + deltaTSec / 86400.0;
+  const latDeg = Number(isTypedReq ? request[3] : (request.latDeg ?? 28.6139));
+  const lonDeg = Number(isTypedReq ? request[4] : (request.lonDeg ?? 77.2090));
+  const altM = Number(isTypedReq ? request[5] : (request.altM ?? request.elevM ?? 0.0));
+  const ayanamsaId = (isTypedReq ? Number(request[6] ?? 0) : Number(request.ayanamsaId ?? 0)) >>> 0;
+  const houseSystemId = (isTypedReq ? Number(request[7] ?? 0) : Number(request.houseSystemId ?? 0)) >>> 0;
+  const nodeMode = Number(request.nodeMode ?? 0) >>> 0;
+
+  let buf = _fallbackArenaBuffer;
+  let reqBase = 0;
+  let outBase = 64;
+
+  if (_wasmExports && _wasmExports.memory) {
+    reqBase = _wasmExports.wasm_arena_request_ptr() >>> 0;
+    outBase = _wasmExports.wasm_arena_output_ptr() >>> 0;
+    buf = _wasmExports.memory.buffer;
+  }
+
+  const reqF64 = new Float64Array(buf, reqBase, 6);
+  reqF64[0] = jdUtc;
+  reqF64[1] = jdTt;
+  reqF64[2] = deltaTSec;
+  reqF64[3] = latDeg;
+  reqF64[4] = lonDeg;
+  reqF64[5] = altM;
+  const reqU32 = new Uint32Array(buf, reqBase + 48, 4);
+  reqU32[0] = ayanamsaId;
+  reqU32[1] = houseSystemId;
+  reqU32[2] = nodeMode;
+  reqU32[3] = 0;
+
+  if (_wasmExports && _wasmExports.wasm_compute_full_kundali) {
+    _wasmExports.wasm_compute_full_kundali(reqBase, outBase);
+    buf = _wasmExports.memory.buffer;
+  } else {
+    // Populate the identical 1416-byte FullKundaliOutput layout in place inside the fallback ArrayBuffer
+    const planetLonSidereal = new Float64Array(buf, outBase + 0, 12);
+    const planetLatEcliptic = new Float64Array(buf, outBase + 96, 12);
+    const planetSpeedLon = new Float64Array(buf, outBase + 192, 12);
+    const houseCuspsSidereal = new Float64Array(buf, outBase + 288, 12);
+    const vargaRashiMatrix = new Uint8Array(buf, outBase + 384, 192);
+    const ashtakavargaBav = new Uint8Array(buf, outBase + 576, 96);
+    const ashtakavargaSav = new Uint8Array(buf, outBase + 672, 12);
+    const savAlignmentPad = new Uint8Array(buf, outBase + 684, 4);
+    const dashaMahadashaStartJd = new Float64Array(buf, outBase + 688, 9);
+    const dashaAntardashaStartJd = new Float64Array(buf, outBase + 760, 81);
+    const polarWords = new Uint32Array(buf, outBase + 1408, 2);
+
+    const ayanamsaKeys = ["lahiri", "raman", "krishnamurti", "yukteshwar", "fagan_bradley", "true_citra"];
+    const ayanamsaKey = ayanamsaKeys[ayanamsaId] || "lahiri";
+    const clampedLat = Math.max(-89.85, Math.min(89.85, latDeg));
+    const planetary = computePlanets(jdTt, { ayanamsa: ayanamsaKey, nodeMode: nodeMode === 1 ? "true" : "mean" });
+    const houses = computeAscendantAndHouses(jdTt, jdUtc, clampedLat, lonDeg, ayanamsaKey);
+    const ascSid = houses.siderealAscendantDeg;
+    const mcSid = houses.siderealMidheavenDeg;
+
+    const grahaOrder = ["sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn", "rahu", "ketu"];
+    for (let i = 0; i < 9; i++) {
+      const g = planetary.grahas[grahaOrder[i]];
+      planetLonSidereal[i] = g.siderealLongitudeDeg;
+      planetLatEcliptic[i] = g.latitudeDeg;
+      planetSpeedLon[i] = g.speedDegPerDay;
+    }
+    const d = jdTt - J2000_JD;
+    planetLonSidereal[9] = normalizeDegrees(314.055 + 0.01172834 * d - planetary.ayanamsaDeg);
+    planetLatEcliptic[9] = -0.7;
+    planetSpeedLon[9] = 0.01172834;
+    planetLonSidereal[10] = normalizeDegrees(304.348 + 0.00598103 * d - planetary.ayanamsaDeg);
+    planetLatEcliptic[10] = 1.8;
+    planetSpeedLon[10] = 0.00598103;
+    planetLonSidereal[11] = ascSid;
+    planetLatEcliptic[11] = 0.0;
+    planetSpeedLon[11] = 360.9856;
+
+    let isPolarFallback = (houseSystemId === 2 || houseSystemId === 3) && Math.abs(latDeg) >= 66.5;
+    savAlignmentPad.fill(0);
+    polarWords[1] = 0;
+
+    if (houseSystemId === 0) {
+      for (let h = 0; h < 12; h++) {
+        houseCuspsSidereal[h] = houses.wholeSignCusps[h];
+      }
+    } else if (houseSystemId === 2 && !isPolarFallback) {
+      const thetaRad = houses.localApparentSiderealDeg * DEG2RAD;
+      const phiRad = clampedLat * DEG2RAD;
+      const epsRad = houses.trueObliquityDeg * DEG2RAD;
+      const t11 = solvePlacidusCuspTropicalDeg(thetaRad, phiRad, epsRad, 1.0 / 3.0, false);
+      const t12 = solvePlacidusCuspTropicalDeg(thetaRad, phiRad, epsRad, 2.0 / 3.0, false);
+      const t2 = solvePlacidusCuspTropicalDeg(thetaRad, phiRad, epsRad, 2.0 / 3.0, true);
+      const t3 = solvePlacidusCuspTropicalDeg(thetaRad, phiRad, epsRad, 1.0 / 3.0, true);
+      if (t11 !== null && t12 !== null && t2 !== null && t3 !== null) {
+        const icSid = normalizeDegrees(mcSid + 180.0);
+        const dscSid = normalizeDegrees(ascSid + 180.0);
+        const s11 = normalizeDegrees(t11 - planetary.ayanamsaDeg);
+        const s12 = normalizeDegrees(t12 - planetary.ayanamsaDeg);
+        const s2 = normalizeDegrees(t2 - planetary.ayanamsaDeg);
+        const s3 = normalizeDegrees(t3 - planetary.ayanamsaDeg);
+        houseCuspsSidereal[0] = ascSid;
+        houseCuspsSidereal[1] = s2;
+        houseCuspsSidereal[2] = s3;
+        houseCuspsSidereal[3] = icSid;
+        houseCuspsSidereal[4] = normalizeDegrees(s11 + 180.0);
+        houseCuspsSidereal[5] = normalizeDegrees(s12 + 180.0);
+        houseCuspsSidereal[6] = dscSid;
+        houseCuspsSidereal[7] = normalizeDegrees(s2 + 180.0);
+        houseCuspsSidereal[8] = normalizeDegrees(s3 + 180.0);
+        houseCuspsSidereal[9] = mcSid;
+        houseCuspsSidereal[10] = s11;
+        houseCuspsSidereal[11] = s12;
+      } else {
+        isPolarFallback = true;
+      }
+    }
+
+    if (houseSystemId !== 0 && (houseSystemId !== 2 || isPolarFallback)) {
+      const icSid = normalizeDegrees(mcSid + 180.0);
+      const dscSid = normalizeDegrees(ascSid + 180.0);
+      const q1 = normalizeDegrees(icSid - ascSid) / 3.0;
+      const q2 = normalizeDegrees(dscSid - icSid) / 3.0;
+      houseCuspsSidereal[0] = ascSid;
+      houseCuspsSidereal[1] = normalizeDegrees(ascSid + q1);
+      houseCuspsSidereal[2] = normalizeDegrees(ascSid + 2.0 * q1);
+      houseCuspsSidereal[3] = icSid;
+      houseCuspsSidereal[4] = normalizeDegrees(icSid + q2);
+      houseCuspsSidereal[5] = normalizeDegrees(icSid + 2.0 * q2);
+      for (let h = 6; h < 12; h++) {
+        houseCuspsSidereal[h] = normalizeDegrees(houseCuspsSidereal[h - 6] + 180.0);
+      }
+    }
+
+    polarWords[0] = isPolarFallback ? 1 : 0;
+
+    for (let b = 0; b < 12; b++) {
+      const lon = planetLonSidereal[b];
+      for (let v = 0; v < 16; v++) {
+        vargaRashiMatrix[v * 12 + b] = computeVargaRasiIndex(lon, `D${ZERO_COPY_SHODASHVARGA_DIVS[v]}`) + 1;
+      }
+    }
+
+    ashtakavargaBav.fill(0);
+    ashtakavargaSav.fill(0);
+    const contribSigns = [
+      vargaRashiMatrix[0] - 1,
+      vargaRashiMatrix[1] - 1,
+      vargaRashiMatrix[2] - 1,
+      vargaRashiMatrix[3] - 1,
+      vargaRashiMatrix[4] - 1,
+      vargaRashiMatrix[5] - 1,
+      vargaRashiMatrix[6] - 1,
+      vargaRashiMatrix[11] - 1
+    ];
+    for (let p = 0; p < 8; p++) {
+      for (let c = 0; c < 8; c++) {
+        const refSign = contribSigns[c] % 12;
+        const mask = ZERO_COPY_BAV_MASKS[p][c];
+        for (let offset = 0; offset < 12; offset++) {
+          if ((mask & (1 << offset)) !== 0) {
+            const targetSign = (refSign + offset) % 12;
+            ashtakavargaBav[p * 12 + targetSign] += 1;
+            if (p < 7) {
+              ashtakavargaSav[targetSign] += 1;
+            }
+          }
+        }
+      }
+    }
+
+    const moonLon = planetLonSidereal[1];
+    const moonNak = Math.min(Math.floor(normalizeDegrees(moonLon) / (360.0 / 27.0)), 26);
+    const span = 360.0 / 27.0;
+    const fracRem = Math.max(0.0, Math.min(1.0, 1.0 - (normalizeDegrees(moonLon) - moonNak * span) / span));
+    const startLord = moonNak % 9;
+    let cursorJd = jdUtc - (1.0 - fracRem) * ZERO_COPY_VIMSHOTTARI_YEARS[startLord] * TROPICAL_YEAR_DAYS;
+    for (let m = 0; m < 9; m++) {
+      const mLord = (startLord + m) % 9;
+      const mSpanDays = ZERO_COPY_VIMSHOTTARI_YEARS[mLord] * TROPICAL_YEAR_DAYS;
+      dashaMahadashaStartJd[m] = cursorJd;
+      let adCursor = cursorJd;
+      for (let a = 0; a < 9; a++) {
+        const aLord = (mLord + a) % 9;
+        dashaAntardashaStartJd[m * 9 + a] = adCursor;
+        adCursor += mSpanDays * (ZERO_COPY_VIMSHOTTARI_YEARS[aLord] / 120.0);
+      }
+      cursorJd += mSpanDays;
+    }
+  }
+
+  const lonsView = new Float64Array(buf, outBase + 0, 12);
+  const kpSubLords = new Uint16Array(12);
+  for (let i = 0; i < 12; i++) {
+    kpSubLords[i] = computeKpSubIndex249(lonsView[i]);
+  }
+
+  return {
+    planetLonSidereal: lonsView,
+    planetLatEcliptic: new Float64Array(buf, outBase + 96, 12),
+    planetLat: new Float64Array(buf, outBase + 96, 12),
+    planetSpeedLon: new Float64Array(buf, outBase + 192, 12),
+    houseCuspsSidereal: new Float64Array(buf, outBase + 288, 12),
+    vargaRashiMatrix: new Uint8Array(buf, outBase + 384, 192),
+    ashtakavargaBav: new Uint8Array(buf, outBase + 576, 96),
+    ashtakavargaSav: new Uint8Array(buf, outBase + 672, 12),
+    savAlignmentPad: new Uint8Array(buf, outBase + 684, 4),
+    dashaMahadashaStartJd: new Float64Array(buf, outBase + 688, 9),
+    dashaAntardashaStartJd: new Float64Array(buf, outBase + 760, 81),
+    polarStatusFlag: new Uint32Array(buf, outBase + 1408, 1)[0],
+    kpSubLordIndex: kpSubLords,
+    byteLength: 1416
+  };
+}
+
 export const EphemerisBrowser = Object.freeze({
   ENGINE_VERSION,
   AYANAMSA_CATALOG_VERSION,
@@ -1746,12 +2111,16 @@ export const EphemerisBrowser = Object.freeze({
   computeReceipt,
   computeChart,
   evaluateChebyshevSegment3D,
-  benchmarkClientKundali
+  benchmarkClientKundali,
+  isWasmArenaInitialized,
+  initEphemerisWasm,
+  computeFullChartZeroCopy
 });
 
 // Pre-warm JIT so every caller invocation executes in < 2 ms
 for (let _w = 0; _w < 3; _w++) {
   computeChart({ jdTt: 2451545.0 + _w * 10.0, latitudeDeg: 28.6139, longitudeDeg: 77.2090, ayanamsa: "lahiri" });
+  computeFullChartZeroCopy({ jdUtc: 2451545.0 + _w * 10.0, latDeg: 28.6139, lonDeg: 77.2090 });
 }
 
 if (typeof globalThis !== "undefined") {

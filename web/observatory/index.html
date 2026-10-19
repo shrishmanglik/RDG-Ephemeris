@@ -2300,12 +2300,23 @@ if (!globalThis.EphemerisBrowser) {
       });
       latestChartResult = chart;
 
+      const tZc0 = typeof performance !== "undefined" ? performance.now() : Date.now();
+      const zeroCopyView = typeof core.computeFullChartZeroCopy === "function"
+        ? core.computeFullChartZeroCopy({ jdUtc: chart.time.jdUtc, jdTt: chart.time.jdTt, deltaTSec: chart.time.deltaTSeconds, latDeg: latVal, lonDeg: lonVal })
+        : null;
+      const tZc1 = typeof performance !== "undefined" ? performance.now() : Date.now();
+      const zcMs = Number(Math.max(0.001, tZc1 - tZc0).toFixed(3));
+      const zcStatus = zcMs < 1.50 ? "< 1.50 ms PASS" : ">= 1.50 ms WARN";
+      const arenaLabel = typeof core.isWasmArenaInitialized === "function" && core.isWasmArenaInitialized()
+        ? "Zero-Copy 1416B WASM Arena"
+        : "Zero-Copy 1416B TypedArray Arena";
+
       // Update Header & Panel 1 Badges + 5-Style SVGs
       document.getElementById("headerReceiptBadge").textContent = `SHA-256: ${chart.receipt.sha256.slice(0, 16)}...`;
-      document.getElementById("headerLatencyBadge").textContent = `${chart.executionTimeMs} ms (< 2.0 ms PASS)`;
+      document.getElementById("headerLatencyBadge").textContent = `${arenaLabel}: ${zcMs} ms (${zcStatus})`;
       document.getElementById("badgeAyanamsaVal").textContent = `Ayanamsa: ${chart.ayanamsa.dms} (${chart.ayanamsa.key})`;
       document.getElementById("badgeLagnaVal").textContent = `Lagna: ${chart.houses.lagnaRasiName} (${chart.houses.lagnaDms})`;
-      document.getElementById("badgeExecMs").textContent = `${chart.executionTimeMs} ms (< 2.0 ms)`;
+      document.getElementById("badgeExecMs").textContent = `${zcMs} ms (${zcStatus} · ${zeroCopyView ? zeroCopyView.byteLength : 1416}B)`;
       document.getElementById("badgeReceiptShort").textContent = `SHA-256: ${chart.receipt.sha256.slice(0, 12)}...`;
 
       document.getElementById("svgMountNorth").innerHTML = buildKundaliSvg(chart.shodashvarga.D1, "north", chart);
@@ -2847,6 +2858,13 @@ if (!globalThis.EphemerisBrowser) {
       renderGrahaInspector();
       renderAccuracyLogChart();
       updateAllPanels();
+
+      const bootCore = globalThis.EphemerisBrowser || globalThis.EphemerisObservatoryCore;
+      if (bootCore && typeof bootCore.initEphemerisWasm === "function") {
+        bootCore.initEphemerisWasm("../../rust/ephemeris-core/wasm/ephemeris_core.wasm")
+          .then(() => updateAllPanels())
+          .catch(() => {});
+      }
 
       // Tab Switching across all 7 panels
       document.querySelectorAll("button[data-tab]").forEach((tabBtn) => {

@@ -38,6 +38,10 @@ EXPECTED_WASM_EXPORTS: tuple[str, ...] = (
     "ephemeris_yoga_number",
     "ephemeris_karana_number",
     "ephemeris_fnv1a64_f64_slice",
+    "ephemeris_kp_sub_index",
+    "wasm_arena_request_ptr",
+    "wasm_arena_output_ptr",
+    "wasm_compute_full_kundali",
 )
 
 
@@ -316,6 +320,65 @@ def fnv1a64_f64_slice(values: Sequence[float]) -> int:
     return h
 
 
+class BatchNatalRequest(ctypes.Structure):
+    """Zero-copy 64-byte C-ABI request struct matching Rust `BatchNatalRequest`."""
+
+    _fields_ = [
+        ("jd_utc", ctypes.c_double),
+        ("jd_tt", ctypes.c_double),
+        ("delta_t_sec", ctypes.c_double),
+        ("lat_deg", ctypes.c_double),
+        ("lon_deg", ctypes.c_double),
+        ("alt_m", ctypes.c_double),
+        ("ayanamsa_id", ctypes.c_uint32),
+        ("house_system_id", ctypes.c_uint32),
+        ("node_mode", ctypes.c_uint32),
+        ("_pad", ctypes.c_uint32),
+    ]
+
+
+class FullKundaliOutput(ctypes.Structure):
+    """Zero-copy 1416-byte C-ABI output struct matching Rust `FullKundaliOutput`."""
+
+    _fields_ = [
+        ("planet_lon_sidereal", ctypes.c_double * 12),
+        ("planet_lat_ecliptic", ctypes.c_double * 12),
+        ("planet_speed_lon", ctypes.c_double * 12),
+        ("house_cusps_sidereal", ctypes.c_double * 12),
+        ("varga_rashi_matrix", (ctypes.c_uint8 * 12) * 16),
+        ("ashtakavarga_bav", (ctypes.c_uint8 * 12) * 8),
+        ("ashtakavarga_sav", ctypes.c_uint8 * 12),
+        ("sav_alignment_pad", ctypes.c_uint8 * 4),
+        ("dasha_mahadasha_start_jd", ctypes.c_double * 9),
+        ("dasha_antardasha_start_jd", (ctypes.c_double * 9) * 9),
+        ("polar_status_flag", ctypes.c_uint32),
+        ("_padding", ctypes.c_uint32),
+    ]
+
+
+def nakshatra_index(sidereal_lon_deg: float) -> int:
+    """Compute 0-based Nakshatra index (`0..26`) matching Rust `ephemeris_nakshatra_index`."""
+    lon = normalize_deg(sidereal_lon_deg)
+    idx = int(math.floor(lon / (360.0 / 27.0)))
+    return min(idx, 26)
+
+
+def nakshatra_pada(sidereal_lon_deg: float) -> int:
+    """Compute 1-based Nakshatra Pada (`1..4`) matching Rust `ephemeris_nakshatra_pada`."""
+    lon = normalize_deg(sidereal_lon_deg)
+    span = 360.0 / 27.0
+    in_nak = lon - math.floor(lon / span) * span
+    pada = int(math.floor(in_nak / (span / 4.0))) + 1
+    return min(pada, 4)
+
+
+def kp_sub_index(sidereal_lon_deg: float) -> int:
+    """Compute 1-based KP Horary Sub-Table index (`1..249`) matching Rust `ephemeris_kp_sub_index`."""
+    from ephemeris_oss.jyotish_advanced.kp import kp_coordinate_lords
+
+    return int(kp_coordinate_lords(sidereal_lon_deg).horary_number_249)
+
+
 def verify_wasm_binary(wasm_path: str | Path) -> dict[str, object]:
     """Verify that a compiled `.wasm` binary has valid WebAssembly magic/version headers
     and exports all required `ephemeris_*` C-ABI functions.
@@ -388,4 +451,19 @@ def load_native_cdylib(dll_path: str | Path) -> ctypes.CDLL:
 
     lib.ephemeris_fnv1a64_f64_slice.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_size_t]
     lib.ephemeris_fnv1a64_f64_slice.restype = ctypes.c_uint64
+
+    lib.ephemeris_kp_sub_index.argtypes = [ctypes.c_double]
+    lib.ephemeris_kp_sub_index.restype = ctypes.c_uint32
+
+    lib.wasm_arena_request_ptr.argtypes = []
+    lib.wasm_arena_request_ptr.restype = ctypes.POINTER(BatchNatalRequest)
+
+    lib.wasm_arena_output_ptr.argtypes = []
+    lib.wasm_arena_output_ptr.restype = ctypes.POINTER(FullKundaliOutput)
+
+    lib.wasm_compute_full_kundali.argtypes = [
+        ctypes.POINTER(BatchNatalRequest),
+        ctypes.POINTER(FullKundaliOutput),
+    ]
+    lib.wasm_compute_full_kundali.restype = ctypes.c_int32
     return lib
