@@ -7,6 +7,8 @@ import json
 import math
 import shutil
 import subprocess
+import sys
+import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -38,10 +40,51 @@ from ephemeris_oss.rust_bridge import (
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 WASM_PATH = REPO_ROOT / "rust" / "ephemeris-core" / "wasm" / "ephemeris_core.wasm"
-NATIVE_DLL_PATH = REPO_ROOT / "rust" / "ephemeris-core" / "target" / "release" / "ephemeris_core.dll"
 WEB_PACKAGE_JSON = REPO_ROOT / "web" / "package.json"
 WEB_BROWSER_JS = REPO_ROOT / "web" / "ephemeris-browser.js"
 WEB_BROWSER_DTS = REPO_ROOT / "web" / "ephemeris-browser.d.ts"
+_CACHED_CDYLIB_PATH: Path | None = None
+
+
+def _resolve_native_cdylib_path() -> Path | None:
+    global _CACHED_CDYLIB_PATH
+    if _CACHED_CDYLIB_PATH is not None and _CACHED_CDYLIB_PATH.is_file():
+        return _CACHED_CDYLIB_PATH
+
+    if sys.platform == "win32":
+        lib_name = "ephemeris_core.dll"
+    elif sys.platform == "darwin":
+        lib_name = "libephemeris_core.dylib"
+    else:
+        lib_name = "libephemeris_core.so"
+
+    local_candidate = REPO_ROOT / "rust" / "ephemeris-core" / "target" / "release" / lib_name
+    if local_candidate.is_file():
+        _CACHED_CDYLIB_PATH = local_candidate
+        return local_candidate
+
+    cargo_bin = shutil.which("cargo")
+    if cargo_bin is None:
+        return None
+
+    temp_target = Path(tempfile.gettempdir()) / "ephemeris_oss_rust_target"
+    temp_candidate = temp_target / "release" / lib_name
+    manifest = REPO_ROOT / "rust" / "ephemeris-core" / "Cargo.toml"
+    lockfile = REPO_ROOT / "rust" / "ephemeris-core" / "Cargo.lock"
+    had_lock = lockfile.is_file()
+    subprocess.run(
+        [cargo_bin, "build", "--release", "--manifest-path", str(manifest), "--target-dir", str(temp_target)],
+        cwd=str(REPO_ROOT),
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    if not had_lock and lockfile.is_file():
+        lockfile.unlink()
+    if temp_candidate.is_file():
+        _CACHED_CDYLIB_PATH = temp_candidate
+        return temp_candidate
+    return None
 
 
 def test_compiled_wasm_binary_header_and_exports() -> None:
@@ -201,9 +244,11 @@ def test_fnv1a64_receipt_determinism() -> None:
     assert h1 != h3
 
 
-@pytest.mark.skipif(not NATIVE_DLL_PATH.is_file(), reason="compiled native Rust cdylib not present")
 def test_native_rust_cdylib_matches_python_reference_to_machine_epsilon() -> None:
-    lib = load_native_cdylib(NATIVE_DLL_PATH)
+    cdylib_path = _resolve_native_cdylib_path()
+    if cdylib_path is None:
+        pytest.skip("cargo not available to build native Rust cdylib")
+    lib = load_native_cdylib(cdylib_path)
     for angle in (-725.4, -0.1, 0.0, 123.456, 360.0, 745.2):
         assert lib.ephemeris_normalize_deg(angle) == pytest.approx(normalize_deg(angle), abs=1e-13)
 
@@ -243,14 +288,26 @@ def test_zero_copy_struct_sizes_and_browser_arena() -> None:
         script = (
             "import fs from 'node:fs';"
             "import { initEphemerisWasm, computeFullChartZeroCopy } from './web/ephemeris-browser.js';"
+            "const req = { jdUtc: 2451545.0, latDeg: 28.6139, lonDeg: 77.2090, houseSystemId: 2 };"
+            "const fbView = computeFullChartZeroCopy(req);"
+            "const fbLons = Array.from(fbView.planetLonSidereal);"
+            "const fbSpeeds = Array.from(fbView.planetSpeedLon);"
+            "const fbCusps = Array.from(fbView.houseCuspsSidereal);"
+            "const fbSripatiCusps = Array.from(computeFullChartZeroCopy({ ...req, houseSystemId: 1 }).houseCuspsSidereal);"
+            "let rejectedInvalid = false;"
+            "try { await initEphemerisWasm(new Uint8Array([0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00])); } catch { rejectedInvalid = true; }"
             "const wasmBytes = fs.readFileSync('./rust/ephemeris-core/wasm/ephemeris_core.wasm');"
             "await initEphemerisWasm(wasmBytes);"
+            "const wasmView = computeFullChartZeroCopy(req);"
+            "const wasmLons = Array.from(wasmView.planetLonSidereal);"
+            "const wasmSpeeds = Array.from(wasmView.planetSpeedLon);"
+            "const wasmCusps = Array.from(wasmView.houseCuspsSidereal);"
             "const polarView = computeFullChartZeroCopy({ jdUtc: 2451545.0, latDeg: 78.0, lonDeg: 15.6, houseSystemId: 2 });"
             "const savSum = Array.from(polarView.ashtakavargaSav).reduce((a, b) => a + b, 0);"
             "const lagnaBavSum = Array.from(polarView.ashtakavargaBav.subarray(84, 96)).reduce((a, b) => a + b, 0);"
             "const vargaMin = Math.min(...Array.from(polarView.vargaRashiMatrix));"
             "const vargaMax = Math.max(...Array.from(polarView.vargaRashiMatrix));"
-            "console.log(JSON.stringify({ byteLength: polarView.byteLength, polarStatusFlag: polarView.polarStatusFlag, savSum, lagnaBavSum, vargaMin, vargaMax }));"
+            "console.log(JSON.stringify({ byteLength: polarView.byteLength, polarStatusFlag: polarView.polarStatusFlag, savSum, lagnaBavSum, vargaMin, vargaMax, rejectedInvalid, fbLons, wasmLons, fbSpeeds, wasmSpeeds, fbCusps, wasmCusps, fbSripatiCusps }));"
         )
         proc = subprocess.run(
             [node_bin, "--input-type=module", "-e", script],
@@ -266,11 +323,21 @@ def test_zero_copy_struct_sizes_and_browser_arena() -> None:
         assert out["lagnaBavSum"] == 49
         assert 1 <= out["vargaMin"] <= 12
         assert 1 <= out["vargaMax"] <= 12
+        assert out["rejectedInvalid"] is True
+        for f_lon, w_lon in zip(out["fbLons"], out["wasmLons"]):
+            assert f_lon == pytest.approx(w_lon, abs=1e-9)
+        for f_spd, w_spd in zip(out["fbSpeeds"], out["wasmSpeeds"]):
+            assert f_spd == pytest.approx(w_spd, abs=1e-9)
+        for f_cusp, w_cusp in zip(out["fbCusps"], out["wasmCusps"]):
+            assert f_cusp == pytest.approx(w_cusp, abs=1e-9)
+        assert abs(out["wasmCusps"][10] - out["fbSripatiCusps"][10]) > 0.1
 
 
-@pytest.mark.skipif(not NATIVE_DLL_PATH.is_file(), reason="compiled native Rust cdylib not present")
 def test_1000_stratified_epochs_python_to_rust_parity() -> None:
-    lib = load_native_cdylib(NATIVE_DLL_PATH)
+    cdylib_path = _resolve_native_cdylib_path()
+    if cdylib_path is None:
+        pytest.skip("cargo not available to build native Rust cdylib")
+    lib = load_native_cdylib(cdylib_path)
     shodashvarga_divs = (1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60)
     planet_names = ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn")
     contrib_names = ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Lagna")

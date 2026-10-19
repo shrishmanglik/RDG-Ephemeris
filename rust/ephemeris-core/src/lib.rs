@@ -587,6 +587,515 @@ pub fn compute_ashtakavarga_tables(contrib_signs: &[u8; 8]) -> ([[u8; 12]; 8], [
     (bav, sav)
 }
 
+#[derive(Clone, Copy)]
+struct NutationState {
+    true_obliquity_deg: f64,
+    nutation_longitude_deg: f64,
+}
+
+#[derive(Clone, Copy)]
+struct HelioState {
+    x: f64,
+    y: f64,
+    z: f64,
+    r: f64,
+    lon: f64,
+    lat: f64,
+}
+
+const MOON_LON_TERMS: [(i32, i32, i32, i32, f64); 46] = [
+    (0, 0, 1, 0, 6288774.0),
+    (2, 0, -1, 0, 1274027.0),
+    (2, 0, 0, 0, 658314.0),
+    (0, 0, 2, 0, 213618.0),
+    (0, 1, 0, 0, -185116.0),
+    (0, 0, 0, 2, -114332.0),
+    (2, 0, -2, 0, 58793.0),
+    (2, -1, -1, 0, 57066.0),
+    (2, 0, 1, 0, 53322.0),
+    (2, -1, 0, 0, 45758.0),
+    (0, 1, -1, 0, -40923.0),
+    (1, 0, 0, 0, -34720.0),
+    (0, 1, 1, 0, -30383.0),
+    (2, 0, 0, -2, 15327.0),
+    (0, 0, 1, 2, -12528.0),
+    (0, 0, 1, -2, 10980.0),
+    (4, 0, -1, 0, 10675.0),
+    (0, 0, 3, 0, 10034.0),
+    (4, 0, -2, 0, 8548.0),
+    (2, 1, -1, 0, -7888.0),
+    (2, 1, 0, 0, -6766.0),
+    (1, 0, -1, 0, -5163.0),
+    (1, 1, 0, 0, 4987.0),
+    (2, -1, 1, 0, 4036.0),
+    (2, 0, 2, 0, 3994.0),
+    (4, 0, 0, 0, 3861.0),
+    (2, 0, -3, 0, 3665.0),
+    (0, 1, -2, 0, -2689.0),
+    (2, 0, -1, 2, -2602.0),
+    (2, -1, -2, 0, 2390.0),
+    (1, 0, 1, 0, -2348.0),
+    (2, -2, 0, 0, 2236.0),
+    (0, 1, 2, 0, -2120.0),
+    (0, 2, 0, 0, -2069.0),
+    (2, -2, -1, 0, 2048.0),
+    (2, 0, 1, -2, -1773.0),
+    (2, 0, 0, 2, -1595.0),
+    (4, -1, -1, 0, 1215.0),
+    (0, 0, 2, 2, -1110.0),
+    (3, 0, -1, 0, -892.0),
+    (2, 1, 1, 0, -810.0),
+    (4, -1, -2, 0, 759.0),
+    (0, 2, -1, 0, -713.0),
+    (2, 2, -1, 0, -700.0),
+    (2, 1, -2, 0, 691.0),
+    (2, -1, 0, -2, 596.0),
+];
+
+const MOON_LAT_TERMS: [(i32, i32, i32, i32, f64); 20] = [
+    (0, 0, 0, 1, 5128122.0),
+    (0, 0, 1, 1, 280602.0),
+    (0, 0, 1, -1, 277693.0),
+    (2, 0, 0, -1, 173237.0),
+    (2, 0, -1, 1, 55413.0),
+    (2, 0, -1, -1, 46271.0),
+    (2, 0, 0, 1, 32573.0),
+    (0, 0, 2, 1, 17198.0),
+    (2, 0, 1, -1, 9266.0),
+    (0, 0, 2, -1, 8822.0),
+    (2, -1, 0, -1, 8216.0),
+    (2, 0, -2, -1, 4324.0),
+    (2, 0, 1, 1, 4200.0),
+    (2, 1, 0, -1, -3359.0),
+    (2, -1, -1, 1, 2463.0),
+    (2, -1, 0, 1, 2211.0),
+    (2, -1, -1, -1, 2065.0),
+    (0, 1, -1, -1, -1870.0),
+    (4, 0, -1, -1, 1828.0),
+    (0, 1, 0, 1, -1794.0),
+];
+
+fn estimate_delta_t_seconds_from_jd(jd_utc: f64) -> f64 {
+    let y = 2000.0 + (jd_utc - J2000_JD) / 365.2425;
+    if (2005.0..=2050.0).contains(&y) {
+        let t = y - 2000.0;
+        return 62.92 + 0.32217 * t + 0.005589 * t * t;
+    }
+    if (1986.0..2005.0).contains(&y) {
+        let t = y - 2000.0;
+        let t2 = t * t;
+        let t3 = t2 * t;
+        let t4 = t3 * t;
+        let t5 = t4 * t;
+        return 63.86 + 0.3345 * t - 0.060374 * t2 + 0.0017275 * t3 + 0.000651814 * t4 + 0.00002373599 * t5;
+    }
+    if (1961.0..1986.0).contains(&y) {
+        let t = y - 1975.0;
+        return 45.45 + 1.067 * t - (t * t) / 260.0 - (t * t * t) / 718.0;
+    }
+    if (1900.0..1961.0).contains(&y) {
+        let t = (y - 1900.0) / 100.0;
+        let t2 = t * t;
+        return -2.79 + 149.4119 * t - 59.8939 * t2 + 61.966 * t2 * t - 19.7 * t2 * t2;
+    }
+    let u = (y - 1820.0) / 100.0;
+    -20.0 + 32.0 * u * u
+}
+
+fn compute_polynomial_ayanamsa_deg(jd_tt: f64, system_id: u32) -> f64 {
+    let t = (jd_tt - J2000_JD) / JULIAN_CENTURY_DAYS;
+    let coeffs: [f64; 5] = match system_id {
+        0 => [
+            23.85709232499941,
+            1.3968879371202925,
+            0.00030710160796141217,
+            3.8141580222159175e-9,
+            -6.248274764257307e-9,
+        ],
+        1 => [
+            22.4107909220633,
+            1.3968880615302215,
+            0.0003071381886890391,
+            -7.851912323039021e-9,
+            -6.678274714715773e-9,
+        ],
+        2 => [
+            23.760239922063292,
+            1.3968880615302215,
+            0.0003071381886948778,
+            -7.851911992161128e-9,
+            -6.6782750708177036e-9,
+        ],
+        3 => [
+            22.478802922063277,
+            1.3968880615302208,
+            0.00030713818869471625,
+            -7.851912074880603e-9,
+            -6.678275011538212e-9,
+        ],
+        4 => [
+            24.740299956355013,
+            1.3968879558149097,
+            0.00030716794351113755,
+            -7.747637478474768e-9,
+            -6.689194956444693e-9,
+        ],
+        5 => [
+            23.841359287753512,
+            1.395701029344676,
+            0.00030742768154652097,
+            2.4097530493929063e-8,
+            -6.601743434344973e-9,
+        ],
+        _ => [
+            23.85709232499941,
+            1.3968879371202925,
+            0.00030710160796141217,
+            3.8141580222159175e-9,
+            -6.248274764257307e-9,
+        ],
+    };
+    let val = coeffs[0] + t * (coeffs[1] + t * (coeffs[2] + t * (coeffs[3] + t * coeffs[4])));
+    ephemeris_normalize_deg(val)
+}
+
+fn compute_true_lunar_node_deg(jd_tt: f64) -> f64 {
+    let t = (jd_tt - J2000_JD) / JULIAN_CENTURY_DAYS;
+    let omega = ephemeris_mean_lunar_node_deg(jd_tt);
+    let d = ephemeris_normalize_deg(297.8501921 + 445267.1114034 * t - 0.0018819 * t * t).to_radians();
+    let m = ephemeris_normalize_deg(357.5291092 + 35999.0502909 * t - 0.0001536 * t * t).to_radians();
+    let mp = ephemeris_normalize_deg(134.9633964 + 477198.8675055 * t + 0.0087414 * t * t).to_radians();
+    let f = ephemeris_normalize_deg(93.2720950 + 483202.0175233 * t - 0.0036539 * t * t).to_radians();
+    let delta_node = -1.4979 * (2.0 * (d - f)).sin()
+        - 0.1500 * m.sin()
+        - 0.1226 * (2.0 * d).sin()
+        + 0.1176 * (2.0 * f).sin()
+        - 0.0801 * (2.0 * (mp - f)).sin();
+    ephemeris_normalize_deg(omega + delta_node)
+}
+
+fn compute_obliquity_and_nutation(jd_tt: f64) -> NutationState {
+    let t = (jd_tt - J2000_JD) / JULIAN_CENTURY_DAYS;
+    let eps0_arcsec = 84381.406 - 46.836769 * t - 0.0001831 * t * t + 0.00200340 * t * t * t;
+    let mean_obliquity_deg = eps0_arcsec / 3600.0;
+    let omega = ephemeris_mean_lunar_node_deg(jd_tt).to_radians();
+    let l_sun = ephemeris_normalize_deg(280.4665 + 36000.7698 * t).to_radians();
+    let l_moon = ephemeris_normalize_deg(218.3165 + 481267.8813 * t).to_radians();
+    let dpsi_arcsec =
+        -17.20 * omega.sin() - 1.32 * (2.0 * l_sun).sin() - 0.23 * (2.0 * l_moon).sin() + 0.21 * (2.0 * omega).sin();
+    let deps_arcsec =
+        9.20 * omega.cos() + 0.57 * (2.0 * l_sun).cos() + 0.10 * (2.0 * l_moon).cos() - 0.09 * (2.0 * omega).cos();
+    NutationState {
+        true_obliquity_deg: mean_obliquity_deg + deps_arcsec / 3600.0,
+        nutation_longitude_deg: dpsi_arcsec / 3600.0,
+    }
+}
+
+fn solve_kepler(m: f64, e: f64) -> f64 {
+    let mut ecc = m + e * m.sin() * (1.0 + e * m.cos());
+    for _ in 0..8 {
+        let de = (ecc - e * ecc.sin() - m) / (1.0 - e * ecc.cos());
+        ecc -= de;
+        if de.abs() < 1e-13 {
+            break;
+        }
+    }
+    ecc
+}
+
+/// Body IDs: 0 = Earth, 2 = Mars, 3 = Mercury, 4 = Jupiter, 5 = Venus, 6 = Saturn
+fn heliocentric_planet_state(body_id: u32, jd_tt: f64) -> HelioState {
+    let t = (jd_tt - J2000_JD) / JULIAN_CENTURY_DAYS;
+    let me = ephemeris_normalize_deg(357.5291092 + 35999.0502909 * t).to_radians();
+    let mv = ephemeris_normalize_deg(50.4161 + 58517.8039 * t).to_radians();
+    let mm = ephemeris_normalize_deg(19.3730 + 19140.2993 * t).to_radians();
+    let mj = ephemeris_normalize_deg(20.0202 + 3034.9057 * t).to_radians();
+    let ms = ephemeris_normalize_deg(317.0207 + 1222.1138 * t).to_radians();
+
+    let (a, e, i_deg, l_deg, w_bar_deg, node_deg, d_lon_deg, d_lat_deg, d_rad_au) = match body_id {
+        0 => {
+            let d_moon = ephemeris_normalize_deg(297.8502 + 445267.1114 * t).to_radians();
+            let d_lon = (4.838 * ephemeris_normalize_deg(299.10 + (58517.80 - 36000.77) * t).to_radians().cos()
+                + 5.526 * ephemeris_normalize_deg(148.31 + (2.0 * 58517.80 - 2.0 * 36000.77) * t).to_radians().cos()
+                + 2.043 * ephemeris_normalize_deg(315.94 + (2.0 * 19140.30 - 2.0 * 36000.77) * t).to_radians().cos()
+                + 7.208 * ephemeris_normalize_deg(179.53 + (3034.91 - 36000.77) * t).to_radians().cos()
+                + 2.600 * ephemeris_normalize_deg(263.22 + (36000.77 - 2.0 * 3034.91) * t).to_radians().cos()
+                + 6.454 * d_moon.sin())
+                / 3600.0;
+            (
+                1.00000261 + 0.00000562 * t,
+                0.01671123 - 0.00004392 * t - 0.000000126 * t * t,
+                -0.00001531 - 0.01294668 * t,
+                100.46457166 + 36000.7698278 * t + 0.0003032 * t * t,
+                102.93768193 + 1.7195366 * t + 0.00045688 * t * t,
+                0.0,
+                d_lon,
+                0.0,
+                0.0,
+            )
+        }
+        3 => (
+            0.38709927 + 0.00000037 * t,
+            0.20563593 + 0.00001906 * t,
+            7.00497902 - 0.00594749 * t,
+            252.25032350 + 149474.0722491 * t + 0.0003035 * t * t,
+            77.45779628 + 1.5564776 * t,
+            48.33076593 + 1.1861883 * t,
+            0.0,
+            0.0,
+            0.0,
+        ),
+        5 => {
+            let d_lon = 0.00313 * (2.0 * me - 2.0 * mv - 148.31_f64.to_radians()).cos()
+                + 0.00198 * (3.0 * me - 3.0 * mv + 2.56_f64.to_radians()).cos();
+            (
+                0.72333566 + 0.00000390 * t,
+                0.00677672 - 0.00004107 * t,
+                3.39467605 - 0.00078890 * t,
+                181.97909950 + 58519.2130302 * t + 0.0003101 * t * t,
+                131.60246718 + 1.4021300 * t,
+                76.67984255 + 0.9011206 * t,
+                d_lon,
+                0.0,
+                0.0,
+            )
+        }
+        2 => {
+            let d_lon = -0.01133 * (mj - mm - 48.8_f64.to_radians()).sin()
+                - 0.00933 * (2.0 * mj - 2.0 * mm - 18.6_f64.to_radians()).cos()
+                + 0.00705 * (me - 2.0 * mm + 20.1_f64.to_radians()).cos()
+                + 0.00445 * (2.0 * me - 3.0 * mm - 51.0_f64.to_radians()).sin();
+            (
+                1.52371034 + 0.00001847 * t,
+                0.09339410 + 0.00007882 * t,
+                1.84969142 - 0.00813131 * t,
+                355.44656795 + 19141.6964471 * t + 0.0003105 * t * t,
+                336.05637041 + 1.8410449 * t,
+                49.55953891 + 0.7720959 * t,
+                d_lon,
+                0.0,
+                0.0,
+            )
+        }
+        4 => {
+            let zeta = 5.0 * ms - 2.0 * mj + (67.6528 - 2.0928 * t).to_radians();
+            let zeta0 = (5.0 * 317.0207 - 2.0 * 20.0202 + 67.6528_f64).to_radians();
+            let m_diff0 = (317.0207 - 20.0202_f64).to_radians();
+            let d_lon = 0.3314 * (zeta.sin() - zeta0.sin())
+                - 0.0103 * (zeta.cos() - zeta0.cos())
+                - 0.0365 * ((ms - mj).sin() - m_diff0.sin())
+                - 0.0306 * ((2.0 * (ms - mj)).sin() - (2.0 * m_diff0).sin());
+            let d_rad = -0.0021 * ((ms - mj).cos() - m_diff0.cos());
+            (
+                5.20288700 - 0.00011607 * t,
+                0.04838624 - 0.00013253 * t,
+                1.30439695 - 0.00183714 * t,
+                34.39644051 + 3036.3027748 * t + 0.0002237 * t * t,
+                14.72847983 + 1.6126300 * t,
+                100.47390909 + 1.0046910 * t,
+                d_lon,
+                0.0,
+                d_rad,
+            )
+        }
+        _ => {
+            let zeta = 5.0 * ms - 2.0 * mj + (67.6528 - 2.0928 * t).to_radians();
+            let zeta0 = (5.0 * 317.0207 - 2.0 * 20.0202 + 67.6528_f64).to_radians();
+            let j_diff0 = (20.0202 - 317.0207_f64).to_radians();
+            let d_lon = -0.8142 * (zeta.sin() - zeta0.sin())
+                + 0.0258 * (zeta.cos() - zeta0.cos())
+                + 0.0256 * ((2.0 * (mj - ms)).sin() - (2.0 * j_diff0).sin())
+                - 0.0882 * ((mj - ms).cos() - j_diff0.cos());
+            let d_lat = 0.0090 * (2.0 * ms - mj - 40.0_f64.to_radians()).sin();
+            let d_rad = 0.0156 * ((mj - ms).cos() - j_diff0.cos());
+            (
+                9.53667594 - 0.00125060 * t,
+                0.05386179 - 0.00050991 * t,
+                2.48599187 + 0.00193609 * t,
+                49.95424423 + 1223.5110686 * t + 0.0003105 * t * t,
+                92.59887831 + 1.9637613 * t,
+                113.66242448 + 0.8770970 * t,
+                d_lon,
+                d_lat,
+                d_rad,
+            )
+        }
+    };
+
+    let m = ephemeris_normalize_deg(l_deg - w_bar_deg).to_radians();
+    let ecc = solve_kepler(m, e);
+    let xv = a * (ecc.cos() - e);
+    let yv = a * (1.0 - e * e).sqrt() * ecc.sin();
+    let v = yv.atan2(xv);
+    let r = (xv * xv + yv * yv).sqrt() + d_rad_au;
+
+    let w = (w_bar_deg - node_deg).to_radians();
+    let node = node_deg.to_radians();
+    let inc = i_deg.to_radians();
+    let u = v + w;
+
+    let x0 = r * (node.cos() * u.cos() - node.sin() * u.sin() * inc.cos());
+    let y0 = r * (node.sin() * u.cos() + node.cos() * u.sin() * inc.cos());
+    let z0 = r * (u.sin() * inc.sin());
+
+    let lon = ephemeris_normalize_deg(y0.atan2(x0).to_degrees() + d_lon_deg);
+    let lat = (z0 / r).clamp(-1.0, 1.0).asin().to_degrees() + d_lat_deg;
+
+    let cos_b = lat.to_radians().cos();
+    let sin_b = lat.to_radians().sin();
+    let lon_rad = lon.to_radians();
+
+    HelioState {
+        x: r * cos_b * lon_rad.cos(),
+        y: r * cos_b * lon_rad.sin(),
+        z: r * sin_b,
+        r,
+        lon,
+        lat,
+    }
+}
+
+fn compute_moon_apparent_place(jd_tt: f64, nut_lon_deg: f64) -> (f64, f64) {
+    let t = (jd_tt - J2000_JD) / JULIAN_CENTURY_DAYS;
+    let t2 = t * t;
+    let t3 = t2 * t;
+    let t4 = t3 * t;
+    let lp = ephemeris_normalize_deg(
+        218.3164477 + 481267.88123421 * t - 0.0015786 * t2 + t3 / 538841.0 - t4 / 65194000.0,
+    );
+    let d = ephemeris_normalize_deg(
+        297.8501921 + 445267.1114034 * t - 0.0018819 * t2 + t3 / 545868.0 - t4 / 113065000.0,
+    );
+    let m = ephemeris_normalize_deg(357.5291092 + 35999.0502909 * t - 0.0001536 * t2 + t3 / 24490000.0);
+    let mp = ephemeris_normalize_deg(
+        134.9633964 + 477198.8675055 * t + 0.0087414 * t2 + t3 / 69699.0 - t4 / 14712000.0,
+    );
+    let f = ephemeris_normalize_deg(
+        93.2720950 + 483202.0175233 * t - 0.0036539 * t2 - t3 / 3526000.0 + t4 / 863310000.0,
+    );
+
+    let a1 = ephemeris_normalize_deg(119.75 + 131.849 * t).to_radians();
+    let a2 = ephemeris_normalize_deg(53.09 + 479264.290 * t).to_radians();
+    let a3 = ephemeris_normalize_deg(313.45 + 481266.484 * t).to_radians();
+
+    let e = 1.0 - 0.002516 * t - 0.0000074 * t2;
+    let e2 = e * e;
+
+    let dr = d.to_radians();
+    let mr = m.to_radians();
+    let mpr = mp.to_radians();
+    let fr = f.to_radians();
+
+    let mut sum_l = 0.0;
+    for &(cd, cm, cmp, cf, coeff) in &MOON_LON_TERMS {
+        let arg = (cd as f64) * dr + (cm as f64) * mr + (cmp as f64) * mpr + (cf as f64) * fr;
+        let abs_m = cm.abs();
+        let scale = if abs_m == 1 { e } else if abs_m == 2 { e2 } else { 1.0 };
+        sum_l += coeff * scale * arg.sin();
+    }
+    sum_l += 3958.0 * a1.sin() + 1962.0 * (lp - f).to_radians().sin() + 318.0 * a2.sin();
+
+    let mut sum_b = 0.0;
+    for &(cd, cm, cmp, cf, coeff) in &MOON_LAT_TERMS {
+        let arg = (cd as f64) * dr + (cm as f64) * mr + (cmp as f64) * mpr + (cf as f64) * fr;
+        let abs_m = cm.abs();
+        let scale = if abs_m == 1 { e } else if abs_m == 2 { e2 } else { 1.0 };
+        sum_b += coeff * scale * arg.sin();
+    }
+    sum_b += -2235.0 * lp.to_radians().sin()
+        + 382.0 * a3.sin()
+        + 175.0 * (a1 - fr).sin()
+        + 175.0 * (a1 + fr).sin()
+        + 127.0 * (lp - mp).to_radians().sin()
+        - 115.0 * (lp + mp).to_radians().sin();
+
+    let trop_lon = ephemeris_normalize_deg(lp + sum_l * 1e-6 + nut_lon_deg);
+    let lat_deg = sum_b * 1e-6;
+    (trop_lon, lat_deg)
+}
+
+fn compute_planet_apparent_place(body_id: u32, jd_tt: f64, earth: &HelioState, nut_lon_deg: f64) -> (f64, f64) {
+    if body_id == 1 {
+        return compute_moon_apparent_place(jd_tt, nut_lon_deg);
+    }
+    if body_id == 0 {
+        let geo_lon = ephemeris_normalize_deg(earth.lon + 180.0);
+        let geo_lat = -earth.lat;
+        let aberr_deg = (-20.4898 / earth.r) / 3600.0;
+        return (ephemeris_normalize_deg(geo_lon + aberr_deg + nut_lon_deg), geo_lat);
+    }
+
+    let c_au_per_day = 173.1446326846693;
+    let mut tau = 0.0;
+    let mut dx = 0.0;
+    let mut dy = 0.0;
+    let mut dz = 0.0;
+    let mut dist = 1.0;
+    for _ in 0..2 {
+        let target = heliocentric_planet_state(body_id, jd_tt - tau);
+        dx = target.x - earth.x;
+        dy = target.y - earth.y;
+        dz = target.z - earth.z;
+        dist = (dx * dx + dy * dy + dz * dz).sqrt();
+        tau = dist / c_au_per_day;
+    }
+
+    let raw_lon_rad = dy.atan2(dx);
+    let raw_lat_rad = (dz / dist).clamp(-1.0, 1.0).asin();
+    let sun_lon_rad = (earth.lon + 180.0).to_radians();
+    let kappa_arcsec = 20.49552;
+    let d_lon_aberr_deg =
+        (-kappa_arcsec * (sun_lon_rad - raw_lon_rad).cos() / raw_lat_rad.cos().max(0.05)) / 3600.0;
+
+    (
+        ephemeris_normalize_deg(raw_lon_rad.to_degrees() + d_lon_aberr_deg + nut_lon_deg),
+        raw_lat_rad.to_degrees(),
+    )
+}
+
+fn signed_angle_delta_deg(from_deg: f64, to_deg: f64) -> f64 {
+    let mut d = to_deg - from_deg;
+    if d > 180.0 {
+        d -= 360.0;
+    }
+    if d < -180.0 {
+        d += 360.0;
+    }
+    d
+}
+
+fn solve_placidus_cusp_tropical_deg(
+    ramc_rad: f64,
+    phi_rad: f64,
+    eps_rad: f64,
+    fraction: f64,
+    is_nocturnal: bool,
+) -> Option<f64> {
+    let tan_phi = phi_rad.tan();
+    let cos_eps = eps_rad.cos();
+    let sin_eps = eps_rad.sin();
+    let mut ra = ramc_rad + if is_nocturnal { core::f64::consts::PI - fraction * (core::f64::consts::PI * 0.5) } else { fraction * (core::f64::consts::PI * 0.5) };
+    for _ in 0..10 {
+        let lon = ra.sin().atan2(ra.cos() * cos_eps);
+        let sin_delta = (lon.sin() * sin_eps).clamp(-1.0, 1.0);
+        let cos_delta = (1.0 - sin_delta * sin_delta).max(1e-12).sqrt();
+        let tan_delta = sin_delta / cos_delta;
+        let arg = -tan_phi * tan_delta;
+        if arg.abs() >= 0.999999 {
+            return None;
+        }
+        let sda = arg.acos();
+        ra = if is_nocturnal {
+            let sna = core::f64::consts::PI - sda;
+            ramc_rad + core::f64::consts::PI - fraction * sna
+        } else {
+            ramc_rad + fraction * sda
+        };
+    }
+    let lon_deg = ephemeris_normalize_deg(ra.sin().atan2(ra.cos() * cos_eps).to_degrees());
+    Some(lon_deg)
+}
+
 /// Populate `FullKundaliOutput` from `BatchNatalRequest` in place in linear memory without heap allocations.
 #[no_mangle]
 pub unsafe extern "C" fn wasm_compute_full_kundali(
@@ -599,104 +1108,103 @@ pub unsafe extern "C" fn wasm_compute_full_kundali(
     let req = *req_ptr;
     let out = &mut *out_ptr;
 
-    let dt_sec = if req.delta_t_sec.abs() > 1e-6 { req.delta_t_sec } else { 69.184 };
+    let dt_sec = if req.delta_t_sec.abs() > 1e-6 {
+        req.delta_t_sec
+    } else {
+        estimate_delta_t_seconds_from_jd(req.jd_utc)
+    };
     let jd_tt = if req.jd_tt > 1_000_000.0 {
         req.jd_tt
     } else {
         req.jd_utc + dt_sec / 86400.0
     };
+    let step_days = 0.01;
+    let ayanamsa = compute_polynomial_ayanamsa_deg(jd_tt, req.ayanamsa_id);
+
+    let earth0 = heliocentric_planet_state(0, jd_tt);
+    let earth_minus = heliocentric_planet_state(0, jd_tt - step_days);
+    let earth_plus = heliocentric_planet_state(0, jd_tt + step_days);
+    let nut0 = compute_obliquity_and_nutation(jd_tt);
+    let nut_minus = compute_obliquity_and_nutation(jd_tt - step_days);
+    let nut_plus = compute_obliquity_and_nutation(jd_tt + step_days);
+
+    // 7 physical grahas: [Sun(0), Moon(1), Mars(2), Mercury(3), Jupiter(4), Venus(5), Saturn(6)]
+    for body_id in 0..7u32 {
+        let (lon0, lat0) = compute_planet_apparent_place(body_id, jd_tt, &earth0, nut0.nutation_longitude_deg);
+        let (lon_m, _) =
+            compute_planet_apparent_place(body_id, jd_tt - step_days, &earth_minus, nut_minus.nutation_longitude_deg);
+        let (lon_p, _) =
+            compute_planet_apparent_place(body_id, jd_tt + step_days, &earth_plus, nut_plus.nutation_longitude_deg);
+        let speed = signed_angle_delta_deg(lon_m, lon_p) / (2.0 * step_days);
+        let idx = body_id as usize;
+        out.planet_lon_sidereal[idx] = ephemeris_normalize_deg(lon0 - ayanamsa);
+        out.planet_lat_ecliptic[idx] = lat0;
+        out.planet_speed_lon[idx] = speed;
+    }
+
+    // Rahu (7) & Ketu (8)
+    let (rahu_trop, rahu_speed) = if req.node_mode == 1 {
+        let r0 = compute_true_lunar_node_deg(jd_tt);
+        let rm = compute_true_lunar_node_deg(jd_tt - step_days);
+        let rp = compute_true_lunar_node_deg(jd_tt + step_days);
+        (r0, signed_angle_delta_deg(rm, rp) / (2.0 * step_days))
+    } else {
+        (ephemeris_mean_lunar_node_deg(jd_tt), -0.0529538083)
+    };
+    let rahu_sid = ephemeris_normalize_deg(rahu_trop - ayanamsa);
+    let ketu_sid = ephemeris_normalize_deg(rahu_sid + 180.0);
+    out.planet_lon_sidereal[7] = rahu_sid;
+    out.planet_lat_ecliptic[7] = 0.0;
+    out.planet_speed_lon[7] = rahu_speed;
+    out.planet_lon_sidereal[8] = ketu_sid;
+    out.planet_lat_ecliptic[8] = 0.0;
+    out.planet_speed_lon[8] = rahu_speed;
+
+    // Uranus (9) & Neptune (10)
     let d = jd_tt - J2000_JD;
-    let ayanamsa = ephemeris_ayanamsa_deg(jd_tt, req.ayanamsa_id);
+    out.planet_lon_sidereal[9] = ephemeris_normalize_deg(314.055 + 0.01172834 * d - ayanamsa);
+    out.planet_lat_ecliptic[9] = -0.7;
+    out.planet_speed_lon[9] = 0.01172834;
+    out.planet_lon_sidereal[10] = ephemeris_normalize_deg(304.348 + 0.00598103 * d - ayanamsa);
+    out.planet_lat_ecliptic[10] = 1.8;
+    out.planet_speed_lon[10] = 0.00598103;
 
-    // High-speed analytical mean longitudes + equations of center
-    // 12 slots: [Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu, Uranus, Neptune, Lagna]
-    let l0_sun = ephemeris_normalize_deg(280.46646 + 0.98564736 * d);
-    let m_sun = (357.52911 + 0.98560028 * d).to_radians();
-    let trop_sun = ephemeris_normalize_deg(l0_sun + 1.914602 * m_sun.sin() + 0.019993 * (2.0 * m_sun).sin());
+    // IAU 2006 Sidereal Time (ERA + GMST polynomial + GAST equation of equinoxes)
+    let t_tt = (jd_tt - J2000_JD) / JULIAN_CENTURY_DAYS;
+    let era_deg = ephemeris_normalize_deg(360.0 * (0.7790572732640 + 1.00273781191135448 * (req.jd_utc - J2000_JD)));
+    let gmst_poly_arcsec = 0.014506 + 4612.156534 * t_tt + 1.3915817 * t_tt * t_tt - 0.00000044 * t_tt * t_tt * t_tt;
+    let gmst_deg = ephemeris_normalize_deg(era_deg + gmst_poly_arcsec / 3600.0);
+    let gast_deg =
+        ephemeris_normalize_deg(gmst_deg + nut0.nutation_longitude_deg * nut0.true_obliquity_deg.to_radians().cos());
+    let local_apparent_sidereal_deg = ephemeris_normalize_deg(gast_deg + req.lon_deg);
 
-    let l0_moon = ephemeris_normalize_deg(218.3164477 + 13.17639648 * d);
-    let m_moon = (134.9633964 + 13.06499295 * d).to_radians();
-    let d_elong = (297.8501921 + 12.19074912 * d).to_radians();
-    let f_moon = (93.2720950 + 13.22935024 * d).to_radians();
-    let trop_moon = ephemeris_normalize_deg(
-        l0_moon
-            + 6.288774 * m_moon.sin()
-            + 1.274027 * (2.0 * d_elong - m_moon).sin()
-            + 0.658314 * (2.0 * d_elong).sin()
-            + 0.213618 * (2.0 * m_moon).sin()
-            - 0.185596 * m_sun.sin()
-            - 0.114336 * (2.0 * f_moon).sin(),
-    );
-    let lat_moon = 5.128122 * f_moon.sin();
-
-    let m_mars = (19.3730 + 0.52402078 * d).to_radians();
-    let trop_mars = ephemeris_normalize_deg(355.4330 + 0.52403295 * d + 10.6912 * m_mars.sin());
-
-    let m_merc = (174.7948 + 4.09233445 * d).to_radians();
-    let trop_merc = ephemeris_normalize_deg(l0_sun + 22.4 * m_merc.sin() + 4.3 * (2.0 * m_merc).sin());
-
-    let m_jup = (20.0202 + 0.08308529 * d).to_radians();
-    let trop_jup = ephemeris_normalize_deg(34.3515 + 0.08309121 * d + 5.5549 * m_jup.sin());
-
-    let m_ven = (50.4161 + 1.60213034 * d).to_radians();
-    let trop_ven = ephemeris_normalize_deg(l0_sun + 46.2 * m_ven.sin());
-
-    let m_sat = (317.0207 + 0.03344414 * d).to_radians();
-    let trop_sat = ephemeris_normalize_deg(50.0774 + 0.03345965 * d + 6.3585 * m_sat.sin());
-
-    let trop_rahu = ephemeris_mean_lunar_node_deg(jd_tt);
-    let trop_ketu = ephemeris_normalize_deg(trop_rahu + 180.0);
-    let trop_uranus = ephemeris_normalize_deg(314.055 + 0.01172834 * d);
-    let trop_neptune = ephemeris_normalize_deg(304.348 + 0.00598103 * d);
-
-    // Compute Ascendant & MC and 12 house cusps with Arctic/Antarctic Sripati fallback guard
-    let t_ut1 = (req.jd_utc - J2000_JD) / JULIAN_CENTURY_DAYS;
-    let gmst = ephemeris_normalize_deg(
-        280.46061837 + 360.98564736629 * (req.jd_utc - J2000_JD) + 0.000387933 * t_ut1 * t_ut1,
-    );
-    let ramc_deg = ephemeris_normalize_deg(gmst + req.lon_deg);
-    let ramc_rad = ramc_deg.to_radians();
-    let eps_rad = (23.43929111 - 0.013004167 * t_ut1).to_radians();
     let clamped_lat_deg = req.lat_deg.clamp(-89.85, 89.85);
-    let lat_rad = clamped_lat_deg.to_radians();
+    let theta = local_apparent_sidereal_deg.to_radians();
+    let phi = clamped_lat_deg.to_radians();
+    let eps = nut0.true_obliquity_deg.to_radians();
 
-    let mc_trop = ephemeris_normalize_deg(ramc_rad.sin().atan2(ramc_rad.cos() * eps_rad.cos()).to_degrees());
-    let asc_y = ramc_rad.cos();
-    let asc_x = -(eps_rad.sin() * lat_rad.tan() + eps_rad.cos() * ramc_rad.sin());
-    let asc_trop = ephemeris_normalize_deg(asc_y.atan2(asc_x).to_degrees());
+    let horizon_a = phi.cos() * theta.cos();
+    let horizon_b = phi.cos() * eps.cos() * theta.sin() + phi.sin() * eps.sin();
+    let mut asc_rad = (-horizon_a).atan2(horizon_b);
+    let east_proj = -asc_rad.cos() * theta.sin() + asc_rad.sin() * eps.cos() * theta.cos();
+    if east_proj < 0.0 {
+        asc_rad += core::f64::consts::PI;
+    }
+    let mc_rad = theta.sin().atan2(theta.cos() * eps.cos());
+    let asc_trop = ephemeris_normalize_deg(asc_rad.to_degrees());
+    let mc_trop = ephemeris_normalize_deg(mc_rad.to_degrees());
 
     let asc_sid = ephemeris_normalize_deg(asc_trop - ayanamsa);
     let mc_sid = ephemeris_normalize_deg(mc_trop - ayanamsa);
 
-    let trop_lons = [
-        trop_sun,
-        trop_moon,
-        trop_mars,
-        trop_merc,
-        trop_jup,
-        trop_ven,
-        trop_sat,
-        trop_rahu,
-        trop_ketu,
-        trop_uranus,
-        trop_neptune,
-        asc_trop,
-    ];
-    let speeds = [
-        0.9856, 13.1764, 0.5240, 1.3833, 0.0831, 1.2000, 0.0335, -0.05295, -0.05295, 0.0117, 0.0060, 360.9856,
-    ];
-    let lats = [0.0, lat_moon, 1.1, -1.5, 0.8, 1.9, -1.2, 0.0, 0.0, -0.7, 1.8, 0.0];
+    // Lagna (11)
+    out.planet_lon_sidereal[11] = asc_sid;
+    out.planet_lat_ecliptic[11] = 0.0;
+    out.planet_speed_lon[11] = 360.9856;
 
-    for i in 0..12usize {
-        out.planet_lon_sidereal[i] = ephemeris_normalize_deg(trop_lons[i] - ayanamsa);
-        out.planet_lat_ecliptic[i] = lats[i];
-        out.planet_speed_lon[i] = speeds[i];
-    }
-
-    let is_polar_fallback = (req.house_system_id == 2 || req.house_system_id == 3) && req.lat_deg.abs() >= 66.5;
-    out.polar_status_flag = if is_polar_fallback { 1 } else { 0 };
-    out._padding = 0;
+    let mut is_polar_fallback = (req.house_system_id == 2 || req.house_system_id == 3) && req.lat_deg.abs() >= 66.5;
     out.sav_alignment_pad = [0; 4];
+    out._padding = 0;
 
     if req.house_system_id == 0 {
         // Whole Sign houses anchored to Lagna Rasi start
@@ -704,7 +1212,37 @@ pub unsafe extern "C" fn wasm_compute_full_kundali(
         for h in 0..12usize {
             out.house_cusps_sidereal[h] = ephemeris_normalize_deg(lagna_sign_start + (h as f64) * 30.0);
         }
-    } else {
+    } else if req.house_system_id == 2 && !is_polar_fallback {
+        // True Placidus semi-diurnal / semi-nocturnal arc trisection
+        let c11 = solve_placidus_cusp_tropical_deg(theta, phi, eps, 1.0 / 3.0, false);
+        let c12 = solve_placidus_cusp_tropical_deg(theta, phi, eps, 2.0 / 3.0, false);
+        let c2 = solve_placidus_cusp_tropical_deg(theta, phi, eps, 2.0 / 3.0, true);
+        let c3 = solve_placidus_cusp_tropical_deg(theta, phi, eps, 1.0 / 3.0, true);
+        if let (Some(t11), Some(t12), Some(t2), Some(t3)) = (c11, c12, c2, c3) {
+            let ic_sid = ephemeris_normalize_deg(mc_sid + 180.0);
+            let dsc_sid = ephemeris_normalize_deg(asc_sid + 180.0);
+            let s11 = ephemeris_normalize_deg(t11 - ayanamsa);
+            let s12 = ephemeris_normalize_deg(t12 - ayanamsa);
+            let s2 = ephemeris_normalize_deg(t2 - ayanamsa);
+            let s3 = ephemeris_normalize_deg(t3 - ayanamsa);
+            out.house_cusps_sidereal[0] = asc_sid;
+            out.house_cusps_sidereal[1] = s2;
+            out.house_cusps_sidereal[2] = s3;
+            out.house_cusps_sidereal[3] = ic_sid;
+            out.house_cusps_sidereal[4] = ephemeris_normalize_deg(s11 + 180.0);
+            out.house_cusps_sidereal[5] = ephemeris_normalize_deg(s12 + 180.0);
+            out.house_cusps_sidereal[6] = dsc_sid;
+            out.house_cusps_sidereal[7] = ephemeris_normalize_deg(s2 + 180.0);
+            out.house_cusps_sidereal[8] = ephemeris_normalize_deg(s3 + 180.0);
+            out.house_cusps_sidereal[9] = mc_sid;
+            out.house_cusps_sidereal[10] = s11;
+            out.house_cusps_sidereal[11] = s12;
+        } else {
+            is_polar_fallback = true;
+        }
+    }
+
+    if req.house_system_id != 0 && (req.house_system_id != 2 || is_polar_fallback) {
         // Sripati / Porphyry quadrant trisection (also used as polar fallback for Placidus)
         let ic_sid = ephemeris_normalize_deg(mc_sid + 180.0);
         let dsc_sid = ephemeris_normalize_deg(asc_sid + 180.0);
@@ -720,6 +1258,8 @@ pub unsafe extern "C" fn wasm_compute_full_kundali(
             out.house_cusps_sidereal[h] = ephemeris_normalize_deg(out.house_cusps_sidereal[h - 6] + 180.0);
         }
     }
+
+    out.polar_status_flag = if is_polar_fallback { 1 } else { 0 };
 
     // Populate 16-Varga Rashi Matrix (1-based signs `1..12`) for all 12 bodies
     for b in 0..12usize {
@@ -854,6 +1394,18 @@ mod tests {
                     assert!((1..=12).contains(&sign));
                 }
             }
+
+            // Non-polar Placidus vs Sripati cusps must differ at mid-latitudes
+            (*req_ptr).lat_deg = 28.6139;
+            (*req_ptr).lon_deg = 77.2090;
+            (*req_ptr).house_system_id = 2;
+            wasm_compute_full_kundali(req_ptr, out_ptr);
+            assert_eq!((*out_ptr).polar_status_flag, 0);
+            let placidus_c11 = (*out_ptr).house_cusps_sidereal[10];
+            (*req_ptr).house_system_id = 1;
+            wasm_compute_full_kundali(req_ptr, out_ptr);
+            let sripati_c11 = (*out_ptr).house_cusps_sidereal[10];
+            assert!((placidus_c11 - sripati_c11).abs() > 0.1);
         }
     }
 }

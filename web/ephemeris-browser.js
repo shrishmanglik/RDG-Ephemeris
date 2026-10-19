@@ -1768,16 +1768,56 @@ const _fallbackArenaBuffer = new ArrayBuffer(1480);
 let _wasmExports = null;
 let _decompressedKernelBytes = null;
 
+function solvePlacidusCuspTropicalDeg(ramcRad, phiRad, epsRad, fraction, isNocturnal) {
+  const tanPhi = Math.tan(phiRad);
+  const cosEps = Math.cos(epsRad);
+  const sinEps = Math.sin(epsRad);
+  let ra = ramcRad + (isNocturnal ? Math.PI - fraction * (Math.PI * 0.5) : fraction * (Math.PI * 0.5));
+  for (let iter = 0; iter < 10; iter++) {
+    const lon = Math.atan2(Math.sin(ra), Math.cos(ra) * cosEps);
+    const sinDelta = Math.max(-1.0, Math.min(1.0, Math.sin(lon) * sinEps));
+    const cosDelta = Math.sqrt(Math.max(1e-12, 1.0 - sinDelta * sinDelta));
+    const tanDelta = sinDelta / cosDelta;
+    const arg = -tanPhi * tanDelta;
+    if (Math.abs(arg) >= 0.999999) {
+      return null;
+    }
+    const sda = Math.acos(arg);
+    if (isNocturnal) {
+      const sna = Math.PI - sda;
+      ra = ramcRad + Math.PI - fraction * sna;
+    } else {
+      ra = ramcRad + fraction * sda;
+    }
+  }
+  return normalizeDegrees(Math.atan2(Math.sin(ra), Math.cos(ra) * cosEps) * RAD2DEG);
+}
+
+/**
+ * Return true when the compiled Rust WebAssembly zero-copy arena has been instantiated.
+ */
+export function isWasmArenaInitialized() {
+  return Boolean(_wasmExports);
+}
+
 /**
  * Initialize the zero-copy WebAssembly Ephemeris & Jyotish linear-memory arena.
  * Supports decompressing `de440_compact.bin.zlib` via `DecompressionStream('deflate')`
- * and instantiating compiled `.wasm` binaries (`\0asm`).
+ * and instantiating compiled `.wasm` binaries (`\0asm`), validating all required exports.
  */
 export async function initEphemerisWasm(kernelBytes) {
   if (!kernelBytes) {
     return;
   }
-  let u8 = kernelBytes instanceof Uint8Array ? kernelBytes : new Uint8Array(kernelBytes);
+  let rawInput = kernelBytes;
+  if (typeof rawInput === "string" && typeof fetch === "function") {
+    const resp = await fetch(rawInput);
+    if (!resp.ok) {
+      throw new Error(`Failed to fetch WebAssembly module from ${rawInput}: HTTP ${resp.status}`);
+    }
+    rawInput = await resp.arrayBuffer();
+  }
+  let u8 = rawInput instanceof Uint8Array ? rawInput : new Uint8Array(rawInput);
   // Check for zlib header (0x78 0x01, 0x78 0x5e, 0x78 0x9c, 0x78 0xda) and decompress via DecompressionStream('deflate')
   if (
     u8.byteLength >= 2 &&
@@ -1794,9 +1834,19 @@ export async function initEphemerisWasm(kernelBytes) {
   if (u8.byteLength >= 8 && u8[0] === 0x00 && u8[1] === 0x61 && u8[2] === 0x73 && u8[3] === 0x6d) {
     const instantiated = await WebAssembly.instantiate(u8, {});
     const instance = instantiated.instance || instantiated;
-    if (instance && instance.exports && instance.exports.wasm_compute_full_kundali) {
-      _wasmExports = instance.exports;
+    const exportsObj = instance && instance.exports ? instance.exports : null;
+    if (
+      !exportsObj ||
+      !(exportsObj.memory instanceof WebAssembly.Memory) ||
+      typeof exportsObj.wasm_arena_request_ptr !== "function" ||
+      typeof exportsObj.wasm_arena_output_ptr !== "function" ||
+      typeof exportsObj.wasm_compute_full_kundali !== "function"
+    ) {
+      throw new Error(
+        "Incompatible WebAssembly module: missing required zero-copy arena exports (memory, wasm_arena_request_ptr, wasm_arena_output_ptr, wasm_compute_full_kundali)"
+      );
     }
+    _wasmExports = exportsObj;
   } else {
     _decompressedKernelBytes = u8;
   }
@@ -1809,8 +1859,12 @@ export async function initEphemerisWasm(kernelBytes) {
 export function computeFullChartZeroCopy(request = {}) {
   const isTypedReq = request instanceof Float64Array;
   const jdUtc = Number(isTypedReq ? request[0] : (request.jdUtc ?? 2451545.0));
-  const deltaTSec = Number(isTypedReq ? request[2] : (request.deltaTSec ?? 69.184));
-  const jdTt = Number(isTypedReq ? request[1] : (request.jdTt ?? jdUtc + deltaTSec / 86400.0));
+  const decimalYear = 2000.0 + (jdUtc - J2000_JD) / 365.2425;
+  const defaultDeltaT = estimateDeltaTSeconds(decimalYear);
+  const rawDeltaT = isTypedReq ? Number(request[2] ?? 0.0) : Number(request.deltaTSec ?? 0.0);
+  const deltaTSec = Math.abs(rawDeltaT) > 1e-6 ? rawDeltaT : defaultDeltaT;
+  const rawJdTt = isTypedReq ? Number(request[1] ?? 0.0) : Number(request.jdTt ?? 0.0);
+  const jdTt = rawJdTt > 1000000.0 ? rawJdTt : jdUtc + deltaTSec / 86400.0;
   const latDeg = Number(isTypedReq ? request[3] : (request.latDeg ?? 28.6139));
   const lonDeg = Number(isTypedReq ? request[4] : (request.lonDeg ?? 77.2090));
   const altM = Number(isTypedReq ? request[5] : (request.altM ?? request.elevM ?? 0.0));
@@ -1860,8 +1914,9 @@ export function computeFullChartZeroCopy(request = {}) {
 
     const ayanamsaKeys = ["lahiri", "raman", "krishnamurti", "yukteshwar", "fagan_bradley", "true_citra"];
     const ayanamsaKey = ayanamsaKeys[ayanamsaId] || "lahiri";
+    const clampedLat = Math.max(-89.85, Math.min(89.85, latDeg));
     const planetary = computePlanets(jdTt, { ayanamsa: ayanamsaKey, nodeMode: nodeMode === 1 ? "true" : "mean" });
-    const houses = computeAscendantAndHouses(jdTt, jdUtc, Math.max(-89.85, Math.min(89.85, latDeg)), lonDeg, ayanamsaKey);
+    const houses = computeAscendantAndHouses(jdTt, jdUtc, clampedLat, lonDeg, ayanamsaKey);
     const ascSid = houses.siderealAscendantDeg;
     const mcSid = houses.siderealMidheavenDeg;
 
@@ -1875,24 +1930,55 @@ export function computeFullChartZeroCopy(request = {}) {
     const d = jdTt - J2000_JD;
     planetLonSidereal[9] = normalizeDegrees(314.055 + 0.01172834 * d - planetary.ayanamsaDeg);
     planetLatEcliptic[9] = -0.7;
-    planetSpeedLon[9] = 0.0117;
+    planetSpeedLon[9] = 0.01172834;
     planetLonSidereal[10] = normalizeDegrees(304.348 + 0.00598103 * d - planetary.ayanamsaDeg);
     planetLatEcliptic[10] = 1.8;
-    planetSpeedLon[10] = 0.0060;
+    planetSpeedLon[10] = 0.00598103;
     planetLonSidereal[11] = ascSid;
     planetLatEcliptic[11] = 0.0;
     planetSpeedLon[11] = 360.9856;
 
-    const isPolarFallback = (houseSystemId === 2 || houseSystemId === 3) && Math.abs(latDeg) >= 66.5;
+    let isPolarFallback = (houseSystemId === 2 || houseSystemId === 3) && Math.abs(latDeg) >= 66.5;
     savAlignmentPad.fill(0);
-    polarWords[0] = isPolarFallback ? 1 : 0;
     polarWords[1] = 0;
 
     if (houseSystemId === 0) {
       for (let h = 0; h < 12; h++) {
         houseCuspsSidereal[h] = houses.wholeSignCusps[h];
       }
-    } else {
+    } else if (houseSystemId === 2 && !isPolarFallback) {
+      const thetaRad = houses.localApparentSiderealDeg * DEG2RAD;
+      const phiRad = clampedLat * DEG2RAD;
+      const epsRad = houses.trueObliquityDeg * DEG2RAD;
+      const t11 = solvePlacidusCuspTropicalDeg(thetaRad, phiRad, epsRad, 1.0 / 3.0, false);
+      const t12 = solvePlacidusCuspTropicalDeg(thetaRad, phiRad, epsRad, 2.0 / 3.0, false);
+      const t2 = solvePlacidusCuspTropicalDeg(thetaRad, phiRad, epsRad, 2.0 / 3.0, true);
+      const t3 = solvePlacidusCuspTropicalDeg(thetaRad, phiRad, epsRad, 1.0 / 3.0, true);
+      if (t11 !== null && t12 !== null && t2 !== null && t3 !== null) {
+        const icSid = normalizeDegrees(mcSid + 180.0);
+        const dscSid = normalizeDegrees(ascSid + 180.0);
+        const s11 = normalizeDegrees(t11 - planetary.ayanamsaDeg);
+        const s12 = normalizeDegrees(t12 - planetary.ayanamsaDeg);
+        const s2 = normalizeDegrees(t2 - planetary.ayanamsaDeg);
+        const s3 = normalizeDegrees(t3 - planetary.ayanamsaDeg);
+        houseCuspsSidereal[0] = ascSid;
+        houseCuspsSidereal[1] = s2;
+        houseCuspsSidereal[2] = s3;
+        houseCuspsSidereal[3] = icSid;
+        houseCuspsSidereal[4] = normalizeDegrees(s11 + 180.0);
+        houseCuspsSidereal[5] = normalizeDegrees(s12 + 180.0);
+        houseCuspsSidereal[6] = dscSid;
+        houseCuspsSidereal[7] = normalizeDegrees(s2 + 180.0);
+        houseCuspsSidereal[8] = normalizeDegrees(s3 + 180.0);
+        houseCuspsSidereal[9] = mcSid;
+        houseCuspsSidereal[10] = s11;
+        houseCuspsSidereal[11] = s12;
+      } else {
+        isPolarFallback = true;
+      }
+    }
+
+    if (houseSystemId !== 0 && (houseSystemId !== 2 || isPolarFallback)) {
       const icSid = normalizeDegrees(mcSid + 180.0);
       const dscSid = normalizeDegrees(ascSid + 180.0);
       const q1 = normalizeDegrees(icSid - ascSid) / 3.0;
@@ -1907,6 +1993,8 @@ export function computeFullChartZeroCopy(request = {}) {
         houseCuspsSidereal[h] = normalizeDegrees(houseCuspsSidereal[h - 6] + 180.0);
       }
     }
+
+    polarWords[0] = isPolarFallback ? 1 : 0;
 
     for (let b = 0; b < 12; b++) {
       const lon = planetLonSidereal[b];
@@ -2024,6 +2112,7 @@ export const EphemerisBrowser = Object.freeze({
   computeChart,
   evaluateChebyshevSegment3D,
   benchmarkClientKundali,
+  isWasmArenaInitialized,
   initEphemerisWasm,
   computeFullChartZeroCopy
 });

@@ -403,7 +403,8 @@ export function evaluateChebyshevSegment3D(
   spanDays: number
 ): [number, number, number, number, number, number];
 export function benchmarkClientKundali(iterations?: number): ClientKundaliBenchmarkResult;
-export function initEphemerisWasm(kernelBytes?: Uint8Array | ArrayBuffer): Promise<void>;
+export function isWasmArenaInitialized(): boolean;
+export function initEphemerisWasm(kernelBytes?: Uint8Array | ArrayBuffer | string): Promise<void>;
 export function computeFullChartZeroCopy(request: BatchNatalRequestInput): FullKundaliZeroCopyView;
 
 export const EphemerisBrowser: {
@@ -439,6 +440,7 @@ export const EphemerisBrowser: {
   readonly computeChart: typeof computeChart;
   readonly evaluateChebyshevSegment3D: typeof evaluateChebyshevSegment3D;
   readonly benchmarkClientKundali: typeof benchmarkClientKundali;
+  readonly isWasmArenaInitialized: typeof isWasmArenaInitialized;
   readonly initEphemerisWasm: typeof initEphemerisWasm;
   readonly computeFullChartZeroCopy: typeof computeFullChartZeroCopy;
 };
