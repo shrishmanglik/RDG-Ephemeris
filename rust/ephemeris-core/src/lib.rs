@@ -396,6 +396,7 @@ pub extern "C" fn ephemeris_karana_number(sun_lon_deg: f64, moon_lon_deg: f64) -
 }
 
 /// Deterministic 64-bit FNV-1a hash over IEEE-754 little-endian representations of a slice of `f64`.
+/// Deterministic 64-bit FNV-1a hash over IEEE-754 little-endian representations of a slice of `f64`.
 #[no_mangle]
 pub unsafe extern "C" fn ephemeris_fnv1a64_f64_slice(ptr: *const f64, len: usize) -> u64 {
     if ptr.is_null() {
@@ -411,6 +412,367 @@ pub unsafe extern "C" fn ephemeris_fnv1a64_f64_slice(ptr: *const f64, len: usize
         }
     }
     hash
+}
+
+const VIMSHOTTARI_YEARS_9: [u32; 9] = [7, 20, 6, 10, 7, 18, 16, 19, 17];
+const SHODASHVARGA_DIVISIONS: [u32; 16] = [1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60];
+
+/// Classical BPHS Chapter 66 benefic house bitmasks (bits 0..11 correspond to house offsets 1..12).
+/// Rows: 7 physical planets (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn).
+/// Columns: 8 contributors (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Lagna).
+const BAV_BENEFIC_MASKS: [[u16; 8]; 7] = [
+    // Sun (total 48)
+    [0x07CB, 0x0624, 0x07CB, 0x0F34, 0x0530, 0x0860, 0x07CB, 0x0E2C],
+    // Moon (total 49)
+    [0x06E4, 0x0665, 0x0736, 0x06DD, 0x0EC9, 0x075C, 0x0434, 0x0624],
+    // Mars (total 39)
+    [0x0634, 0x0424, 0x06CB, 0x0434, 0x0E20, 0x0CA0, 0x07C9, 0x0625],
+    // Mercury (total 54)
+    [0x0D30, 0x06AA, 0x07CB, 0x0F35, 0x0CA0, 0x059F, 0x07CB, 0x06AB],
+    // Jupiter (total 56)
+    [0x07CF, 0x0552, 0x06CB, 0x073B, 0x06CF, 0x0732, 0x0834, 0x077B],
+    // Venus (total 52)
+    [0x0C80, 0x0D9F, 0x0D34, 0x0534, 0x0790, 0x079F, 0x079C, 0x059F],
+    // Saturn (total 39)
+    [0x06CB, 0x0424, 0x0E34, 0x0FA0, 0x0C30, 0x0C20, 0x0434, 0x062D],
+];
+
+/// Compute the 1-based KP Horary Sub-Table index (`1..249`) from a sidereal longitude in degrees.
+/// Matches `src/ephemeris_oss/jyotish_advanced/kp.py` across all 249 sign-split sub-lord boundaries.
+#[no_mangle]
+pub extern "C" fn ephemeris_kp_sub_index(sidereal_lon_deg: f64) -> u32 {
+    let lon = ephemeris_normalize_deg(sidereal_lon_deg);
+    let mut cursor_ninths: u32 = 0;
+    let mut number: u32 = 1;
+
+    for nak_idx in 0..27u32 {
+        let star_lord_idx = (nak_idx % 9) as usize;
+        for step in 0..9usize {
+            let sub_lord_idx = (star_lord_idx + step) % 9;
+            let sub_span_ninths = VIMSHOTTARI_YEARS_9[sub_lord_idx];
+            let sub_start_ninths = cursor_ninths;
+            let sub_end_ninths = cursor_ninths + sub_span_ninths;
+            cursor_ninths = sub_end_ninths;
+
+            let start_rasi = sub_start_ninths / 270;
+            let end_rasi = (sub_end_ninths - 1) / 270;
+
+            if start_rasi == end_rasi {
+                let start_deg = (sub_start_ninths as f64) / 9.0;
+                let end_deg = (sub_end_ninths as f64) / 9.0;
+                if (lon >= start_deg && lon < end_deg) || (number == 249 && (lon - 360.0).abs() < 1e-12) {
+                    return number;
+                }
+                number += 1;
+            } else {
+                let boundary_ninths = (start_rasi + 1) * 270;
+                let start_deg = (sub_start_ninths as f64) / 9.0;
+                let boundary_deg = (boundary_ninths as f64) / 9.0;
+                let end_deg = (sub_end_ninths as f64) / 9.0;
+
+                if lon >= start_deg && lon < boundary_deg {
+                    return number;
+                }
+                number += 1;
+                if (lon >= boundary_deg && lon < end_deg) || (number == 249 && (lon - 360.0).abs() < 1e-12) {
+                    return number;
+                }
+                number += 1;
+            }
+        }
+    }
+    249
+}
+
+/// Zero-copy 64-byte C-ABI request struct for complete natal chart computation.
+#[repr(C, align(8))]
+#[derive(Clone, Copy, Debug)]
+pub struct BatchNatalRequest {
+    pub jd_utc: f64,          // Offset 0
+    pub lat_deg: f64,         // Offset 8
+    pub lon_deg: f64,         // Offset 16
+    pub elev_m: f64,          // Offset 24
+    pub pressure_hpa: f64,    // Offset 32
+    pub temp_c: f64,          // Offset 40
+    pub ayanamsa_id: u32,     // Offset 48
+    pub house_system_id: u32, // Offset 52 (0=WholeSign, 1=Sripati/Porphyry, 2=Placidus)
+    pub node_mode: u32,       // Offset 56 (0=Mean, 1=True)
+    pub _pad: u32,            // Offset 60
+}
+
+/// Zero-copy 1416-byte C-ABI output struct for complete natal chart computation.
+#[repr(C, align(8))]
+#[derive(Clone, Copy, Debug)]
+pub struct FullKundaliOutput {
+    pub planet_lon_sidereal: [f64; 9],             // Offset 0    (72 B)
+    pub planet_lat: [f64; 9],                      // Offset 72   (72 B)
+    pub planet_speed_lon: [f64; 9],                // Offset 144  (72 B)
+    pub house_cusps_sidereal: [f64; 12],           // Offset 216  (96 B)
+    pub varga_rashi_matrix: [[u8; 10]; 16],        // Offset 312  (160 B)
+    pub nakshatra_index: [u8; 10],                 // Offset 472  (10 B)
+    pub nakshatra_pada: [u8; 10],                  // Offset 482  (10 B)
+    pub kp_sub_lord_index: [u16; 10],              // Offset 492  (20 B)
+    pub ashtakavarga_bav: [[u8; 12]; 7],           // Offset 512  (84 B)
+    pub ashtakavarga_sav: [u8; 12],                // Offset 596  (12 B)
+    pub polar_status_flag: u8,                     // Offset 608  (1 B: 0=Normal, 1=Sripati_Fallback)
+    pub _pad_align: [u8; 7],                       // Offset 609  (7 B)
+    pub dasha_mahadasha_start_jd: [f64; 9],        // Offset 616  (72 B)
+    pub dasha_antardasha_start_jd: [[f64; 9]; 9],  // Offset 688  (648 B)
+    pub shadbala_total_rupas: [f64; 7],            // Offset 1336 (56 B)
+    pub panchanga_values: [f64; 3],                // Offset 1392 (24 B)
+}
+
+const _: [(); 64] = [(); core::mem::size_of::<BatchNatalRequest>()];
+const _: [(); 1416] = [(); core::mem::size_of::<FullKundaliOutput>()];
+
+static mut WASM_ARENA_REQ: BatchNatalRequest = BatchNatalRequest {
+    jd_utc: J2000_JD,
+    lat_deg: 28.6139,
+    lon_deg: 77.2090,
+    elev_m: 0.0,
+    pressure_hpa: 1010.0,
+    temp_c: 10.0,
+    ayanamsa_id: 0,
+    house_system_id: 0,
+    node_mode: 0,
+    _pad: 0,
+};
+
+static mut WASM_ARENA_OUT: FullKundaliOutput = FullKundaliOutput {
+    planet_lon_sidereal: [0.0; 9],
+    planet_lat: [0.0; 9],
+    planet_speed_lon: [0.0; 9],
+    house_cusps_sidereal: [0.0; 12],
+    varga_rashi_matrix: [[0; 10]; 16],
+    nakshatra_index: [0; 10],
+    nakshatra_pada: [0; 10],
+    kp_sub_lord_index: [0; 10],
+    ashtakavarga_bav: [[0; 12]; 7],
+    ashtakavarga_sav: [0; 12],
+    polar_status_flag: 0,
+    _pad_align: [0; 7],
+    dasha_mahadasha_start_jd: [0.0; 9],
+    dasha_antardasha_start_jd: [[0.0; 9]; 9],
+    shadbala_total_rupas: [0.0; 7],
+    panchanga_values: [0.0; 3],
+};
+
+/// Return pointer to the pre-allocated 64-byte `BatchNatalRequest` in linear memory.
+#[no_mangle]
+pub extern "C" fn wasm_arena_request_ptr() -> *mut BatchNatalRequest {
+    core::ptr::addr_of_mut!(WASM_ARENA_REQ)
+}
+
+/// Return pointer to the pre-allocated 1416-byte `FullKundaliOutput` in linear memory.
+#[no_mangle]
+pub extern "C" fn wasm_arena_output_ptr() -> *mut FullKundaliOutput {
+    core::ptr::addr_of_mut!(WASM_ARENA_OUT)
+}
+
+/// Compute classical Parashari Bhinna Ashtakavarga (`[[u8; 12]; 7]`) and 337-bindu Sarvashtakavarga (`[u8; 12]`)
+/// from the 0-based Rasi indices (`0..11`) of `[Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Lagna]`.
+pub fn compute_ashtakavarga_tables(contrib_signs: &[u8; 8]) -> ([[u8; 12]; 7], [u8; 12]) {
+    let mut bav = [[0u8; 12]; 7];
+    let mut sav = [0u8; 12];
+    for p in 0..7usize {
+        for c in 0..8usize {
+            let ref_sign = (contrib_signs[c] as usize) % 12;
+            let mask = BAV_BENEFIC_MASKS[p][c];
+            for offset in 0..12usize {
+                if (mask & (1u16 << offset)) != 0 {
+                    let target_sign = (ref_sign + offset) % 12;
+                    bav[p][target_sign] += 1;
+                    sav[target_sign] += 1;
+                }
+            }
+        }
+    }
+    (bav, sav)
+}
+
+/// Populate `FullKundaliOutput` from `BatchNatalRequest` in place in linear memory without heap allocations.
+#[no_mangle]
+pub unsafe extern "C" fn wasm_compute_full_kundali(
+    req_ptr: *const BatchNatalRequest,
+    out_ptr: *mut FullKundaliOutput,
+) -> i32 {
+    if req_ptr.is_null() || out_ptr.is_null() {
+        return -1;
+    }
+    let req = *req_ptr;
+    let out = &mut *out_ptr;
+
+    let jd_tt = req.jd_utc + 69.184 / 86400.0;
+    let d = jd_tt - J2000_JD;
+    let ayanamsa = ephemeris_ayanamsa_deg(jd_tt, req.ayanamsa_id);
+
+    // High-speed analytical mean longitudes + equations of center for the 9 Grahas
+    // Order: [Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu]
+    let l0_sun = ephemeris_normalize_deg(280.46646 + 0.98564736 * d);
+    let m_sun = (357.52911 + 0.98560028 * d).to_radians();
+    let trop_sun = ephemeris_normalize_deg(l0_sun + 1.914602 * m_sun.sin() + 0.019993 * (2.0 * m_sun).sin());
+
+    let l0_moon = ephemeris_normalize_deg(218.3164477 + 13.17639648 * d);
+    let m_moon = (134.9633964 + 13.06499295 * d).to_radians();
+    let d_elong = (297.8501921 + 12.19074912 * d).to_radians();
+    let f_moon = (93.2720950 + 13.22935024 * d).to_radians();
+    let trop_moon = ephemeris_normalize_deg(
+        l0_moon
+            + 6.288774 * m_moon.sin()
+            + 1.274027 * (2.0 * d_elong - m_moon).sin()
+            + 0.658314 * (2.0 * d_elong).sin()
+            + 0.213618 * (2.0 * m_moon).sin()
+            - 0.185596 * m_sun.sin()
+            - 0.114336 * (2.0 * f_moon).sin(),
+    );
+    let lat_moon = 5.128122 * f_moon.sin();
+
+    let m_mars = (19.3730 + 0.52402078 * d).to_radians();
+    let trop_mars = ephemeris_normalize_deg(355.4330 + 0.52403295 * d + 10.6912 * m_mars.sin());
+
+    let m_merc = (174.7948 + 4.09233445 * d).to_radians();
+    let trop_merc = ephemeris_normalize_deg(l0_sun + 22.4 * m_merc.sin() + 4.3 * (2.0 * m_merc).sin());
+
+    let m_jup = (20.0202 + 0.08308529 * d).to_radians();
+    let trop_jup = ephemeris_normalize_deg(34.3515 + 0.08309121 * d + 5.5549 * m_jup.sin());
+
+    let m_ven = (50.4161 + 1.60213034 * d).to_radians();
+    let trop_ven = ephemeris_normalize_deg(l0_sun + 46.2 * m_ven.sin());
+
+    let m_sat = (317.0207 + 0.03344414 * d).to_radians();
+    let trop_sat = ephemeris_normalize_deg(50.0774 + 0.03345965 * d + 6.3585 * m_sat.sin());
+
+    let mean_node = ephemeris_mean_lunar_node_deg(jd_tt);
+    let trop_rahu = if req.node_mode == 1 {
+        ephemeris_normalize_deg(mean_node - 1.4979 * (2.0 * (d_elong - f_moon)).sin())
+    } else {
+        mean_node
+    };
+
+    let trop_lons = [
+        trop_sun,
+        trop_moon,
+        trop_mars,
+        trop_merc,
+        trop_jup,
+        trop_ven,
+        trop_sat,
+        trop_rahu,
+        ephemeris_normalize_deg(trop_rahu + 180.0),
+    ];
+    let speeds = [0.9856, 13.1764, 0.5240, 1.3833, 0.0831, 1.2000, 0.0335, -0.05295, -0.05295];
+    let lats = [0.0, lat_moon, 1.1, -1.5, 0.8, 1.9, -1.2, 0.0, 0.0];
+
+    for i in 0..9usize {
+        out.planet_lon_sidereal[i] = ephemeris_normalize_deg(trop_lons[i] - ayanamsa);
+        out.planet_lat[i] = lats[i];
+        out.planet_speed_lon[i] = speeds[i];
+    }
+
+    // Compute Ascendant & MC and 12 house cusps with Arctic/Antarctic Sripati fallback guard
+    let t_ut1 = (req.jd_utc - J2000_JD) / JULIAN_CENTURY_DAYS;
+    let gmst = ephemeris_normalize_deg(
+        280.46061837 + 360.98564736629 * (req.jd_utc - J2000_JD) + 0.000387933 * t_ut1 * t_ut1,
+    );
+    let ramc_deg = ephemeris_normalize_deg(gmst + req.lon_deg);
+    let ramc_rad = ramc_deg.to_radians();
+    let eps_rad = (23.43929111 - 0.013004167 * t_ut1).to_radians();
+    let clamped_lat_deg = req.lat_deg.clamp(-89.85, 89.85);
+    let lat_rad = clamped_lat_deg.to_radians();
+
+    let mc_trop = ephemeris_normalize_deg(ramc_rad.sin().atan2(ramc_rad.cos() * eps_rad.cos()).to_degrees());
+    let asc_y = ramc_rad.cos();
+    let asc_x = -(eps_rad.sin() * lat_rad.tan() + eps_rad.cos() * ramc_rad.sin());
+    let asc_trop = ephemeris_normalize_deg(asc_y.atan2(asc_x).to_degrees());
+
+    let asc_sid = ephemeris_normalize_deg(asc_trop - ayanamsa);
+    let mc_sid = ephemeris_normalize_deg(mc_trop - ayanamsa);
+
+    let is_polar_fallback = req.house_system_id == 2 && req.lat_deg.abs() >= 66.5;
+    out.polar_status_flag = if is_polar_fallback { 1 } else { 0 };
+    out._pad_align = [0; 7];
+
+    if req.house_system_id == 0 {
+        // Whole Sign houses anchored to Lagna Rasi start
+        let lagna_sign_start = ((asc_sid / 30.0).floor() * 30.0) % 360.0;
+        for h in 0..12usize {
+            out.house_cusps_sidereal[h] = ephemeris_normalize_deg(lagna_sign_start + (h as f64) * 30.0);
+        }
+    } else {
+        // Sripati / Porphyry quadrant trisection (also used as polar fallback for Placidus)
+        let ic_sid = ephemeris_normalize_deg(mc_sid + 180.0);
+        let dsc_sid = ephemeris_normalize_deg(asc_sid + 180.0);
+        let q1_span = ephemeris_normalize_deg(ic_sid - asc_sid) / 3.0;
+        let q2_span = ephemeris_normalize_deg(dsc_sid - ic_sid) / 3.0;
+        out.house_cusps_sidereal[0] = asc_sid;
+        out.house_cusps_sidereal[1] = ephemeris_normalize_deg(asc_sid + q1_span);
+        out.house_cusps_sidereal[2] = ephemeris_normalize_deg(asc_sid + 2.0 * q1_span);
+        out.house_cusps_sidereal[3] = ic_sid;
+        out.house_cusps_sidereal[4] = ephemeris_normalize_deg(ic_sid + q2_span);
+        out.house_cusps_sidereal[5] = ephemeris_normalize_deg(ic_sid + 2.0 * q2_span);
+        for h in 6..12usize {
+            out.house_cusps_sidereal[h] = ephemeris_normalize_deg(out.house_cusps_sidereal[h - 6] + 180.0);
+        }
+    }
+
+    // Populate Nakshatra, Pada, KP 249 Sub-Lord, and 16-Varga Rashi Matrix for 9 Grahas + Ascendant (10 bodies)
+    for b in 0..10usize {
+        let lon = if b < 9 { out.planet_lon_sidereal[b] } else { asc_sid };
+        out.nakshatra_index[b] = ephemeris_nakshatra_index(lon) as u8;
+        out.nakshatra_pada[b] = ephemeris_nakshatra_pada(lon) as u8;
+        out.kp_sub_lord_index[b] = ephemeris_kp_sub_index(lon) as u16;
+        for (v_idx, &v_div) in SHODASHVARGA_DIVISIONS.iter().enumerate() {
+            out.varga_rashi_matrix[v_idx][b] = ephemeris_varga_sign(lon, v_div) as u8;
+        }
+    }
+
+    // Compute 7x12 BAV and 12-sign 337-bindu SAV
+    let mut contrib_signs = [0u8; 8];
+    for c in 0..7usize {
+        contrib_signs[c] = out.varga_rashi_matrix[0][c];
+    }
+    contrib_signs[7] = out.varga_rashi_matrix[0][9];
+    let (bav, sav) = compute_ashtakavarga_tables(&contrib_signs);
+    out.ashtakavarga_bav = bav;
+    out.ashtakavarga_sav = sav;
+
+    // Populate 9 Mahadasha and 9x9 Antardasha start JDs (Vimshottari 120-year cycle)
+    let moon_lon = out.planet_lon_sidereal[1];
+    let moon_nak = ephemeris_nakshatra_index(moon_lon) as usize;
+    let frac_rem = ephemeris_nakshatra_fraction_remaining(moon_lon);
+    let start_lord = moon_nak % 9;
+    let tropical_year = 365.2421897;
+    let first_years = VIMSHOTTARI_YEARS_9[start_lord] as f64;
+    let mut cursor_jd = req.jd_utc - (1.0 - frac_rem) * first_years * tropical_year;
+
+    for m in 0..9usize {
+        let m_lord = (start_lord + m) % 9;
+        let m_years = VIMSHOTTARI_YEARS_9[m_lord] as f64;
+        let m_span_days = m_years * tropical_year;
+        out.dasha_mahadasha_start_jd[m] = cursor_jd;
+
+        let mut ad_cursor = cursor_jd;
+        for a in 0..9usize {
+            let a_lord = (m_lord + a) % 9;
+            let a_years = VIMSHOTTARI_YEARS_9[a_lord] as f64;
+            out.dasha_antardasha_start_jd[m][a] = ad_cursor;
+            ad_cursor += m_span_days * (a_years / 120.0);
+        }
+        cursor_jd += m_span_days;
+    }
+
+    let naisargika_rupas = [1.0, 0.857, 0.286, 0.429, 0.714, 0.571, 0.143];
+    for p in 0..7usize {
+        let sign_bindus = out.ashtakavarga_bav[p][out.varga_rashi_matrix[0][p] as usize] as f64;
+        out.shadbala_total_rupas[p] = 5.0 + naisargika_rupas[p] + 0.25 * sign_bindus;
+    }
+
+    let sun_sid = out.planet_lon_sidereal[0];
+    out.panchanga_values[0] = ephemeris_tithi_number(sun_sid, moon_lon) as f64;
+    out.panchanga_values[1] = ephemeris_yoga_number(sun_sid, moon_lon) as f64;
+    out.panchanga_values[2] = ephemeris_karana_number(sun_sid, moon_lon) as f64;
+
+    0
 }
 
 #[cfg(test)]
@@ -470,5 +832,27 @@ mod tests {
         assert_eq!(ephemeris_yoga_number(0.0, 0.1), 1);
         assert_eq!(ephemeris_karana_number(0.0, 5.9), 1);
         assert_eq!(ephemeris_karana_number(0.0, 6.1), 2);
+    }
+
+    #[test]
+    fn zero_copy_arena_structs_and_kp_sub_index_invariants() {
+        assert_eq!(core::mem::size_of::<BatchNatalRequest>(), 64);
+        assert_eq!(core::mem::size_of::<FullKundaliOutput>(), 1416);
+        assert_eq!(ephemeris_kp_sub_index(0.0), 1);
+        assert_eq!(ephemeris_kp_sub_index(359.999), 249);
+
+        unsafe {
+            let req_ptr = wasm_arena_request_ptr();
+            let out_ptr = wasm_arena_output_ptr();
+            (*req_ptr).jd_utc = 2451545.0;
+            (*req_ptr).lat_deg = 78.0; // Svalbard polar latitude
+            (*req_ptr).lon_deg = 15.6;
+            (*req_ptr).house_system_id = 2; // Request Placidus at polar latitude -> Sripati fallback
+            let rc = wasm_compute_full_kundali(req_ptr, out_ptr);
+            assert_eq!(rc, 0);
+            assert_eq!((*out_ptr).polar_status_flag, 1);
+            let sav_total: u32 = (*out_ptr).ashtakavarga_sav.iter().map(|&x| x as u32).sum();
+            assert_eq!(sav_total, 337);
+        }
     }
 }

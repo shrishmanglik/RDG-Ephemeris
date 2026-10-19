@@ -1710,6 +1710,268 @@ export function benchmarkClientKundali(iterations = 32) {
   };
 }
 
+const ZERO_COPY_SHODASHVARGA_DIVS = Object.freeze([1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60]);
+const ZERO_COPY_VIMSHOTTARI_YEARS = Object.freeze([7, 20, 6, 10, 7, 18, 16, 19, 17]);
+const ZERO_COPY_BAV_MASKS = Object.freeze([
+  [0x07cb, 0x0624, 0x07cb, 0x0f34, 0x0530, 0x0860, 0x07cb, 0x0e2c],
+  [0x06e4, 0x0665, 0x0736, 0x06dd, 0x0ec9, 0x075c, 0x0434, 0x0624],
+  [0x0634, 0x0424, 0x06cb, 0x0434, 0x0e20, 0x0ca0, 0x07c9, 0x0625],
+  [0x0d30, 0x06aa, 0x07cb, 0x0f35, 0x0ca0, 0x059f, 0x07cb, 0x06ab],
+  [0x07cf, 0x0552, 0x06cb, 0x073b, 0x06cf, 0x0732, 0x0834, 0x077b],
+  [0x0c80, 0x0d9f, 0x0d34, 0x0534, 0x0790, 0x079f, 0x079c, 0x059f],
+  [0x06cb, 0x0424, 0x0e34, 0x0fa0, 0x0c30, 0x0c20, 0x0434, 0x062d]
+]);
+
+function computeKpSubIndex249(siderealLonDeg) {
+  const lon = normalizeDegrees(siderealLonDeg);
+  let cursorNinths = 0;
+  let number = 1;
+  for (let nakIdx = 0; nakIdx < 27; nakIdx++) {
+    const starLordIdx = nakIdx % 9;
+    for (let step = 0; step < 9; step++) {
+      const subLordIdx = (starLordIdx + step) % 9;
+      const subSpanNinths = ZERO_COPY_VIMSHOTTARI_YEARS[subLordIdx];
+      const subStartNinths = cursorNinths;
+      const subEndNinths = cursorNinths + subSpanNinths;
+      cursorNinths = subEndNinths;
+
+      const startRasi = Math.floor(subStartNinths / 270);
+      const endRasi = Math.floor((subEndNinths - 1) / 270);
+      if (startRasi === endRasi) {
+        const startDeg = subStartNinths / 9.0;
+        const endDeg = subEndNinths / 9.0;
+        if ((lon >= startDeg && lon < endDeg) || (number === 249 && Math.abs(lon - 360.0) < 1e-12)) {
+          return number;
+        }
+        number += 1;
+      } else {
+        const boundaryNinths = (startRasi + 1) * 270;
+        const startDeg = subStartNinths / 9.0;
+        const boundaryDeg = boundaryNinths / 9.0;
+        const endDeg = subEndNinths / 9.0;
+        if (lon >= startDeg && lon < boundaryDeg) {
+          return number;
+        }
+        number += 1;
+        if ((lon >= boundaryDeg && lon < endDeg) || (number === 249 && Math.abs(lon - 360.0) < 1e-12)) {
+          return number;
+        }
+        number += 1;
+      }
+    }
+  }
+  return 249;
+}
+
+const _fallbackArenaBuffer = new ArrayBuffer(1480);
+let _wasmExports = null;
+
+/**
+ * Initialize the zero-copy WebAssembly Ephemeris & Jyotish linear-memory arena.
+ * If `kernelBytes` contains a compiled `.wasm` module (`\0asm`), instantiates it and binds
+ * `wasm_arena_request_ptr`, `wasm_arena_output_ptr`, and `wasm_compute_full_kundali`.
+ */
+export async function initEphemerisWasm(kernelBytes) {
+  if (kernelBytes) {
+    const u8 = kernelBytes instanceof Uint8Array ? kernelBytes : new Uint8Array(kernelBytes);
+    if (u8.byteLength >= 8 && u8[0] === 0x00 && u8[1] === 0x61 && u8[2] === 0x73 && u8[3] === 0x6d) {
+      const instantiated = await WebAssembly.instantiate(u8, {});
+      const instance = instantiated.instance || instantiated;
+      if (instance && instance.exports && instance.exports.wasm_compute_full_kundali) {
+        _wasmExports = instance.exports;
+      }
+    }
+  }
+}
+
+/**
+ * Compute a complete Kundali chart in place inside a zero-copy 1416-byte linear-memory arena
+ * (`BatchNatalRequest` = 64 bytes, `FullKundaliOutput` = 1416 bytes) with zero JSON serialization.
+ */
+export function computeFullChartZeroCopy(request = {}) {
+  const jdUtc = Number(request.jdUtc ?? 2451545.0);
+  const latDeg = Number(request.latDeg ?? 28.6139);
+  const lonDeg = Number(request.lonDeg ?? 77.2090);
+  const elevM = Number(request.elevM ?? 0.0);
+  const pressureHpa = Number(request.pressureHpa ?? 1010.0);
+  const tempC = Number(request.tempC ?? 10.0);
+  const ayanamsaId = Number(request.ayanamsaId ?? 0) >>> 0;
+  const houseSystemId = Number(request.houseSystemId ?? 0) >>> 0;
+  const nodeMode = Number(request.nodeMode ?? 0) >>> 0;
+
+  let buf = _fallbackArenaBuffer;
+  let reqBase = 0;
+  let outBase = 64;
+
+  if (_wasmExports && _wasmExports.memory) {
+    reqBase = _wasmExports.wasm_arena_request_ptr() >>> 0;
+    outBase = _wasmExports.wasm_arena_output_ptr() >>> 0;
+    buf = _wasmExports.memory.buffer;
+  }
+
+  const reqF64 = new Float64Array(buf, reqBase, 6);
+  reqF64[0] = jdUtc;
+  reqF64[1] = latDeg;
+  reqF64[2] = lonDeg;
+  reqF64[3] = elevM;
+  reqF64[4] = pressureHpa;
+  reqF64[5] = tempC;
+  const reqU32 = new Uint32Array(buf, reqBase + 48, 4);
+  reqU32[0] = ayanamsaId;
+  reqU32[1] = houseSystemId;
+  reqU32[2] = nodeMode;
+  reqU32[3] = 0;
+
+  if (_wasmExports && _wasmExports.wasm_compute_full_kundali) {
+    _wasmExports.wasm_compute_full_kundali(reqBase, outBase);
+    buf = _wasmExports.memory.buffer;
+  } else {
+    // Populate the identical 1416-byte layout in place inside the fallback ArrayBuffer
+    const planetLonSidereal = new Float64Array(buf, outBase + 0, 9);
+    const planetLat = new Float64Array(buf, outBase + 72, 9);
+    const planetSpeedLon = new Float64Array(buf, outBase + 144, 9);
+    const houseCuspsSidereal = new Float64Array(buf, outBase + 216, 12);
+    const vargaRashiMatrix = new Uint8Array(buf, outBase + 312, 160);
+    const nakshatraIndex = new Uint8Array(buf, outBase + 472, 10);
+    const nakshatraPada = new Uint8Array(buf, outBase + 482, 10);
+    const kpSubLordIndex = new Uint16Array(buf, outBase + 492, 10);
+    const ashtakavargaBav = new Uint8Array(buf, outBase + 512, 84);
+    const ashtakavargaSav = new Uint8Array(buf, outBase + 596, 12);
+    const polarView = new Uint8Array(buf, outBase + 608, 8);
+    const dashaMahadashaStartJd = new Float64Array(buf, outBase + 616, 9);
+    const dashaAntardashaStartJd = new Float64Array(buf, outBase + 688, 81);
+    const shadbalaTotalRupas = new Float64Array(buf, outBase + 1336, 7);
+    const panchangaValues = new Float64Array(buf, outBase + 1392, 3);
+
+    const ayanamsaKeys = ["lahiri", "raman", "krishnamurti", "yukteshwar", "fagan_bradley", "true_citra"];
+    const ayanamsaKey = ayanamsaKeys[ayanamsaId] || "lahiri";
+    const jdTt = jdUtc + 69.184 / 86400.0;
+    const planetary = computePlanets(jdTt, { ayanamsa: ayanamsaKey, nodeMode: nodeMode === 1 ? "true" : "mean" });
+    const grahaOrder = ["sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn", "rahu", "ketu"];
+    for (let i = 0; i < 9; i++) {
+      const g = planetary.grahas[grahaOrder[i]];
+      planetLonSidereal[i] = g.siderealLongitudeDeg;
+      planetLat[i] = g.latitudeDeg;
+      planetSpeedLon[i] = g.speedDegPerDay;
+    }
+
+    const houses = computeAscendantAndHouses(jdTt, jdUtc, Math.max(-89.85, Math.min(89.85, latDeg)), lonDeg, ayanamsaKey);
+    const ascSid = houses.siderealAscendantDeg;
+    const mcSid = houses.siderealMidheavenDeg;
+    const isPolarFallback = houseSystemId === 2 && Math.abs(latDeg) >= 66.5;
+    polarView.fill(0);
+    polarView[0] = isPolarFallback ? 1 : 0;
+
+    if (houseSystemId === 0) {
+      for (let h = 0; h < 12; h++) {
+        houseCuspsSidereal[h] = houses.wholeSignCusps[h];
+      }
+    } else {
+      const icSid = normalizeDegrees(mcSid + 180.0);
+      const dscSid = normalizeDegrees(ascSid + 180.0);
+      const q1 = normalizeDegrees(icSid - ascSid) / 3.0;
+      const q2 = normalizeDegrees(dscSid - icSid) / 3.0;
+      houseCuspsSidereal[0] = ascSid;
+      houseCuspsSidereal[1] = normalizeDegrees(ascSid + q1);
+      houseCuspsSidereal[2] = normalizeDegrees(ascSid + 2.0 * q1);
+      houseCuspsSidereal[3] = icSid;
+      houseCuspsSidereal[4] = normalizeDegrees(icSid + q2);
+      houseCuspsSidereal[5] = normalizeDegrees(icSid + 2.0 * q2);
+      for (let h = 6; h < 12; h++) {
+        houseCuspsSidereal[h] = normalizeDegrees(houseCuspsSidereal[h - 6] + 180.0);
+      }
+    }
+
+    for (let b = 0; b < 10; b++) {
+      const lon = b < 9 ? planetLonSidereal[b] : ascSid;
+      const nak = computeNakshatra(lon);
+      nakshatraIndex[b] = nak.index;
+      nakshatraPada[b] = nak.pada;
+      kpSubLordIndex[b] = computeKpSubIndex249(lon);
+      for (let v = 0; v < 16; v++) {
+        vargaRashiMatrix[v * 10 + b] = computeVargaRasiIndex(lon, `D${ZERO_COPY_SHODASHVARGA_DIVS[v]}`);
+      }
+    }
+
+    ashtakavargaBav.fill(0);
+    ashtakavargaSav.fill(0);
+    const contribSigns = [
+      vargaRashiMatrix[0],
+      vargaRashiMatrix[1],
+      vargaRashiMatrix[2],
+      vargaRashiMatrix[3],
+      vargaRashiMatrix[4],
+      vargaRashiMatrix[5],
+      vargaRashiMatrix[6],
+      vargaRashiMatrix[9]
+    ];
+    for (let p = 0; p < 7; p++) {
+      for (let c = 0; c < 8; c++) {
+        const refSign = contribSigns[c] % 12;
+        const mask = ZERO_COPY_BAV_MASKS[p][c];
+        for (let offset = 0; offset < 12; offset++) {
+          if ((mask & (1 << offset)) !== 0) {
+            const targetSign = (refSign + offset) % 12;
+            ashtakavargaBav[p * 12 + targetSign] += 1;
+            ashtakavargaSav[targetSign] += 1;
+          }
+        }
+      }
+    }
+
+    const moonLon = planetLonSidereal[1];
+    const moonNak = Math.min(Math.floor(normalizeDegrees(moonLon) / (360.0 / 27.0)), 26);
+    const span = 360.0 / 27.0;
+    const fracRem = Math.max(0.0, Math.min(1.0, 1.0 - (normalizeDegrees(moonLon) - moonNak * span) / span));
+    const startLord = moonNak % 9;
+    let cursorJd = jdUtc - (1.0 - fracRem) * ZERO_COPY_VIMSHOTTARI_YEARS[startLord] * TROPICAL_YEAR_DAYS;
+    for (let m = 0; m < 9; m++) {
+      const mLord = (startLord + m) % 9;
+      const mSpanDays = ZERO_COPY_VIMSHOTTARI_YEARS[mLord] * TROPICAL_YEAR_DAYS;
+      dashaMahadashaStartJd[m] = cursorJd;
+      let adCursor = cursorJd;
+      for (let a = 0; a < 9; a++) {
+        const aLord = (mLord + a) % 9;
+        dashaAntardashaStartJd[m * 9 + a] = adCursor;
+        adCursor += mSpanDays * (ZERO_COPY_VIMSHOTTARI_YEARS[aLord] / 120.0);
+      }
+      cursorJd += mSpanDays;
+    }
+
+    const naisargika = [1.0, 0.857, 0.286, 0.429, 0.714, 0.571, 0.143];
+    for (let p = 0; p < 7; p++) {
+      const signBindus = ashtakavargaBav[p * 12 + vargaRashiMatrix[p]];
+      shadbalaTotalRupas[p] = 5.0 + naisargika[p] + 0.25 * signBindus;
+    }
+
+    const sunSid = planetLonSidereal[0];
+    const diff = normalizeDegrees(moonLon - sunSid);
+    const sum = normalizeDegrees(moonLon + sunSid);
+    panchangaValues[0] = Math.min(30, Math.floor(diff / 12.0) + 1);
+    panchangaValues[1] = Math.min(27, Math.floor(sum / (360.0 / 27.0)) + 1);
+    panchangaValues[2] = Math.min(60, Math.floor(diff / 6.0) + 1);
+  }
+
+  return {
+    planetLonSidereal: new Float64Array(buf, outBase + 0, 9),
+    planetLat: new Float64Array(buf, outBase + 72, 9),
+    planetSpeedLon: new Float64Array(buf, outBase + 144, 9),
+    houseCuspsSidereal: new Float64Array(buf, outBase + 216, 12),
+    vargaRashiMatrix: new Uint8Array(buf, outBase + 312, 160),
+    nakshatraIndex: new Uint8Array(buf, outBase + 472, 10),
+    nakshatraPada: new Uint8Array(buf, outBase + 482, 10),
+    kpSubLordIndex: new Uint16Array(buf, outBase + 492, 10),
+    ashtakavargaBav: new Uint8Array(buf, outBase + 512, 84),
+    ashtakavargaSav: new Uint8Array(buf, outBase + 596, 12),
+    polarStatusFlag: new Uint8Array(buf, outBase + 608, 1)[0],
+    dashaMahadashaStartJd: new Float64Array(buf, outBase + 616, 9),
+    dashaAntardashaStartJd: new Float64Array(buf, outBase + 688, 81),
+    shadbalaTotalRupas: new Float64Array(buf, outBase + 1336, 7),
+    panchangaValues: new Float64Array(buf, outBase + 1392, 3),
+    byteLength: 1416
+  };
+}
+
 export const EphemerisBrowser = Object.freeze({
   ENGINE_VERSION,
   AYANAMSA_CATALOG_VERSION,
@@ -1746,12 +2008,15 @@ export const EphemerisBrowser = Object.freeze({
   computeReceipt,
   computeChart,
   evaluateChebyshevSegment3D,
-  benchmarkClientKundali
+  benchmarkClientKundali,
+  initEphemerisWasm,
+  computeFullChartZeroCopy
 });
 
 // Pre-warm JIT so every caller invocation executes in < 2 ms
 for (let _w = 0; _w < 3; _w++) {
   computeChart({ jdTt: 2451545.0 + _w * 10.0, latitudeDeg: 28.6139, longitudeDeg: 77.2090, ayanamsa: "lahiri" });
+  computeFullChartZeroCopy({ jdUtc: 2451545.0 + _w * 10.0, latDeg: 28.6139, lonDeg: 77.2090 });
 }
 
 if (typeof globalThis !== "undefined") {

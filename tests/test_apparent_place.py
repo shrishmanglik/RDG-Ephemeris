@@ -20,6 +20,7 @@ from ephemeris_oss.engine.apparent import (
     apparent_place,
     apply_solar_gravitational_deflection,
     apply_special_relativistic_aberration,
+    bennett_saemundsson_refraction_deg,
     iterate_light_time,
     terrestrial_observer_barycentric_state,
     topocentric_apparent_place,
@@ -331,3 +332,64 @@ def test_wgs84_observer_boundaries_remain_finite(observer: GeodeticObserver) -> 
     )
     assert np.all(np.isfinite(result.position_km))
     assert np.all(np.isfinite(result.velocity_km_per_day))
+
+
+def test_solar_photosphere_occultation_guard_flags_occulted_by_sun() -> None:
+    observer = state((AU_KM, 0.0, 0.0), (0.0, 2_570_000.0, 0.0), "synthetic Earth")
+    sun = fixed_state(state((0.0, 0.0, 0.0), source="synthetic Sun"))
+
+    # Case 1: Target behind the Sun within solar photosphere radius (impact parameter 200,000 km < 695,700 km)
+    occulted_target = fixed_state(state((-AU_KM, 200_000.0, 0.0), source="behind Sun"))
+    res_occulted = apparent_place(
+        target_state_at_tdb=occulted_target,
+        sun_state_at_tdb=sun,
+        observer_barycentric_state=observer,
+        reception_tdb_jd=2_460_000.5,
+        provenance=provenance(),
+    )
+    assert res_occulted.occulted_by_sun is True
+    assert res_occulted.solar_deflection_applied is False
+    np.testing.assert_allclose(
+        res_occulted.deflected_direction, res_occulted.astrometric_direction, atol=1e-15
+    )
+
+    # Case 2: Exact antiparallel superior conjunction (1 + e.Q == 0 < 1e-9)
+    antiparallel_target = fixed_state(state((-AU_KM, 0.0, 0.0), source="antiparallel"))
+    res_anti = apparent_place(
+        target_state_at_tdb=antiparallel_target,
+        sun_state_at_tdb=sun,
+        observer_barycentric_state=observer,
+        reception_tdb_jd=2_460_000.5,
+        provenance=provenance(),
+    )
+    assert res_anti.occulted_by_sun is True
+    assert res_anti.solar_deflection_applied is False
+
+    # Case 3: Inferior conjunction (target in front of the Sun) is NOT occulted
+    inferior_target = fixed_state(state((0.5 * AU_KM, 100_000.0, 0.0), source="in front of Sun"))
+    res_inferior = apparent_place(
+        target_state_at_tdb=inferior_target,
+        sun_state_at_tdb=sun,
+        observer_barycentric_state=observer,
+        reception_tdb_jd=2_460_000.5,
+        provenance=provenance(),
+    )
+    assert res_inferior.occulted_by_sun is False
+    assert res_inferior.solar_deflection_applied is True
+
+
+def test_bennett_saemundsson_refraction_deg() -> None:
+    # Horizon (a0 = 0.0 deg) at standard P = 1010 hPa, T = 10 C -> 28.98 arcmin (~0.483 deg)
+    ref_horizon = bennett_saemundsson_refraction_deg(0.0, 1010.0, 10.0)
+    expected_arcmin = 1.02 / math.tan(math.radians(0.0 + 10.3 / 5.11))
+    assert ref_horizon == pytest.approx(expected_arcmin / 60.0, rel=1e-12)
+    assert 0.45 < ref_horizon < 0.60
+
+    # At 45 deg altitude, refraction is ~1 arcmin (~0.0169 deg)
+    ref_45 = bennett_saemundsson_refraction_deg(45.0, 1010.0, 10.0)
+    assert 0.015 < ref_45 < 0.020
+
+    # Below -1.0 deg or non-positive pressure returns 0.0
+    assert bennett_saemundsson_refraction_deg(-2.0, 1010.0, 10.0) == 0.0
+    assert bennett_saemundsson_refraction_deg(10.0, 0.0, 10.0) == 0.0
+

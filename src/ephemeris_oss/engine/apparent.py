@@ -175,6 +175,7 @@ class ApparentPlace:
     solar_deflection_applied: bool
     solar_deflector_tdb_jd: float | None
     provenance: ApparentPlaceProvenance
+    occulted_by_sun: bool = False
 
 
 StateAtTdb = Callable[[float], BarycentricState]
@@ -300,6 +301,36 @@ def iterate_light_time(
     )
 
 
+def _check_solar_photosphere_occultation(
+    *,
+    astrometric_direction: np.ndarray,
+    target_position: np.ndarray,
+    observer_position: np.ndarray,
+    sun_position: np.ndarray,
+    geometric_distance_km: float,
+) -> bool:
+    """Return True when the target ray is occulted by the solar photosphere or antiparallel."""
+
+    sun_to_target = target_position - sun_position
+    sun_to_observer = observer_position - sun_position
+    target_sep = float(np.linalg.norm(sun_to_target))
+    obs_sep = float(np.linalg.norm(sun_to_observer))
+    if target_sep <= 1.0e-9 or obs_sep <= 1.0e-9:
+        return False
+
+    q_unit = sun_to_target / target_sep
+    e_unit = sun_to_observer / obs_sep
+    if 1.0 + float(np.dot(e_unit, q_unit)) < 1.0e-9:
+        return True
+
+    projection = float(np.dot(sun_position - observer_position, astrometric_direction))
+    if 0.0 < projection < geometric_distance_km:
+        closest = observer_position + projection * astrometric_direction - sun_position
+        if float(np.dot(closest, closest)) < SUN_RADIUS_KM * SUN_RADIUS_KM:
+            return True
+    return False
+
+
 def apply_solar_gravitational_deflection(
     *,
     astrometric_direction: Vector3 | np.ndarray,
@@ -341,11 +372,14 @@ def apply_solar_gravitational_deflection(
     # but omits point-mass bending for a source hidden by the photosphere.
     # Only the finite ray segment counts: an inferior-conjunction source in
     # front of the Sun must not be classified as occulted.
-    projection = float(np.dot(sun_position - observer_position, direction))
-    if 0.0 < projection < geometric_distance_km:
-        closest = observer_position + projection * direction - sun_position
-        if float(np.dot(closest, closest)) < SUN_RADIUS_KM * SUN_RADIUS_KM:
-            return direction, deflector_tdb_jd, False
+    if _check_solar_photosphere_occultation(
+        astrometric_direction=direction,
+        target_position=target_position,
+        observer_position=observer_position,
+        sun_position=sun_position,
+        geometric_distance_km=geometric_distance_km,
+    ):
+        return direction, deflector_tdb_jd, False
 
     _, body_to_target = _unit(sun_to_target, "Sun-to-target vector")
     _, body_to_observer = _unit(sun_to_observer, "Sun-to-observer vector")
@@ -395,6 +429,38 @@ def apply_special_relativistic_aberration(
     return normalized
 
 
+def bennett_saemundsson_refraction_deg(
+    apparent_altitude_deg: float,
+    pressure_hpa: float = 1010.0,
+    temperature_c: float = 10.0,
+) -> float:
+    """Compute atmospheric refraction in degrees via the Bennett-Saemundsson formula.
+
+    Implements:
+    Delta a_ref (arcmin) = (P / 1010.0) * (283.0 / (273.0 + T_C))
+                           * 1.02 / tan(a_0 + 10.3 / (a_0 + 5.11))
+    where the tangent argument is converted from degrees to radians.
+    Returns 0.0 when apparent_altitude_deg < -1.0 or pressure_hpa <= 0.0.
+    """
+
+    a0 = float(apparent_altitude_deg)
+    p = float(pressure_hpa)
+    tc = float(temperature_c)
+    if not (math.isfinite(a0) and math.isfinite(p) and math.isfinite(tc)):
+        raise ValueError("refraction inputs must be finite")
+    if a0 < -1.0 or p <= 0.0 or (273.0 + tc) <= 0.0:
+        return 0.0
+    if a0 >= 89.9999:
+        return 0.0
+
+    angle_deg = a0 + 10.3 / (a0 + 5.11)
+    tan_val = math.tan(math.radians(angle_deg))
+    if abs(tan_val) <= 1.0e-15:
+        return 0.0
+    delta_arcmin = (p / 1010.0) * (283.0 / (273.0 + tc)) * (1.02 / tan_val)
+    return max(0.0, float(delta_arcmin / 60.0))
+
+
 def apparent_place(
     *,
     target_state_at_tdb: StateAtTdb,
@@ -424,6 +490,24 @@ def apparent_place(
     observer_position = _finite_vector(
         observer_barycentric_state.position_km, "observer position"
     )
+    target_position = _finite_vector(target_state.position_km, "target position")
+    sun_at_reception = _finite_vector(
+        sun_state_at_tdb(reception_tdb_jd).position_km, "Sun position"
+    )
+    projection_km = float(np.dot(sun_at_reception - observer_position, astrometric_direction))
+    ray_distance_km = min(max(projection_km, 0.0), geometric_distance)
+    eval_sun_jd = reception_tdb_jd - ray_distance_km / C_KM_PER_DAY
+    eval_sun_position = _finite_vector(
+        sun_state_at_tdb(eval_sun_jd).position_km, "Sun position"
+    )
+    occulted_by_sun = _check_solar_photosphere_occultation(
+        astrometric_direction=astrometric_direction,
+        target_position=target_position,
+        observer_position=observer_position,
+        sun_position=eval_sun_position,
+        geometric_distance_km=geometric_distance,
+    )
+
     if apply_solar_deflection:
         deflected_direction, deflector_jd, deflection_applied = (
             apply_solar_gravitational_deflection(
@@ -469,6 +553,7 @@ def apparent_place(
         solar_deflection_applied=deflection_applied,
         solar_deflector_tdb_jd=deflector_jd,
         provenance=provenance,
+        occulted_by_sun=occulted_by_sun,
     )
 
 

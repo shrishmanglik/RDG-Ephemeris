@@ -13,9 +13,12 @@ import numpy as np
 import pytest
 
 from ephemeris_oss.compact_kernel import CompactChebyshevKernel, CompactChebyshevSegment
+from ephemeris_oss.jyotish.ashtakavarga import BAV_BENEFIC_HOUSES
 from ephemeris_oss.rust_bridge import (
     EXPECTED_WASM_EXPORTS,
     J2000_JD,
+    BatchNatalRequest,
+    FullKundaliOutput,
     ayanamsa_deg,
     chebyshev_state_3d,
     evaluate_chebyshev_1d,
@@ -23,8 +26,11 @@ from ephemeris_oss.rust_bridge import (
     evaluate_chebyshev_clenshaw_3d,
     fnv1a64_f64_slice,
     general_precession_deg,
+    kp_sub_index,
     load_native_cdylib,
     mean_lunar_node_deg,
+    nakshatra_index,
+    nakshatra_pada,
     normalize_deg,
     varga_sign,
     verify_wasm_binary,
@@ -219,3 +225,121 @@ def test_native_rust_cdylib_matches_python_reference_to_machine_epsilon() -> Non
         for deg in range(0, 360, 7):
             lon = deg + 1.23
             assert int(lib.ephemeris_varga_sign(lon, varga_d)) == varga_sign(lon, varga_d)
+
+
+def test_zero_copy_struct_sizes_and_browser_arena() -> None:
+    assert ctypes.sizeof(BatchNatalRequest) == 64
+    assert ctypes.sizeof(FullKundaliOutput) == 1416
+
+    js_source = WEB_BROWSER_JS.read_text(encoding="utf-8")
+    dts_source = WEB_BROWSER_DTS.read_text(encoding="utf-8")
+    assert "export async function initEphemerisWasm(" in js_source
+    assert "export function computeFullChartZeroCopy(" in js_source
+    assert "export function initEphemerisWasm(" in dts_source
+    assert "export function computeFullChartZeroCopy(" in dts_source
+
+    node_bin = shutil.which("node")
+    if node_bin is not None:
+        script = (
+            "import fs from 'node:fs';"
+            "import { initEphemerisWasm, computeFullChartZeroCopy } from './web/ephemeris-browser.js';"
+            "const wasmBytes = fs.readFileSync('./rust/ephemeris-core/wasm/ephemeris_core.wasm');"
+            "await initEphemerisWasm(wasmBytes);"
+            "const polarView = computeFullChartZeroCopy({ jdUtc: 2451545.0, latDeg: 78.0, lonDeg: 15.6, houseSystemId: 2 });"
+            "const savSum = Array.from(polarView.ashtakavargaSav).reduce((a, b) => a + b, 0);"
+            "console.log(JSON.stringify({ byteLength: polarView.byteLength, polarStatusFlag: polarView.polarStatusFlag, savSum, kp0: polarView.kpSubLordIndex[0] }));"
+        )
+        proc = subprocess.run(
+            [node_bin, "--input-type=module", "-e", script],
+            cwd=str(REPO_ROOT),
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        out = json.loads(proc.stdout.strip())
+        assert out["byteLength"] == 1416
+        assert out["polarStatusFlag"] == 1
+        assert out["savSum"] == 337
+        assert 1 <= out["kp0"] <= 249
+
+
+@pytest.mark.skipif(not NATIVE_DLL_PATH.is_file(), reason="compiled native Rust cdylib not present")
+def test_1000_stratified_epochs_python_to_rust_parity() -> None:
+    lib = load_native_cdylib(NATIVE_DLL_PATH)
+    shodashvarga_divs = (1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60)
+    planet_names = ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn")
+    contrib_names = ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Lagna")
+
+    max_angular_diff = 0.0
+    discrete_mismatches = 0
+
+    for i in range(1000):
+        # 1,000 stratified epochs across 1800..2100 CE (JD 2378496.5 .. 2488069.5)
+        jd_tt = 2378496.5 + (i / 999.0) * (2488069.5 - 2378496.5)
+        lon_deg = ((i * 137.50776405003785) + 0.0173) % 360.0
+
+        # 1. Continuous angular parity (<= 1.0e-9 deg)
+        node_diff = abs(float(lib.ephemeris_mean_lunar_node_deg(jd_tt)) - mean_lunar_node_deg(jd_tt))
+        aya_diff = abs(float(lib.ephemeris_ayanamsa_deg(jd_tt, i % 6)) - ayanamsa_deg(jd_tt, i % 6))
+        max_angular_diff = max(max_angular_diff, node_diff, aya_diff)
+
+        # 2. Discrete Nakshatra (0..26), Pada (1..4), KP 249 (1..249), and 16-Varga sign parity
+        if int(lib.ephemeris_nakshatra_index(lon_deg)) != nakshatra_index(lon_deg):
+            discrete_mismatches += 1
+        if int(lib.ephemeris_nakshatra_pada(lon_deg)) != nakshatra_pada(lon_deg):
+            discrete_mismatches += 1
+        if int(lib.ephemeris_kp_sub_index(lon_deg)) != kp_sub_index(lon_deg):
+            discrete_mismatches += 1
+        for v_div in shodashvarga_divs:
+            if int(lib.ephemeris_varga_sign(lon_deg, v_div)) != varga_sign(lon_deg, v_div):
+                discrete_mismatches += 1
+
+    assert max_angular_diff <= 1.0e-9
+    assert discrete_mismatches == 0
+
+    # Verify zero-copy C-ABI arena + 337-bindu Ashtakavarga parity across stratified epochs
+    req_ptr = lib.wasm_arena_request_ptr()
+    out_ptr = lib.wasm_arena_output_ptr()
+    for step in range(50):
+        jd_utc = 2415020.0 + step * 1100.37
+        lat = -60.0 + (step % 25) * 5.0
+        lon = -120.0 + (step * 29.0) % 240.0
+        req_ptr.contents.jd_utc = jd_utc
+        req_ptr.contents.lat_deg = lat
+        req_ptr.contents.lon_deg = lon
+        req_ptr.contents.elev_m = 100.0
+        req_ptr.contents.pressure_hpa = 1010.0
+        req_ptr.contents.temp_c = 15.0
+        req_ptr.contents.ayanamsa_id = step % 6
+        req_ptr.contents.house_system_id = step % 3
+        req_ptr.contents.node_mode = step % 2
+
+        rc = lib.wasm_compute_full_kundali(req_ptr, out_ptr)
+        assert rc == 0
+        out = out_ptr.contents
+
+        sav_list = [int(out.ashtakavarga_sav[s]) for s in range(12)]
+        assert sum(sav_list) == 337
+
+        # Recompute BAV and SAV in Python from the D1 Rasi placements in `varga_rashi_matrix[0]`
+        d1_signs = [int(out.varga_rashi_matrix[0][b]) for b in range(10)]
+        contrib_signs = d1_signs[:7] + [d1_signs[9]]
+        py_sav = [0] * 12
+        for p_idx, p_name in enumerate(planet_names):
+            py_bav = [0] * 12
+            for c_idx, c_name in enumerate(contrib_names):
+                ref_sign = contrib_signs[c_idx]
+                for h_off in BAV_BENEFIC_HOUSES[p_name][c_name]:
+                    target_sign = (ref_sign + h_off - 1) % 12
+                    py_bav[target_sign] += 1
+                    py_sav[target_sign] += 1
+            rust_bav = [int(out.ashtakavarga_bav[p_idx][s]) for s in range(12)]
+            assert rust_bav == py_bav
+        assert sav_list == py_sav
+
+    # Verify polar fallback flag (lat_deg = 78.0, house_system_id = 2 Placidus -> polar_status_flag == 1)
+    req_ptr.contents.lat_deg = 78.0
+    req_ptr.contents.house_system_id = 2
+    assert lib.wasm_compute_full_kundali(req_ptr, out_ptr) == 0
+    assert int(out_ptr.contents.polar_status_flag) == 1
+

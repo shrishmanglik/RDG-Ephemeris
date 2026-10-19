@@ -361,6 +361,37 @@ export interface ClientKundaliBenchmarkResult {
   readonly sampleReceiptSha256: string;
 }
 
+export interface BatchNatalRequestInput {
+  readonly jdUtc: number;
+  readonly latDeg: number;
+  readonly lonDeg: number;
+  readonly elevM?: number;
+  readonly pressureHpa?: number;
+  readonly tempC?: number;
+  readonly ayanamsaId?: number;
+  readonly houseSystemId?: number;
+  readonly nodeMode?: number;
+}
+
+export interface FullKundaliZeroCopyView {
+  readonly planetLonSidereal: Float64Array;
+  readonly planetLat: Float64Array;
+  readonly planetSpeedLon: Float64Array;
+  readonly houseCuspsSidereal: Float64Array;
+  readonly vargaRashiMatrix: Uint8Array;
+  readonly nakshatraIndex: Uint8Array;
+  readonly nakshatraPada: Uint8Array;
+  readonly kpSubLordIndex: Uint16Array;
+  readonly ashtakavargaBav: Uint8Array;
+  readonly ashtakavargaSav: Uint8Array;
+  readonly polarStatusFlag: number;
+  readonly dashaMahadashaStartJd: Float64Array;
+  readonly dashaAntardashaStartJd: Float64Array;
+  readonly shadbalaTotalRupas: Float64Array;
+  readonly panchangaValues: Float64Array;
+  readonly byteLength: 1416;
+}
+
 export function sha256Hex(asciiString: string): string;
 export function fnv1a64Hex(str: string): string;
 export function computeReceipt(requestPayload: Record<string, unknown>, numericSummary: Record<string, unknown>): CalculationReceipt;
@@ -374,6 +405,8 @@ export function evaluateChebyshevSegment3D(
   spanDays: number
 ): [number, number, number, number, number, number];
 export function benchmarkClientKundali(iterations?: number): ClientKundaliBenchmarkResult;
+export function initEphemerisWasm(kernelBytes?: Uint8Array | ArrayBuffer): Promise<void>;
+export function computeFullChartZeroCopy(request: BatchNatalRequestInput): FullKundaliZeroCopyView;
 
 export const EphemerisBrowser: {
   readonly ENGINE_VERSION: string;
@@ -408,6 +441,8 @@ export const EphemerisBrowser: {
   readonly computeChart: typeof computeChart;
   readonly evaluateChebyshevSegment3D: typeof evaluateChebyshevSegment3D;
   readonly benchmarkClientKundali: typeof benchmarkClientKundali;
+  readonly initEphemerisWasm: typeof initEphemerisWasm;
+  readonly computeFullChartZeroCopy: typeof computeFullChartZeroCopy;
 };
 
 export default EphemerisBrowser;
