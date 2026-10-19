@@ -325,11 +325,11 @@ class BatchNatalRequest(ctypes.Structure):
 
     _fields_ = [
         ("jd_utc", ctypes.c_double),
+        ("jd_tt", ctypes.c_double),
+        ("delta_t_sec", ctypes.c_double),
         ("lat_deg", ctypes.c_double),
         ("lon_deg", ctypes.c_double),
-        ("elev_m", ctypes.c_double),
-        ("pressure_hpa", ctypes.c_double),
-        ("temp_c", ctypes.c_double),
+        ("alt_m", ctypes.c_double),
         ("ayanamsa_id", ctypes.c_uint32),
         ("house_system_id", ctypes.c_uint32),
         ("node_mode", ctypes.c_uint32),
@@ -341,22 +341,18 @@ class FullKundaliOutput(ctypes.Structure):
     """Zero-copy 1416-byte C-ABI output struct matching Rust `FullKundaliOutput`."""
 
     _fields_ = [
-        ("planet_lon_sidereal", ctypes.c_double * 9),
-        ("planet_lat", ctypes.c_double * 9),
-        ("planet_speed_lon", ctypes.c_double * 9),
+        ("planet_lon_sidereal", ctypes.c_double * 12),
+        ("planet_lat_ecliptic", ctypes.c_double * 12),
+        ("planet_speed_lon", ctypes.c_double * 12),
         ("house_cusps_sidereal", ctypes.c_double * 12),
-        ("varga_rashi_matrix", (ctypes.c_uint8 * 10) * 16),
-        ("nakshatra_index", ctypes.c_uint8 * 10),
-        ("nakshatra_pada", ctypes.c_uint8 * 10),
-        ("kp_sub_lord_index", ctypes.c_uint16 * 10),
-        ("ashtakavarga_bav", (ctypes.c_uint8 * 12) * 7),
+        ("varga_rashi_matrix", (ctypes.c_uint8 * 12) * 16),
+        ("ashtakavarga_bav", (ctypes.c_uint8 * 12) * 8),
         ("ashtakavarga_sav", ctypes.c_uint8 * 12),
-        ("polar_status_flag", ctypes.c_uint8),
-        ("_pad_align", ctypes.c_uint8 * 7),
+        ("sav_alignment_pad", ctypes.c_uint8 * 4),
         ("dasha_mahadasha_start_jd", ctypes.c_double * 9),
         ("dasha_antardasha_start_jd", (ctypes.c_double * 9) * 9),
-        ("shadbala_total_rupas", ctypes.c_double * 7),
-        ("panchanga_values", ctypes.c_double * 3),
+        ("polar_status_flag", ctypes.c_uint32),
+        ("_padding", ctypes.c_uint32),
     ]
 
 

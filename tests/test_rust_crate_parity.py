@@ -247,7 +247,10 @@ def test_zero_copy_struct_sizes_and_browser_arena() -> None:
             "await initEphemerisWasm(wasmBytes);"
             "const polarView = computeFullChartZeroCopy({ jdUtc: 2451545.0, latDeg: 78.0, lonDeg: 15.6, houseSystemId: 2 });"
             "const savSum = Array.from(polarView.ashtakavargaSav).reduce((a, b) => a + b, 0);"
-            "console.log(JSON.stringify({ byteLength: polarView.byteLength, polarStatusFlag: polarView.polarStatusFlag, savSum, kp0: polarView.kpSubLordIndex[0] }));"
+            "const lagnaBavSum = Array.from(polarView.ashtakavargaBav.subarray(84, 96)).reduce((a, b) => a + b, 0);"
+            "const vargaMin = Math.min(...Array.from(polarView.vargaRashiMatrix));"
+            "const vargaMax = Math.max(...Array.from(polarView.vargaRashiMatrix));"
+            "console.log(JSON.stringify({ byteLength: polarView.byteLength, polarStatusFlag: polarView.polarStatusFlag, savSum, lagnaBavSum, vargaMin, vargaMax }));"
         )
         proc = subprocess.run(
             [node_bin, "--input-type=module", "-e", script],
@@ -260,7 +263,9 @@ def test_zero_copy_struct_sizes_and_browser_arena() -> None:
         assert out["byteLength"] == 1416
         assert out["polarStatusFlag"] == 1
         assert out["savSum"] == 337
-        assert 1 <= out["kp0"] <= 249
+        assert out["lagnaBavSum"] == 49
+        assert 1 <= out["vargaMin"] <= 12
+        assert 1 <= out["vargaMax"] <= 12
 
 
 @pytest.mark.skipif(not NATIVE_DLL_PATH.is_file(), reason="compiled native Rust cdylib not present")
@@ -305,11 +310,11 @@ def test_1000_stratified_epochs_python_to_rust_parity() -> None:
         lat = -60.0 + (step % 25) * 5.0
         lon = -120.0 + (step * 29.0) % 240.0
         req_ptr.contents.jd_utc = jd_utc
+        req_ptr.contents.jd_tt = jd_utc + (69.184 / 86400.0)
+        req_ptr.contents.delta_t_sec = 69.184
         req_ptr.contents.lat_deg = lat
         req_ptr.contents.lon_deg = lon
-        req_ptr.contents.elev_m = 100.0
-        req_ptr.contents.pressure_hpa = 1010.0
-        req_ptr.contents.temp_c = 15.0
+        req_ptr.contents.alt_m = 100.0
         req_ptr.contents.ayanamsa_id = step % 6
         req_ptr.contents.house_system_id = step % 3
         req_ptr.contents.node_mode = step % 2
@@ -320,10 +325,16 @@ def test_1000_stratified_epochs_python_to_rust_parity() -> None:
 
         sav_list = [int(out.ashtakavarga_sav[s]) for s in range(12)]
         assert sum(sav_list) == 337
+        lagna_bav_list = [int(out.ashtakavarga_bav[7][s]) for s in range(12)]
+        assert sum(lagna_bav_list) == 49
 
-        # Recompute BAV and SAV in Python from the D1 Rasi placements in `varga_rashi_matrix[0]`
-        d1_signs = [int(out.varga_rashi_matrix[0][b]) for b in range(10)]
-        contrib_signs = d1_signs[:7] + [d1_signs[9]]
+        for v_idx in range(16):
+            for b_idx in range(12):
+                assert 1 <= int(out.varga_rashi_matrix[v_idx][b_idx]) <= 12
+
+        # Recompute BAV and SAV in Python from the D1 Rasi placements in `varga_rashi_matrix[0]` (1-based -> 0-based)
+        d1_signs = [int(out.varga_rashi_matrix[0][b]) - 1 for b in range(12)]
+        contrib_signs = d1_signs[:7] + [d1_signs[11]]
         py_sav = [0] * 12
         for p_idx, p_name in enumerate(planet_names):
             py_bav = [0] * 12
@@ -342,4 +353,5 @@ def test_1000_stratified_epochs_python_to_rust_parity() -> None:
     req_ptr.contents.house_system_id = 2
     assert lib.wasm_compute_full_kundali(req_ptr, out_ptr) == 0
     assert int(out_ptr.contents.polar_status_flag) == 1
+
 

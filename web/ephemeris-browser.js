@@ -1719,10 +1719,11 @@ const ZERO_COPY_BAV_MASKS = Object.freeze([
   [0x0d30, 0x06aa, 0x07cb, 0x0f35, 0x0ca0, 0x059f, 0x07cb, 0x06ab],
   [0x07cf, 0x0552, 0x06cb, 0x073b, 0x06cf, 0x0732, 0x0834, 0x077b],
   [0x0c80, 0x0d9f, 0x0d34, 0x0534, 0x0790, 0x079f, 0x079c, 0x059f],
-  [0x06cb, 0x0424, 0x0e34, 0x0fa0, 0x0c30, 0x0c20, 0x0434, 0x062d]
+  [0x06cb, 0x0424, 0x0e34, 0x0fa0, 0x0c30, 0x0c20, 0x0434, 0x062d],
+  [0x0e2c, 0x0e24, 0x0625, 0x06ab, 0x077b, 0x059f, 0x062d, 0x0224]
 ]);
 
-function computeKpSubIndex249(siderealLonDeg) {
+export function computeKpSubIndex249(siderealLonDeg) {
   const lon = normalizeDegrees(siderealLonDeg);
   let cursorNinths = 0;
   let number = 1;
@@ -1765,22 +1766,39 @@ function computeKpSubIndex249(siderealLonDeg) {
 
 const _fallbackArenaBuffer = new ArrayBuffer(1480);
 let _wasmExports = null;
+let _decompressedKernelBytes = null;
 
 /**
  * Initialize the zero-copy WebAssembly Ephemeris & Jyotish linear-memory arena.
- * If `kernelBytes` contains a compiled `.wasm` module (`\0asm`), instantiates it and binds
- * `wasm_arena_request_ptr`, `wasm_arena_output_ptr`, and `wasm_compute_full_kundali`.
+ * Supports decompressing `de440_compact.bin.zlib` via `DecompressionStream('deflate')`
+ * and instantiating compiled `.wasm` binaries (`\0asm`).
  */
 export async function initEphemerisWasm(kernelBytes) {
-  if (kernelBytes) {
-    const u8 = kernelBytes instanceof Uint8Array ? kernelBytes : new Uint8Array(kernelBytes);
-    if (u8.byteLength >= 8 && u8[0] === 0x00 && u8[1] === 0x61 && u8[2] === 0x73 && u8[3] === 0x6d) {
-      const instantiated = await WebAssembly.instantiate(u8, {});
-      const instance = instantiated.instance || instantiated;
-      if (instance && instance.exports && instance.exports.wasm_compute_full_kundali) {
-        _wasmExports = instance.exports;
-      }
+  if (!kernelBytes) {
+    return;
+  }
+  let u8 = kernelBytes instanceof Uint8Array ? kernelBytes : new Uint8Array(kernelBytes);
+  // Check for zlib header (0x78 0x01, 0x78 0x5e, 0x78 0x9c, 0x78 0xda) and decompress via DecompressionStream('deflate')
+  if (
+    u8.byteLength >= 2 &&
+    u8[0] === 0x78 &&
+    (u8[1] === 0x01 || u8[1] === 0x5e || u8[1] === 0x9c || u8[1] === 0xda) &&
+    typeof DecompressionStream !== "undefined" &&
+    typeof Response !== "undefined"
+  ) {
+    const stream = new Blob([u8]).stream().pipeThrough(new DecompressionStream("deflate"));
+    const decompressedBuf = await new Response(stream).arrayBuffer();
+    u8 = new Uint8Array(decompressedBuf);
+    _decompressedKernelBytes = u8;
+  }
+  if (u8.byteLength >= 8 && u8[0] === 0x00 && u8[1] === 0x61 && u8[2] === 0x73 && u8[3] === 0x6d) {
+    const instantiated = await WebAssembly.instantiate(u8, {});
+    const instance = instantiated.instance || instantiated;
+    if (instance && instance.exports && instance.exports.wasm_compute_full_kundali) {
+      _wasmExports = instance.exports;
     }
+  } else {
+    _decompressedKernelBytes = u8;
   }
 }
 
@@ -1789,14 +1807,15 @@ export async function initEphemerisWasm(kernelBytes) {
  * (`BatchNatalRequest` = 64 bytes, `FullKundaliOutput` = 1416 bytes) with zero JSON serialization.
  */
 export function computeFullChartZeroCopy(request = {}) {
-  const jdUtc = Number(request.jdUtc ?? 2451545.0);
-  const latDeg = Number(request.latDeg ?? 28.6139);
-  const lonDeg = Number(request.lonDeg ?? 77.2090);
-  const elevM = Number(request.elevM ?? 0.0);
-  const pressureHpa = Number(request.pressureHpa ?? 1010.0);
-  const tempC = Number(request.tempC ?? 10.0);
-  const ayanamsaId = Number(request.ayanamsaId ?? 0) >>> 0;
-  const houseSystemId = Number(request.houseSystemId ?? 0) >>> 0;
+  const isTypedReq = request instanceof Float64Array;
+  const jdUtc = Number(isTypedReq ? request[0] : (request.jdUtc ?? 2451545.0));
+  const deltaTSec = Number(isTypedReq ? request[2] : (request.deltaTSec ?? 69.184));
+  const jdTt = Number(isTypedReq ? request[1] : (request.jdTt ?? jdUtc + deltaTSec / 86400.0));
+  const latDeg = Number(isTypedReq ? request[3] : (request.latDeg ?? 28.6139));
+  const lonDeg = Number(isTypedReq ? request[4] : (request.lonDeg ?? 77.2090));
+  const altM = Number(isTypedReq ? request[5] : (request.altM ?? request.elevM ?? 0.0));
+  const ayanamsaId = (isTypedReq ? Number(request[6] ?? 0) : Number(request.ayanamsaId ?? 0)) >>> 0;
+  const houseSystemId = (isTypedReq ? Number(request[7] ?? 0) : Number(request.houseSystemId ?? 0)) >>> 0;
   const nodeMode = Number(request.nodeMode ?? 0) >>> 0;
 
   let buf = _fallbackArenaBuffer;
@@ -1811,11 +1830,11 @@ export function computeFullChartZeroCopy(request = {}) {
 
   const reqF64 = new Float64Array(buf, reqBase, 6);
   reqF64[0] = jdUtc;
-  reqF64[1] = latDeg;
-  reqF64[2] = lonDeg;
-  reqF64[3] = elevM;
-  reqF64[4] = pressureHpa;
-  reqF64[5] = tempC;
+  reqF64[1] = jdTt;
+  reqF64[2] = deltaTSec;
+  reqF64[3] = latDeg;
+  reqF64[4] = lonDeg;
+  reqF64[5] = altM;
   const reqU32 = new Uint32Array(buf, reqBase + 48, 4);
   reqU32[0] = ayanamsaId;
   reqU32[1] = houseSystemId;
@@ -1826,41 +1845,48 @@ export function computeFullChartZeroCopy(request = {}) {
     _wasmExports.wasm_compute_full_kundali(reqBase, outBase);
     buf = _wasmExports.memory.buffer;
   } else {
-    // Populate the identical 1416-byte layout in place inside the fallback ArrayBuffer
-    const planetLonSidereal = new Float64Array(buf, outBase + 0, 9);
-    const planetLat = new Float64Array(buf, outBase + 72, 9);
-    const planetSpeedLon = new Float64Array(buf, outBase + 144, 9);
-    const houseCuspsSidereal = new Float64Array(buf, outBase + 216, 12);
-    const vargaRashiMatrix = new Uint8Array(buf, outBase + 312, 160);
-    const nakshatraIndex = new Uint8Array(buf, outBase + 472, 10);
-    const nakshatraPada = new Uint8Array(buf, outBase + 482, 10);
-    const kpSubLordIndex = new Uint16Array(buf, outBase + 492, 10);
-    const ashtakavargaBav = new Uint8Array(buf, outBase + 512, 84);
-    const ashtakavargaSav = new Uint8Array(buf, outBase + 596, 12);
-    const polarView = new Uint8Array(buf, outBase + 608, 8);
-    const dashaMahadashaStartJd = new Float64Array(buf, outBase + 616, 9);
-    const dashaAntardashaStartJd = new Float64Array(buf, outBase + 688, 81);
-    const shadbalaTotalRupas = new Float64Array(buf, outBase + 1336, 7);
-    const panchangaValues = new Float64Array(buf, outBase + 1392, 3);
+    // Populate the identical 1416-byte FullKundaliOutput layout in place inside the fallback ArrayBuffer
+    const planetLonSidereal = new Float64Array(buf, outBase + 0, 12);
+    const planetLatEcliptic = new Float64Array(buf, outBase + 96, 12);
+    const planetSpeedLon = new Float64Array(buf, outBase + 192, 12);
+    const houseCuspsSidereal = new Float64Array(buf, outBase + 288, 12);
+    const vargaRashiMatrix = new Uint8Array(buf, outBase + 384, 192);
+    const ashtakavargaBav = new Uint8Array(buf, outBase + 576, 96);
+    const ashtakavargaSav = new Uint8Array(buf, outBase + 672, 12);
+    const savAlignmentPad = new Uint8Array(buf, outBase + 684, 4);
+    const dashaMahadashaStartJd = new Float64Array(buf, outBase + 688, 9);
+    const dashaAntardashaStartJd = new Float64Array(buf, outBase + 760, 81);
+    const polarWords = new Uint32Array(buf, outBase + 1408, 2);
 
     const ayanamsaKeys = ["lahiri", "raman", "krishnamurti", "yukteshwar", "fagan_bradley", "true_citra"];
     const ayanamsaKey = ayanamsaKeys[ayanamsaId] || "lahiri";
-    const jdTt = jdUtc + 69.184 / 86400.0;
     const planetary = computePlanets(jdTt, { ayanamsa: ayanamsaKey, nodeMode: nodeMode === 1 ? "true" : "mean" });
+    const houses = computeAscendantAndHouses(jdTt, jdUtc, Math.max(-89.85, Math.min(89.85, latDeg)), lonDeg, ayanamsaKey);
+    const ascSid = houses.siderealAscendantDeg;
+    const mcSid = houses.siderealMidheavenDeg;
+
     const grahaOrder = ["sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn", "rahu", "ketu"];
     for (let i = 0; i < 9; i++) {
       const g = planetary.grahas[grahaOrder[i]];
       planetLonSidereal[i] = g.siderealLongitudeDeg;
-      planetLat[i] = g.latitudeDeg;
+      planetLatEcliptic[i] = g.latitudeDeg;
       planetSpeedLon[i] = g.speedDegPerDay;
     }
+    const d = jdTt - J2000_JD;
+    planetLonSidereal[9] = normalizeDegrees(314.055 + 0.01172834 * d - planetary.ayanamsaDeg);
+    planetLatEcliptic[9] = -0.7;
+    planetSpeedLon[9] = 0.0117;
+    planetLonSidereal[10] = normalizeDegrees(304.348 + 0.00598103 * d - planetary.ayanamsaDeg);
+    planetLatEcliptic[10] = 1.8;
+    planetSpeedLon[10] = 0.0060;
+    planetLonSidereal[11] = ascSid;
+    planetLatEcliptic[11] = 0.0;
+    planetSpeedLon[11] = 360.9856;
 
-    const houses = computeAscendantAndHouses(jdTt, jdUtc, Math.max(-89.85, Math.min(89.85, latDeg)), lonDeg, ayanamsaKey);
-    const ascSid = houses.siderealAscendantDeg;
-    const mcSid = houses.siderealMidheavenDeg;
-    const isPolarFallback = houseSystemId === 2 && Math.abs(latDeg) >= 66.5;
-    polarView.fill(0);
-    polarView[0] = isPolarFallback ? 1 : 0;
+    const isPolarFallback = (houseSystemId === 2 || houseSystemId === 3) && Math.abs(latDeg) >= 66.5;
+    savAlignmentPad.fill(0);
+    polarWords[0] = isPolarFallback ? 1 : 0;
+    polarWords[1] = 0;
 
     if (houseSystemId === 0) {
       for (let h = 0; h < 12; h++) {
@@ -1882,30 +1908,26 @@ export function computeFullChartZeroCopy(request = {}) {
       }
     }
 
-    for (let b = 0; b < 10; b++) {
-      const lon = b < 9 ? planetLonSidereal[b] : ascSid;
-      const nak = computeNakshatra(lon);
-      nakshatraIndex[b] = nak.index;
-      nakshatraPada[b] = nak.pada;
-      kpSubLordIndex[b] = computeKpSubIndex249(lon);
+    for (let b = 0; b < 12; b++) {
+      const lon = planetLonSidereal[b];
       for (let v = 0; v < 16; v++) {
-        vargaRashiMatrix[v * 10 + b] = computeVargaRasiIndex(lon, `D${ZERO_COPY_SHODASHVARGA_DIVS[v]}`);
+        vargaRashiMatrix[v * 12 + b] = computeVargaRasiIndex(lon, `D${ZERO_COPY_SHODASHVARGA_DIVS[v]}`) + 1;
       }
     }
 
     ashtakavargaBav.fill(0);
     ashtakavargaSav.fill(0);
     const contribSigns = [
-      vargaRashiMatrix[0],
-      vargaRashiMatrix[1],
-      vargaRashiMatrix[2],
-      vargaRashiMatrix[3],
-      vargaRashiMatrix[4],
-      vargaRashiMatrix[5],
-      vargaRashiMatrix[6],
-      vargaRashiMatrix[9]
+      vargaRashiMatrix[0] - 1,
+      vargaRashiMatrix[1] - 1,
+      vargaRashiMatrix[2] - 1,
+      vargaRashiMatrix[3] - 1,
+      vargaRashiMatrix[4] - 1,
+      vargaRashiMatrix[5] - 1,
+      vargaRashiMatrix[6] - 1,
+      vargaRashiMatrix[11] - 1
     ];
-    for (let p = 0; p < 7; p++) {
+    for (let p = 0; p < 8; p++) {
       for (let c = 0; c < 8; c++) {
         const refSign = contribSigns[c] % 12;
         const mask = ZERO_COPY_BAV_MASKS[p][c];
@@ -1913,7 +1935,9 @@ export function computeFullChartZeroCopy(request = {}) {
           if ((mask & (1 << offset)) !== 0) {
             const targetSign = (refSign + offset) % 12;
             ashtakavargaBav[p * 12 + targetSign] += 1;
-            ashtakavargaSav[targetSign] += 1;
+            if (p < 7) {
+              ashtakavargaSav[targetSign] += 1;
+            }
           }
         }
       }
@@ -1937,37 +1961,28 @@ export function computeFullChartZeroCopy(request = {}) {
       }
       cursorJd += mSpanDays;
     }
+  }
 
-    const naisargika = [1.0, 0.857, 0.286, 0.429, 0.714, 0.571, 0.143];
-    for (let p = 0; p < 7; p++) {
-      const signBindus = ashtakavargaBav[p * 12 + vargaRashiMatrix[p]];
-      shadbalaTotalRupas[p] = 5.0 + naisargika[p] + 0.25 * signBindus;
-    }
-
-    const sunSid = planetLonSidereal[0];
-    const diff = normalizeDegrees(moonLon - sunSid);
-    const sum = normalizeDegrees(moonLon + sunSid);
-    panchangaValues[0] = Math.min(30, Math.floor(diff / 12.0) + 1);
-    panchangaValues[1] = Math.min(27, Math.floor(sum / (360.0 / 27.0)) + 1);
-    panchangaValues[2] = Math.min(60, Math.floor(diff / 6.0) + 1);
+  const lonsView = new Float64Array(buf, outBase + 0, 12);
+  const kpSubLords = new Uint16Array(12);
+  for (let i = 0; i < 12; i++) {
+    kpSubLords[i] = computeKpSubIndex249(lonsView[i]);
   }
 
   return {
-    planetLonSidereal: new Float64Array(buf, outBase + 0, 9),
-    planetLat: new Float64Array(buf, outBase + 72, 9),
-    planetSpeedLon: new Float64Array(buf, outBase + 144, 9),
-    houseCuspsSidereal: new Float64Array(buf, outBase + 216, 12),
-    vargaRashiMatrix: new Uint8Array(buf, outBase + 312, 160),
-    nakshatraIndex: new Uint8Array(buf, outBase + 472, 10),
-    nakshatraPada: new Uint8Array(buf, outBase + 482, 10),
-    kpSubLordIndex: new Uint16Array(buf, outBase + 492, 10),
-    ashtakavargaBav: new Uint8Array(buf, outBase + 512, 84),
-    ashtakavargaSav: new Uint8Array(buf, outBase + 596, 12),
-    polarStatusFlag: new Uint8Array(buf, outBase + 608, 1)[0],
-    dashaMahadashaStartJd: new Float64Array(buf, outBase + 616, 9),
-    dashaAntardashaStartJd: new Float64Array(buf, outBase + 688, 81),
-    shadbalaTotalRupas: new Float64Array(buf, outBase + 1336, 7),
-    panchangaValues: new Float64Array(buf, outBase + 1392, 3),
+    planetLonSidereal: lonsView,
+    planetLatEcliptic: new Float64Array(buf, outBase + 96, 12),
+    planetLat: new Float64Array(buf, outBase + 96, 12),
+    planetSpeedLon: new Float64Array(buf, outBase + 192, 12),
+    houseCuspsSidereal: new Float64Array(buf, outBase + 288, 12),
+    vargaRashiMatrix: new Uint8Array(buf, outBase + 384, 192),
+    ashtakavargaBav: new Uint8Array(buf, outBase + 576, 96),
+    ashtakavargaSav: new Uint8Array(buf, outBase + 672, 12),
+    savAlignmentPad: new Uint8Array(buf, outBase + 684, 4),
+    dashaMahadashaStartJd: new Float64Array(buf, outBase + 688, 9),
+    dashaAntardashaStartJd: new Float64Array(buf, outBase + 760, 81),
+    polarStatusFlag: new Uint32Array(buf, outBase + 1408, 1)[0],
+    kpSubLordIndex: kpSubLords,
     byteLength: 1416
   };
 }

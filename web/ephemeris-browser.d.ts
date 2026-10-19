@@ -363,11 +363,12 @@ export interface ClientKundaliBenchmarkResult {
 
 export interface BatchNatalRequestInput {
   readonly jdUtc: number;
+  readonly jdTt?: number;
+  readonly deltaTSec?: number;
   readonly latDeg: number;
   readonly lonDeg: number;
+  readonly altM?: number;
   readonly elevM?: number;
-  readonly pressureHpa?: number;
-  readonly tempC?: number;
   readonly ayanamsaId?: number;
   readonly houseSystemId?: number;
   readonly nodeMode?: number;
@@ -375,20 +376,17 @@ export interface BatchNatalRequestInput {
 
 export interface FullKundaliZeroCopyView {
   readonly planetLonSidereal: Float64Array;
+  readonly planetLatEcliptic: Float64Array;
   readonly planetLat: Float64Array;
   readonly planetSpeedLon: Float64Array;
   readonly houseCuspsSidereal: Float64Array;
   readonly vargaRashiMatrix: Uint8Array;
-  readonly nakshatraIndex: Uint8Array;
-  readonly nakshatraPada: Uint8Array;
-  readonly kpSubLordIndex: Uint16Array;
   readonly ashtakavargaBav: Uint8Array;
   readonly ashtakavargaSav: Uint8Array;
-  readonly polarStatusFlag: number;
+  readonly savAlignmentPad: Uint8Array;
   readonly dashaMahadashaStartJd: Float64Array;
   readonly dashaAntardashaStartJd: Float64Array;
-  readonly shadbalaTotalRupas: Float64Array;
-  readonly panchangaValues: Float64Array;
+  readonly polarStatusFlag: number;
   readonly byteLength: 1416;
 }
 
