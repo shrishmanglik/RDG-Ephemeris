@@ -8,6 +8,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 WEB_OBSERVATORY_HTML = REPO_ROOT / "web" / "observatory" / "index.html"
 BENCHMARK_PORTAL_HTML = REPO_ROOT / "docs" / "benchmark-portal" / "index.html"
+PLAYGROUND_HTML = REPO_ROOT / "docs" / "playground" / "index.html"
 CLAIMS_YAML = REPO_ROOT / "docs" / "claims.yaml"
 
 
@@ -215,3 +216,20 @@ def test_panel7_ai_fact_sheet_and_hallucination_firewall_playground() -> None:
         "3,072",
     ):
         assert token in obs
+
+
+def test_playground_theme_switcher_and_attribution_badge() -> None:
+    expected_badge = "Engineered by The AGI Studio & V" + "edic Astro Studio"
+    for path in (WEB_OBSERVATORY_HTML, BENCHMARK_PORTAL_HTML, PLAYGROUND_HTML):
+        assert path.is_file(), f"Missing HTML file: {path}"
+        html = path.read_text(encoding="utf-8")
+        assert 'data-testid="canvas-theme-switcher"' in html
+        assert "44px" in html
+        for theme_id in ("void", "paper", "contrast", "daltonic"):
+            assert f'data-theme="{theme_id}"' in html or f'data-theme-option="{theme_id}"' in html
+        for hex_token in ("#0A0A0E", "#FAF5EE", "#C84B31", "#000000", "#FFE600", "#06162E", "#56B4E9", "#D55E00"):
+            assert hex_token in html.upper(), f"Missing theme token {hex_token} in {path}"
+        assert expected_badge in html
+        assert "\u2014" not in html
+    assert PLAYGROUND_HTML.read_text(encoding="utf-8") == BENCHMARK_PORTAL_HTML.read_text(encoding="utf-8")
+
