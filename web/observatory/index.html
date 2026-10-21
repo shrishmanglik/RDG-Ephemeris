@@ -41,7 +41,7 @@
       position: sticky;
       top: 0;
       z-index: 40;
-      padding: 0.7rem 1.25rem 0;
+      padding: 0.35rem 1.25rem 0;
       pointer-events: none;
     }
     header.observatory-header .dock-surface {
@@ -662,6 +662,100 @@
     @media (prefers-reduced-motion: reduce) {
       .playground-tab, .oss-package-btn, .playground-flash { transition: none; }
     }
+
+    .app-command-navbar {
+      display: grid;
+      gap: 0.4rem;
+      padding: 0.45rem 0.65rem;
+      border-radius: 12px;
+      background: rgba(7, 9, 14, 0.72);
+      border: 1px solid var(--border-accent);
+    }
+    .app-command-role-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem 0.75rem;
+      text-align: center;
+    }
+    .role-portal-switcher {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+    }
+    .role-portal-btn {
+      appearance: none;
+      cursor: pointer;
+      border-radius: 999px;
+      padding: 0.26rem 0.68rem;
+      font-family: var(--font-sans);
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      transition: all 0.14s ease;
+    }
+    .role-portal-btn:hover,
+    .role-portal-btn.active,
+    .role-portal-btn[aria-pressed="true"] {
+      color: var(--bg-void);
+      background: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+    }
+    .role-portal-readout {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-secondary);
+    }
+    .app-command-rooms-rail {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+    }
+    .app-room-pill {
+      appearance: none;
+      cursor: pointer;
+      border-radius: 8px;
+      padding: 0.28rem 0.6rem;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      transition: all 0.14s ease;
+    }
+    .app-room-pill:hover,
+    .app-room-pill.active,
+    .app-room-pill[aria-selected="true"] {
+      border-color: var(--accent-cyan);
+      background: rgba(56, 189, 248, 0.16);
+      color: var(--accent-cyan);
+    }
+    @media (max-width: 768px) {
+      .role-portal-switcher,
+      .app-command-rooms-rail {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        width: 100%;
+      }
+      .role-portal-btn,
+      .app-room-pill {
+        flex: 0 0 auto;
+        scroll-snap-align: start;
+        white-space: nowrap;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -680,6 +774,24 @@
   </div>
   <header class="observatory-header" data-testid="liquid-glass-command-dock" aria-label="Observatory command dock">
     <div class="container header-inner dock-surface">
+      <nav class="app-command-navbar" id="app-command-navbar" data-testid="app-command-navbar" data-active-room="1" data-active-role="developer" aria-label="6-Room Observatory &amp; SDK Command Bar">
+        <div class="app-command-role-row">
+          <div class="role-portal-switcher" id="role-portal-switcher" data-testid="role-portal-switcher" role="group" aria-label="Role Portal Switcher">
+            <button type="button" class="role-portal-btn active" data-role-portal="developer" data-testid="role-btn-developer" aria-pressed="true">Python/Rust Developer</button>
+            <button type="button" class="role-portal-btn" data-role-portal="agent" data-testid="role-btn-agent" aria-pressed="false">AI Agent &amp; MCP Builder</button>
+            <button type="button" class="role-portal-btn" data-role-portal="researcher" data-testid="role-btn-researcher" aria-pressed="false">Astronomical Researcher</button>
+          </div>
+          <span class="role-portal-readout" id="rolePortalReadout" data-testid="role-portal-readout">Python/Rust Developer · 15.07x batch throughput · Apache-2.0 zero-royalty SDKs</span>
+        </div>
+        <div class="app-command-rooms-rail" role="tablist" aria-label="6 Observatory Rooms">
+          <button type="button" role="tab" class="app-room-pill active" data-command-room="1" data-playground-target="ephemeris-speedup-calculator" data-testid="app-room-tab-1" aria-selected="true">Room 1 · Speedup &amp; MCP</button>
+          <button type="button" role="tab" class="app-room-pill" data-command-room="2" data-playground-target="ephemeris-license-savings-calculator" data-testid="app-room-tab-2" aria-selected="false">Room 2 · Zero-Royalty License</button>
+          <button type="button" role="tab" class="app-room-pill" data-command-room="3" data-playground-target="ayanamsa-precision-inspector" data-testid="app-room-tab-3" aria-selected="false">Room 3 · Sidereal Ayanamsa</button>
+          <button type="button" role="tab" class="app-room-pill" data-command-room="4" data-playground-target="live-graha-ephemeris-table" data-testid="app-room-tab-4" aria-selected="false">Room 4 · 9-Graha Ephemeris</button>
+          <button type="button" role="tab" class="app-room-pill" data-command-room="5" data-playground-target="eclipse-ingress-finder" data-testid="app-room-tab-5" aria-selected="false">Room 5 · Besselian Eclipses</button>
+          <button type="button" role="tab" class="app-room-pill" data-command-room="6" data-playground-target="oss-suite-cross-verification" data-testid="app-room-tab-6" aria-selected="false">Room 6 · OSS Suite Proof</button>
+        </div>
+      </nav>
       <div class="dock-primary">
         <div class="brand-block">
           <div class="brand-emblem" aria-hidden="true">
@@ -709,6 +821,48 @@
   </header>
 
   <main class="container">
+
+    <nav class="card playground-bar" data-testid="agi-ephemeris-6tab-playground" aria-label="6-Tab agi-ephemeris and Open-Source Suite Playground">
+      <div class="command-suite-head">
+        <div>
+          <span class="command-suite-kicker">agi-ephemeris &amp; Open-Source Suite Playground</span>
+          <span class="command-suite-title">6 Live Instruments, One Command Bar</span>
+        </div>
+      </div>
+      <div class="playground-tab-rail">
+        <button type="button" class="playground-tab" data-playground-tab="1" data-playground-target="ephemeris-speedup-calculator" data-testid="playground-tab-1" aria-label="Tab 1 · Speedup &amp; MCP Calculator" aria-describedby="playgroundLive1">
+          <span class="playground-tab-index">Tab 1</span>
+          <span class="playground-tab-label">Speedup &amp; MCP Calculator</span>
+          <span class="playground-tab-live"><span id="playgroundLive1">1,000&nbsp;charts · 42.0&nbsp;ms</span></span>
+        </button>
+        <button type="button" class="playground-tab" data-playground-tab="2" data-playground-target="ephemeris-license-savings-calculator" data-testid="playground-tab-2" aria-label="Tab 2 · Zero-Royalty License Calculator" aria-describedby="playgroundLive2">
+          <span class="playground-tab-index">Tab 2</span>
+          <span class="playground-tab-label">Zero-Royalty License Calculator</span>
+          <span class="playground-tab-live"><span id="playgroundLive2">$1,500 / 3-yr saved</span></span>
+        </button>
+        <button type="button" class="playground-tab" data-playground-tab="3" data-playground-target="ayanamsa-precision-inspector" data-testid="playground-tab-3" aria-label="Tab 3 · Sidereal Ayanamsa Inspector" aria-describedby="playgroundLive3">
+          <span class="playground-tab-index">Tab 3</span>
+          <span class="playground-tab-label">Sidereal Ayanamsa Inspector</span>
+          <span class="playground-tab-live"><span id="playgroundLive3">Lahiri · 23.853056°</span></span>
+        </button>
+        <button type="button" class="playground-tab" data-playground-tab="4" data-playground-target="live-graha-ephemeris-table" data-testid="playground-tab-4" aria-label="Tab 4 · Live 9-Graha Ephemeris Table" aria-describedby="playgroundLive4">
+          <span class="playground-tab-index">Tab 4</span>
+          <span class="playground-tab-label">Live 9-Graha Ephemeris Table</span>
+          <span class="playground-tab-live"><span id="playgroundLive4">3 of 9 retrograde</span></span>
+        </button>
+        <button type="button" class="playground-tab" data-playground-tab="5" data-playground-target="eclipse-ingress-finder" data-testid="playground-tab-5" aria-label="Tab 5 · Besselian Eclipse &amp; Ingress Finder" aria-describedby="playgroundLive5">
+          <span class="playground-tab-index">Tab 5</span>
+          <span class="playground-tab-label">Besselian Eclipse &amp; Ingress Finder</span>
+          <span class="playground-tab-live"><span id="playgroundLive5">2026-08-12 17:45:53.800&nbsp;UT</span></span>
+        </button>
+        <button type="button" class="playground-tab" data-playground-tab="6" data-playground-target="oss-suite-cross-verification" data-testid="playground-tab-6" aria-label="Tab 6 · skill-mcp-inspector &amp; veo3-prompt-forge" aria-describedby="playgroundLive6">
+          <span class="playground-tab-index">Tab 6</span>
+          <span class="playground-tab-label"><span class="pkg">skill-mcp-inspector</span> &amp; <span class="pkg">veo3-prompt-forge</span></span>
+          <span class="playground-tab-live"><span id="playgroundLive6">agi-ephemeris · 0&nbsp;px at&nbsp;390x844</span></span>
+        </button>
+      </div>
+      <div class="native-preset-readout" id="playgroundReadout" data-testid="playground-readout" role="status" aria-live="polite"><strong>Six instruments below</strong> · Pick a tab to jump to it. Each tab shows that instrument's current reading.</div>
+    </nav>
     <section class="native-presets-bar" data-testid="native-presets-bar" aria-label="Multi-workspace command suite and six one-click native presets">
       <div class="command-suite-head">
         <div>
@@ -871,48 +1025,6 @@
         </select>
       </div>
     </div>
-
-    <nav class="card playground-bar" data-testid="agi-ephemeris-6tab-playground" aria-label="6-Tab agi-ephemeris and Open-Source Suite Playground">
-      <div class="command-suite-head">
-        <div>
-          <span class="command-suite-kicker">agi-ephemeris &amp; Open-Source Suite Playground</span>
-          <span class="command-suite-title">6 Live Instruments, One Command Bar</span>
-        </div>
-      </div>
-      <div class="playground-tab-rail">
-        <button type="button" class="playground-tab" data-playground-tab="1" data-playground-target="ephemeris-speedup-calculator" data-testid="playground-tab-1" aria-label="Tab 1 · Speedup &amp; MCP Calculator" aria-describedby="playgroundLive1">
-          <span class="playground-tab-index">Tab 1</span>
-          <span class="playground-tab-label">Speedup &amp; MCP Calculator</span>
-          <span class="playground-tab-live"><span id="playgroundLive1">1,000&nbsp;charts · 42.0&nbsp;ms</span></span>
-        </button>
-        <button type="button" class="playground-tab" data-playground-tab="2" data-playground-target="ephemeris-license-savings-calculator" data-testid="playground-tab-2" aria-label="Tab 2 · Zero-Royalty License Calculator" aria-describedby="playgroundLive2">
-          <span class="playground-tab-index">Tab 2</span>
-          <span class="playground-tab-label">Zero-Royalty License Calculator</span>
-          <span class="playground-tab-live"><span id="playgroundLive2">$1,500 / 3-yr saved</span></span>
-        </button>
-        <button type="button" class="playground-tab" data-playground-tab="3" data-playground-target="ayanamsa-precision-inspector" data-testid="playground-tab-3" aria-label="Tab 3 · Sidereal Ayanamsa Inspector" aria-describedby="playgroundLive3">
-          <span class="playground-tab-index">Tab 3</span>
-          <span class="playground-tab-label">Sidereal Ayanamsa Inspector</span>
-          <span class="playground-tab-live"><span id="playgroundLive3">Lahiri · 23.853056°</span></span>
-        </button>
-        <button type="button" class="playground-tab" data-playground-tab="4" data-playground-target="live-graha-ephemeris-table" data-testid="playground-tab-4" aria-label="Tab 4 · Live 9-Graha Ephemeris Table" aria-describedby="playgroundLive4">
-          <span class="playground-tab-index">Tab 4</span>
-          <span class="playground-tab-label">Live 9-Graha Ephemeris Table</span>
-          <span class="playground-tab-live"><span id="playgroundLive4">3 of 9 retrograde</span></span>
-        </button>
-        <button type="button" class="playground-tab" data-playground-tab="5" data-playground-target="eclipse-ingress-finder" data-testid="playground-tab-5" aria-label="Tab 5 · Besselian Eclipse &amp; Ingress Finder" aria-describedby="playgroundLive5">
-          <span class="playground-tab-index">Tab 5</span>
-          <span class="playground-tab-label">Besselian Eclipse &amp; Ingress Finder</span>
-          <span class="playground-tab-live"><span id="playgroundLive5">2026-08-12 17:45:53.800&nbsp;UT</span></span>
-        </button>
-        <button type="button" class="playground-tab" data-playground-tab="6" data-playground-target="oss-suite-cross-verification" data-testid="playground-tab-6" aria-label="Tab 6 · skill-mcp-inspector &amp; veo3-prompt-forge" aria-describedby="playgroundLive6">
-          <span class="playground-tab-index">Tab 6</span>
-          <span class="playground-tab-label"><span class="pkg">skill-mcp-inspector</span> &amp; <span class="pkg">veo3-prompt-forge</span></span>
-          <span class="playground-tab-live"><span id="playgroundLive6">agi-ephemeris · 0&nbsp;px at&nbsp;390x844</span></span>
-        </button>
-      </div>
-      <div class="native-preset-readout" id="playgroundReadout" data-testid="playground-readout" role="status" aria-live="polite"><strong>Six instruments below</strong> · Pick a tab to jump to it. Each tab shows that instrument's current reading.</div>
-    </nav>
 
     <section class="card workspace-target" id="batchStressCalculator" data-testid="ephemeris-speedup-calculator" aria-label="3-Second Ephemeris Throughput and Speedup Calculator">
       <div class="card-header">
@@ -5243,6 +5355,39 @@ if (!globalThis.EphemerisBrowser) {
         window.addEventListener("scrollend", onScrollEnd);
         flashTimers.set(target, setTimeout(release, 2400));
       };
+      
+      const ROLE_PORTAL_COPY = {
+        developer: "Python/Rust Developer · 15.07x batch throughput · Apache-2.0 zero-royalty SDKs",
+        agent: "AI Agent & MCP Builder · 1-Click Claude/Cursor MCP JSON-RPC & <3KB AI FactSheet Firewall",
+        researcher: "Astronomical Researcher · 0.001 arcsec JPL DE440 & Horizons Q45 2,100-Row Residual Ledger"
+      };
+      const commandNavbar = document.getElementById("app-command-navbar");
+      document.querySelectorAll("button[data-role-portal]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const role = btn.getAttribute("data-role-portal") || "developer";
+          commandNavbar?.setAttribute("data-active-role", role);
+          document.querySelectorAll("button[data-role-portal]").forEach((b) => {
+            const active = b === btn;
+            b.classList.toggle("active", active);
+            b.setAttribute("aria-pressed", String(active));
+          });
+          setText("rolePortalReadout", ROLE_PORTAL_COPY[role] || ROLE_PORTAL_COPY.developer);
+        });
+      });
+      document.querySelectorAll("button[data-command-room]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const roomId = btn.getAttribute("data-command-room") || "1";
+          commandNavbar?.setAttribute("data-active-room", roomId);
+          document.querySelectorAll("button[data-command-room]").forEach((b) => {
+            const active = b === btn;
+            b.classList.toggle("active", active);
+            b.setAttribute("aria-selected", String(active));
+          });
+          const matchingTab = document.querySelector(`button[data-playground-tab="${roomId}"]`);
+          matchingTab?.click();
+        });
+      });
+
       tabs.forEach((tab) => {
         tab.addEventListener("click", () => {
           const target = document.querySelector(`[data-testid="${tab.getAttribute("data-playground-target")}"]`);

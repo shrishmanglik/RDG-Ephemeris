@@ -396,3 +396,16 @@ def test_wave10_six_tab_agi_ephemeris_playground_and_oss_suite_verification_acro
         ):
             assert token in html, f"Missing playground token {token!r} in {path}"
         assert "\u2014" not in html
+
+
+def test_top_six_room_command_bar_and_role_switcher_above_fold() -> None:
+    for path in (WEB_OBSERVATORY_HTML, BENCHMARK_PORTAL_HTML, PLAYGROUND_HTML):
+        html = path.read_text(encoding="utf-8")
+        assert 'data-testid="app-command-navbar"' in html
+        assert 'data-testid="role-portal-switcher"' in html
+        for role_label in ("Python/Rust Developer", "AI Agent &amp; MCP Builder", "Astronomical Researcher"):
+            assert role_label in html, f"Missing role label {role_label!r} in {path}"
+        for room_id in range(1, 7):
+            assert f'data-command-room="{room_id}"' in html
+        assert html.index('data-testid="app-command-navbar"') < html.index('<main class="container">')
+        assert "\u2014" not in html
