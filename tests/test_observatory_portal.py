@@ -375,3 +375,24 @@ def test_wave7_pathway_four_pillar_sidebar_and_besselian_eclipse_ingress_finder_
             assert event_label in html, f"Missing event label {event_label!r} in {path}"
         assert "Copied Sub-Arcsecond Benchmark Manifest" in html
         assert "\u2014" not in html
+
+
+def test_wave10_six_tab_agi_ephemeris_playground_and_oss_suite_verification_across_all_html_surfaces() -> None:
+    for path in (WEB_OBSERVATORY_HTML, BENCHMARK_PORTAL_HTML, PLAYGROUND_HTML):
+        html = path.read_text(encoding="utf-8")
+        for test_id in (
+            "agi-ephemeris-6tab-playground",
+            "ephemeris-speedup-calculator",
+            "oss-suite-cross-verification",
+        ):
+            assert f'data-testid="{test_id}"' in html, f"Missing {test_id!r} in {path}"
+        for tab_id in range(1, 7):
+            assert f'data-playground-tab="{tab_id}"' in html, f"Missing playground tab {tab_id} in {path}"
+        for token in (
+            "agi-ephemeris",
+            "skill-mcp-inspector",
+            "veo3-prompt-forge",
+            "390x844",
+        ):
+            assert token in html, f"Missing playground token {token!r} in {path}"
+        assert "\u2014" not in html
