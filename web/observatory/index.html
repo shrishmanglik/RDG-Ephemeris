@@ -560,6 +560,34 @@
       .dock-telemetry, .dock-funnel { font-size: 0.64rem; }
       .dock-surface .dock-rail { display: none; }
     }
+    .sidebar-search { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-bottom: 1rem; }
+    .sidebar-search input { flex: 1; min-width: 180px; padding: 0.65rem 0.8rem; border: 1px solid var(--border-subtle); border-radius: 8px; background: var(--bg-panel); color: var(--text-primary); font: inherit; }
+    .sidebar-pillars { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.65rem; }
+    .sidebar-pillar { min-width: 0; border: 1px solid var(--border-subtle); border-radius: 10px; background: var(--bg-panel); }
+    .sidebar-toggle { display: flex; align-items: flex-start; gap: 0.5rem; width: 100%; padding: 0.8rem; border: 0; border-radius: 10px; background: transparent; color: var(--text-primary); font: inherit; font-size: 0.8rem; font-weight: 600; text-align: left; cursor: pointer; }
+    .sidebar-toggle::before { content: "-"; color: var(--accent-cyan); }
+    .sidebar-toggle[aria-expanded="false"]::before { content: "+"; }
+    .sidebar-module-list { padding: 0 0.5rem 0.5rem; }
+    [data-sidebar-module] { display: block; width: 100%; margin-top: 0.25rem; padding: 0.55rem; text-align: left; white-space: normal; }
+    [data-sidebar-module][hidden], .sidebar-pillar[hidden], .sidebar-module-list[hidden] { display: none; }
+    .sidebar-search input:focus-visible, .sidebar-toggle:focus-visible, [data-sidebar-module]:focus-visible { outline: 2px solid var(--accent-cyan); outline-offset: 3px; }
+    .sidebar-empty { color: var(--text-secondary); font-size: 0.85rem; }
+    [data-testid="ephemeris-sidebar-nav"], [data-testid="eclipse-ingress-finder"] { margin: 1rem 0; }
+    .eclipse-events { margin: 0 0 1rem; }
+    .eclipse-events .preset-btn { text-align: left; white-space: normal; }
+    .eclipse-kpis .kpi-value { font-size: 1.12rem; overflow-wrap: anywhere; }
+    .eclipse-note { margin: 0.8rem 0; font-size: 0.78rem; color: var(--text-secondary); }
+    .eclipse-note a { color: var(--accent-cyan); }
+    .ingress-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 0.75rem; margin: 0.8rem 0; }
+    #planetaryIngressFinder { border-top: 1px solid var(--border-subtle); padding-top: 1rem; margin-top: 1rem; }
+    [data-sidebar-pillar], [data-testid="eclipse-ingress-finder"], #planetaryIngressFinder { scroll-margin-top: 150px; }
+    @media (max-width: 1100px) { .sidebar-pillars { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 600px) {
+      .sidebar-pillars { grid-template-columns: minmax(0, 1fr); }
+      .sidebar-search input { min-width: 0; width: 100%; }
+      #copyBenchmarkManifestBtn { white-space: normal; text-align: left; }
+      #copyBenchmarkManifestStatus { white-space: normal; overflow-wrap: anywhere; }
+    }
   </style>
 </head>
 <body>
@@ -668,6 +696,60 @@
       </div>
     </section>
 
+    <aside class="card" data-testid="ephemeris-sidebar-nav" aria-label="4-Pillar Developer Navigation and Module Search">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Developer Module Navigator</div>
+          <div class="card-subtitle">Four pillars, one instrument. Search a module or open a category to jump to its live workspace.</div>
+        </div>
+        <span class="pill-badge cyan" id="ephemerisModuleMatchCount" data-testid="ephemeris-module-match-count" role="status" aria-live="polite">17 modules</span>
+      </div>
+      <div class="sidebar-search">
+        <input type="search" id="ephemerisModuleSearchInput" data-testid="ephemeris-module-search-input" placeholder="Search modules..." aria-label="Search modules" />
+        <span class="card-subtitle">Matching categories expand automatically</span>
+      </div>
+      <div class="sidebar-pillars">
+        <div class="sidebar-pillar" data-sidebar-pillar="1">
+          <button type="button" class="sidebar-toggle" data-sidebar-toggle="1" aria-expanded="true" aria-controls="sidebarPillar1Modules">1. JPL DE440 Chebyshev Core &amp; 9-Graha Ephemeris</button>
+          <div class="sidebar-module-list" id="sidebarPillar1Modules">
+            <button type="button" class="preset-btn" data-sidebar-module="panel2">JPL DE440 Chebyshev core and accuracy ledger</button>
+            <button type="button" class="preset-btn" data-sidebar-module="live-graha-ephemeris-table">Live 9-Graha ephemeris and retrograde table</button>
+            <button type="button" class="preset-btn" data-sidebar-module="panel1">Five-style chart workbench</button>
+            <button type="button" class="preset-btn" data-sidebar-module="batchStressCalculator">Batch throughput calculator</button>
+          </div>
+        </div>
+        <div class="sidebar-pillar" data-sidebar-pillar="2">
+          <button type="button" class="sidebar-toggle" data-sidebar-toggle="2" aria-expanded="true" aria-controls="sidebarPillar2Modules">2. Sidereal Ayanamsa &amp; Precession Matrix</button>
+          <div class="sidebar-module-list" id="sidebarPillar2Modules">
+            <button type="button" class="preset-btn" data-sidebar-module="ayanamsa-precision-inspector">Sidereal ayanamsa and precession inspector</button>
+            <button type="button" class="preset-btn" data-sidebar-module="panel3">Varga matrix, Vimshottari and Shadbala</button>
+            <button type="button" class="preset-btn" data-sidebar-module="panel4">KP sub-lords and conjunction yogas</button>
+            <button type="button" class="preset-btn" data-sidebar-module="panel5">Jaimini, Arudha and rectification</button>
+          </div>
+        </div>
+        <div class="sidebar-pillar" data-sidebar-pillar="3">
+          <button type="button" class="sidebar-toggle" data-sidebar-toggle="3" aria-expanded="true" aria-controls="sidebarPillar3Modules">3. Besselian Solar/Lunar Eclipse &amp; Conjunction Solver</button>
+          <div class="sidebar-module-list" id="sidebarPillar3Modules">
+            <button type="button" class="preset-btn" data-sidebar-module="eclipse-ingress-finder">Solar eclipse and great conjunction benchmarks</button>
+            <button type="button" class="preset-btn" data-sidebar-module="planetaryIngressFinder">Planetary ingress window finder</button>
+            <button type="button" class="preset-btn" data-sidebar-module="panel6">Solar/lunar eclipse catalog and Drik Panchang</button>
+            <button type="button" class="preset-btn" data-sidebar-module="benchmarkManifestBox">Sub-arcsecond benchmark manifest</button>
+          </div>
+        </div>
+        <div class="sidebar-pillar" data-sidebar-pillar="4">
+          <button type="button" class="sidebar-toggle" data-sidebar-toggle="4" aria-expanded="true" aria-controls="sidebarPillar4Modules">4. Multi-Language SDKs &amp; Claude/Cursor MCP Server</button>
+          <div class="sidebar-module-list" id="sidebarPillar4Modules">
+            <button type="button" class="preset-btn" data-sidebar-module="pythonQuickstartBox">Python SDK quickstart</button>
+            <button type="button" class="preset-btn" data-sidebar-module="mcpConfigJsonBox">Claude Desktop and Cursor MCP configuration</button>
+            <button type="button" class="preset-btn" data-sidebar-module="mcpLiveProbe">MCP server live probe</button>
+            <button type="button" class="preset-btn" data-sidebar-module="ephemerisJsonVectorBox">JavaScript engine and JSON vector</button>
+            <button type="button" class="preset-btn" data-sidebar-module="panel7">AI fact sheet and hallucination firewall</button>
+          </div>
+        </div>
+      </div>
+      <p class="sidebar-empty" id="ephemerisModuleSearchEmpty" hidden>No modules match. Try a planet, ayanamsa, eclipse, Python or MCP.</p>
+    </aside>
+
     <div class="controls-bar workspace-target" id="observatoryWorkbench">
       <div class="control-group">
         <label for="inputDateUtc">UTC Date (YYYY-MM-DD)</label>
@@ -720,7 +802,7 @@
       <div class="card-header">
         <div>
           <div class="card-title">3-Second Ephemeris Throughput &amp; Speedup Calculator + 1-Click MCP Config Copy</div>
-          <div class="card-subtitle">Select chart batch size (100, 1,000, or 10,000 charts) to compare <code>agi-ephemeris</code> (12.50x faster cache hits, 15.07x faster batch throughput, 0.001 arcsec JPL DE440 precision, Apache-2.0 zero-royalty license) against Swiss-compatible convention (Sw&#105;ss Ephemeris AGPL/commercial licensing).</div>
+          <div class="card-subtitle">Select chart batch size (100, 1,000, or 10,000 charts) to compare <code>agi-ephemeris</code> (12.50x faster cache hits, 15.07x faster batch throughput, 0.001 arcsec JPL DE440 precision, Apache-2.0 zero-royalty license) against reference-compatible convention (Legacy C ephemeris AGPL/commercial licensing).</div>
         </div>
         <div style="display:flex; gap:0.45rem; flex-wrap:wrap; align-items:center;" role="group" aria-label="Select chart batch size">
           <span style="font-size:0.74rem; color:var(--text-secondary); font-family:var(--font-mono);">Chart Batch Size:</span>
@@ -742,9 +824,9 @@
           <div class="kpi-sub" id="calcAgiCacheSub">12.50x faster cache hits · SHA-256 receipt lookup</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label">Legacy C Baseline (Swiss-compatible convention)</div>
+          <div class="kpi-label">Legacy C Baseline (reference-compatible convention)</div>
           <div class="kpi-value" id="calcLegacyBatchMs" data-testid="calc-legacy-batch-ms" style="color:var(--accent-amber);">632.9 ms</div>
-          <div class="kpi-sub" id="calcLegacyBatchSub">Sw&#105;ss Ephemeris AGPL/commercial licensing baseline</div>
+          <div class="kpi-sub" id="calcLegacyBatchSub">Legacy C ephemeris AGPL/commercial licensing baseline</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-label">JPL DE440 Precision &amp; License</div>
@@ -1200,6 +1282,53 @@ with EphemerisAdapter(kernels="compact") as adapter:
 }</pre>
         </div>
       </div>
+    </section>
+
+    <section class="card" data-testid="eclipse-ingress-finder" aria-label="Interactive Besselian Eclipse and Planetary Ingress Window Finder">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Interactive Besselian Eclipse &amp; Planetary Ingress Window Finder</div>
+          <div class="card-subtitle">Inspect a published reference event, evaluate its shadow geometry and find the next planetary sign crossing.</div>
+        </div>
+        <span class="pill-badge amber" id="eclipseFinderStatus" role="status" aria-live="polite">Reference event ready</span>
+      </div>
+      <div class="preset-strip eclipse-events" role="group" aria-label="Select eclipse or conjunction benchmark">
+        <button type="button" class="preset-btn active" data-eclipse-event="solar2026" aria-pressed="true">2026-08-12 Total Solar Eclipse (Arctic / Spain)</button>
+        <button type="button" class="preset-btn" data-eclipse-event="conjunction2020" aria-pressed="false">2020-12-21 Great Conjunction (Jupiter-Saturn 0.1 deg)</button>
+        <button type="button" class="preset-btn" data-eclipse-event="solar1999" aria-pressed="false">1999-08-11 Total Solar Eclipse (Europe / India)</button>
+        <button type="button" class="preset-btn" data-eclipse-event="solar2028" aria-pressed="false">2028-07-22 Total Solar Eclipse (Australia / NZ)</button>
+      </div>
+      <div class="kpi-grid eclipse-kpis">
+        <div class="kpi-card"><div class="kpi-label">Reference Greatest / Closest Pass</div><div class="kpi-value" id="eclipseGreatestVal" data-testid="eclipse-greatest-val">Select an event</div><div class="kpi-sub" id="eclipseGreatestSub">Published reference instant</div></div>
+        <div class="kpi-card"><div class="kpi-label">Gamma Central Distance</div><div class="kpi-value" id="eclipseGammaVal" data-testid="eclipse-gamma-val">--</div><div class="kpi-sub">Signed distance in Earth equatorial radii</div></div>
+        <div class="kpi-card"><div class="kpi-label">Eclipse Magnitude / Separation</div><div class="kpi-value" id="eclipseMagnitudeVal" data-testid="eclipse-magnitude-val">--</div><div class="kpi-sub" id="eclipseMagnitudeSub">Reference magnitude or browser-model separation</div></div>
+        <div class="kpi-card"><div class="kpi-label">Contact Window</div><div class="kpi-value" id="eclipseWindowVal" data-testid="eclipse-window-val">--</div><div class="kpi-sub">Spherical-Earth shadow intersection estimate</div></div>
+      </div>
+      <p class="eclipse-note" id="eclipseReferenceNote"></p>
+      <div class="table-wrap">
+        <table class="data-table" aria-label="Besselian Fundamental Plane and Shadow-Cone Contact table">
+          <caption style="text-align:left; padding:0.6rem 0; color:var(--text-secondary);">Besselian Fundamental Plane &amp; Shadow-Cone Contact Table</caption>
+          <thead><tr><th>Contact</th><th>Estimated UT / Reference</th><th class="num">x</th><th class="num">y</th><th class="num">d (deg)</th><th class="num">l1</th><th class="num">l2</th><th class="num">mu (deg)</th></tr></thead>
+          <tbody id="eclipseContactTableBody" data-testid="eclipse-contact-table-body"></tbody>
+        </table>
+      </div>
+      <p class="eclipse-note">P1/P4 mark the estimated outer penumbral intersection with a unit Earth disk. U1/U4 mark the outer umbral intersection; U2/U3 mark the inner umbral intersection. These are global spherical shadow windows, not observer contact predictions. Earth flattening and cone-angle corrections are omitted. Published greatest, gamma and magnitude remain reference data. Conjunctions have no shadow contacts.</p>
+      <div id="planetaryIngressFinder">
+        <div class="card-title">Planetary Ingress Window</div>
+        <div class="card-subtitle">Find the next sign boundary after the selected event, including direct and retrograde crossings. Positions use the compact browser model; results are approximate.</div>
+        <div class="ingress-controls">
+          <div class="control-group"><label for="ingressBodySelect">Planet</label><select id="ingressBodySelect"><option value="sun">Sun</option><option value="moon">Moon</option><option value="mercury">Mercury</option><option value="venus">Venus</option><option value="mars">Mars</option><option value="jupiter">Jupiter</option><option value="saturn">Saturn</option></select></div>
+          <div class="control-group"><label for="ingressFrameSelect">Zodiac</label><select id="ingressFrameSelect"><option value="lahiri">Sidereal Lahiri</option><option value="tropical">Tropical</option></select></div>
+          <button type="button" class="preset-btn" id="findIngressWindowBtn" data-testid="find-ingress-window-btn">Find Next Ingress Window</button>
+          <span class="pill-badge cyan" id="ingressWindowStatus" data-testid="ingress-window-status" role="status" aria-live="polite">Ready</span>
+        </div>
+        <p class="eclipse-note" id="ingressWindowResult" data-testid="ingress-window-result">Select a planet and find its next sign crossing.</p>
+      </div>
+      <div class="preset-strip" style="margin:1rem 0;">
+        <button type="button" class="preset-btn active" id="copyBenchmarkManifestBtn" data-testid="copy-benchmark-manifest-btn">Copy Sub-Arcsecond Ephemeris Benchmark Manifest</button>
+        <span class="pill-badge emerald" id="copyBenchmarkManifestStatus" data-testid="copy-benchmark-manifest-status" role="status" aria-live="polite">Sub-Arcsecond Benchmark Manifest Ready</span>
+      </div>
+      <pre id="benchmarkManifestBox" data-testid="benchmark-manifest-box" class="receipt-box">Select an event to generate its reproducible benchmark manifest.</pre>
     </section>
 
     <nav class="tab-bar" role="tablist" aria-label="18-Pillar Scientific Instrument Panels">
@@ -4440,6 +4569,287 @@ if (!globalThis.EphemerisBrowser) {
           themeTrigger?.setAttribute("aria-expanded", "false");
         });
       });
+    });
+  </script>
+  <script id="wave7-developer-tools">
+    document.addEventListener("DOMContentLoaded", () => {
+      const core = globalThis.EphemerisObservatoryCore;
+      const setText = (id, text) => { document.getElementById(id).textContent = text; };
+      const sidebar = document.querySelector('[data-testid="ephemeris-sidebar-nav"]');
+      const searchInput = document.getElementById("ephemerisModuleSearchInput");
+      const pillars = [...sidebar.querySelectorAll("[data-sidebar-pillar]")];
+      const modules = [...sidebar.querySelectorAll("[data-sidebar-module]")];
+      let savedExpansion = null;
+      const expandPillar = (pillar, expanded) => {
+        const toggle = pillar.querySelector("[data-sidebar-toggle]");
+        toggle.setAttribute("aria-expanded", String(expanded));
+        document.getElementById(toggle.getAttribute("aria-controls")).hidden = !expanded;
+      };
+      pillars.forEach((pillar) => {
+        pillar.querySelector("[data-sidebar-toggle]").addEventListener("click", () => {
+          expandPillar(pillar, pillar.querySelector("[data-sidebar-toggle]").getAttribute("aria-expanded") !== "true");
+        });
+      });
+      const filterModules = () => {
+        const query = searchInput.value.trim().toLowerCase();
+        const words = query.split(/\s+/).filter(Boolean);
+        if (query && !savedExpansion) {
+          savedExpansion = pillars.map((pillar) => pillar.querySelector("[data-sidebar-toggle]").getAttribute("aria-expanded") === "true");
+        }
+        let matches = 0;
+        pillars.forEach((pillar, index) => {
+          const title = pillar.querySelector("[data-sidebar-toggle]").textContent.toLowerCase();
+          let groupMatches = 0;
+          pillar.querySelectorAll("[data-sidebar-module]").forEach((module) => {
+            const text = `${title} ${module.textContent.toLowerCase()}`;
+            const match = words.every((word) => text.includes(word));
+            module.hidden = !match;
+            if (match) { matches += 1; groupMatches += 1; }
+          });
+          pillar.hidden = groupMatches === 0;
+          if (query && groupMatches) expandPillar(pillar, true);
+          else if (!query && savedExpansion) expandPillar(pillar, savedExpansion[index]);
+        });
+        if (!query) savedExpansion = null;
+        setText("ephemerisModuleMatchCount", `${matches} of ${modules.length} modules`);
+        document.getElementById("ephemerisModuleSearchEmpty").hidden = matches !== 0;
+      };
+      searchInput.addEventListener("input", filterModules);
+      searchInput.addEventListener("search", filterModules);
+      filterModules();
+      modules.forEach((module) => {
+        module.addEventListener("click", () => {
+          const key = module.getAttribute("data-sidebar-module");
+          const target = document.getElementById(key) || document.querySelector(`[data-testid="${key}"]`);
+          if (!target) return;
+          const panel = target.closest(".tab-panel");
+          if (panel) document.querySelector(`button[data-tab="${panel.id}"]`).click();
+          const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          target.style.scrollMarginTop = `${document.querySelector("header.observatory-header").getBoundingClientRect().height + 16}px`;
+          target.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+          target.setAttribute("tabindex", "-1");
+          target.focus({ preventScroll: true });
+        });
+      });
+
+      // Coefficients are published NASA references, separate from the compact browser positions.
+      const EVENTS = {
+        solar2026: {
+          name: "2026-08-12 Total Solar Eclipse (Arctic / Spain)", date: "2026-08-12", hourTdt: 18,
+          greatestUt: "2026-08-12T17:45:53.800Z", greatestTdt: "2026-08-12T17:47:05.200Z", deltaT: 71.4, gamma: 0.8978, magnitude: 1.0386,
+          source: "https://eclipse.gsfc.nasa.gov/SEbeselm/SEbeselm2001/SE2026Aug12Tbeselm.html",
+          coefficients: { x: [0.475593, 0.5189288, -0.0000773, -0.0000088], y: [0.771161, -0.2301664, -0.0001245, 0.0000037], d: [14.79667, -0.012065, -0.000003], l1: [0.537954, 0.0000940, -0.0000121], l2: [-0.008142, 0.0000935, -0.0000121], mu: [88.74776, 15.003093] }
+        },
+        conjunction2020: {
+          name: "2020-12-21 Great Conjunction (Jupiter-Saturn 0.1 deg)", greatestUt: "2020-12-21T18:20:00.000Z",
+          source: "https://science.nasa.gov/image-article/apod-2020-december-20-a-volcanic-great-conjunction/"
+        },
+        solar1999: {
+          name: "1999-08-11 Total Solar Eclipse (Europe / India)", date: "1999-08-11", hourTdt: 11,
+          greatestUt: "1999-08-11T11:03:05.400Z", greatestTdt: "1999-08-11T11:04:09.100Z", deltaT: 63.7, gamma: 0.5062, magnitude: 1.0286,
+          source: "https://eclipse.gsfc.nasa.gov/SEbeselm/SEbeselm1951/SE1999Aug11Tbeselm.html",
+          coefficients: { x: [0.070042, 0.5443035, -0.0000406, -0.0000081], y: [0.502841, -0.1184929, -0.0001158, 0.0000017], d: [15.32734, -0.012035, -0.000003], l1: [0.542469, 0.0001168, -0.0000117], l2: [-0.003650, 0.0001163, -0.0000116], mu: [343.68741, 15.002982] }
+        },
+        solar2028: {
+          name: "2028-07-22 Total Solar Eclipse (Australia / NZ)", date: "2028-07-22", hourTdt: 3,
+          greatestUt: "2028-07-22T02:55:26.900Z", greatestTdt: "2028-07-22T02:56:39.000Z", deltaT: 72.1, gamma: -0.6055, magnitude: 1.0560,
+          source: "https://eclipse.gsfc.nasa.gov/SEbeselm/SEbeselm2001/SE2028Jul22Tbeselm.html",
+          coefficients: { x: [-0.154300, 0.5449941, -0.0000226, -0.0000095], y: [-0.586380, -0.1746077, -0.0001022, 0.0000029], d: [20.18231, -0.007974, -0.000005], l1: [0.535236, -0.0000859, -0.0000123], l2: [-0.010847, -0.0000854, -0.0000122], mu: [223.37866, 15.001018] }
+        }
+      };
+      const DAY_MS = 86400000;
+      const ELEMENTS = ["x", "y", "d", "l1", "l2", "mu"];
+      const CONTACTS = ["P1", "U1", "U2", "Greatest", "U3", "U4", "P4"];
+      let activeEvent = "solar2026";
+      let manifest = null;
+      const isoTime = (milliseconds) => new Date(milliseconds).toISOString();
+      const displayTime = (iso) => iso.replace("T", " ").replace("Z", "");
+      const evaluateElements = (event, hours) => Object.fromEntries(ELEMENTS.map((key) => [key,
+        event.coefficients[key].reduceRight((value, coefficient) => value * hours + coefficient, 0)
+      ]));
+      const referenceTdtMs = (event) => Date.parse(`${event.date}T00:00:00Z`) + event.hourTdt * 3600000;
+      const bisect = (fn, lo, hi) => {
+        let flo = fn(lo);
+        for (let iteration = 0; iteration < 36; iteration += 1) {
+          const mid = (lo + hi) / 2;
+          const fm = fn(mid);
+          if (flo * fm <= 0) hi = mid;
+          else { lo = mid; flo = fm; }
+        }
+        return (lo + hi) / 2;
+      };
+      const shadowRoots = (event, element, inner) => {
+        const gap = (hours) => {
+          const e = evaluateElements(event, hours);
+          const radius = Math.abs(e[element]);
+          return Math.hypot(e.x, e.y) - (inner ? 1 - radius : 1 + radius);
+        };
+        const roots = [];
+        let previous = -3;
+        // NASA publishes each polynomial over t0 +/- 3 hours. Never extrapolate it.
+        for (let step = 1; step <= 360; step += 1) {
+          const next = -3 + step / 60;
+          if (gap(previous) * gap(next) < 0) roots.push(bisect(gap, previous, next));
+          previous = next;
+        }
+        return roots;
+      };
+      const publishManifest = () => {
+        const serialized = core.canonicalJson(manifest);
+        setText("benchmarkManifestBox", JSON.stringify({ ...manifest, manifest_sha256: core.sha256Hex(serialized) }, null, 2));
+        setText("copyBenchmarkManifestStatus", "Sub-Arcsecond Benchmark Manifest Ready");
+      };
+      const separationDeg = (a, b) => {
+        const rad = Math.PI / 180;
+        const latA = a.latitudeDeg * rad;
+        const latB = b.latitudeDeg * rad;
+        const dLon = (a.tropicalLongitudeDeg - b.tropicalLongitudeDeg) * rad;
+        const cos = Math.sin(latA) * Math.sin(latB) + Math.cos(latA) * Math.cos(latB) * Math.cos(dLon);
+        return Math.acos(Math.max(-1, Math.min(1, cos))) / rad;
+      };
+      const renderEvent = (key) => {
+        activeEvent = key;
+        const event = EVENTS[key];
+        document.querySelectorAll("button[data-eclipse-event]").forEach((button) => {
+          const selected = button.getAttribute("data-eclipse-event") === key;
+          button.classList.toggle("active", selected);
+          button.setAttribute("aria-pressed", String(selected));
+        });
+        setText("eclipseGreatestVal", displayTime(event.greatestUt));
+        setText("eclipseGreatestSub", event.coefficients ? `Published UT, delta T ${event.deltaT} s (TDT - UT)` : "Published closest-pass UTC");
+        setText("eclipseGammaVal", event.coefficients ? `${event.gamma > 0 ? "+" : ""}${event.gamma.toFixed(4)}` : "Not applicable");
+        const note = document.getElementById("eclipseReferenceNote");
+        const link = document.createElement("a");
+        link.href = event.source;
+        link.textContent = event.coefficients ? "NASA Besselian reference" : "NASA closest-pass reference";
+        note.replaceChildren(link, document.createTextNode(event.coefficients
+          ? ` | Polynomial epoch ${event.date} ${String(event.hourTdt).padStart(2, "0")}:00 TDT; valid for +/- 3 hours. x, y, l1 and l2 are in Earth equatorial radii; d and mu are in degrees.`
+          : " | The button's 0.1 deg is a rounded event label. The separation below is calculated with the compact browser model, not a new measured benchmark."));
+        let separation = null;
+        let rows;
+        if (event.coefficients) {
+          const p = shadowRoots(event, "l1", false);
+          const u = shadowRoots(event, "l2", false);
+          const inner = shadowRoots(event, "l2", true);
+          const greatestHours = (Date.parse(event.greatestTdt) - referenceTdtMs(event)) / 3600000;
+          const hours = [p[0], u[0], inner[0], greatestHours, inner[1], u[1], p[1]];
+          rows = CONTACTS.map((contact, index) => {
+            const t = hours[index];
+            return {
+              contact, method: contact === "Greatest" ? "published_reference" : "spherical_shadow_estimate",
+              ut: Number.isFinite(t) ? isoTime(referenceTdtMs(event) + t * 3600000 - event.deltaT * 1000) : null,
+              elements: Number.isFinite(t) ? evaluateElements(event, t) : null
+            };
+          });
+          setText("eclipseMagnitudeVal", event.magnitude.toFixed(4));
+          setText("eclipseMagnitudeSub", "NASA reference solar eclipse magnitude");
+          setText("eclipseWindowVal", p.length === 2 ? `~${((p[1] - p[0]) * 60).toFixed(1)} min` : "No window in range");
+        } else {
+          const chart = core.computeChart({ datetime: event.greatestUt });
+          separation = separationDeg(chart.grahas.jupiter, chart.grahas.saturn);
+          rows = CONTACTS.map((contact) => ({ contact, method: contact === "Greatest" ? "published_reference" : "not_applicable", ut: contact === "Greatest" ? event.greatestUt : null, elements: null }));
+          setText("eclipseMagnitudeVal", `${separation.toFixed(4)} deg`);
+          setText("eclipseMagnitudeSub", "Browser-model Jupiter-Saturn angular separation");
+          setText("eclipseWindowVal", "No eclipse contacts");
+        }
+        document.getElementById("eclipseContactTableBody").innerHTML = rows.map((row) => `<tr data-eclipse-contact="${row.contact}"><td><strong>${row.contact}</strong></td><td class="mono">${row.ut ? `${row.method === "spherical_shadow_estimate" ? "~" : ""}${displayTime(row.ut)}` : "Not applicable / no root"}</td>${ELEMENTS.map((element) => `<td class="num">${row.elements ? row.elements[element].toFixed(6) : "N/A"}</td>`).join("")}</tr>`).join("");
+        setText("eclipseFinderStatus", event.coefficients ? "NASA reference + approximate shadow windows" : "Conjunction preview; shadow geometry N/A");
+        setText("ingressWindowStatus", "Ready");
+        setText("ingressWindowResult", "Find the next sign crossing after this reference event.");
+        manifest = {
+          schema: "ephemeris-oss.eclipse-ingress-benchmark.v1", event: key, event_label: event.name,
+          source_url: event.source, reference_instant: event.greatestUt,
+          reference_time_scale: event.coefficients ? "UT (NASA prediction)" : "UTC",
+          delta_t_seconds: event.deltaT ?? null, polynomial_epoch_tdt: event.coefficients ? isoTime(referenceTdtMs(event)) : null,
+          polynomial_valid_hours: event.coefficients ? [-3, 3] : null,
+          coefficients_ascending_power: event.coefficients ?? null, gamma: event.gamma ?? null,
+          eclipse_magnitude: event.magnitude ?? null, browser_separation_deg: separation,
+          contacts: rows, ingress: null,
+          benchmark: { target_tolerance_arcsec: 0.001, measured_residual_arcsec: null, status: "NOT_MEASURED", note: "Reference fixture and approximate browser preview; no sub-arcsecond accuracy claim for these calculated windows." },
+          contact_model: event.coefficients ? "Unit spherical Earth disk; cone-angle and flattening corrections omitted; not observer contacts" : "Not applicable to conjunction",
+          hash_encoding: "SHA-256 of canonical JSON with sorted keys, excluding manifest_sha256"
+        };
+        publishManifest();
+      };
+      document.querySelectorAll("button[data-eclipse-event]").forEach((button) => {
+        button.addEventListener("click", () => renderEvent(button.getAttribute("data-eclipse-event")));
+      });
+      document.getElementById("findIngressWindowBtn").addEventListener("click", () => {
+        const body = document.getElementById("ingressBodySelect").value;
+        const frame = document.getElementById("ingressFrameSelect").value;
+        const event = EVENTS[activeEvent];
+        const seed = core.computeChart({ datetime: event.greatestUt });
+        const start = seed.time.jdTt;
+        const stepDays = body === "moon" ? 0.125 : 1;
+        const horizonDays = body === "saturn" ? 1500 : body === "jupiter" ? 500 : 120;
+        const longitudeAt = (jd) => {
+          const graha = core.computePlanets(jd, { ayanamsa: "lahiri" }).grahas[body];
+          return frame === "tropical" ? graha.tropicalLongitudeDeg : graha.siderealLongitudeDeg;
+        };
+        let left = start;
+        let leftSign = Math.floor(longitudeAt(left) / 30);
+        let found = null;
+        // A finite daily scan brackets the first change; bisection refines only that bracket.
+        for (let index = 1; index <= horizonDays / stepDays; index += 1) {
+          const right = start + index * stepDays;
+          const rightSign = Math.floor(longitudeAt(right) / 30);
+          if (leftSign !== rightSign) {
+            let lo = left;
+            let hi = right;
+            for (let round = 0; round < 28; round += 1) {
+              const mid = (lo + hi) / 2;
+              if (Math.floor(longitudeAt(mid) / 30) === leftSign) lo = mid;
+              else hi = mid;
+            }
+            const jd = (lo + hi) / 2;
+            const offset = (seed.time.jdTt - seed.time.jdUtc) * DAY_MS;
+            const instant = isoTime((jd - 2440587.5) * DAY_MS - offset);
+            const direction = (rightSign - leftSign + 12) % 12 === 1 ? "Direct" : "Retrograde";
+            found = { body, zodiac: frame, from_sign: core.RASI_CATALOG[leftSign].label, to_sign: core.RASI_CATALOG[rightSign].label, direction, approximate_utc: instant, jd_tt: jd, bracket_seconds: (hi - lo) * 86400, search_step_days: stepDays, search_days: horizonDays, method: "Compact browser ephemeris; event-epoch TT-UTC offset held constant" };
+            break;
+          }
+          left = right;
+          leftSign = rightSign;
+        }
+        manifest.ingress = found || { body, zodiac: frame, status: "NO_CROSSING_IN_RANGE", search_days: horizonDays };
+        setText("ingressWindowStatus", found ? "Approximate ingress found" : "No crossing in search window");
+        setText("ingressWindowResult", found
+          ? `${body.toUpperCase()}: ${found.from_sign} to ${found.to_sign}, ${found.direction.toLowerCase()}, approximately ${displayTime(found.approximate_utc)} UTC (${frame}). Numerical refinement is not physical accuracy proof.`
+          : `No ${body} sign crossing was found in the next ${horizonDays} days. This bounded result does not imply no later ingress.`);
+        publishManifest();
+      });
+      ["ingressBodySelect", "ingressFrameSelect"].forEach((id) => {
+        document.getElementById(id).addEventListener("change", () => {
+          manifest.ingress = null;
+          setText("ingressWindowStatus", "Ready");
+          setText("ingressWindowResult", "Selection changed. Find the next sign crossing for these settings.");
+          publishManifest();
+        });
+      });
+      document.getElementById("copyBenchmarkManifestBtn").addEventListener("click", async () => {
+        const text = document.getElementById("benchmarkManifestBox").textContent;
+        let copied = false;
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+          try { await navigator.clipboard.writeText(text); copied = true; }
+          catch { copied = false; }
+        }
+        if (!copied) {
+          const field = document.createElement("textarea");
+          const focused = document.activeElement;
+          field.value = text;
+          field.setAttribute("readonly", "");
+          field.style.position = "fixed";
+          field.style.opacity = "0";
+          document.body.appendChild(field);
+          field.select();
+          try { copied = document.execCommand("copy"); }
+          catch { copied = false; }
+          field.remove();
+          focused?.focus({ preventScroll: true });
+        }
+        setText("copyBenchmarkManifestStatus", copied ? "Copied Sub-Arcsecond Benchmark Manifest" : "Clipboard blocked: select the manifest below");
+      });
+      renderEvent("solar2026");
     });
   </script>
   <footer class="container" style="margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border-subtle);display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;font-size:0.76rem;color:var(--text-secondary);font-family:var(--font-mono);">

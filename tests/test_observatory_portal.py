@@ -343,3 +343,35 @@ def test_gold_standard_liquid_glass_dock_and_six_native_presets_across_all_html_
             assert f'data-native-preset="{preset_id}"' in html
             assert preset_label in html, f"Missing native preset {preset_label!r} in {path}"
         assert "\u2014" not in html
+
+
+def test_wave7_pathway_four_pillar_sidebar_and_besselian_eclipse_ingress_finder_across_all_html_surfaces() -> None:
+    for path in (WEB_OBSERVATORY_HTML, BENCHMARK_PORTAL_HTML, PLAYGROUND_HTML):
+        html = path.read_text(encoding="utf-8")
+        for test_id in (
+            "ephemeris-sidebar-nav",
+            "ephemeris-module-search-input",
+            "eclipse-ingress-finder",
+            "copy-benchmark-manifest-btn",
+        ):
+            assert f'data-testid="{test_id}"' in html, f"Missing {test_id!r} in {path}"
+        for pillar_id, pillar_title in (
+            ("1", "1. JPL DE440 Chebyshev Core"),
+            ("2", "2. Sidereal Ayanamsa & Precession Matrix"),
+            ("3", "3. Besselian Solar/Lunar Eclipse & Conjunction Solver"),
+            ("4", "4. Multi-Language SDKs & Claude/Cursor MCP Server"),
+        ):
+            assert f'data-sidebar-pillar="{pillar_id}"' in html, f"Missing pillar {pillar_id} in {path}"
+            assert pillar_title in html or pillar_title.replace("&", "&amp;") in html, (
+                f"Missing pillar title {pillar_title!r} in {path}"
+            )
+        for event_id, event_label in (
+            ("solar2026", "2026-08-12 Total Solar Eclipse (Arctic / Spain)"),
+            ("conjunction2020", "2020-12-21 Great Conjunction (Jupiter-Saturn 0.1 deg)"),
+            ("solar1999", "1999-08-11 Total Solar Eclipse (Europe / India)"),
+            ("solar2028", "2028-07-22 Total Solar Eclipse (Australia / NZ)"),
+        ):
+            assert f'data-eclipse-event="{event_id}"' in html, f"Missing event {event_id!r} in {path}"
+            assert event_label in html, f"Missing event label {event_label!r} in {path}"
+        assert "Copied Sub-Arcsecond Benchmark Manifest" in html
+        assert "\u2014" not in html
