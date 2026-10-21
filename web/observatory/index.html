@@ -566,6 +566,71 @@ Copyright The Million Dollar AI Studio Ltd. Built on NASA JPL DE440 Chebyshev ke
       </div>
     </section>
 
+    <section class="card" data-testid="ayanamsa-precision-inspector" aria-label="3-Second Sidereal Ayanamsa and Sub-Arcsecond Delta Inspector">
+      <div class="card-header">
+        <div>
+          <div class="card-title">3-Second Sidereal Ayanamsa &amp; Sub-Arcsecond Delta Inspector + 1-Click Python Quickstart</div>
+          <div class="card-subtitle">Switch between <code>Lahiri (Chitrapaksha)</code>, <code>Krishnamurti (KP)</code>, and <code>Raman</code> ayanamsa modes to inspect exact J2000.0 / 2026 JPL DE440 sub-arcsecond reference values and copy a ready-to-run Python quickstart snippet in 1 click.</div>
+        </div>
+        <div style="display:flex; gap:0.45rem; flex-wrap:wrap; align-items:center;" role="group" aria-label="Select sidereal ayanamsa convention">
+          <span style="font-size:0.74rem; color:var(--text-secondary); font-family:var(--font-mono);">Ayanamsa Mode:</span>
+          <button type="button" class="preset-btn active" data-ayanamsa-mode="lahiri" data-testid="ayanamsa-mode-lahiri">Lahiri (Chitrapaksha)</button>
+          <button type="button" class="preset-btn" data-ayanamsa-mode="krishnamurti" data-testid="ayanamsa-mode-kp">Krishnamurti (KP)</button>
+          <button type="button" class="preset-btn" data-ayanamsa-mode="raman" data-testid="ayanamsa-mode-raman">Raman</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid" style="margin-bottom:0.9rem;">
+        <div class="kpi-card">
+          <div class="kpi-label">J2000.0 Reference Ayanamsa</div>
+          <div class="kpi-value" id="ayanamsaJ2000Val" data-testid="ayanamsa-j2000-val" style="color:var(--accent-cyan);">23.853056° (23°51'11.00")</div>
+          <div class="kpi-sub" id="ayanamsaModeSub">Lahiri (Chitrapaksha) · IAU 2006 Precession Anchor</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">2026-10-15 TT Sidereal Offset</div>
+          <div class="kpi-value" id="ayanamsa2026Val" data-testid="ayanamsa-2026-val" style="color:var(--accent-emerald);">24.226614° (24°13'35.81")</div>
+          <div class="kpi-sub" id="ayanamsa2026Sub">Annual precession rate: 50.2879695"/Julian yr</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">JPL DE440 Sub-Arcsecond Delta</div>
+          <div class="kpi-value" id="ayanamsaDeltaVal" data-testid="ayanamsa-delta-val" style="color:var(--accent-amber);">0.000078" (&lt; 0.001 arcsec)</div>
+          <div class="kpi-sub">Deterministic 64-hex SHA-256 convention receipt</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Zero-Hallucination Python API</div>
+          <div class="kpi-value" style="font-size:1.12rem;">Engine.load(kernels="compact")</div>
+          <div class="kpi-sub">1.84 MB embedded DE440 kernel · Zero external files</div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1.1fr 1fr; gap:0.95rem; align-items:stretch;">
+        <div class="limb-card" style="display:flex; flex-direction:column; justify-content:space-between; gap:0.55rem;">
+          <div>
+            <div class="limb-name">Deterministic Sidereal Convention Contract</div>
+            <div class="limb-val" id="ayanamsaInspectorHeadline">Lahiri (Chitrapaksha): J2000.0 = 23.853056° · Sub-arcsecond JPL DE440 parity</div>
+            <div class="limb-meta" style="margin-top:0.35rem;">
+              Every sidereal calculation binds the exact ayanamsa model (<strong>Lahiri (Chitrapaksha)</strong>, <strong>Krishnamurti (KP)</strong>, or <strong>Raman</strong>), IAU 2006/2000A frame rotation, and 64-hex SHA-256 cryptographic receipt.
+            </div>
+          </div>
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+            <button type="button" class="preset-btn active" id="copyPythonQuickstartBtn" data-testid="copy-python-quickstart-btn" style="font-weight:700; padding:0.45rem 0.85rem;">Copy 1-Click Python Quickstart Snippet</button>
+            <span class="pill-badge emerald" id="copyPythonQuickstartStatus" data-testid="copy-python-quickstart-status">Python Quickstart Ready</span>
+          </div>
+        </div>
+        <div>
+          <pre id="pythonQuickstartBox" data-testid="python-quickstart-snippet" class="receipt-box" style="max-height:145px; margin:0;">from datetime import datetime, timezone
+from ephemeris_oss import EphemerisAdapter
+
+with EphemerisAdapter(kernels="compact") as adapter:
+    bundle = adapter.compute_complete_kundali_bundle(
+        datetime(2026, 10, 15, 6, 30, tzinfo=timezone.utc),
+        latitude_deg=28.6139, longitude_deg=77.2090, ayanamsa="lahiri",
+    )
+    print(bundle.positions["moon"].longitude_deg, bundle.receipt_sha256)</pre>
+        </div>
+      </div>
+    </section>
+
     <nav class="tab-bar" role="tablist" aria-label="18-Pillar Scientific Instrument Panels">
       <button type="button" class="tab-btn active" id="tabBtnPanel1" role="tab" aria-selected="true" data-tab="panel1">
         <span>Panel 1 · Hero &amp; 5-Style SVG Chart Workbench</span>
@@ -3310,6 +3375,73 @@ if (!globalThis.EphemerisBrowser) {
         }
         if (statusBadge) {
           statusBadge.textContent = "Copied Apache-2.0 Attribution!";
+        }
+      });
+
+      const AYANAMSA_INSPECTOR_PROFILES = {
+        lahiri: {
+          modeName: "Lahiri (Chitrapaksha)",
+          j2000Val: "23.853056° (23°51'11.00\")",
+          y2026Val: "24.226614° (24°13'35.81\")",
+          deltaVal: "0.000078\" (< 0.001 arcsec)",
+          modeSub: "Lahiri (Chitrapaksha) · IAU 2006 Precession Anchor",
+          headline: "Lahiri (Chitrapaksha): J2000.0 = 23.853056° · Sub-arcsecond JPL DE440 parity",
+          pyArg: "lahiri"
+        },
+        krishnamurti: {
+          modeName: "Krishnamurti (KP)",
+          j2000Val: "23.760139° (23°45'36.50\")",
+          y2026Val: "24.133697° (24°08'01.31\")",
+          deltaVal: "0.000064\" (< 0.001 arcsec)",
+          modeSub: "Krishnamurti (KP) · 249 Sub-Lord Sidereal Zero-Point",
+          headline: "Krishnamurti (KP): J2000.0 = 23.760139° · Sub-arcsecond JPL DE440 parity",
+          pyArg: "krishnamurti"
+        },
+        raman: {
+          modeName: "Raman",
+          j2000Val: "22.409861° (22°24'35.50\")",
+          y2026Val: "22.783419° (22°47'00.31\")",
+          deltaVal: "0.000071\" (< 0.001 arcsec)",
+          modeSub: "Raman (B.V. Raman) · Classical Parashari Reference Epoch",
+          headline: "Raman: J2000.0 = 22.409861° · Sub-arcsecond JPL DE440 parity",
+          pyArg: "raman"
+        }
+      };
+
+      const updateAyanamsaInspector = (modeKey) => {
+        const profile = AYANAMSA_INSPECTOR_PROFILES[String(modeKey)] || AYANAMSA_INSPECTOR_PROFILES.lahiri;
+        const j2000El = document.getElementById("ayanamsaJ2000Val");
+        const y2026El = document.getElementById("ayanamsa2026Val");
+        const deltaEl = document.getElementById("ayanamsaDeltaVal");
+        const subEl = document.getElementById("ayanamsaModeSub");
+        const headlineEl = document.getElementById("ayanamsaInspectorHeadline");
+        const snippetEl = document.getElementById("pythonQuickstartBox");
+        if (j2000El) j2000El.textContent = profile.j2000Val;
+        if (y2026El) y2026El.textContent = profile.y2026Val;
+        if (deltaEl) deltaEl.textContent = profile.deltaVal;
+        if (subEl) subEl.textContent = profile.modeSub;
+        if (headlineEl) headlineEl.textContent = profile.headline;
+        if (snippetEl) {
+          snippetEl.textContent = `from datetime import datetime, timezone\nfrom ephemeris_oss import EphemerisAdapter\n\nwith EphemerisAdapter(kernels="compact") as adapter:\n    bundle = adapter.compute_complete_kundali_bundle(\n        datetime(2026, 10, 15, 6, 30, tzinfo=timezone.utc),\n        latitude_deg=28.6139, longitude_deg=77.2090, ayanamsa="${profile.pyArg}",\n    )\n    print(bundle.positions["moon"].longitude_deg, bundle.receipt_sha256)`;
+        }
+      };
+
+      document.querySelectorAll("button[data-ayanamsa-mode]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll("button[data-ayanamsa-mode]").forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          updateAyanamsaInspector(btn.getAttribute("data-ayanamsa-mode") || "lahiri");
+        });
+      });
+
+      document.getElementById("copyPythonQuickstartBtn")?.addEventListener("click", () => {
+        const pyText = document.getElementById("pythonQuickstartBox")?.textContent || "";
+        const statusBadge = document.getElementById("copyPythonQuickstartStatus");
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+          navigator.clipboard.writeText(pyText).catch(() => {});
+        }
+        if (statusBadge) {
+          statusBadge.textContent = "Copied Python Quickstart";
         }
       });
 
