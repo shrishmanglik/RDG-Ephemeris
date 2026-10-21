@@ -233,3 +233,24 @@ def test_playground_theme_switcher_and_attribution_badge() -> None:
         assert "\u2014" not in html
     assert PLAYGROUND_HTML.read_text(encoding="utf-8") == BENCHMARK_PORTAL_HTML.read_text(encoding="utf-8")
 
+
+def test_speedup_calculator_and_mcp_config_copy_across_all_html_surfaces() -> None:
+    for path in (WEB_OBSERVATORY_HTML, BENCHMARK_PORTAL_HTML, PLAYGROUND_HTML):
+        html = path.read_text(encoding="utf-8")
+        assert 'data-testid="ephemeris-speedup-calculator"' in html
+        assert 'data-testid="copy-mcp-config-btn"' in html
+        for batch_size in ("100", "1000", "10000"):
+            assert f'data-batch-size="{batch_size}"' in html
+        for token in (
+            "agi-ephemeris",
+            "12.50x",
+            "15.07x",
+            "0.001 arcsec",
+            "Apache-2.0",
+            "mcpServers",
+            "ephemeris-oss-mcp",
+        ):
+            assert token in html, f"Missing speedup/MCP token {token!r} in {path}"
+        assert "\u2014" not in html
+
+
