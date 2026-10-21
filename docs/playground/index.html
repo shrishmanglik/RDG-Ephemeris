@@ -588,6 +588,80 @@
       #copyBenchmarkManifestBtn { white-space: normal; text-align: left; }
       #copyBenchmarkManifestStatus { white-space: normal; overflow-wrap: anywhere; }
     }
+    /* The playground bar indexes the six instruments below it, and each tab carries that instrument's current reading,
+       so the bar reads as a live index rather than a row of links. */
+    .playground-bar {
+      padding: 0.95rem 1rem 0.9rem; border-radius: 16px;
+      background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0) 60%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 14px 32px -24px rgba(0, 0, 0, 0.8);
+    }
+    .playground-tab-rail { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.5rem; }
+    .playground-tab, .oss-package-btn {
+      appearance: none; cursor: pointer; text-align: left; min-width: 0; min-height: 44px;
+      display: flex; flex-direction: column; gap: 0.18rem; padding: 0.6rem 0.7rem 0.62rem;
+      border-radius: 11px; color: var(--text-primary); font-family: var(--font-sans);
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+      transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+    }
+    .playground-tab:hover, .oss-package-btn:hover { border-color: var(--accent-cyan); }
+    .playground-tab:focus-visible, .oss-package-btn:focus-visible { outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+    .playground-tab[aria-current="true"], .oss-package-btn[aria-pressed="true"] {
+      border-color: var(--accent-cyan);
+      background: rgba(56, 189, 248, 0.12);
+      background: color-mix(in srgb, var(--accent-cyan) 14%, var(--bg-card));
+      box-shadow: inset 0 0 0 1px var(--accent-cyan), 0 8px 22px -14px rgba(0, 0, 0, 0.9);
+    }
+    .playground-tab-index {
+      font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-muted);
+    }
+    .playground-tab[aria-current="true"] .playground-tab-index { color: var(--accent-cyan); }
+    .playground-tab-label { font-size: 0.82rem; font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; }
+    .playground-tab-label .pkg { white-space: nowrap; }
+    .playground-tab-live {
+      display: flex; align-items: flex-start; gap: 0.38rem; margin-top: auto; padding-top: 0.12rem; min-width: 0;
+      font-family: var(--font-mono); font-size: 0.66rem; color: var(--text-secondary);
+    }
+    .playground-tab-live span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .playground-tab-live::before, .oss-meta dd.is-live::before {
+      content: ""; width: 5px; height: 5px; margin-top: 0.51em; border-radius: 999px; flex: none;
+      background: var(--accent-emerald); box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.16);
+    }
+    .playground-bar .native-preset-readout { margin-top: 0.75rem; }
+    .playground-flash { box-shadow: 0 0 0 2px var(--accent-cyan), 0 0 0 7px rgba(56, 189, 248, 0.12); transition: box-shadow 260ms ease; }
+    .oss-package-rail { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; margin-bottom: 0.9rem; }
+    .oss-package-name { font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; overflow-wrap: anywhere; }
+    .oss-package-role { font-size: 0.72rem; color: var(--text-secondary); line-height: 1.35; }
+    .oss-package-btn[aria-pressed="true"] .oss-package-name { color: var(--accent-cyan); }
+    /* Device outlines are drawn to the measured aspect ratios, 1920x1080 and 390x844, so the two sizes read at a glance. */
+    .oss-device { display: inline-block; flex: none; border: 1.5px solid var(--text-muted); border-radius: 3px; vertical-align: middle; }
+    .oss-device-desktop { width: 22px; height: 12.4px; }
+    .oss-device-mobile { width: 7.6px; height: 16.4px; border-radius: 2.5px; }
+    .oss-kpi-label { display: flex; align-items: center; gap: 0.45rem; }
+    .oss-size { font-family: var(--font-mono); text-transform: none; letter-spacing: 0; }
+    .oss-proof { display: flex; flex-direction: column; gap: 0.7rem; }
+    .oss-meta {
+      display: grid; gap: 0.32rem; padding-top: 0.6rem; border-top: 1px solid var(--border-subtle);
+      font-family: var(--font-mono); font-size: 0.72rem;
+    }
+    .oss-meta > div { display: grid; grid-template-columns: 8.6rem minmax(0, 1fr); gap: 0.6rem; align-items: baseline; }
+    .oss-meta dt { font-size: 0.63rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+    .oss-meta dd { display: flex; gap: 0.38rem; min-width: 0; color: var(--text-primary); overflow-wrap: anywhere; }
+    #ossReceiptBox { word-break: normal; overflow-wrap: anywhere; }
+    @media (max-width: 1280px) { .playground-tab-rail { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 768px) { .playground-bar { padding: 0.8rem 0.75rem; } }
+    @media (max-width: 560px) {
+      .playground-tab-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      /* Two columns leave a phone about 140 px per tab, so readings wrap instead of losing their last digits. */
+      .playground-tab-live span { white-space: normal; overflow-wrap: anywhere; }
+      .oss-package-rail { grid-template-columns: minmax(0, 1fr); }
+      .oss-meta > div { grid-template-columns: minmax(0, 1fr); gap: 0.12rem; }
+      #copyOssReceiptBtn { white-space: normal; text-align: left; }
+    }
+    @media (max-width: 380px) { .playground-tab-label .pkg { white-space: normal; } }
+    @media (prefers-reduced-motion: reduce) {
+      .playground-tab, .oss-package-btn, .playground-flash { transition: none; }
+    }
   </style>
 </head>
 <body>
@@ -797,6 +871,48 @@
         </select>
       </div>
     </div>
+
+    <nav class="card playground-bar" data-testid="agi-ephemeris-6tab-playground" aria-label="6-Tab agi-ephemeris and Open-Source Suite Playground">
+      <div class="command-suite-head">
+        <div>
+          <span class="command-suite-kicker">agi-ephemeris &amp; Open-Source Suite Playground</span>
+          <span class="command-suite-title">6 Live Instruments, One Command Bar</span>
+        </div>
+      </div>
+      <div class="playground-tab-rail">
+        <button type="button" class="playground-tab" data-playground-tab="1" data-playground-target="ephemeris-speedup-calculator" data-testid="playground-tab-1" aria-label="Tab 1 · Speedup &amp; MCP Calculator" aria-describedby="playgroundLive1">
+          <span class="playground-tab-index">Tab 1</span>
+          <span class="playground-tab-label">Speedup &amp; MCP Calculator</span>
+          <span class="playground-tab-live"><span id="playgroundLive1">1,000&nbsp;charts · 42.0&nbsp;ms</span></span>
+        </button>
+        <button type="button" class="playground-tab" data-playground-tab="2" data-playground-target="ephemeris-license-savings-calculator" data-testid="playground-tab-2" aria-label="Tab 2 · Zero-Royalty License Calculator" aria-describedby="playgroundLive2">
+          <span class="playground-tab-index">Tab 2</span>
+          <span class="playground-tab-label">Zero-Royalty License Calculator</span>
+          <span class="playground-tab-live"><span id="playgroundLive2">$1,500 / 3-yr saved</span></span>
+        </button>
+        <button type="button" class="playground-tab" data-playground-tab="3" data-playground-target="ayanamsa-precision-inspector" data-testid="playground-tab-3" aria-label="Tab 3 · Sidereal Ayanamsa Inspector" aria-describedby="playgroundLive3">
+          <span class="playground-tab-index">Tab 3</span>
+          <span class="playground-tab-label">Sidereal Ayanamsa Inspector</span>
+          <span class="playground-tab-live"><span id="playgroundLive3">Lahiri · 23.853056°</span></span>
+        </button>
+        <button type="button" class="playground-tab" data-playground-tab="4" data-playground-target="live-graha-ephemeris-table" data-testid="playground-tab-4" aria-label="Tab 4 · Live 9-Graha Ephemeris Table" aria-describedby="playgroundLive4">
+          <span class="playground-tab-index">Tab 4</span>
+          <span class="playground-tab-label">Live 9-Graha Ephemeris Table</span>
+          <span class="playground-tab-live"><span id="playgroundLive4">3 of 9 retrograde</span></span>
+        </button>
+        <button type="button" class="playground-tab" data-playground-tab="5" data-playground-target="eclipse-ingress-finder" data-testid="playground-tab-5" aria-label="Tab 5 · Besselian Eclipse &amp; Ingress Finder" aria-describedby="playgroundLive5">
+          <span class="playground-tab-index">Tab 5</span>
+          <span class="playground-tab-label">Besselian Eclipse &amp; Ingress Finder</span>
+          <span class="playground-tab-live"><span id="playgroundLive5">2026-08-12 17:45:53.800&nbsp;UT</span></span>
+        </button>
+        <button type="button" class="playground-tab" data-playground-tab="6" data-playground-target="oss-suite-cross-verification" data-testid="playground-tab-6" aria-label="Tab 6 · skill-mcp-inspector &amp; veo3-prompt-forge" aria-describedby="playgroundLive6">
+          <span class="playground-tab-index">Tab 6</span>
+          <span class="playground-tab-label"><span class="pkg">skill-mcp-inspector</span> &amp; <span class="pkg">veo3-prompt-forge</span></span>
+          <span class="playground-tab-live"><span id="playgroundLive6">agi-ephemeris · 0&nbsp;px at&nbsp;390x844</span></span>
+        </button>
+      </div>
+      <div class="native-preset-readout" id="playgroundReadout" data-testid="playground-readout" role="status" aria-live="polite"><strong>Six instruments below</strong> · Pick a tab to jump to it. Each tab shows that instrument's current reading.</div>
+    </nav>
 
     <section class="card workspace-target" id="batchStressCalculator" data-testid="ephemeris-speedup-calculator" aria-label="3-Second Ephemeris Throughput and Speedup Calculator">
       <div class="card-header">
@@ -1329,6 +1445,77 @@ with EphemerisAdapter(kernels="compact") as adapter:
         <span class="pill-badge emerald" id="copyBenchmarkManifestStatus" data-testid="copy-benchmark-manifest-status" role="status" aria-live="polite">Sub-Arcsecond Benchmark Manifest Ready</span>
       </div>
       <pre id="benchmarkManifestBox" data-testid="benchmark-manifest-box" class="receipt-box">Select an event to generate its reproducible benchmark manifest.</pre>
+    </section>
+
+    <section class="card" data-testid="oss-suite-cross-verification" aria-label="Open-Source Suite Verification: agi-ephemeris, skill-mcp-inspector, and veo3-prompt-forge">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Open-Source Suite Verification: agi-ephemeris, skill-mcp-inspector &amp; veo3-prompt-forge</div>
+          <div class="card-subtitle">Three packages, each run through its own test suite and loaded at a 1920x1080 desktop and a 390x844 phone. Pick a package to read its numbers and copy a receipt you can check against its source.</div>
+        </div>
+        <span class="pill-badge emerald" id="ossSuiteStatus" data-testid="oss-suite-status" role="status" aria-live="polite" title="Tests passing, with no horizontal overflow, cut-off element or console error at 1920x1080 and 390x844">3 of 3 packages verified</span>
+      </div>
+
+      <div class="oss-package-rail" role="group" aria-label="Select an open-source package">
+        <button type="button" class="oss-package-btn" data-oss-package="agi-ephemeris" data-testid="oss-package-agi-ephemeris" aria-pressed="true">
+          <span class="oss-package-name">agi-ephemeris</span>
+          <span class="oss-package-role">JPL DE440 ephemeris engine behind this observatory</span>
+        </button>
+        <button type="button" class="oss-package-btn" data-oss-package="skill-mcp-inspector" data-testid="oss-package-skill-mcp-inspector" aria-pressed="false">
+          <span class="oss-package-name">skill-mcp-inspector</span>
+          <span class="oss-package-role">Python AST + SARIF 2.1.0 security gate for skills and MCP servers</span>
+        </button>
+        <button type="button" class="oss-package-btn" data-oss-package="veo3-prompt-forge" data-testid="oss-package-veo3-prompt-forge" aria-pressed="false">
+          <span class="oss-package-name">veo3-prompt-forge</span>
+          <span class="oss-package-role">Universal prompt forge v5 for Veo-3 and Google Flow</span>
+        </button>
+      </div>
+
+      <div class="kpi-grid" style="margin-bottom:0.9rem;">
+        <div class="kpi-card">
+          <div class="kpi-label">Test Suite</div>
+          <div class="kpi-value" id="ossTestsVal" data-testid="oss-tests-val" style="color:var(--accent-emerald);">833 passed</div>
+          <div class="kpi-sub" id="ossTestsSub">0 failed · 16 skipped · pytest</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Verification Gate</div>
+          <div class="kpi-value" id="ossGateVal" data-testid="oss-gate-val" style="font-size:1.12rem; color:var(--accent-cyan);">0.001 arcsec JPL DE440</div>
+          <div class="kpi-sub" id="ossGateSub">Horizons Q45 residual ledger · SHA-256 receipts</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label oss-kpi-label"><span class="oss-device oss-device-desktop" aria-hidden="true"></span>Desktop · <span class="oss-size">1920x1080</span></div>
+          <div class="kpi-value" id="ossDesktopVal" data-testid="oss-desktop-val">0 px</div>
+          <div class="kpi-sub" id="ossDesktopSub">Horizontal overflow · 0 cut off · 0 console errors</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label oss-kpi-label"><span class="oss-device oss-device-mobile" aria-hidden="true"></span>Mobile · <span class="oss-size">390x844</span></div>
+          <div class="kpi-value" id="ossMobileVal" data-testid="oss-mobile-val">0 px</div>
+          <div class="kpi-sub" id="ossMobileSub">Horizontal overflow · 0 cut off · 0 console errors</div>
+        </div>
+      </div>
+
+      <div class="calc-split-grid">
+        <div class="limb-card" style="display:flex; flex-direction:column; justify-content:space-between; gap:0.85rem;">
+          <div>
+            <div class="limb-name">What Was Checked</div>
+            <div class="limb-val" id="ossSummaryHeadline">agi-ephemeris: 833 tests passed, 0 px horizontal overflow at 1920x1080 and 390x844</div>
+            <div class="limb-meta" id="ossSummaryMeta" style="margin-top:0.35rem;">The engine behind every instrument on this page. Its pytest suite covers the DE440 and Horizons residual ledgers, sidereal conventions, eclipses, the CLI and this observatory's markup. This page was loaded at both sizes in headless Chromium: no sideways scroll, no element cut off at the screen edge and no console errors.</div>
+          </div>
+          <div class="oss-proof">
+            <dl class="oss-meta">
+              <div><dt>Your viewport, live</dt><dd class="is-live" title="Measured in your browser when the page loads, and again whenever the window is resized"><span id="ossLiveViewport" data-testid="oss-live-viewport">Measured when the page loads</span></dd></div>
+              <div><dt>Recorded</dt><dd><span id="ossRecordedVal">2026-10-21 · Headless Chromium 151.0.7922.34</span></dd></div>
+            </dl>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+              <button type="button" class="preset-btn active" id="copyOssReceiptBtn" data-testid="copy-oss-receipt-btn" style="font-weight:700; padding:0.45rem 0.85rem;">Copy 1-Click Verification Receipt</button>
+              <span class="pill-badge emerald" id="copyOssReceiptStatus" data-testid="copy-oss-receipt-status" role="status" aria-live="polite">Verification Receipt Ready</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <pre id="ossReceiptBox" data-testid="oss-verification-receipt" class="receipt-box" style="max-height:300px; margin:0;">Select a package to generate its verification receipt.</pre>
+        </div>
+      </div>
     </section>
 
     <nav class="tab-bar" role="tablist" aria-label="18-Pillar Scientific Instrument Panels">
@@ -4850,6 +5037,226 @@ if (!globalThis.EphemerisBrowser) {
         setText("copyBenchmarkManifestStatus", copied ? "Copied Sub-Arcsecond Benchmark Manifest" : "Clipboard blocked: select the manifest below");
       });
       renderEvent("solar2026");
+    });
+  </script>
+  <script id="wave10-playground">
+    document.addEventListener("DOMContentLoaded", () => {
+      const core = globalThis.EphemerisObservatoryCore;
+      const text = (id) => (document.getElementById(id)?.textContent || "").trim();
+      const setText = (id, value) => { const el = document.getElementById(id); if (el && el.textContent !== value) el.textContent = value; };
+      const reducedMotion = () => typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      // Recorded 2026-10-21 in headless Chromium 151.0.7922.34 against each package's own HTML surface.
+      // "Cut off" counts elements that cross the right edge with no scrolling ancestor of their own: this page sets
+      // overflow-x: clip on html and body, which pins scrollWidth to the viewport, so overflow alone would always read 0.
+      const MEASURED_WITH = "Headless Chromium 151.0.7922.34";
+      const RECORDED_UTC = "2026-10-21";
+      const OSS_PACKAGES = {
+        "agi-ephemeris": {
+          role: "JPL DE440 ephemeris engine behind this observatory",
+          source: { distribution: "ephemeris-oss", version: "0.2.0.dev1" },
+          tests: { runner: "pytest", command: "PYTHONPATH=src python -m pytest -q", passed: 833, failed: 0, skipped: 16 },
+          surface: "web/observatory/index.html",
+          viewports: [
+            { label: "desktop", size: "1920x1080", horizontal_overflow_px: 0, cut_off_elements: 0, console_errors: 0 },
+            { label: "mobile", size: "390x844", horizontal_overflow_px: 0, cut_off_elements: 0, console_errors: 0 }
+          ],
+          gate: "0.001 arcsec JPL DE440",
+          gateSub: "Horizons Q45 residual ledger · SHA-256 receipts",
+          summary: "The engine behind every instrument on this page. Its pytest suite covers the DE440 and Horizons residual ledgers, sidereal conventions, eclipses, the CLI and this observatory's markup. This page was loaded at both sizes in headless Chromium: no sideways scroll, no element cut off at the screen edge and no console errors."
+        },
+        "skill-mcp-inspector": {
+          role: "Python AST + SARIF 2.1.0 security gate for skills and MCP servers",
+          source: { commit: "2709a98" },
+          tests: { runner: "pytest", command: "python -m pytest tests -q", passed: 52, failed: 0, skipped: 0 },
+          surface: "docs/index.html",
+          viewports: [
+            { label: "desktop", size: "1920x1080", horizontal_overflow_px: 0, cut_off_elements: 0, console_errors: 0 },
+            { label: "mobile", size: "390x844", horizontal_overflow_px: 0, cut_off_elements: 0, console_errors: 0 }
+          ],
+          gate: "Python AST + SARIF 2.1.0",
+          gateSub: "Static source scan · --sarif log for CI code scanning",
+          summary: "Checks an AI skill, MCP server or script before you install it. A Python AST visitor flags shell execution, eval and exec, and credentials flowing into network calls, without running the code. The --sarif flag emits a SARIF 2.1.0 log that a CI code-scanning step can gate on. Its browser playground was loaded at both sizes with the same three checks."
+        },
+        "veo3-prompt-forge": {
+          role: "Universal prompt forge v5 for Veo-3 and Google Flow",
+          source: { commit: "c8102e5" },
+          tests: { runner: "unittest", command: "python test_prompt_forge.py --self-test", passed: 2, failed: 0, skipped: 0 },
+          surface: "veo3_universal_prompt_forge_v5.html",
+          viewports: [
+            { label: "desktop", size: "1920x1080", horizontal_overflow_px: 0, cut_off_elements: 0, console_errors: 0 },
+            { label: "mobile", size: "390x844", horizontal_overflow_px: 0, cut_off_elements: 0, console_errors: 0 }
+          ],
+          gate: "Universal Prompt Forge v5",
+          gateSub: "Single-file v5 surface · telemetry strip self-test",
+          summary: "A single-file prompt compiler for Veo-3 and Google Flow that locks camera, palette and shot continuity into a JSON contract. Its self-test confirms the canonical v5 page and its index carry the telemetry strip, and that no file contains an em dash. The v5 page was loaded at both sizes with the same three checks."
+        }
+      };
+      const PACKAGE_KEYS = Object.keys(OSS_PACKAGES);
+      const isClean = (viewport) => viewport.horizontal_overflow_px === 0 && viewport.cut_off_elements === 0 && viewport.console_errors === 0;
+      const cleanCount = PACKAGE_KEYS.filter((key) => OSS_PACKAGES[key].tests.failed === 0 && OSS_PACKAGES[key].viewports.every(isClean)).length;
+      let activePackage = "agi-ephemeris";
+      let receiptText = "";
+
+      const describeOverflow = (desktop, mobile) => desktop.horizontal_overflow_px === mobile.horizontal_overflow_px
+        ? `${desktop.horizontal_overflow_px} px horizontal overflow at ${desktop.size} and ${mobile.size}`
+        : `${desktop.horizontal_overflow_px} px horizontal overflow at ${desktop.size}, ${mobile.horizontal_overflow_px} px at ${mobile.size}`;
+      const renderPackage = (key) => {
+        activePackage = key;
+        const pkg = OSS_PACKAGES[key];
+        const [desktop, mobile] = pkg.viewports;
+        document.querySelectorAll("button[data-oss-package]").forEach((button) => {
+          button.setAttribute("aria-pressed", String(button.getAttribute("data-oss-package") === key));
+        });
+        setText("ossTestsVal", `${pkg.tests.passed} passed`);
+        setText("ossTestsSub", `${pkg.tests.failed} failed${pkg.tests.skipped ? ` · ${pkg.tests.skipped} skipped` : ""} · ${pkg.tests.runner}`);
+        setText("ossGateVal", pkg.gate);
+        setText("ossGateSub", pkg.gateSub);
+        const viewportSub = (v) => `Horizontal overflow · ${v.cut_off_elements} cut off · ${v.console_errors} console errors`;
+        setText("ossDesktopVal", `${desktop.horizontal_overflow_px} px`);
+        setText("ossDesktopSub", viewportSub(desktop));
+        setText("ossMobileVal", `${mobile.horizontal_overflow_px} px`);
+        setText("ossMobileSub", viewportSub(mobile));
+        setText("ossSummaryHeadline", `${key}: ${pkg.tests.passed} tests passed, ${describeOverflow(desktop, mobile)}`);
+        setText("ossSummaryMeta", pkg.summary);
+        // Every receipt field is ASCII: the inline sha256Hex hashes one byte per UTF-16 code unit.
+        const receipt = {
+          schema: "agi-ephemeris.oss-suite-verification.v1", package: key, role: pkg.role, source: pkg.source,
+          tests: pkg.tests, surface: pkg.surface, viewports: pkg.viewports,
+          measured_with: MEASURED_WITH, recorded_utc: RECORDED_UTC,
+          hash_encoding: "SHA-256 of canonical JSON with sorted keys, excluding receipt_sha256"
+        };
+        receiptText = JSON.stringify({ ...receipt, receipt_sha256: core.sha256Hex(core.canonicalJson(receipt)) }, null, 2);
+        setText("ossReceiptBox", receiptText);
+        setText("copyOssReceiptStatus", "Verification Receipt Ready");
+        setText("ossSuiteStatus", `${cleanCount} of ${PACKAGE_KEYS.length} packages verified`);
+      };
+      document.querySelectorAll("button[data-oss-package]").forEach((button) => {
+        button.addEventListener("click", () => renderPackage(button.getAttribute("data-oss-package")));
+      });
+      renderPackage(activePackage);
+
+      // The reader's own viewport, measured the same way as the recorded runs.
+      const measureViewport = () => {
+        const root = document.documentElement;
+        const edge = root.clientWidth + 0.5;
+        const scrolledAway = (el) => {
+          for (let a = el.parentElement; a && a !== document.body && a !== root; a = a.parentElement) {
+            if (getComputedStyle(a).overflowX !== "visible" && a.getBoundingClientRect().right <= edge) return true;
+          }
+          return false;
+        };
+        let cutOff = 0;
+        document.querySelectorAll("body *").forEach((el) => {
+          const rect = el.getBoundingClientRect();
+          if (rect.width === 0 || rect.height === 0 || rect.right <= edge) return;
+          const style = getComputedStyle(el);
+          if (style.position !== "fixed" && style.visibility !== "hidden" && !scrolledAway(el)) cutOff += 1;
+        });
+        const overflow = Math.max(0, root.scrollWidth - root.clientWidth);
+        setText("ossLiveViewport", `${window.innerWidth}x${window.innerHeight} · ${overflow} px overflow · ${cutOff} cut off`);
+      };
+      let measureTimer = 0;
+      window.addEventListener("resize", () => {
+        clearTimeout(measureTimer);
+        measureTimer = setTimeout(measureViewport, 200);
+      });
+      window.addEventListener("load", measureViewport);
+
+      document.getElementById("copyOssReceiptBtn")?.addEventListener("click", async () => {
+        let copied = false;
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+          try { await navigator.clipboard.writeText(receiptText); copied = true; }
+          catch { copied = false; }
+        }
+        if (!copied) {
+          const field = document.createElement("textarea");
+          const focused = document.activeElement;
+          field.value = receiptText;
+          field.setAttribute("readonly", "");
+          field.style.position = "fixed";
+          field.style.opacity = "0";
+          document.body.appendChild(field);
+          field.select();
+          try { copied = document.execCommand("copy"); }
+          catch { copied = false; }
+          field.remove();
+          focused?.focus({ preventScroll: true });
+        }
+        setText("copyOssReceiptStatus", copied ? "Copied Verification Receipt" : "Clipboard blocked: select the receipt below");
+      });
+
+      // Each tab mirrors one reading from its instrument, so the bar stays a live index of the six sections below it.
+      const activeButtonText = (selector) => (document.querySelector(`${selector}.active`)?.textContent || "").trim();
+      const TAB_READINGS = {
+        1: { watch: "calcAgiBatchMs", read: () => `${Number(document.querySelector("button[data-batch-size].active")?.getAttribute("data-batch-size") || 0).toLocaleString("en-US")} charts · ${text("calcAgiBatchMs")}` },
+        2: { watch: "licenseSavedVal", read: () => text("licenseSavedVal") },
+        3: { watch: "ayanamsaJ2000Val", read: () => `${activeButtonText("button[data-ayanamsa-mode]").split(" ")[0]} · ${text("ayanamsaJ2000Val").split(" ")[0]}` },
+        4: { watch: "liveGrahaRetroVal", read: () => `${text("liveGrahaRetroVal")} retrograde` },
+        5: { watch: "eclipseGreatestVal", read: () => `${text("eclipseGreatestVal")} UT` },
+        6: { watch: "ossMobileVal", read: () => `${activePackage} · ${OSS_PACKAGES[activePackage].viewports[1].horizontal_overflow_px} px at 390x844` }
+      };
+      const tabs = [...document.querySelectorAll("button[data-playground-tab]")];
+      const readout = document.getElementById("playgroundReadout");
+      const setReadout = (tab) => {
+        const strong = document.createElement("strong");
+        strong.textContent = tab.getAttribute("aria-label");
+        readout.replaceChildren(strong, document.createTextNode(` in view, reading ${text(`playgroundLive${tab.getAttribute("data-playground-tab")}`)}`));
+      };
+      // A phone wraps these readings, so each number keeps its unit on the same line.
+      const keepUnits = (reading) => reading.replace(/(\d) (ms|px|UT|charts)\b/g, "$1 $2").replace(/\bat (\d)/g, "at $1");
+      const refreshReadings = () => {
+        Object.entries(TAB_READINGS).forEach(([id, reading]) => setText(`playgroundLive${id}`, keepUnits(reading.read())));
+        const current = tabs.find((tab) => tab.getAttribute("aria-current") === "true");
+        if (current && !readout.textContent.endsWith(text(`playgroundLive${current.getAttribute("data-playground-tab")}`))) setReadout(current);
+      };
+      let refreshQueued = false;
+      const queueRefresh = () => {
+        if (refreshQueued) return;
+        refreshQueued = true;
+        requestAnimationFrame(() => { refreshQueued = false; refreshReadings(); });
+      };
+      const watcher = new MutationObserver(queueRefresh);
+      Object.values(TAB_READINGS).forEach(({ watch }) => {
+        const el = document.getElementById(watch);
+        if (el) watcher.observe(el, { childList: true, characterData: true, subtree: true });
+      });
+      // Selection changes that leave a value unchanged still need the label beside it refreshed.
+      document.querySelector("main")?.addEventListener("click", queueRefresh);
+      refreshReadings();
+
+      const flashTimers = new Map();
+      // A long smooth scroll on a phone takes about 1.5 s, so the ring is held until the scroll lands on the target and
+      // then fades. A scrollend from an earlier scroll is ignored by position; browsers without scrollend, a click that
+      // needs no scroll and a target too near the page end to reach its offset all fall back to the timer.
+      const flashTarget = (target) => {
+        target.classList.add("playground-flash");
+        const release = () => {
+          window.removeEventListener("scrollend", onScrollEnd);
+          clearTimeout(flashTimers.get(target));
+          flashTimers.set(target, setTimeout(() => target.classList.remove("playground-flash"), 1200));
+        };
+        const onScrollEnd = () => {
+          if (Math.abs(target.getBoundingClientRect().top - parseFloat(target.style.scrollMarginTop)) <= 2) release();
+        };
+        clearTimeout(flashTimers.get(target));
+        window.addEventListener("scrollend", onScrollEnd);
+        flashTimers.set(target, setTimeout(release, 2400));
+      };
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          const target = document.querySelector(`[data-testid="${tab.getAttribute("data-playground-target")}"]`);
+          if (!target) return;
+          tabs.forEach((t) => (t === tab ? t.setAttribute("aria-current", "true") : t.removeAttribute("aria-current")));
+          // The readout sits above every target and can change line count, so it is set before the scroll is measured.
+          setReadout(tab);
+          target.style.scrollMarginTop = `${(document.querySelector("header.observatory-header")?.getBoundingClientRect().height || 0) + 16}px`;
+          target.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "start" });
+          target.setAttribute("tabindex", "-1");
+          target.focus({ preventScroll: true });
+          flashTarget(target);
+        });
+      });
     });
   </script>
   <footer class="container" style="margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border-subtle);display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;font-size:0.76rem;color:var(--text-secondary);font-family:var(--font-mono);">
