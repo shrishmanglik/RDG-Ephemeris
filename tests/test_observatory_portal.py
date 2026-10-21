@@ -291,5 +291,55 @@ def test_ayanamsa_precision_inspector_and_python_quickstart_copy_across_all_html
         assert "\u2014" not in html
 
 
+def test_live_graha_ephemeris_table_and_json_vector_copy_across_all_html_surfaces() -> None:
+    for path in (WEB_OBSERVATORY_HTML, BENCHMARK_PORTAL_HTML, PLAYGROUND_HTML):
+        html = path.read_text(encoding="utf-8")
+        assert 'data-testid="live-graha-ephemeris-table"' in html
+        assert 'data-testid="copy-ephemeris-json-btn"' in html
+        for preset_id, preset_label in (
+            ("j2000", "J2000.0 Epoch"),
+            ("eclipse2026", "2026 Total Solar Eclipse"),
+            ("india1947", "1947 Independence Midnight"),
+        ):
+            assert f'data-ephemeris-preset="{preset_id}"' in html
+            assert preset_label in html, f"Missing ephemeris preset {preset_label!r} in {path}"
+        for token in (
+            "Surya (Sun)",
+            "Chandra (Moon)",
+            "Mangala (Mars)",
+            "Budha (Mercury)",
+            "Guru (Jupiter)",
+            "Shukra (Venus)",
+            "Shani (Saturn)",
+            "Rahu (Mean Node)",
+            "Ketu (South Node)",
+            "< 1 ms",
+            "Copied JSON Ephemeris Vector",
+        ):
+            assert token in html, f"Missing ephemeris token {token!r} in {path}"
+        assert "\u2014" not in html
 
 
+
+
+def test_gold_standard_liquid_glass_dock_and_six_native_presets_across_all_html_surfaces() -> None:
+    for path in (WEB_OBSERVATORY_HTML, BENCHMARK_PORTAL_HTML, PLAYGROUND_HTML):
+        html = path.read_text(encoding="utf-8")
+        for test_id in (
+            "liquid-glass-command-dock",
+            "dock-telemetry-badge",
+            "native-presets-bar",
+        ):
+            assert f'data-testid="{test_id}"' in html, f"Missing {test_id!r} in {path}"
+        assert "0.001 arcsec JPL DE440 ? Apache-2.0 Zero-Royalty" in html
+        for preset_id, preset_label in (
+            ("eclipse1999", "1999 Total Solar Eclipse"),
+            ("conjunction2020", "2020 Great Conjunction"),
+            ("j2000", "J2000.0 Reference Epoch"),
+            ("lahiri1956", "Lahiri True Citra Benchmark"),
+            ("batch10000", "10,000-Chart Batch Stress Test"),
+            ("mcp_probe", "Claude/Cursor MCP Server Live Probe"),
+        ):
+            assert f'data-native-preset="{preset_id}"' in html
+            assert preset_label in html, f"Missing native preset {preset_label!r} in {path}"
+        assert "\u2014" not in html
