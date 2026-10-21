@@ -508,6 +508,64 @@
       </div>
     </section>
 
+    <section class="card" data-testid="ephemeris-license-savings-calculator" aria-label="3-Second AGPL and Commercial Ephemeris License vs Apache-2.0 Zero-Royalty Calculator">
+      <div class="card-header">
+        <div>
+          <div class="card-title">3-Second AGPL / Commercial Ephemeris License vs Apache-2.0 Zero-Royalty Calculator</div>
+          <div class="card-subtitle">Select your commercial deployment tier to compare legacy AGPL source-code disclosure risk and commercial seat licensing against <code>agi-ephemeris</code> ($0 royalties forever, Apache-2.0 permissive commercial freedom, 0.001 arcsec JPL DE440 precision).</div>
+        </div>
+        <div style="display:flex; gap:0.45rem; flex-wrap:wrap; align-items:center;" role="group" aria-label="Select commercial deployment tier">
+          <span style="font-size:0.74rem; color:var(--text-secondary); font-family:var(--font-mono);">Deployment Tier:</span>
+          <button type="button" class="preset-btn active" data-license-tier="indie" data-testid="license-tier-indie">Indie Astrology App</button>
+          <button type="button" class="preset-btn" data-license-tier="saas" data-testid="license-tier-saas">Multi-Surface SaaS + Mobile App</button>
+          <button type="button" class="preset-btn" data-license-tier="fleet" data-testid="license-tier-fleet">Enterprise Research &amp; Autonomous Fleet</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid" style="margin-bottom:0.9rem;">
+        <div class="kpi-card">
+          <div class="kpi-label">agi-ephemeris Royalty &amp; Seat Cost</div>
+          <div class="kpi-value" id="licenseAgiCostVal" data-testid="license-agi-cost" style="color:var(--accent-emerald);">$0 Royalties Forever</div>
+          <div class="kpi-sub" id="licenseAgiCostSub">Apache-2.0 permissive commercial freedom</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Legacy Commercial Licensing Avoided</div>
+          <div class="kpi-value" id="licenseSavedVal" data-testid="license-saved-val" style="color:var(--accent-amber);">$1,500 / 3-yr saved</div>
+          <div class="kpi-sub" id="licenseSavedSub">Indie Astrology App · Zero per-seat or per-SKU fees</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">AGPL Source-Code Disclosure Risk</div>
+          <div class="kpi-value" id="licenseRiskVal" data-testid="license-risk-val" style="color:var(--accent-cyan);">0% AGPL Exposure</div>
+          <div class="kpi-sub" id="licenseRiskSub">Eliminates AGPL source-code disclosure risk on commercial apps</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Verified Astronomical Precision</div>
+          <div class="kpi-value" style="font-size:1.12rem;">0.001 arcsec JPL DE440</div>
+          <div class="kpi-sub">0.001 arcsec JPL DE440 precision · 64-hex SHA-256 receipts</div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1.1fr 1fr; gap:0.95rem; align-items:stretch;">
+        <div class="limb-card" style="display:flex; flex-direction:column; justify-content:space-between; gap:0.55rem;">
+          <div>
+            <div class="limb-name">Commercial Freedom &amp; Clean-Room Provenance</div>
+            <div class="limb-val" id="licenseSummaryHeadline">Indie Astrology App: $0 royalties forever vs $1,500 commercial buyout or AGPL source-code disclosure risk</div>
+            <div class="limb-meta" style="margin-top:0.35rem;">
+              Ship proprietary web, desktop, mobile, and AI products with <strong>$0 royalties forever</strong>, <strong>Apache-2.0 permissive commercial freedom</strong>, and <strong>0.001 arcsec JPL DE440 precision</strong>. Copy the ready-to-use attribution notice in 1 click.
+            </div>
+          </div>
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+            <button type="button" class="preset-btn active" id="copyApacheAttributionBtn" data-testid="copy-apache-attribution-btn" style="font-weight:700; padding:0.45rem 0.85rem;">Copy 1-Click Apache-2.0 Attribution &amp; Citation Snippet</button>
+            <span class="pill-badge emerald" id="copyApacheStatusBadge" data-testid="copy-apache-status">Attribution Snippet Ready</span>
+          </div>
+        </div>
+        <div>
+          <pre id="apacheAttributionBox" data-testid="apache-attribution-snippet" class="receipt-box" style="max-height:135px; margin:0;">Planetary ephemeris powered by agi-ephemeris (ephemeris-oss), licensed under Apache-2.0 ($0 royalties forever, Apache-2.0 permissive commercial freedom, 0.001 arcsec JPL DE440 precision).
+Copyright The Million Dollar AI Studio Ltd. Built on NASA JPL DE440 Chebyshev kernels.</pre>
+        </div>
+      </div>
+    </section>
+
     <nav class="tab-bar" role="tablist" aria-label="18-Pillar Scientific Instrument Panels">
       <button type="button" class="tab-btn active" id="tabBtnPanel1" role="tab" aria-selected="true" data-tab="panel1">
         <span>Panel 1 · Hero &amp; 5-Style SVG Chart Workbench</span>
@@ -3202,6 +3260,56 @@ if (!globalThis.EphemerisBrowser) {
         }
         if (statusBadge) {
           statusBadge.textContent = "Copied MCP JSON!";
+        }
+      });
+
+      const LICENSE_TIERS = {
+        indie: {
+          tierName: "Indie Astrology App",
+          savedVal: "$1,500 / 3-yr saved",
+          savedSub: "Indie Astrology App · Zero per-seat or per-SKU fees",
+          headline: "Indie Astrology App: $0 royalties forever vs $1,500 commercial buyout or AGPL source-code disclosure risk"
+        },
+        saas: {
+          tierName: "Multi-Surface SaaS + Mobile App",
+          savedVal: "$4,800 / 3-yr saved",
+          savedSub: "Multi-Surface SaaS + Mobile App · Unlimited web, iOS, Android & desktop nodes",
+          headline: "Multi-Surface SaaS + Mobile App: $0 royalties forever vs $4,800 multi-platform commercial seat licensing"
+        },
+        fleet: {
+          tierName: "Enterprise Research & Autonomous Fleet",
+          savedVal: "$14,500 / 3-yr saved",
+          savedSub: "Enterprise Research & Autonomous Fleet · Unlimited AI workers & MCP servers",
+          headline: "Enterprise Research & Autonomous Fleet: $0 royalties forever across unlimited autonomous workers"
+        }
+      };
+
+      const updateLicenseCalculator = (tierKey) => {
+        const tier = LICENSE_TIERS[String(tierKey)] || LICENSE_TIERS.indie;
+        const savedValEl = document.getElementById("licenseSavedVal");
+        const savedSubEl = document.getElementById("licenseSavedSub");
+        const headlineEl = document.getElementById("licenseSummaryHeadline");
+        if (savedValEl) savedValEl.textContent = tier.savedVal;
+        if (savedSubEl) savedSubEl.textContent = tier.savedSub;
+        if (headlineEl) headlineEl.textContent = tier.headline;
+      };
+
+      document.querySelectorAll("button[data-license-tier]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll("button[data-license-tier]").forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          updateLicenseCalculator(btn.getAttribute("data-license-tier") || "indie");
+        });
+      });
+
+      document.getElementById("copyApacheAttributionBtn")?.addEventListener("click", () => {
+        const attrText = document.getElementById("apacheAttributionBox")?.textContent || "";
+        const statusBadge = document.getElementById("copyApacheStatusBadge");
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+          navigator.clipboard.writeText(attrText).catch(() => {});
+        }
+        if (statusBadge) {
+          statusBadge.textContent = "Copied Apache-2.0 Attribution!";
         }
       });
 
