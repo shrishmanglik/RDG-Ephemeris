@@ -254,3 +254,23 @@ def test_speedup_calculator_and_mcp_config_copy_across_all_html_surfaces() -> No
         assert "\u2014" not in html
 
 
+def test_license_savings_calculator_and_apache_attribution_copy_across_all_html_surfaces() -> None:
+    for path in (WEB_OBSERVATORY_HTML, BENCHMARK_PORTAL_HTML, PLAYGROUND_HTML):
+        html = path.read_text(encoding="utf-8")
+        assert 'data-testid="ephemeris-license-savings-calculator"' in html
+        assert 'data-testid="copy-apache-attribution-btn"' in html
+        for tier_id in ("indie", "saas", "fleet"):
+            assert f'data-license-tier="{tier_id}"' in html
+        for token in (
+            "Indie Astrology App",
+            "Multi-Surface SaaS + Mobile App",
+            "Enterprise Research &amp; Autonomous Fleet",
+            "$0 royalties forever",
+            "Apache-2.0 permissive commercial freedom",
+            "0.001 arcsec JPL DE440 precision",
+        ):
+            assert token in html, f"Missing license/attribution token {token!r} in {path}"
+        assert "\u2014" not in html
+
+
+
