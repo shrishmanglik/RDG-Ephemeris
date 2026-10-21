@@ -273,4 +273,23 @@ def test_license_savings_calculator_and_apache_attribution_copy_across_all_html_
         assert "\u2014" not in html
 
 
+def test_ayanamsa_precision_inspector_and_python_quickstart_copy_across_all_html_surfaces() -> None:
+    for path in (WEB_OBSERVATORY_HTML, BENCHMARK_PORTAL_HTML, PLAYGROUND_HTML):
+        html = path.read_text(encoding="utf-8")
+        assert 'data-testid="ayanamsa-precision-inspector"' in html
+        assert 'data-testid="copy-python-quickstart-btn"' in html
+        for mode_id in ("lahiri", "krishnamurti", "raman"):
+            assert f'data-ayanamsa-mode="{mode_id}"' in html
+        for token in (
+            "Lahiri (Chitrapaksha)",
+            "Krishnamurti (KP)",
+            "Raman",
+            "Copied Python Quickstart",
+            "compute_complete_kundali_bundle",
+        ):
+            assert token in html, f"Missing ayanamsa/quickstart token {token!r} in {path}"
+        assert "\u2014" not in html
+
+
+
 
