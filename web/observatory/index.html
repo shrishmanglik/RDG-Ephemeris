@@ -220,9 +220,147 @@
     .claim-chip.invalid {
       background: rgba(251, 113, 133, 0.14); border: 1px solid rgba(251, 113, 133, 0.45); color: #fda4af;
     }
+    :root[data-theme="void"] {
+      --bg-void: #0A0A0E;
+      --bg-panel: #12131A;
+      --bg-card: #181A24;
+      --bg-elevated: #202330;
+      --border-subtle: #262836;
+      --border-accent: #D4A853;
+      --text-primary: #F5F2EB;
+      --text-secondary: #B9B2A3;
+      --text-muted: #8E8778;
+      --accent-cyan: #D4A853;
+    }
+    :root[data-theme="paper"] {
+      --bg-void: #FAF5EE;
+      --bg-panel: #F3ECE1;
+      --bg-card: #EAE0D1;
+      --bg-elevated: #DFD3C3;
+      --border-subtle: #D5C6B2;
+      --border-accent: #C84B31;
+      --text-primary: #1C1512;
+      --text-secondary: #5C4D44;
+      --text-muted: #7A695E;
+      --accent-cyan: #C84B31;
+      --accent-amber: #9E3620;
+    }
+    :root[data-theme="paper"] header.observatory-header {
+      background: rgba(250, 245, 238, 0.94);
+    }
+    :root[data-theme="paper"] table.data-table th {
+      background: rgba(234, 224, 209, 0.85);
+    }
+    :root[data-theme="paper"] .receipt-box {
+      background: #EFE7DA;
+      color: #1C1512;
+    }
+    :root[data-theme="contrast"] {
+      --bg-void: #000000;
+      --bg-panel: #0A0A0A;
+      --bg-card: #121212;
+      --bg-elevated: #1A1A1A;
+      --border-subtle: #FFFFFF;
+      --border-accent: #FFE600;
+      --text-primary: #FFFFFF;
+      --text-secondary: #E2E8F0;
+      --text-muted: #CBD5E1;
+      --accent-cyan: #FFE600;
+      --accent-amber: #FFE600;
+    }
+    :root[data-theme="daltonic"] {
+      --bg-void: #06162E;
+      --bg-panel: #0D2242;
+      --bg-card: #132E57;
+      --bg-elevated: #1A3B6E;
+      --border-subtle: #254A7C;
+      --border-accent: #56B4E9;
+      --text-primary: #F0F6FC;
+      --text-secondary: #B8CDE4;
+      --text-muted: #8FA9C7;
+      --accent-cyan: #56B4E9;
+      --accent-amber: #D55E00;
+    }
+    .ags-theme-switcher {
+      position: fixed;
+      top: 12px;
+      right: 14px;
+      z-index: 90;
+    }
+    .ags-theme-switcher-trigger {
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      min-height: 44px;
+      border-radius: 999px;
+      border: 1px solid var(--border-accent);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+    .ags-theme-switcher-panel {
+      position: absolute;
+      top: 50px;
+      right: 0;
+      width: 270px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 0.5rem;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35);
+    }
+    .ags-theme-switcher-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .ags-theme-switcher-option {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      width: 100%;
+      padding: 0.5rem 0.65rem;
+      border-radius: 7px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      text-align: left;
+      cursor: pointer;
+      font-family: var(--font-sans);
+    }
+    .ags-theme-switcher-option.is-selected {
+      border-color: var(--accent-cyan);
+    }
+    .ags-theme-switcher-option strong {
+      font-size: 0.78rem;
+    }
+    .ags-theme-switcher-option small {
+      font-size: 0.68rem;
+      color: var(--text-secondary);
+    }
+    .header-inner {
+      padding-right: 3.4rem;
+    }
   </style>
 </head>
 <body>
+  <div class="ags-theme-switcher" data-slot="root" data-active-theme="void">
+    <button type="button" class="ags-theme-switcher-trigger" data-testid="canvas-theme-switcher" data-theme-trigger="void" aria-haspopup="dialog" aria-expanded="false" aria-controls="ags-theme-panel" aria-label="Theme: Obsidian Void. Select reading atmosphere" style="width:44px;height:44px;min-width:44px;min-height:44px">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="3"/></svg>
+    </button>
+    <div id="ags-theme-panel" role="dialog" aria-label="Select reading atmosphere" class="ags-theme-switcher-panel" hidden>
+      <div role="radiogroup" aria-label="Reading atmosphere" class="ags-theme-switcher-list">
+        <button type="button" role="radio" aria-checked="true" data-theme-option="void" class="ags-theme-switcher-option is-selected"><strong>Obsidian Void</strong><small>Deep carved slate, warm ivory type, and warm brass light</small></button>
+        <button type="button" role="radio" aria-checked="false" data-theme-option="paper" class="ags-theme-switcher-option"><strong>Warm Paprika Daylight</strong><small>Archival cream paper, espresso ink, and terracotta paprika accents</small></button>
+        <button type="button" role="radio" aria-checked="false" data-theme-option="contrast" class="ags-theme-switcher-option"><strong>Terminal High Contrast</strong><small>Pure pitch black, crisp white, and cyber yellow with zero blur haze</small></button>
+        <button type="button" role="radio" aria-checked="false" data-theme-option="daltonic" class="ags-theme-switcher-option"><strong>Maritime Sapphire</strong><small>Deep ocean navy, ice-white text, and sky cyan plus vermilion</small></button>
+      </div>
+    </div>
+  </div>
   <header class="observatory-header">
     <div class="container header-inner">
       <div class="brand-block">
@@ -238,6 +376,7 @@
         </div>
       </div>
       <div class="header-badges">
+        <span class="pill-badge emerald" data-testid="attribution-badge" aria-label="Engineered by The AGI Studio & Vedic Astro Studio">Engineered by The AGI Studio &amp; Vedic Astro Studio</span>
         <span class="pill-badge emerald" id="headerLatencyBadge">Browser Engine: &lt; 2.0 ms</span>
         <span class="pill-badge cyan" id="headerReceiptBadge">SHA-256: --</span>
         <span class="pill-badge amber">DE440: 3,612 TT / Graha · Horizons Q45: 2,100 Rows</span>
@@ -2944,7 +3083,48 @@ if (!globalThis.EphemerisBrowser) {
       });
 
       document.getElementById("textareaAiReading")?.addEventListener("input", runHallucinationAudit);
+
+      const themeTrigger = document.querySelector('[data-testid="canvas-theme-switcher"]');
+      const themePanel = document.getElementById("ags-theme-panel");
+      const themeRoot = document.querySelector(".ags-theme-switcher");
+      const applyTheme = (themeId) => {
+        const valid = ["void", "paper", "contrast", "daltonic"].includes(themeId) ? themeId : "void";
+        document.documentElement.setAttribute("data-theme", valid);
+        themeRoot?.setAttribute("data-active-theme", valid);
+        themeTrigger?.setAttribute("data-theme-trigger", valid);
+        document.querySelectorAll("[data-theme-option]").forEach((opt) => {
+          const selected = opt.getAttribute("data-theme-option") === valid;
+          opt.setAttribute("aria-checked", selected ? "true" : "false");
+          opt.classList.toggle("is-selected", selected);
+        });
+        try { localStorage.setItem("agi-theme", valid); } catch {}
+      };
+      try {
+        const savedTheme = localStorage.getItem("agi-theme");
+        if (savedTheme) applyTheme(savedTheme);
+        else applyTheme("void");
+      } catch {
+        applyTheme("void");
+      }
+      themeTrigger?.addEventListener("click", () => {
+        if (!themePanel) return;
+        const willOpen = themePanel.hasAttribute("hidden");
+        if (willOpen) themePanel.removeAttribute("hidden");
+        else themePanel.setAttribute("hidden", "");
+        themeTrigger.setAttribute("aria-expanded", willOpen ? "true" : "false");
+      });
+      document.querySelectorAll("[data-theme-option]").forEach((opt) => {
+        opt.addEventListener("click", () => {
+          applyTheme(opt.getAttribute("data-theme-option") || "void");
+          themePanel?.setAttribute("hidden", "");
+          themeTrigger?.setAttribute("aria-expanded", "false");
+        });
+      });
     });
   </script>
+  <footer class="container" style="margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border-subtle);display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;font-size:0.76rem;color:var(--text-secondary);font-family:var(--font-mono);">
+    <span>Engineered by The AGI Studio &amp; Vedic Astro Studio</span>
+    <span>Apache-2.0 Open-Source Planetary Physics Engine · NASA JPL DE440</span>
+  </footer>
 </body>
 </html>
