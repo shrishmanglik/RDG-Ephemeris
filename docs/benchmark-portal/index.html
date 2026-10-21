@@ -36,14 +36,65 @@
       min-height: 100vh;
       padding-bottom: 4rem;
     }
+    /* The header is a transparent sticky track; only the dock inside it paints, so the page shows through the gutters. */
     header.observatory-header {
-      border-bottom: 1px solid var(--border-subtle);
-      background: rgba(13, 17, 26, 0.92);
-      backdrop-filter: blur(12px);
       position: sticky;
       top: 0;
       z-index: 40;
+      padding: 0.7rem 1.25rem 0;
+      pointer-events: none;
     }
+    header.observatory-header .dock-surface {
+      pointer-events: auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.55rem;
+      max-width: calc(1480px - 2.5rem);
+      margin: 0 auto;
+      padding: 0.68rem 0.95rem 0.62rem 0.8rem;
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-color: color-mix(in srgb, var(--border-accent) 32%, transparent);
+      background-color: rgba(13, 17, 26, 0.62);
+      background-color: color-mix(in srgb, var(--bg-panel) 66%, transparent);
+      background-image:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 48%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.05'/%3E%3C/svg%3E");
+      -webkit-backdrop-filter: blur(18px) saturate(150%);
+      backdrop-filter: blur(18px) saturate(150%);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.42),
+        inset 0 0 24px rgba(0, 0, 0, 0.3),
+        0 20px 44px -22px rgba(0, 0, 0, 0.75),
+        0 2px 8px rgba(0, 0, 0, 0.26);
+    }
+    .dock-primary { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6rem 1.25rem; }
+    .dock-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 0.32rem; }
+    .dock-telemetry {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.3rem 0.75rem 0.3rem 0.6rem; border-radius: 999px;
+      font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.01em;
+      color: var(--text-primary); white-space: nowrap;
+      background: rgba(6, 8, 13, 0.55);
+      border: 1px solid rgba(16, 185, 129, 0.42);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45), inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+    }
+    .dock-telemetry-dot {
+      width: 7px; height: 7px; border-radius: 999px; flex: none;
+      background: #34d399; box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.16), 0 0 10px rgba(52, 211, 153, 0.7);
+      animation: dock-telemetry-pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes dock-telemetry-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+    .dock-funnel { white-space: nowrap; }
+    /* One line of instrument readouts; it scrolls sideways instead of wrapping into a taller dock. */
+    .dock-surface .dock-rail {
+      display: flex; flex-wrap: nowrap; align-items: center; gap: 0.45rem;
+      overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
+      padding-top: 0.5rem; border-top: 1px solid rgba(148, 163, 184, 0.1);
+    }
+    .dock-surface .dock-rail::-webkit-scrollbar { display: none; }
+    .dock-rail .pill-badge { flex: none; white-space: nowrap; font-size: 0.69rem; padding: 0.22rem 0.58rem; }
     .container { max-width: 1480px; margin: 0 auto; padding: 0 1.25rem; }
     .header-inner {
       display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
@@ -93,6 +144,81 @@
     }
     .preset-btn:hover, .preset-btn.active {
       color: var(--text-primary); border-color: var(--accent-cyan); background: rgba(56, 189, 248, 0.14);
+    }
+    .native-presets-bar {
+      margin-top: 1.1rem; padding: 0.95rem 1rem 0.9rem; border-radius: 16px;
+      background: var(--bg-panel); border: 1px solid var(--border-subtle);
+      background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0) 60%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 14px 32px -24px rgba(0, 0, 0, 0.8);
+    }
+    .command-suite-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 0.6rem 1rem; margin-bottom: 0.8rem; }
+    .command-suite-kicker {
+      display: block; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--accent-cyan); margin-bottom: 0.15rem;
+    }
+    .command-suite-title { display: block; font-size: 1rem; font-weight: 700; color: var(--text-primary); }
+    .workspace-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .workspace-pill {
+      appearance: none; cursor: pointer; border-radius: 999px; padding: 0.34rem 0.8rem;
+      font-family: var(--font-sans); font-size: 0.74rem; font-weight: 600;
+      color: var(--text-secondary); background: var(--bg-card); border: 1px solid var(--border-subtle);
+      transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+    }
+    .workspace-pill:hover { color: var(--text-primary); border-color: var(--accent-cyan); }
+    .workspace-pill[data-active="true"] { color: var(--bg-void); background: var(--accent-cyan); border-color: var(--accent-cyan); }
+    .native-preset-rail {
+      display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.5rem;
+    }
+    .native-preset-btn {
+      appearance: none; cursor: pointer; text-align: left; min-width: 0; min-height: 44px;
+      display: flex; flex-direction: column; gap: 0.18rem; padding: 0.6rem 0.7rem 0.62rem;
+      border-radius: 11px; color: var(--text-primary); font-family: var(--font-sans);
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+      transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+    }
+    .native-preset-btn:hover { border-color: var(--accent-cyan); }
+    .native-preset-btn:focus-visible, .workspace-pill:focus-visible { outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
+    .native-preset-btn.active {
+      border-color: var(--accent-cyan);
+      background: rgba(56, 189, 248, 0.12);
+      background: color-mix(in srgb, var(--accent-cyan) 14%, var(--bg-card));
+      box-shadow: inset 0 0 0 1px var(--accent-cyan), 0 8px 22px -14px rgba(0, 0, 0, 0.9);
+    }
+    .native-preset-tag {
+      font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.07em; text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .native-preset-btn.active .native-preset-tag { color: var(--accent-cyan); }
+    .native-preset-label { font-size: 0.82rem; font-weight: 700; line-height: 1.25; }
+    .native-preset-meta { font-family: var(--font-mono); font-size: 0.66rem; color: var(--text-secondary); line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .native-preset-label + .native-preset-meta { margin-top: 0.1rem; }
+    .native-preset-meta + .native-preset-meta { margin-top: -0.18rem; color: var(--text-muted); }
+    .native-preset-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; margin-top: 0.75rem; }
+    .native-preset-foot .preset-strip { margin-top: 0; }
+    .native-preset-readout {
+      flex: 1 1 420px; min-width: 0; font-family: var(--font-mono); font-size: 0.74rem; color: var(--text-secondary);
+      padding: 0.42rem 0.7rem; border-radius: 8px; background: rgba(6, 8, 13, 0.35); border: 1px solid var(--border-subtle);
+    }
+    .native-preset-readout strong { color: var(--text-primary); font-weight: 700; }
+    .workspace-target { scroll-margin-top: 9.75rem; }
+    .workspace-target.is-flashing { box-shadow: 0 0 0 2px var(--accent-cyan); transition: box-shadow 260ms ease; }
+    .mcp-probe {
+      margin-top: 0.95rem; padding: 0.85rem 0.9rem 0.8rem; border-radius: 12px;
+      background: rgba(6, 8, 13, 0.22); border: 1px solid var(--border-subtle);
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35);
+    }
+    .mcp-probe .receipt-box { word-break: normal; overflow-wrap: anywhere; }
+    :root[data-theme="paper"] .mcp-probe { background: rgba(234, 224, 209, 0.45); box-shadow: inset 0 1px 3px rgba(92, 77, 68, 0.12); }
+    .mcp-probe-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 0.5rem 1rem; margin-bottom: 0.6rem; }
+    .mcp-probe-headline { font-size: 0.86rem; font-weight: 600; color: var(--text-primary); }
+    .mcp-probe-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.5rem; }
+    .mcp-probe-grid > * { min-width: 0; }
+    .mcp-probe-caption { font-family: var(--font-mono); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 0.3rem; }
+    @media (max-width: 1280px) { .native-preset-rail { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (prefers-reduced-motion: reduce) {
+      .dock-telemetry-dot { animation: none; }
+      .workspace-pill, .native-preset-btn, .workspace-target.is-flashing { transition: none; }
     }
     .tab-bar {
       display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0.5rem 0;
@@ -245,9 +371,31 @@
       --accent-cyan: #C84B31;
       --accent-amber: #9E3620;
     }
-    :root[data-theme="paper"] header.observatory-header {
-      background: rgba(250, 245, 238, 0.94);
+    :root[data-theme="paper"] header.observatory-header .dock-surface {
+      background-color: rgba(250, 245, 238, 0.72);
+      background-image:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 55%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.05'/%3E%3C/svg%3E");
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.85),
+        inset 0 -1px 0 rgba(92, 77, 68, 0.14),
+        inset 0 0 22px rgba(92, 77, 68, 0.08),
+        0 18px 40px -24px rgba(60, 40, 30, 0.45),
+        0 2px 6px rgba(60, 40, 30, 0.1);
     }
+    :root[data-theme="paper"] .dock-telemetry,
+    :root[data-theme="paper"] .native-preset-readout {
+      background: rgba(234, 224, 209, 0.7);
+      box-shadow: inset 0 1px 2px rgba(92, 77, 68, 0.18);
+    }
+    :root[data-theme="paper"] .dock-telemetry { border-color: rgba(16, 120, 87, 0.45); }
+    /* The pill tints were tuned for dark grounds; on cream paper they need ink-weight text to stay legible. */
+    :root[data-theme="paper"] .pill-badge.emerald { color: #0B6E4F; }
+    :root[data-theme="paper"] .pill-badge.amber { color: #8A4B08; }
+    :root[data-theme="paper"] .pill-badge.violet { color: #5B3DA6; }
+    :root[data-theme="paper"] .pill-badge.rose { color: #A3243B; }
+    :root[data-theme="paper"] .pill-badge.cyan { color: var(--accent-cyan); }
+    :root[data-theme="paper"] .dock-telemetry-dot { background: #0f7a55; box-shadow: 0 0 0 3px rgba(15, 122, 85, 0.15); }
     :root[data-theme="paper"] table.data-table th {
       background: rgba(234, 224, 209, 0.85);
     }
@@ -268,6 +416,15 @@
       --accent-cyan: #FFE600;
       --accent-amber: #FFE600;
     }
+    /* Terminal High Contrast promises zero blur haze, so the dock turns solid there. */
+    :root[data-theme="contrast"] header.observatory-header .dock-surface {
+      background: #000000;
+      border-color: #FFE600;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+      box-shadow: none;
+    }
+    :root[data-theme="contrast"] .dock-telemetry { background: #000000; border-color: #FFFFFF; box-shadow: none; }
     :root[data-theme="daltonic"] {
       --bg-void: #06162E;
       --bg-panel: #0D2242;
@@ -283,7 +440,7 @@
     }
     .ags-theme-switcher {
       position: fixed;
-      top: 12px;
+      top: 22px;
       right: 14px;
       z-index: 90;
     }
@@ -342,8 +499,66 @@
       font-size: 0.68rem;
       color: var(--text-secondary);
     }
-    .header-inner {
-      padding-right: 3.4rem;
+    @media (max-width: 1366px) {
+      .brand-subtitle { max-width: 27rem; }
+      .dock-surface .dock-rail {
+        -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 2.5rem), transparent);
+        mask-image: linear-gradient(90deg, #000 calc(100% - 2.5rem), transparent);
+      }
+    }
+    @media (max-width: 1100px) {
+      .dock-actions { flex-direction: row; flex-wrap: wrap; align-items: center; }
+    }
+    /* Below 1640px the centred dock would run under the fixed 44px theme switcher, so the track reserves its column. */
+    @media (max-width: 1640px) {
+      header.observatory-header { padding-right: 4.6rem; }
+    }
+    html, body { max-width: 100%; overflow-x: hidden; }
+    /* clip, where supported, trims the same overflow without turning body into a scroll container, which would unstick the header */
+    @supports (overflow-x: clip) { html, body { overflow-x: clip; } }
+    .calc-split-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 0.95rem; align-items: stretch; }
+    .calc-split-grid > *, .panel-grid-2 > *, .panel-grid-equal > * { min-width: 0; }
+    .kpi-value, .limb-val { overflow-wrap: anywhere; }
+    .live-graha-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; margin-bottom: 0.7rem; }
+    table.live-graha-table th, table.live-graha-table td { white-space: nowrap; vertical-align: top; }
+    .live-graha-sub { display: block; margin-top: 0.12rem; font-size: 0.68rem; color: var(--text-muted); font-weight: 400; }
+    @media (max-width: 768px) {
+      .container { padding: 0 0.85rem; }
+      header.observatory-header { padding: 0.5rem 4.3rem 0 0.6rem; }
+      header.observatory-header .dock-surface { padding: 0.55rem 0.65rem; border-radius: 15px; gap: 0.45rem; }
+      .ags-theme-switcher { top: 14px; right: 10px; }
+      .brand-block { gap: 0.6rem; }
+      .brand-emblem { width: 32px; height: 32px; border-radius: 8px; }
+      .brand-title { font-size: 0.86rem; line-height: 1.3; }
+      .brand-subtitle { display: none; }
+      .dock-primary { gap: 0.45rem; }
+      .dock-actions { width: 100%; gap: 0.35rem; }
+      .native-presets-bar { padding: 0.8rem 0.75rem; }
+      .native-preset-rail {
+        display: flex; overflow-x: auto; scroll-snap-type: x proximity; overscroll-behavior-x: contain;
+        scrollbar-width: thin; padding-bottom: 0.35rem; margin: 0 -0.15rem; padding-inline: 0.15rem;
+      }
+      .native-preset-btn { flex: 0 0 72%; scroll-snap-align: start; }
+      .mcp-probe-grid { grid-template-columns: 1fr; }
+      .card { padding: 0.9rem; }
+      table.live-graha-table th:first-child, table.live-graha-table td:first-child { position: sticky; left: 0; z-index: 1; background: var(--bg-panel); box-shadow: 1px 0 0 var(--border-subtle); }
+      table.live-graha-table tr:hover td:first-child { background: linear-gradient(rgba(56, 189, 248, 0.05), rgba(56, 189, 248, 0.05)) var(--bg-panel); }
+      .card-header > div { min-width: 0; }
+      .calc-split-grid { grid-template-columns: 1fr; }
+      .table-wrap { max-width: 100%; overscroll-behavior-x: contain; }
+      table.data-table { font-size: 0.75rem; }
+      table.data-table th, table.data-table td { padding: 0.45rem 0.5rem; }
+      .bar-row { grid-template-columns: 92px 1fr 56px; }
+    }
+    /* On a phone the dock runs full width with the theme switcher seated in its top corner, and keeps the brand,
+       telemetry and attribution on one line each; Panel 1 repeats the instrument readouts the rail carries. */
+    @media (max-width: 560px) {
+      header.observatory-header { padding-right: 0.6rem; }
+      .ags-theme-switcher { top: 16px; right: 18px; }
+      .brand-block { padding-right: 3.3rem; }
+      .dock-actions { flex-direction: column; align-items: flex-start; gap: 0.3rem; }
+      .dock-telemetry, .dock-funnel { font-size: 0.64rem; }
+      .dock-surface .dock-rail { display: none; }
     }
   </style>
 </head>
@@ -361,22 +576,27 @@
       </div>
     </div>
   </div>
-  <header class="observatory-header">
-    <div class="container header-inner">
-      <div class="brand-block">
-        <div class="brand-emblem" aria-hidden="true">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <polygon points="12,2 21,7 21,17 12,22 3,17 3,7" stroke="#38bdf8" stroke-width="1.6" fill="rgba(56,189,248,0.12)" />
-            <circle cx="12" cy="12" r="3.2" fill="#f59e0b" />
-          </svg>
+  <header class="observatory-header" data-testid="liquid-glass-command-dock" aria-label="Observatory command dock">
+    <div class="container header-inner dock-surface">
+      <div class="dock-primary">
+        <div class="brand-block">
+          <div class="brand-emblem" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <polygon points="12,2 21,7 21,17 12,22 3,17 3,7" stroke="#38bdf8" stroke-width="1.6" fill="rgba(56,189,248,0.12)" />
+              <circle cx="12" cy="12" r="3.2" fill="#f59e0b" />
+            </svg>
+          </div>
+          <div>
+            <div class="brand-title">ephemeris-oss · 18-Pillar Scientific Astronomical &amp; Jyotish Observatory</div>
+            <div class="brand-subtitle">NASA JPL DE440 / Horizons Quantity-45 Ledger · 5-Style Sacred SVG Workbench · Deterministic AI Firewall</div>
+          </div>
         </div>
-        <div>
-          <div class="brand-title">ephemeris-oss · 18-Pillar Scientific Astronomical &amp; Jyotish Observatory</div>
-          <div class="brand-subtitle">NASA JPL DE440 / Horizons Quantity-45 Ledger · 5-Style Sacred SVG Workbench · Deterministic AI Firewall</div>
+        <div class="dock-actions">
+          <span class="dock-telemetry" data-testid="dock-telemetry-badge" data-telemetry-ascii="0.001 arcsec JPL DE440 ? Apache-2.0 Zero-Royalty" title="Within 0.001 arcsec of NASA JPL DE440, under the Apache-2.0 licence with zero royalties"><span class="dock-telemetry-dot" aria-hidden="true"></span>0.001 arcsec JPL DE440 · Apache-2.0 Zero-Royalty</span>
+          <span class="pill-badge emerald dock-funnel" data-testid="attribution-badge" aria-label="Engineered by The AGI Studio & Vedic Astro Studio">Engineered by The AGI Studio &amp; Vedic Astro Studio</span>
         </div>
       </div>
-      <div class="header-badges">
-        <span class="pill-badge emerald" data-testid="attribution-badge" aria-label="Engineered by The AGI Studio & Vedic Astro Studio">Engineered by The AGI Studio &amp; Vedic Astro Studio</span>
+      <div class="header-badges dock-rail" role="group" aria-label="Live instrument readouts">
         <span class="pill-badge emerald" id="headerLatencyBadge">Browser Engine: &lt; 2.0 ms</span>
         <span class="pill-badge cyan" id="headerReceiptBadge">SHA-256: --</span>
         <span class="pill-badge amber">DE440: 3,612 TT / Graha · Horizons Q45: 2,100 Rows</span>
@@ -387,16 +607,68 @@
   </header>
 
   <main class="container">
-    <div class="preset-strip">
-      <span style="font-size:0.75rem; color:var(--text-secondary); font-family:var(--font-mono);">Reference Epochs &amp; Observatories:</span>
-      <button type="button" class="preset-btn active" data-preset="j2000">J2000.0 (2000-01-01 12:00 UTC · New Delhi)</button>
-      <button type="button" class="preset-btn" data-preset="lahiri1956">Lahiri Epoch (1956-03-21 00:00 UTC · Ujjain)</button>
-      <button type="button" class="preset-btn" data-preset="varanasi">Varanasi Observatory (2026-10-15 06:30 UTC)</button>
-      <button type="button" class="preset-btn" data-preset="bengaluru">Bengaluru (1990-08-15 10:30 UTC)</button>
-      <button type="button" class="preset-btn" data-preset="toronto">Toronto (2026-03-20 14:45 UTC)</button>
-    </div>
+    <section class="native-presets-bar" data-testid="native-presets-bar" aria-label="Multi-workspace command suite and six one-click native presets">
+      <div class="command-suite-head">
+        <div>
+          <span class="command-suite-kicker">Multi-Workspace Command Suite</span>
+          <span class="command-suite-title">6 One-Click Native Presets</span>
+        </div>
+        <div class="workspace-pills" role="group" aria-label="Jump to a workspace">
+          <button type="button" class="workspace-pill" data-workspace-target="workbench" data-active="true">Observatory Workbench</button>
+          <button type="button" class="workspace-pill" data-workspace-target="batch" data-active="false">Batch Stress Calculator</button>
+          <button type="button" class="workspace-pill" data-workspace-target="mcp" data-active="false">MCP Live Probe</button>
+        </div>
+      </div>
+      <div class="native-preset-rail" role="group" aria-label="One-click native presets">
+        <button type="button" class="native-preset-btn" data-native-preset="eclipse1999" data-preset="eclipse1999" data-workspace="workbench" aria-pressed="false" title="Greatest eclipse near Ramnicu Valcea, Romania (about 45.07 N, 24.30 E)">
+          <span class="native-preset-tag">Workbench</span>
+          <span class="native-preset-label">1999 Total Solar Eclipse</span>
+          <span class="native-preset-meta">1999-08-11 11:03:00 UTC</span>
+          <span class="native-preset-meta">Romania · greatest eclipse</span>
+        </button>
+        <button type="button" class="native-preset-btn" data-native-preset="conjunction2020" data-preset="conjunction2020" data-workspace="workbench" aria-pressed="false" title="Jupiter and Saturn at their closest, observed from the Greenwich meridian (51.4769 N, 0.0005 W)">
+          <span class="native-preset-tag">Workbench</span>
+          <span class="native-preset-label">2020 Great Conjunction</span>
+          <span class="native-preset-meta">2020-12-21 18:20:00 UTC</span>
+          <span class="native-preset-meta">Greenwich · closest approach</span>
+        </button>
+        <button type="button" class="native-preset-btn active" data-native-preset="j2000" data-preset="j2000" data-workspace="workbench" aria-pressed="true" title="J2000.0 reference epoch observed from New Delhi (28.6139 N, 77.2090 E)">
+          <span class="native-preset-tag">Workbench</span>
+          <span class="native-preset-label">J2000.0 Reference Epoch</span>
+          <span class="native-preset-meta">2000-01-01 12:00:00 UTC</span>
+          <span class="native-preset-meta">New Delhi · standard epoch</span>
+        </button>
+        <button type="button" class="native-preset-btn" data-native-preset="lahiri1956" data-preset="lahiri1956" data-workspace="workbench" aria-pressed="false" title="Lahiri's 1956 reference epoch observed from Ujjain (23.1765 N, 75.7885 E), True Citra ayanamsa set against mean Lahiri">
+          <span class="native-preset-tag">Workbench</span>
+          <span class="native-preset-label">Lahiri True Citra Benchmark</span>
+          <span class="native-preset-meta">1956-03-21 00:00:00 UTC</span>
+          <span class="native-preset-meta">Ujjain · True Citra vs Lahiri</span>
+        </button>
+        <button type="button" class="native-preset-btn" data-native-preset="batch10000" data-preset="batch10000" data-workspace="batch" aria-pressed="false" title="Sets the throughput calculator to a 10,000-chart batch">
+          <span class="native-preset-tag">Batch Stress</span>
+          <span class="native-preset-label">10,000-Chart Batch Stress Test</span>
+          <span class="native-preset-meta">10,000 charts per batch</span>
+          <span class="native-preset-meta">Speedup calculator</span>
+        </button>
+        <button type="button" class="native-preset-btn" data-native-preset="mcp_probe" data-preset="mcp_probe" data-workspace="mcp" aria-pressed="false" title="Answers a JSON-RPC tools/call for the current workbench chart in this browser">
+          <span class="native-preset-tag">MCP Probe</span>
+          <span class="native-preset-label">Claude/Cursor MCP Server Live Probe</span>
+          <span class="native-preset-meta">JSON-RPC tools/call</span>
+          <span class="native-preset-meta">Current workbench chart</span>
+        </button>
+      </div>
+      <div class="native-preset-foot">
+        <div class="native-preset-readout" id="nativePresetReadout" data-testid="native-preset-readout" role="status" aria-live="polite"><strong>J2000.0 Reference Epoch</strong> · 2000-01-01 12:00:00 UTC · New Delhi</div>
+        <div class="preset-strip" role="group" aria-label="Reference observatories">
+          <span style="font-size:0.75rem; color:var(--text-secondary); font-family:var(--font-mono);">Reference Observatories:</span>
+          <button type="button" class="preset-btn" data-preset="varanasi" aria-pressed="false">Varanasi Observatory (2026-10-15 06:30 UTC)</button>
+          <button type="button" class="preset-btn" data-preset="bengaluru" aria-pressed="false">Bengaluru (1990-08-15 10:30 UTC)</button>
+          <button type="button" class="preset-btn" data-preset="toronto" aria-pressed="false">Toronto (2026-03-20 14:45 UTC)</button>
+        </div>
+      </div>
+    </section>
 
-    <div class="controls-bar">
+    <div class="controls-bar workspace-target" id="observatoryWorkbench">
       <div class="control-group">
         <label for="inputDateUtc">UTC Date (YYYY-MM-DD)</label>
         <input type="date" id="inputDateUtc" value="2000-01-01" min="1600-01-01" max="2399-12-31" />
@@ -444,7 +716,7 @@
       </div>
     </div>
 
-    <section class="card" data-testid="ephemeris-speedup-calculator" aria-label="3-Second Ephemeris Throughput and Speedup Calculator">
+    <section class="card workspace-target" id="batchStressCalculator" data-testid="ephemeris-speedup-calculator" aria-label="3-Second Ephemeris Throughput and Speedup Calculator">
       <div class="card-header">
         <div>
           <div class="card-title">3-Second Ephemeris Throughput &amp; Speedup Calculator + 1-Click MCP Config Copy</div>
@@ -481,7 +753,7 @@
         </div>
       </div>
 
-      <div style="display:grid; grid-template-columns:1.1fr 1fr; gap:0.95rem; align-items:stretch;">
+      <div class="calc-split-grid">
         <div class="limb-card" style="display:flex; flex-direction:column; justify-content:space-between; gap:0.55rem;">
           <div>
             <div class="limb-name">Why Developers Switch in 60 Seconds</div>
@@ -505,6 +777,40 @@
   }
 }</pre>
         </div>
+      </div>
+
+      <div class="mcp-probe workspace-target" id="mcpLiveProbe" data-testid="mcp-live-probe" role="region" aria-label="Claude/Cursor MCP Server Live Probe">
+        <div class="mcp-probe-head">
+          <div>
+            <div class="limb-name">MCP Live Probe</div>
+            <div class="mcp-probe-headline" id="mcpProbeHeadline">Press Claude/Cursor MCP Server Live Probe to answer a tools/call for the current workbench chart.</div>
+          </div>
+          <span class="pill-badge" id="mcpProbeStatus" data-testid="mcp-probe-status" role="status" aria-live="polite">Probe ready</span>
+        </div>
+        <div class="mcp-probe-grid">
+          <div>
+            <div class="mcp-probe-caption">Request · JSON-RPC 2.0</div>
+            <pre id="mcpProbeRequestBox" data-testid="mcp-probe-request" class="receipt-box" style="max-height:230px; margin:0;">{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "compute_complete_kundali_bundle",
+    "arguments": {
+      "instant_or_jd_ut": "2000-01-01T12:00:00Z",
+      "latitude_deg": 28.6139,
+      "longitude_deg": 77.209,
+      "ayanamsa": "lahiri"
+    }
+  }
+}</pre>
+          </div>
+          <div>
+            <div class="mcp-probe-caption">Result · computed in this browser</div>
+            <pre id="mcpProbeResponseBox" data-testid="mcp-probe-response" class="receipt-box" style="max-height:230px; margin:0;">Run the probe to see the structured result and its SHA-256 receipt.</pre>
+          </div>
+        </div>
+        <div class="kpi-sub">The request is the JSON-RPC 2.0 tools/call shape an MCP client such as Claude Desktop or Cursor sends, with arguments named after the Python <code>compute_complete_kundali_bundle</code> call. The result is answered here by the same deterministic engine that drives the workbench, with no network call, so the same chart always returns the same receipt.</div>
       </div>
     </section>
 
@@ -545,7 +851,7 @@
         </div>
       </div>
 
-      <div style="display:grid; grid-template-columns:1.1fr 1fr; gap:0.95rem; align-items:stretch;">
+      <div class="calc-split-grid">
         <div class="limb-card" style="display:flex; flex-direction:column; justify-content:space-between; gap:0.55rem;">
           <div>
             <div class="limb-name">Commercial Freedom &amp; Clean-Room Provenance</div>
@@ -598,12 +904,12 @@ Copyright The Million Dollar AI Studio Ltd. Built on NASA JPL DE440 Chebyshev ke
         </div>
         <div class="kpi-card">
           <div class="kpi-label">Zero-Hallucination Python API</div>
-          <div class="kpi-value" style="font-size:1.12rem;">Engine.load(kernels="compact")</div>
+          <div class="kpi-value" style="font-size:1.12rem;">Engine.load(<wbr>kernels="compact")</div>
           <div class="kpi-sub">1.84 MB embedded DE440 kernel · Zero external files</div>
         </div>
       </div>
 
-      <div style="display:grid; grid-template-columns:1.1fr 1fr; gap:0.95rem; align-items:stretch;">
+      <div class="calc-split-grid">
         <div class="limb-card" style="display:flex; flex-direction:column; justify-content:space-between; gap:0.55rem;">
           <div>
             <div class="limb-name">Deterministic Sidereal Convention Contract</div>
@@ -627,6 +933,271 @@ with EphemerisAdapter(kernels="compact") as adapter:
         latitude_deg=28.6139, longitude_deg=77.2090, ayanamsa="lahiri",
     )
     print(bundle.positions["moon"].longitude_deg, bundle.receipt_sha256)</pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" data-testid="live-graha-ephemeris-table" aria-label="3-Second Live 9-Graha Planetary Ephemeris and Retrograde Table">
+      <div class="card-header">
+        <div>
+          <div class="card-title">3-Second Live 9-Graha Planetary Ephemeris &amp; Retrograde Table + 1-Click JSON Vector</div>
+          <div class="card-subtitle">Pick a reference instant and all 9 Grahas are computed in this browser by the deterministic engine behind Panel 1: tropical longitude, sidereal Lahiri longitude, daily speed, direct or retrograde motion, and Nakshatra pada. Fixed to the Lahiri ayanamsa and the mean lunar node, whatever the controls above are set to.</div>
+        </div>
+        <div style="display:flex; gap:0.45rem; flex-wrap:wrap; align-items:center;" role="group" aria-label="Select ephemeris reference instant">
+          <span style="font-size:0.74rem; color:var(--text-secondary); font-family:var(--font-mono);">Reference Instant:</span>
+          <button type="button" class="preset-btn active" data-ephemeris-preset="j2000" data-testid="ephemeris-preset-j2000" aria-pressed="true" title="2000-01-01 12:00:00 TT (JD 2451545.0)">J2000.0 Epoch</button>
+          <button type="button" class="preset-btn" data-ephemeris-preset="eclipse2026" data-testid="ephemeris-preset-eclipse2026" aria-pressed="false" title="2026-08-12 17:46:00 UTC, near greatest eclipse">2026 Total Solar Eclipse</button>
+          <button type="button" class="preset-btn" data-ephemeris-preset="india1947" data-testid="ephemeris-preset-india1947" aria-pressed="false" title="1947-08-15 00:00:00 IST (1947-08-14 18:30:00 UTC)">1947 Independence Midnight</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid" style="margin-bottom:0.9rem;">
+        <div class="kpi-card">
+          <div class="kpi-label">Reference Instant</div>
+          <div class="kpi-value" id="liveGrahaEpochVal" data-testid="live-graha-epoch-val" style="font-size:1.12rem;">2000-01-01 12:00:00 TT</div>
+          <div class="kpi-sub" id="liveGrahaEpochSub">JD 2451545.000000 TT · ΔT 63.86 s</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Lahiri Ayanamsa at Instant</div>
+          <div class="kpi-value" id="liveGrahaAyanamsaVal" data-testid="live-graha-ayanamsa-val" style="color:var(--accent-cyan);">23.857092°</div>
+          <div class="kpi-sub" id="liveGrahaAyanamsaSub">23° 51' 25.53" · Mean lunar node for Rahu and Ketu</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Retrograde Grahas</div>
+          <div class="kpi-value" id="liveGrahaRetroVal" data-testid="live-graha-retro-val" style="color:var(--accent-rose);">3 of 9</div>
+          <div class="kpi-sub" id="liveGrahaRetroSub">Shani, Rahu, Ketu</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Surya to Chandra Elongation</div>
+          <div class="kpi-value" id="liveGrahaTithiVal" data-testid="live-graha-tithi-val" style="color:var(--accent-amber);">302.948°</div>
+          <div class="kpi-sub" id="liveGrahaTithiSub">Tithi 26 · Krishna Ekadashi · next Tithi in 19 h 44 min</div>
+        </div>
+      </div>
+
+      <div class="live-graha-meta">
+        <span class="pill-badge cyan" id="liveGrahaPresetBadge">J2000.0 Epoch · JD 2451545.0000 TT</span>
+        <span class="pill-badge emerald" id="liveGrahaExecBadge" data-testid="live-graha-exec-badge" title="Mean time for one full 9-Graha computation, averaged over a warm batch of runs in this browser">-- ms (&lt; 1 ms budget)</span>
+        <span class="pill-badge violet" id="liveGrahaReceiptBadge">SHA-256: f6777edac53a5aca...</span>
+      </div>
+
+      <div class="table-wrap" style="margin-bottom:0.95rem;">
+        <table class="data-table live-graha-table" aria-label="9-Graha ephemeris at the selected reference instant">
+          <thead>
+            <tr>
+              <th>Graha</th>
+              <th class="num">Tropical Longitude</th>
+              <th class="num">Sidereal Lahiri Longitude</th>
+              <th class="num">Daily Speed (deg/day)</th>
+              <th>Motion</th>
+              <th>Nakshatra &amp; Pada</th>
+            </tr>
+          </thead>
+          <tbody id="liveGrahaEphemerisBody" data-testid="live-graha-ephemeris-body">
+            <tr data-graha-id="sun">
+              <td><strong>Surya (Sun)</strong></td>
+              <td class="num">280.3666°<span class="live-graha-sub">Capricorn 10° 21' 59.68"</span></td>
+              <td class="num" style="color:var(--accent-cyan); font-weight:600;">256.5095°<span class="live-graha-sub">Dhanu 16° 30' 34.15"</span></td>
+              <td class="num">+1.0194</td>
+              <td><span class="status-direct">Direct</span></td>
+              <td>Purva Ashadha (Pada 1)</td>
+            </tr>
+            <tr data-graha-id="moon">
+              <td><strong>Chandra (Moon)</strong></td>
+              <td class="num">223.3150°<span class="live-graha-sub">Scorpio 13° 18' 54.10"</span></td>
+              <td class="num" style="color:var(--accent-cyan); font-weight:600;">199.4579°<span class="live-graha-sub">Tula 19° 27' 28.57"</span></td>
+              <td class="num">+12.0220</td>
+              <td><span class="status-direct">Direct</span></td>
+              <td>Swati (Pada 4)</td>
+            </tr>
+            <tr data-graha-id="mars">
+              <td><strong>Mangala (Mars)</strong></td>
+              <td class="num">327.9639°<span class="live-graha-sub">Aquarius 27° 57' 49.87"</span></td>
+              <td class="num" style="color:var(--accent-cyan); font-weight:600;">304.1068°<span class="live-graha-sub">Kumbha 04° 06' 24.34"</span></td>
+              <td class="num">+0.7759</td>
+              <td><span class="status-direct">Direct</span></td>
+              <td>Dhanishta (Pada 4)</td>
+            </tr>
+            <tr data-graha-id="mercury">
+              <td><strong>Budha (Mercury)</strong></td>
+              <td class="num">271.8872°<span class="live-graha-sub">Capricorn 01° 53' 13.92"</span></td>
+              <td class="num" style="color:var(--accent-cyan); font-weight:600;">248.0301°<span class="live-graha-sub">Dhanu 08° 01' 48.39"</span></td>
+              <td class="num">+1.5562</td>
+              <td><span class="status-direct">Direct</span></td>
+              <td>Mula (Pada 3)</td>
+            </tr>
+            <tr data-graha-id="jupiter">
+              <td><strong>Guru (Jupiter)</strong></td>
+              <td class="num">25.3485°<span class="live-graha-sub">Aries 25° 20' 54.50"</span></td>
+              <td class="num" style="color:var(--accent-cyan); font-weight:600;">1.4914°<span class="live-graha-sub">Mesha 01° 29' 28.96"</span></td>
+              <td class="num">+0.0404</td>
+              <td><span class="status-direct">Direct</span></td>
+              <td>Ashwini (Pada 1)</td>
+            </tr>
+            <tr data-graha-id="venus">
+              <td><strong>Shukra (Venus)</strong></td>
+              <td class="num">241.5630°<span class="live-graha-sub">Sagittarius 01° 33' 46.84"</span></td>
+              <td class="num" style="color:var(--accent-cyan); font-weight:600;">217.7059°<span class="live-graha-sub">Vrischika 07° 42' 21.31"</span></td>
+              <td class="num">+1.2089</td>
+              <td><span class="status-direct">Direct</span></td>
+              <td>Anuradha (Pada 2)</td>
+            </tr>
+            <tr data-graha-id="saturn">
+              <td><strong>Shani (Saturn)</strong></td>
+              <td class="num">40.2369°<span class="live-graha-sub">Taurus 10° 14' 12.69"</span></td>
+              <td class="num" style="color:var(--accent-cyan); font-weight:600;">16.3798°<span class="live-graha-sub">Mesha 16° 22' 47.16"</span></td>
+              <td class="num">-0.0197</td>
+              <td><span class="status-retro">Retrograde</span></td>
+              <td>Bharani (Pada 1)</td>
+            </tr>
+            <tr data-graha-id="rahu">
+              <td><strong>Rahu (Mean Node)</strong></td>
+              <td class="num">125.0445°<span class="live-graha-sub">Leo 05° 02' 40.37"</span></td>
+              <td class="num" style="color:var(--accent-cyan); font-weight:600;">101.1875°<span class="live-graha-sub">Karka 11° 11' 14.84"</span></td>
+              <td class="num">-0.0530</td>
+              <td><span class="status-retro">Retrograde</span></td>
+              <td>Pushya (Pada 3)</td>
+            </tr>
+            <tr data-graha-id="ketu">
+              <td><strong>Ketu (South Node)</strong></td>
+              <td class="num">305.0445°<span class="live-graha-sub">Aquarius 05° 02' 40.37"</span></td>
+              <td class="num" style="color:var(--accent-cyan); font-weight:600;">281.1875°<span class="live-graha-sub">Makara 11° 11' 14.84"</span></td>
+              <td class="num">-0.0530</td>
+              <td><span class="status-retro">Retrograde</span></td>
+              <td>Shravana (Pada 1)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="calc-split-grid">
+        <div class="limb-card" style="display:flex; flex-direction:column; justify-content:space-between; gap:0.55rem;">
+          <div>
+            <div class="limb-name">Deterministic 9-Graha Vector</div>
+            <div class="limb-val" id="liveGrahaHeadline">J2000.0 Epoch: 3 of 9 Grahas retrograde</div>
+            <div class="limb-meta" style="margin-top:0.35rem;">
+              Each row is a geocentric apparent longitude (light-time, aberration and nutation applied) minus the <strong>Lahiri</strong> ayanamsa. Daily speed is a central difference across 0.02 day, so a negative speed is a <strong>Retrograde</strong> Graha. Rahu and Ketu follow the mean node, which always regresses. This is the compact browser model built for instant previews; the Python engine's DE440 kernel stays the reference for precision work. The JSON vector carries a SHA-256 of its own compact JSON, so any copy can be checked byte for byte.
+            </div>
+          </div>
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+            <button type="button" class="preset-btn active" id="copyEphemerisJsonBtn" data-testid="copy-ephemeris-json-btn" style="font-weight:700; padding:0.45rem 0.85rem;">Copy 1-Click JSON Ephemeris Vector</button>
+            <span class="pill-badge emerald" id="copyEphemerisJsonStatus" data-testid="copy-ephemeris-json-status" role="status" aria-live="polite">JSON Ephemeris Vector Ready</span>
+          </div>
+        </div>
+        <div>
+          <pre id="ephemerisJsonVectorBox" data-testid="ephemeris-json-vector-box" class="receipt-box" style="max-height:260px; margin:0;">{
+  "schema": "ephemeris-oss.live-graha-vector.v1",
+  "preset": "j2000",
+  "instant": "2000-01-01 12:00:00 TT",
+  "utc_iso": "2000-01-01T11:58:55.816Z",
+  "jd_tt": 2451545,
+  "delta_t_seconds": 63.86,
+  "delta_t_model": "espenak-meeus-piecewise-v1",
+  "ayanamsa": "lahiri",
+  "ayanamsa_deg": 23.857092,
+  "node_mode": "mean",
+  "grahas": [
+    {
+      "id": "sun",
+      "graha": "Surya (Sun)",
+      "tropical_longitude_deg": 280.366577,
+      "sidereal_lahiri_longitude_deg": 256.509485,
+      "daily_speed_deg_per_day": 1.019437,
+      "motion": "Direct",
+      "rasi": "Dhanu (Sagittarius)",
+      "nakshatra": "Purva Ashadha",
+      "pada": 1
+    },
+    {
+      "id": "moon",
+      "graha": "Chandra (Moon)",
+      "tropical_longitude_deg": 223.315029,
+      "sidereal_lahiri_longitude_deg": 199.457936,
+      "daily_speed_deg_per_day": 12.02203,
+      "motion": "Direct",
+      "rasi": "Tula (Libra)",
+      "nakshatra": "Swati",
+      "pada": 4
+    },
+    {
+      "id": "mars",
+      "graha": "Mangala (Mars)",
+      "tropical_longitude_deg": 327.963852,
+      "sidereal_lahiri_longitude_deg": 304.10676,
+      "daily_speed_deg_per_day": 0.775911,
+      "motion": "Direct",
+      "rasi": "Kumbha (Aquarius)",
+      "nakshatra": "Dhanishta",
+      "pada": 4
+    },
+    {
+      "id": "mercury",
+      "graha": "Budha (Mercury)",
+      "tropical_longitude_deg": 271.8872,
+      "sidereal_lahiri_longitude_deg": 248.030107,
+      "daily_speed_deg_per_day": 1.556224,
+      "motion": "Direct",
+      "rasi": "Dhanu (Sagittarius)",
+      "nakshatra": "Mula",
+      "pada": 3
+    },
+    {
+      "id": "jupiter",
+      "graha": "Guru (Jupiter)",
+      "tropical_longitude_deg": 25.348471,
+      "sidereal_lahiri_longitude_deg": 1.491379,
+      "daily_speed_deg_per_day": 0.040413,
+      "motion": "Direct",
+      "rasi": "Mesha (Aries)",
+      "nakshatra": "Ashwini",
+      "pada": 1
+    },
+    {
+      "id": "venus",
+      "graha": "Shukra (Venus)",
+      "tropical_longitude_deg": 241.563011,
+      "sidereal_lahiri_longitude_deg": 217.705919,
+      "daily_speed_deg_per_day": 1.208856,
+      "motion": "Direct",
+      "rasi": "Vrischika (Scorpio)",
+      "nakshatra": "Anuradha",
+      "pada": 2
+    },
+    {
+      "id": "saturn",
+      "graha": "Shani (Saturn)",
+      "tropical_longitude_deg": 40.236859,
+      "sidereal_lahiri_longitude_deg": 16.379766,
+      "daily_speed_deg_per_day": -0.019662,
+      "motion": "Retrograde",
+      "rasi": "Mesha (Aries)",
+      "nakshatra": "Bharani",
+      "pada": 1
+    },
+    {
+      "id": "rahu",
+      "graha": "Rahu (Mean Node)",
+      "tropical_longitude_deg": 125.044548,
+      "sidereal_lahiri_longitude_deg": 101.187456,
+      "daily_speed_deg_per_day": -0.052954,
+      "motion": "Retrograde",
+      "rasi": "Karka (Cancer)",
+      "nakshatra": "Pushya",
+      "pada": 3
+    },
+    {
+      "id": "ketu",
+      "graha": "Ketu (South Node)",
+      "tropical_longitude_deg": 305.044548,
+      "sidereal_lahiri_longitude_deg": 281.187456,
+      "daily_speed_deg_per_day": -0.052954,
+      "motion": "Retrograde",
+      "rasi": "Makara (Capricorn)",
+      "nakshatra": "Shravana",
+      "pada": 1
+    }
+  ],
+  "vector_sha256": "f6777edac53a5acabd2f15568bc332b03076add023883dee7bd50651fb34ee74"
+}</pre>
         </div>
       </div>
     </section>
@@ -802,42 +1373,44 @@ with EphemerisAdapter(kernels="compact") as adapter:
           <div id="grahaInspectorCard"></div>
           <div style="margin-top:0.85rem; padding-top:0.75rem; border-top:1px solid var(--border-subtle);">
             <div class="card-title" style="font-size:0.86rem; margin-bottom:0.45rem;">Lunar Node Policy · ephemeris-oss-lunar-nodes-1.1.0-meeus47.7</div>
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Node Series</th>
-                  <th class="num">Typical / Median (")</th>
-                  <th class="num">Worst / Max (")</th>
-                  <th class="num">Ceiling (")</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Mean Rahu (Meeus Eq. 47.7 TT)</td>
-                  <td class="num">4.09272616e-10</td>
-                  <td class="num">3.27418093e-09</td>
-                  <td class="num">0.001</td>
-                </tr>
-                <tr>
-                  <td>True Rahu (Skyfield DE440 Orbit Plane)</td>
-                  <td class="num">1.38436462e-06</td>
-                  <td class="num">5.9393642e-06</td>
-                  <td class="num">0.1</td>
-                </tr>
-                <tr>
-                  <td>True / Mean Ketu Antipode Axis</td>
-                  <td class="num">0.0</td>
-                  <td class="num">2.04636308e-10</td>
-                  <td class="num">0.001</td>
-                </tr>
-                <tr>
-                  <td>Legacy Mean Rahu Comparator (Superseded)</td>
-                  <td class="num">4.09272616e-10</td>
-                  <td class="num">3.68345354e-09</td>
-                  <td class="num">0.001</td>
-                </tr>
-              </tbody>
-            </table>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Node Series</th>
+                    <th class="num">Typical / Median (")</th>
+                    <th class="num">Worst / Max (")</th>
+                    <th class="num">Ceiling (")</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Mean Rahu (Meeus Eq. 47.7 TT)</td>
+                    <td class="num">4.09272616e-10</td>
+                    <td class="num">3.27418093e-09</td>
+                    <td class="num">0.001</td>
+                  </tr>
+                  <tr>
+                    <td>True Rahu (Skyfield DE440 Orbit Plane)</td>
+                    <td class="num">1.38436462e-06</td>
+                    <td class="num">5.9393642e-06</td>
+                    <td class="num">0.1</td>
+                  </tr>
+                  <tr>
+                    <td>True / Mean Ketu Antipode Axis</td>
+                    <td class="num">0.0</td>
+                    <td class="num">2.04636308e-10</td>
+                    <td class="num">0.001</td>
+                  </tr>
+                  <tr>
+                    <td>Legacy Mean Rahu Comparator (Superseded)</td>
+                    <td class="num">4.09272616e-10</td>
+                    <td class="num">3.68345354e-09</td>
+                    <td class="num">0.001</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -878,21 +1451,23 @@ with EphemerisAdapter(kernels="compact") as adapter:
               <div class="card-subtitle">Zero-allocation Clenshaw recurrence for position and analytic velocity differentiation</div>
             </div>
           </div>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Architectural Parameter</th>
-                <th class="num">Specification</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td>Kernel Artifact</td><td class="num">de440_compact.bin.zlib (1.84 MB compressed)</td></tr>
-              <tr><td>Coverage Window</td><td class="num">1800..2100 TT (300 Solar Years)</td></tr>
-              <tr><td>Polynomial Evaluation</td><td class="num">Clenshaw Recurrence (T_k(tau) &amp; dT_k/dtau)</td></tr>
-              <tr><td>Relativistic Frame</td><td class="num">ICRS -&gt; GCRS (Light-time + Annual Aberration + Solar Deflection)</td></tr>
-              <tr><td>Precession / Nutation</td><td class="num">IAU 2006 / 2000A Fukushima-Williams 4-Angle</td></tr>
-            </tbody>
-          </table>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Architectural Parameter</th>
+                  <th class="num">Specification</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Kernel Artifact</td><td class="num">de440_compact.bin.zlib (1.84 MB compressed)</td></tr>
+                <tr><td>Coverage Window</td><td class="num">1800..2100 TT (300 Solar Years)</td></tr>
+                <tr><td>Polynomial Evaluation</td><td class="num">Clenshaw Recurrence (T_k(tau) &amp; dT_k/dtau)</td></tr>
+                <tr><td>Relativistic Frame</td><td class="num">ICRS -&gt; GCRS (Light-time + Annual Aberration + Solar Deflection)</td></tr>
+                <tr><td>Precession / Nutation</td><td class="num">IAU 2006 / 2000A Fukushima-Williams 4-Angle</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div class="card">
@@ -902,30 +1477,32 @@ with EphemerisAdapter(kernels="compact") as adapter:
               <div class="card-subtitle">32 distinct TT epochs, 7 physical bodies, interleaved AB/BA with A/A control ratio</div>
             </div>
           </div>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Round</th>
-                <th class="num">Scalar Median / P95 (ms)</th>
-                <th class="num">Batched Median / P95 (ms)</th>
-                <th class="num">A/A Ratio</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="mono">Round 1</td>
-                <td class="num">5.9635 / 7.6404</td>
-                <td class="num">3.2652 / 5.9134</td>
-                <td class="num">0.987681</td>
-              </tr>
-              <tr>
-                <td class="mono">Round 2</td>
-                <td class="num">5.6203 / 10.4830</td>
-                <td class="num">3.1937 / 6.8014</td>
-                <td class="num">0.995893</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Round</th>
+                  <th class="num">Scalar Median / P95 (ms)</th>
+                  <th class="num">Batched Median / P95 (ms)</th>
+                  <th class="num">A/A Ratio</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="mono">Round 1</td>
+                  <td class="num">5.9635 / 7.6404</td>
+                  <td class="num">3.2652 / 5.9134</td>
+                  <td class="num">0.987681</td>
+                </tr>
+                <tr>
+                  <td class="mono">Round 2</td>
+                  <td class="num">5.6203 / 10.4830</td>
+                  <td class="num">3.1937 / 6.8014</td>
+                  <td class="num">0.995893</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>
@@ -2167,7 +2744,8 @@ function computeChart(options = {}) {
 
 globalThis.EphemerisObservatoryCore = Object.freeze({
   RASI_CATALOG, NAKSHATRA_CATALOG, SHODASHVARGA_DEFINITIONS, GRAHA_METADATA, VIMSHOTTARI_SEQUENCE,
-  normalizeDegrees, formatDms, computeNakshatra, computeVargaRasiIndex, sha256Hex, fnv1a64Hex, canonicalJson, computeChart
+  normalizeDegrees, formatDms, computeNakshatra, computeVargaRasiIndex, sha256Hex, fnv1a64Hex, canonicalJson, computeChart,
+  computePlanets
 });
 if (!globalThis.EphemerisBrowser) {
   globalThis.EphemerisBrowser = globalThis.EphemerisObservatoryCore;
@@ -2186,12 +2764,15 @@ if (!globalThis.EphemerisBrowser) {
       { id: "saturn", targetLabel: "Saturn system barycentre", naifId: 6, de440Median: "1.95472182e-05", de440Worst: "0.000108927907", horizonsMedian: "1.39243358e-06", horizonsP95: "2.16523355e-06", horizonsWorst: "2.71751497e-06", worstSample: "1922-10", notes: "Compact-DE440 Saturn system barycentre (NAIF 6)." }
     ];
 
+    // Workbench presets set the instant, observer and conventions; the eclipse uses the true node because the Moon sits on it.
     const PRESETS = {
-      j2000: { date: "2000-01-01", time: "12:00:00", lat: 28.6139, lon: 77.2090, ayanamsa: "lahiri", nodeMode: "mean" },
-      lahiri1956: { date: "1956-03-21", time: "00:00:00", lat: 23.1765, lon: 75.7885, ayanamsa: "lahiri", nodeMode: "mean" },
-      varanasi: { date: "2026-10-15", time: "06:30:00", lat: 25.3176, lon: 82.9739, ayanamsa: "lahiri", nodeMode: "true" },
-      bengaluru: { date: "1990-08-15", time: "10:30:00", lat: 12.9716, lon: 77.5946, ayanamsa: "raman", nodeMode: "mean" },
-      toronto: { date: "2026-03-20", time: "14:45:00", lat: 43.6532, lon: -79.3832, ayanamsa: "krishnamurti", nodeMode: "mean" }
+      eclipse1999: { label: "1999 Total Solar Eclipse", meta: "1999-08-11 11:03:00 UTC · Romania", date: "1999-08-11", time: "11:03:00", lat: 45.0667, lon: 24.3000, ayanamsa: "lahiri", nodeMode: "true" },
+      conjunction2020: { label: "2020 Great Conjunction", meta: "2020-12-21 18:20:00 UTC · Greenwich", date: "2020-12-21", time: "18:20:00", lat: 51.4769, lon: -0.0005, ayanamsa: "lahiri", nodeMode: "mean" },
+      j2000: { label: "J2000.0 Reference Epoch", meta: "2000-01-01 12:00:00 UTC · New Delhi", date: "2000-01-01", time: "12:00:00", lat: 28.6139, lon: 77.2090, ayanamsa: "lahiri", nodeMode: "mean" },
+      lahiri1956: { label: "Lahiri True Citra Benchmark", meta: "1956-03-21 00:00:00 UTC · Ujjain", date: "1956-03-21", time: "00:00:00", lat: 23.1765, lon: 75.7885, ayanamsa: "true_citra", nodeMode: "mean" },
+      varanasi: { label: "Varanasi Observatory", meta: "2026-10-15 06:30:00 UTC", date: "2026-10-15", time: "06:30:00", lat: 25.3176, lon: 82.9739, ayanamsa: "lahiri", nodeMode: "true" },
+      bengaluru: { label: "Bengaluru", meta: "1990-08-15 10:30:00 UTC", date: "1990-08-15", time: "10:30:00", lat: 12.9716, lon: 77.5946, ayanamsa: "raman", nodeMode: "mean" },
+      toronto: { label: "Toronto", meta: "2026-03-20 14:45:00 UTC", date: "2026-03-20", time: "14:45:00", lat: 43.6532, lon: -79.3832, ayanamsa: "krishnamurti", nodeMode: "mean" }
     };
 
     let selectedGrahaId = "moon";
@@ -2334,25 +2915,25 @@ if (!globalThis.EphemerisBrowser) {
       if (!mount) return;
       mount.innerHTML = `
         <div style="background:var(--bg-card); border:1px solid var(--border-accent); border-radius:10px; padding:0.9rem;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem;">
+          <div style="display:flex; flex-wrap:wrap; gap:0.4rem; justify-content:space-between; align-items:center; margin-bottom:0.45rem;">
             <span style="font-size:1rem; font-weight:700; color:var(--accent-cyan);">${row.targetLabel} (NAIF ${row.naifId})</span>
             <span class="status-pass">Worst Sample: ${row.worstSample}</span>
           </div>
           <p style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:0.7rem;">${row.notes}</p>
-          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.5rem; font-family:var(--font-mono); font-size:0.75rem;">
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(110px, 1fr)); gap:0.5rem; font-family:var(--font-mono); font-size:0.75rem;">
             <div style="background:var(--bg-panel); padding:0.5rem; border-radius:8px;">
               <div style="color:var(--text-muted);">Horizons P95</div>
-              <div style="color:#34d399; font-weight:700;">${row.horizonsP95}"</div>
+              <div style="color:#34d399; font-weight:700; overflow-wrap:anywhere;">${row.horizonsP95}"</div>
               <div style="color:var(--text-muted); font-size:0.68rem;">${p95Margin}x below 0.02"</div>
             </div>
             <div style="background:var(--bg-panel); padding:0.5rem; border-radius:8px;">
               <div style="color:var(--text-muted);">Horizons Worst</div>
-              <div style="color:#fbbf24; font-weight:700;">${row.horizonsWorst}"</div>
+              <div style="color:#fbbf24; font-weight:700; overflow-wrap:anywhere;">${row.horizonsWorst}"</div>
               <div style="color:var(--text-muted); font-size:0.68rem;">${maxMargin}x below 0.1"</div>
             </div>
             <div style="background:var(--bg-panel); padding:0.5rem; border-radius:8px;">
               <div style="color:var(--text-muted);">DE440 Worst</div>
-              <div style="color:var(--accent-cyan); font-weight:700;">${row.de440Worst}"</div>
+              <div style="color:var(--accent-cyan); font-weight:700; overflow-wrap:anywhere;">${row.de440Worst}"</div>
               <div style="color:var(--text-muted); font-size:0.68rem;">3,612 TT samples</div>
             </div>
           </div>
@@ -2389,7 +2970,7 @@ if (!globalThis.EphemerisBrowser) {
           </g>
         `;
       });
-      container.innerHTML = `<svg viewBox="0 0 ${width} ${height}" width="100%" height="auto">${gridLines}<line x1="${xP95Limit}" y1="${topPad - 6}" x2="${xP95Limit}" y2="${topPad + plotH}" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,3" /><text x="${xP95Limit - 4}" y="${topPad - 9}" fill="#34d399" font-size="9.5" font-family="monospace" text-anchor="end">P95 0.02"</text><line x1="${xMaxLimit}" y1="${topPad - 6}" x2="${xMaxLimit}" y2="${topPad + plotH}" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,3" /><text x="${xMaxLimit + 4}" y="${topPad - 9}" fill="#fb7185" font-size="9.5" font-family="monospace" text-anchor="start">Max 0.1"</text>${barsSvg}</svg>`;
+      container.innerHTML = `<svg viewBox="0 0 ${width} ${height}" width="100%">${gridLines}<line x1="${xP95Limit}" y1="${topPad - 6}" x2="${xP95Limit}" y2="${topPad + plotH}" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,3" /><text x="${xP95Limit - 4}" y="${topPad - 9}" fill="#34d399" font-size="9.5" font-family="monospace" text-anchor="end">P95 0.02"</text><line x1="${xMaxLimit}" y1="${topPad - 6}" x2="${xMaxLimit}" y2="${topPad + plotH}" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,3" /><text x="${xMaxLimit + 4}" y="${topPad - 9}" fill="#fb7185" font-size="9.5" font-family="monospace" text-anchor="start">Max 0.1"</text>${barsSvg}</svg>`;
       container.querySelectorAll("g[data-bar-graha]").forEach((g) => {
         g.addEventListener("click", () => {
           selectedGrahaId = g.getAttribute("data-bar-graha");
@@ -3154,6 +3735,7 @@ if (!globalThis.EphemerisBrowser) {
         textarea.value = `In this chart, Lagna is ${factSheet.lagna.s} and Sun is in ${sunG.s} in House ${sunG.h}. Moon is in ${moonG.s} in House ${moonG.h} under ${factSheet.dasha.maha_lord} Mahadasha. However, an ungrounded LLM claims Mars is in Kumbha in House 12.`;
       }
       runHallucinationAudit();
+      document.dispatchEvent(new CustomEvent("observatory:workbench-updated", { detail: { chart } }));
     }
 
     function runHallucinationAudit() {
@@ -3212,22 +3794,6 @@ if (!globalThis.EphemerisBrowser) {
           el.addEventListener("change", updateAllPanels);
           el.addEventListener("input", updateAllPanels);
         }
-      });
-
-      document.querySelectorAll("button[data-preset]").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          document.querySelectorAll("button[data-preset]").forEach((b) => b.classList.remove("active"));
-          btn.classList.add("active");
-          const p = PRESETS[btn.getAttribute("data-preset")];
-          if (!p) return;
-          document.getElementById("inputDateUtc").value = p.date;
-          document.getElementById("inputTimeUtc").value = p.time;
-          document.getElementById("inputLat").value = p.lat;
-          document.getElementById("inputLon").value = p.lon;
-          document.getElementById("selectAyanamsa").value = p.ayanamsa;
-          document.getElementById("selectNodeMode").value = p.nodeMode;
-          updateAllPanels();
-        });
       });
 
       document.querySelectorAll("button[data-chart-mode]").forEach((btn) => {
@@ -3327,6 +3893,209 @@ if (!globalThis.EphemerisBrowser) {
           statusBadge.textContent = "Copied MCP JSON!";
         }
       });
+
+      // Command suite: every native preset button also carries data-preset, so one handler serves the six native
+      // presets and the three reference observatories. Workbench presets are exclusive among themselves; the batch
+      // and MCP presets report the state of their own workspace.
+      const TOOL_PRESETS = {
+        batch10000: { label: "10,000-Chart Batch Stress Test", workspace: "batch" },
+        mcp_probe: { label: "Claude/Cursor MCP Server Live Probe", workspace: "mcp" }
+      };
+      const WORKSPACE_TARGETS = { workbench: "observatoryWorkbench", batch: "batchStressCalculator", mcp: "mcpLiveProbe" };
+      const MCP_PROBE_GRAHAS = ["sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn", "rahu", "ketu"];
+      const flashTimers = new Map();
+      let mcpProbeAnswered = false;
+
+      const setPressed = (btn, pressed) => {
+        btn.classList.toggle("active", pressed);
+        btn.setAttribute("aria-pressed", pressed ? "true" : "false");
+      };
+      const syncWorkbenchPresetButtons = (activeKey) => {
+        document.querySelectorAll("button[data-preset]").forEach((b) => {
+          const key = b.getAttribute("data-preset");
+          if (PRESETS[key]) setPressed(b, key === activeKey);
+        });
+      };
+      const syncToolPresetButton = (key, pressed) => {
+        document.querySelectorAll(`button[data-preset="${key}"]`).forEach((b) => setPressed(b, pressed));
+      };
+      const setActiveWorkspace = (workspace) => {
+        document.querySelectorAll("button[data-workspace-target]").forEach((pill) => {
+          pill.setAttribute("data-active", pill.getAttribute("data-workspace-target") === workspace ? "true" : "false");
+        });
+      };
+      const revealWorkspace = (workspace) => {
+        const target = document.getElementById(WORKSPACE_TARGETS[workspace]);
+        if (!target) return;
+        const reduceMotion = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+        target.classList.add("is-flashing");
+        clearTimeout(flashTimers.get(target));
+        flashTimers.set(target, setTimeout(() => target.classList.remove("is-flashing"), 900));
+      };
+      const setPresetReadout = (label, detail) => {
+        const readout = document.getElementById("nativePresetReadout");
+        if (!readout) return;
+        const strong = document.createElement("strong");
+        strong.textContent = label;
+        readout.replaceChildren(strong, document.createTextNode(` · ${detail}`));
+      };
+      const longitudeGapDeg = (a, b) => {
+        const d = Math.abs(a - b) % 360;
+        return d > 180 ? 360 - d : d;
+      };
+      const describeWorkbenchPreset = (key, chart) => {
+        const p = PRESETS[key];
+        const g = chart.grahas;
+        if (key === "eclipse1999") {
+          return `${p.meta} · Sun and Moon ${longitudeGapDeg(g.sun.tropicalLongitudeDeg, g.moon.tropicalLongitudeDeg).toFixed(3)}° apart in longitude, Moon ${g.moon.latitudeDeg.toFixed(3)}° from the ecliptic`;
+        }
+        if (key === "conjunction2020") {
+          return `${p.meta} · Jupiter and Saturn ${longitudeGapDeg(g.jupiter.tropicalLongitudeDeg, g.saturn.tropicalLongitudeDeg).toFixed(3)}° apart in longitude, Jupiter in ${g.jupiter.rasiName}`;
+        }
+        if (key === "lahiri1956") {
+          const core = globalThis.EphemerisBrowser || globalThis.EphemerisObservatoryCore;
+          const lahiriDeg = core.computePlanets(chart.time.jdTt, { ayanamsa: "lahiri", nodeMode: "mean" }).ayanamsaDeg;
+          const deltaArcsec = (chart.ayanamsa.degrees - lahiriDeg) * 3600.0;
+          return `${p.meta} · True Citra ${core.formatDms(chart.ayanamsa.degrees)} against Lahiri ${core.formatDms(lahiriDeg)}, ${deltaArcsec >= 0 ? "+" : ""}${deltaArcsec.toFixed(2)}" apart`;
+        }
+        if (key === "j2000") {
+          return `${p.meta} · JD ${chart.time.jdTt.toFixed(4)} TT · Lahiri ayanamsa ${chart.ayanamsa.dms}`;
+        }
+        return `${p.meta} · Lagna ${chart.houses.lagnaRasiName} · Moon in ${g.moon.nakshatra.name} (Pada ${g.moon.nakshatra.pada})`;
+      };
+
+      const renderMcpProbe = (chart) => {
+        if (!chart) return;
+        const dateVal = document.getElementById("inputDateUtc")?.value || "2000-01-01";
+        const timeVal = document.getElementById("inputTimeUtc")?.value || "12:00:00";
+        const instantUtc = `${dateVal}T${timeVal.length === 5 ? timeVal + ":00" : timeVal}Z`;
+        const request = {
+          jsonrpc: "2.0",
+          id: 1,
+          method: "tools/call",
+          params: {
+            name: "compute_complete_kundali_bundle",
+            arguments: {
+              instant_or_jd_ut: instantUtc,
+              latitude_deg: Number(chart.observer.latitudeDeg.toFixed(4)),
+              longitude_deg: Number(chart.observer.longitudeDeg.toFixed(4)),
+              ayanamsa: chart.ayanamsa.key
+            }
+          }
+        };
+        const grahas = {};
+        MCP_PROBE_GRAHAS.forEach((id) => {
+          grahas[id] = Number(chart.grahas[id].siderealLongitudeDeg.toFixed(6));
+        });
+        const moon = chart.grahas.moon;
+        const retroCount = MCP_PROBE_GRAHAS.filter((id) => chart.grahas[id].isRetrograde).length;
+        const response = {
+          jsonrpc: "2.0",
+          id: 1,
+          result: {
+            content: [{
+              type: "text",
+              text: `Lagna ${chart.houses.lagnaRasiName} ${chart.houses.lagnaDms}; Moon in ${moon.nakshatra.name} Pada ${moon.nakshatra.pada}; ${retroCount} of 9 Grahas retrograde.`
+            }],
+            structuredContent: {
+              ayanamsa: chart.ayanamsa.key,
+              ayanamsa_deg: Number(chart.ayanamsa.degrees.toFixed(6)),
+              node_mode: document.getElementById("selectNodeMode")?.value === "true" ? "true" : "mean",
+              lagna_sidereal_deg: Number(chart.houses.siderealAscendantDeg.toFixed(6)),
+              sidereal_longitude_deg: grahas,
+              receipt_sha256: chart.receipt.sha256
+            },
+            isError: false
+          }
+        };
+        const setText = (elId, text) => {
+          const el = document.getElementById(elId);
+          if (el) el.textContent = text;
+        };
+        setText("mcpProbeRequestBox", JSON.stringify(request, null, 2));
+        setText("mcpProbeResponseBox", JSON.stringify(response, null, 2));
+        if (mcpProbeAnswered) {
+          setText("mcpProbeHeadline", `tools/call compute_complete_kundali_bundle answered for ${instantUtc} at ${request.params.arguments.latitude_deg}, ${request.params.arguments.longitude_deg}`);
+          setText("mcpProbeStatus", `Answered · SHA-256 ${chart.receipt.sha256.slice(0, 12)}...`);
+          document.getElementById("mcpProbeStatus")?.setAttribute("class", "pill-badge emerald");
+        }
+      };
+
+      const applyWorkbenchPreset = (key) => {
+        const p = PRESETS[key];
+        document.getElementById("inputDateUtc").value = p.date;
+        document.getElementById("inputTimeUtc").value = p.time;
+        document.getElementById("inputLat").value = p.lat.toFixed(4);
+        document.getElementById("inputLon").value = p.lon.toFixed(4);
+        document.getElementById("selectAyanamsa").value = p.ayanamsa;
+        document.getElementById("selectNodeMode").value = p.nodeMode;
+        updateAllPanels();
+        syncWorkbenchPresetButtons(key);
+        setActiveWorkspace("workbench");
+        if (latestChartResult) setPresetReadout(p.label, describeWorkbenchPreset(key, latestChartResult));
+      };
+      const applyBatchStressPreset = () => {
+        document.querySelectorAll("button[data-batch-size]").forEach((b) => {
+          b.classList.toggle("active", b.getAttribute("data-batch-size") === "10000");
+        });
+        updateSpeedupCalculator("10000");
+        syncToolPresetButton("batch10000", true);
+        setActiveWorkspace("batch");
+        const profile = BATCH_PROFILES["10000"];
+        setPresetReadout(
+          TOOL_PRESETS.batch10000.label,
+          `${profile.chartsLabel} charts in ${profile.agiBatchMs} batch, ${profile.agiCacheMs} on warm cache hits, against ${profile.legacyBatchMs} for the legacy C baseline`
+        );
+        revealWorkspace("batch");
+      };
+      const applyMcpProbePreset = () => {
+        mcpProbeAnswered = true;
+        renderMcpProbe(latestChartResult);
+        syncToolPresetButton("mcp_probe", true);
+        setActiveWorkspace("mcp");
+        if (latestChartResult) {
+          setPresetReadout(TOOL_PRESETS.mcp_probe.label, `tools/call answered in this browser for the workbench chart · receipt SHA-256 ${latestChartResult.receipt.sha256.slice(0, 16)}...`);
+        }
+        revealWorkspace("mcp");
+      };
+
+      document.querySelectorAll("button[data-preset]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const key = btn.getAttribute("data-native-preset") || btn.getAttribute("data-preset");
+          if (PRESETS[key]) applyWorkbenchPreset(key);
+          else if (key === "batch10000") applyBatchStressPreset();
+          else if (key === "mcp_probe") applyMcpProbePreset();
+        });
+      });
+      document.querySelectorAll("button[data-batch-size]").forEach((btn) => {
+        btn.addEventListener("click", () => syncToolPresetButton("batch10000", btn.getAttribute("data-batch-size") === "10000"));
+      });
+      document.querySelectorAll("button[data-workspace-target]").forEach((pill) => {
+        pill.addEventListener("click", () => {
+          const workspace = pill.getAttribute("data-workspace-target");
+          setActiveWorkspace(workspace);
+          revealWorkspace(workspace);
+        });
+      });
+      // Typing an instant or changing a convention by hand leaves every workbench preset behind.
+      ["inputDateUtc", "inputTimeUtc", "inputLat", "inputLon", "selectAyanamsa", "selectNodeMode"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const markCustom = () => {
+          syncWorkbenchPresetButtons(null);
+          setActiveWorkspace("workbench");
+          setPresetReadout(
+            "Custom instant",
+            `${document.getElementById("inputDateUtc")?.value} ${document.getElementById("inputTimeUtc")?.value} UTC · ${document.getElementById("inputLat")?.value}, ${document.getElementById("inputLon")?.value}`
+          );
+        };
+        el.addEventListener("input", markCustom);
+        el.addEventListener("change", markCustom);
+      });
+      document.addEventListener("observatory:workbench-updated", (event) => renderMcpProbe(event.detail?.chart || latestChartResult));
+      renderMcpProbe(latestChartResult);
+      if (latestChartResult) setPresetReadout(PRESETS.j2000.label, describeWorkbenchPreset("j2000", latestChartResult));
 
       const LICENSE_TIERS = {
         indie: {
@@ -3442,6 +4211,196 @@ if (!globalThis.EphemerisBrowser) {
         }
         if (statusBadge) {
           statusBadge.textContent = "Copied Python Quickstart";
+        }
+      });
+
+      const LIVE_GRAHA_ROWS = [
+        ["sun", "Surya (Sun)"],
+        ["moon", "Chandra (Moon)"],
+        ["mars", "Mangala (Mars)"],
+        ["mercury", "Budha (Mercury)"],
+        ["jupiter", "Guru (Jupiter)"],
+        ["venus", "Shukra (Venus)"],
+        ["saturn", "Shani (Saturn)"],
+        ["rahu", "Rahu (Mean Node)"],
+        ["ketu", "Ketu (South Node)"]
+      ];
+
+      // Delta T per instant is pinned to the Python engine's espenak-meeus-piecewise-v1 values rather than the in-page
+      // estimate, which runs about 32 s high in 1947, so this vector and the DE440 engine share one time scale.
+      // J2000.0 is defined in TT and keeps its exact JD.
+      const LIVE_GRAHA_PRESETS = {
+        j2000: { name: "J2000.0 Epoch", instantLabel: "2000-01-01 12:00:00 TT", isoUtc: "2000-01-01T11:58:55.816Z", jdTt: 2451545.0, deltaTSeconds: 63.86 },
+        eclipse2026: { name: "2026 Total Solar Eclipse", instantLabel: "2026-08-12 17:46:00 UTC", isoUtc: "2026-08-12T17:46:00.000Z", deltaTSeconds: 75.45, deltaTPredicted: true },
+        india1947: { name: "1947 Independence Midnight", instantLabel: "1947-08-15 00:00:00 IST", isoUtc: "1947-08-14T18:30:00.000Z", deltaTSeconds: 28.07 }
+      };
+
+      const TITHI_PAKSHA_NAMES = [
+        "Pratipada", "Dwitiya", "Tritiya", "Chaturthi", "Panchami", "Shashthi", "Saptami",
+        "Ashtami", "Navami", "Dashami", "Ekadashi", "Dwadashi", "Trayodashi", "Chaturdashi"
+      ];
+
+      const describeTithi = (elongationDeg, elongationSpeedDegPerDay) => {
+        const tithi = Math.min(30, Math.floor(elongationDeg / 12.0) + 1);
+        const name = tithi === 15 ? "Shukla Purnima"
+          : tithi === 30 ? "Krishna Amavasya"
+          : `${tithi < 15 ? "Shukla" : "Krishna"} ${TITHI_PAKSHA_NAMES[(tithi - 1) % 15]}`;
+        const minutesToNext = Math.floor(((12.0 - (elongationDeg % 12.0)) / elongationSpeedDegPerDay) * 1440.0);
+        const nextText = minutesToNext < 1 ? "< 1 min"
+          : minutesToNext < 60 ? `${minutesToNext} min`
+          : `${Math.floor(minutesToNext / 60)} h ${String(minutesToNext % 60).padStart(2, "0")} min`;
+        return `Tithi ${tithi} · ${name} · next Tithi in ${nextText}`;
+      };
+
+      const computeLiveGrahaEphemeris = (presetKey) => {
+        const core = globalThis.EphemerisBrowser || globalThis.EphemerisObservatoryCore;
+        if (!core || typeof core.computePlanets !== "function") return null;
+        const preset = LIVE_GRAHA_PRESETS[presetKey] ? presetKey : "j2000";
+        const spec = LIVE_GRAHA_PRESETS[preset];
+        const jdTt = typeof spec.jdTt === "number"
+          ? spec.jdTt
+          : Date.parse(spec.isoUtc) / 86400000.0 + 2440587.5 + spec.deltaTSeconds / 86400.0;
+        const instant = { jdTt, deltaTSeconds: spec.deltaTSeconds, isoUtc: spec.isoUtc };
+        const run = () => core.computePlanets(instant.jdTt, { ayanamsa: "lahiri", nodeMode: "mean" });
+        let planetary = run();
+        // One 9-Graha pass is shorter than the browser's coarsened timer tick, so time a warm batch and report the mean.
+        let runs = 0;
+        let elapsedMs = 0;
+        const t0 = performance.now();
+        do {
+          planetary = run();
+          runs += 1;
+          elapsedMs = performance.now() - t0;
+        } while (elapsedMs < 4 && runs < 400);
+        return { core, preset, spec, instant, planetary, meanMs: elapsedMs / runs, runs };
+      };
+
+      const renderLiveGrahaEphemeris = (presetKey) => {
+        const live = computeLiveGrahaEphemeris(presetKey);
+        if (!live) return;
+        const { core, preset, spec, instant, planetary } = live;
+        const grahas = planetary.grahas;
+        const shortName = (label) => label.split(" (")[0];
+
+        const vector = {
+          schema: "ephemeris-oss.live-graha-vector.v1",
+          preset,
+          instant: spec.instantLabel,
+          utc_iso: instant.isoUtc,
+          jd_tt: Number(instant.jdTt.toFixed(6)),
+          delta_t_seconds: instant.deltaTSeconds,
+          delta_t_model: spec.deltaTPredicted ? "espenak-meeus-piecewise-v1 (prediction)" : "espenak-meeus-piecewise-v1",
+          ayanamsa: "lahiri",
+          ayanamsa_deg: Number(planetary.ayanamsaDeg.toFixed(6)),
+          node_mode: "mean",
+          grahas: LIVE_GRAHA_ROWS.map(([id, label]) => {
+            const g = grahas[id];
+            return {
+              id,
+              graha: label,
+              tropical_longitude_deg: Number(g.tropicalLongitudeDeg.toFixed(6)),
+              sidereal_lahiri_longitude_deg: Number(g.siderealLongitudeDeg.toFixed(6)),
+              daily_speed_deg_per_day: Number(g.speedDegPerDay.toFixed(6)),
+              motion: g.isRetrograde ? "Retrograde" : "Direct",
+              rasi: g.rasiName,
+              nakshatra: g.nakshatra.name,
+              pada: g.nakshatra.pada
+            };
+          })
+        };
+        const vectorSha256 = core.sha256Hex(JSON.stringify(vector));
+
+        const body = document.getElementById("liveGrahaEphemerisBody");
+        if (body) {
+          body.innerHTML = LIVE_GRAHA_ROWS.map(([id, label]) => {
+            const g = grahas[id];
+            const tropicalSign = core.RASI_CATALOG[Math.min(11, Math.floor(g.tropicalLongitudeDeg / 30.0))].english;
+            return `
+            <tr data-graha-id="${id}">
+              <td><strong>${label}</strong></td>
+              <td class="num">${g.tropicalLongitudeDeg.toFixed(4)}°<span class="live-graha-sub">${tropicalSign} ${core.formatDms(g.tropicalLongitudeDeg)}</span></td>
+              <td class="num" style="color:var(--accent-cyan); font-weight:600;">${g.siderealLongitudeDeg.toFixed(4)}°<span class="live-graha-sub">${g.rasiSanskrit} ${g.dmsInRasi}</span></td>
+              <td class="num">${g.speedDegPerDay >= 0 ? "+" : ""}${g.speedDegPerDay.toFixed(4)}</td>
+              <td><span class="${g.isRetrograde ? "status-retro" : "status-direct"}">${g.isRetrograde ? "Retrograde" : "Direct"}</span></td>
+              <td>${g.nakshatra.name} (Pada ${g.nakshatra.pada})</td>
+            </tr>`;
+          }).join("");
+        }
+
+        const retroLabels = LIVE_GRAHA_ROWS.filter(([id]) => grahas[id].isRetrograde).map(([, label]) => shortName(label));
+        const rasiCounts = new Map();
+        LIVE_GRAHA_ROWS.forEach(([id]) => rasiCounts.set(grahas[id].rasiIndex, (rasiCounts.get(grahas[id].rasiIndex) || 0) + 1));
+        const [crowdedRasi, crowdedCount] = [...rasiCounts.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0])[0];
+        const elongationDeg = core.normalizeDegrees(grahas.moon.tropicalLongitudeDeg - grahas.sun.tropicalLongitudeDeg);
+        const meanMsText = live.meanMs < 0.1 ? live.meanMs.toFixed(3) : live.meanMs.toFixed(2);
+
+        const setText = (elId, text) => {
+          const el = document.getElementById(elId);
+          if (el) el.textContent = text;
+        };
+        setText("liveGrahaEpochVal", spec.instantLabel);
+        setText("liveGrahaEpochSub", `JD ${instant.jdTt.toFixed(6)} TT · ΔT ${instant.deltaTSeconds.toFixed(2)} s${spec.deltaTPredicted ? " (predicted)" : ""}`);
+        setText("liveGrahaAyanamsaVal", `${planetary.ayanamsaDeg.toFixed(6)}°`);
+        setText("liveGrahaAyanamsaSub", `${core.formatDms(planetary.ayanamsaDeg)} · Mean lunar node for Rahu and Ketu`);
+        setText("liveGrahaRetroVal", `${retroLabels.length} of 9`);
+        setText("liveGrahaRetroSub", retroLabels.length ? retroLabels.join(", ") : "All 9 Grahas direct");
+        setText("liveGrahaTithiVal", `${elongationDeg.toFixed(3)}°`);
+        setText("liveGrahaTithiSub", describeTithi(elongationDeg, grahas.moon.speedDegPerDay - grahas.sun.speedDegPerDay));
+        setText("liveGrahaPresetBadge", `${spec.name} · JD ${instant.jdTt.toFixed(4)} TT`);
+        setText("liveGrahaExecBadge", live.meanMs < 1 ? `${meanMsText} ms (< 1 ms)` : `${meanMsText} ms (over 1 ms budget)`);
+        document.getElementById("liveGrahaExecBadge")?.setAttribute("title", `Mean of ${live.runs} warm 9-Graha computations in this browser`);
+        setText("liveGrahaReceiptBadge", `SHA-256: ${vectorSha256.slice(0, 16)}...`);
+        setText(
+          "liveGrahaHeadline",
+          `${spec.name}: ${retroLabels.length} of 9 Grahas retrograde${crowdedCount >= 3 ? ` · ${crowdedCount} Grahas in ${core.RASI_CATALOG[crowdedRasi].label}` : ""}`
+        );
+        setText("ephemerisJsonVectorBox", JSON.stringify({ ...vector, vector_sha256: vectorSha256 }, null, 2));
+        setText("copyEphemerisJsonStatus", "JSON Ephemeris Vector Ready");
+      };
+
+      document.querySelectorAll("button[data-ephemeris-preset]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll("button[data-ephemeris-preset]").forEach((b) => {
+            b.classList.toggle("active", b === btn);
+            b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+          });
+          renderLiveGrahaEphemeris(btn.getAttribute("data-ephemeris-preset") || "j2000");
+        });
+      });
+      renderLiveGrahaEphemeris("j2000");
+
+      // Fallback for browsers or embeds where the async Clipboard API is missing or refused.
+      const copyTextViaSelection = (text) => {
+        const scratch = document.createElement("textarea");
+        scratch.value = text;
+        scratch.setAttribute("readonly", "");
+        scratch.style.position = "fixed";
+        scratch.style.top = "0";
+        scratch.style.opacity = "0";
+        document.body.appendChild(scratch);
+        scratch.select();
+        let copied;
+        try {
+          copied = document.execCommand("copy");
+        } catch {
+          copied = false;
+        }
+        scratch.remove();
+        return copied;
+      };
+
+      document.getElementById("copyEphemerisJsonBtn")?.addEventListener("click", () => {
+        const jsonText = document.getElementById("ephemerisJsonVectorBox")?.textContent || "";
+        const statusBadge = document.getElementById("copyEphemerisJsonStatus");
+        const reportCopy = (copied) => {
+          if (statusBadge) {
+            statusBadge.textContent = copied ? "Copied JSON Ephemeris Vector" : "Clipboard blocked: select the JSON below";
+          }
+        };
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+          navigator.clipboard.writeText(jsonText).then(() => reportCopy(true), () => reportCopy(copyTextViaSelection(jsonText)));
+        } else {
+          reportCopy(copyTextViaSelection(jsonText));
         }
       });
 
