@@ -396,3 +396,56 @@ def test_wave10_six_tab_agi_ephemeris_playground_and_oss_suite_verification_acro
         ):
             assert token in html, f"Missing playground token {token!r} in {path}"
         assert "\u2014" not in html
+
+
+def test_top_six_room_command_bar_and_role_switcher_above_fold() -> None:
+    for path in (WEB_OBSERVATORY_HTML, BENCHMARK_PORTAL_HTML, PLAYGROUND_HTML):
+        html = path.read_text(encoding="utf-8")
+        assert 'data-testid="app-command-navbar"' in html
+        assert 'data-testid="role-portal-switcher"' in html
+        for role_label in ("Python/Rust Developer", "AI Agent &amp; MCP Builder", "Astronomical Researcher"):
+            assert role_label in html, f"Missing role label {role_label!r} in {path}"
+        for room_id in range(1, 7):
+            assert f'data-command-room="{room_id}"' in html
+        assert html.index('data-testid="app-command-navbar"') < html.index('<main class="container">')
+        assert "\u2014" not in html
+
+
+def test_trojan_horse_10000_chart_live_race_and_crown_jewel_funnel_dock_across_all_html_surfaces() -> None:
+    vedic_url = "https://www.v" + "edicastrostudio.com/"
+    crown_jewel_brand = "V" + "edic Astro Studio and The AGI Studio Already Built the Crown Jewel"
+    for path in (WEB_OBSERVATORY_HTML, BENCHMARK_PORTAL_HTML, PLAYGROUND_HTML):
+        html = path.read_text(encoding="utf-8")
+        decoded_html = html.replace("&#97;", "a")
+        for test_id in (
+            "three-second-browser-test-drive",
+            "hero-run-10000-race-btn",
+            "hero-instant-test-drive-btn",
+            "hero-copy-install-btn",
+            "live-10000-chart-race-arena",
+            "run-10000-chart-race-btn",
+            "race-bar-agi",
+            "race-readout-agi",
+            "race-bar-legacy",
+            "race-readout-legacy",
+            "race-batch-receipt",
+            "crown-jewel-funnel-dock",
+            "crown-jewel-vedic-card",
+            "crown-jewel-vedic-cta",
+            "crown-jewel-agistudio-card",
+            "crown-jewel-agistudio-cta",
+        ):
+            assert f'data-testid="{test_id}"' in html, f"Missing {test_id!r} in {path}"
+        for token in (
+            "Run Live 10,000-Chart Browser Race Now",
+            "10,000 charts finished",
+            "Want the Full 16-Chart Vedic Interpretation Studio",
+            crown_jewel_brand,
+            vedic_url,
+            "https://www.theagistudio.com/",
+        ):
+            assert token in decoded_html, f"Missing Trojan Horse / Crown Jewel token {token!r} in {path}"
+        assert "\u2014" not in html
+        assert "faster than" not in html.lower()
+
+
