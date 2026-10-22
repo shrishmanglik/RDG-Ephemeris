@@ -1858,19 +1858,25 @@ export async function initEphemerisWasm(kernelBytes) {
  */
 export function computeFullChartZeroCopy(request = {}) {
   const isTypedReq = request instanceof Float64Array;
-  const jdUtc = Number(isTypedReq ? request[0] : (request.jdUtc ?? 2451545.0));
+  const parsedTime = !isTypedReq && request.jdUtc == null && request.datetime != null ? dateToJulianDate(request.datetime) : null;
+  const jdUtc = Number(isTypedReq ? request[0] : (request.jdUtc ?? parsedTime?.jdUtc ?? 2451545.0));
   const decimalYear = 2000.0 + (jdUtc - J2000_JD) / 365.2425;
   const defaultDeltaT = estimateDeltaTSeconds(decimalYear);
-  const rawDeltaT = isTypedReq ? Number(request[2] ?? 0.0) : Number(request.deltaTSec ?? 0.0);
+  const rawDeltaT = isTypedReq ? Number(request[2] ?? 0.0) : Number(request.deltaTSec ?? parsedTime?.deltaTSeconds ?? 0.0);
   const deltaTSec = Math.abs(rawDeltaT) > 1e-6 ? rawDeltaT : defaultDeltaT;
-  const rawJdTt = isTypedReq ? Number(request[1] ?? 0.0) : Number(request.jdTt ?? 0.0);
+  const rawJdTt = isTypedReq ? Number(request[1] ?? 0.0) : Number(request.jdTt ?? parsedTime?.jdTt ?? 0.0);
   const jdTt = rawJdTt > 1000000.0 ? rawJdTt : jdUtc + deltaTSec / 86400.0;
-  const latDeg = Number(isTypedReq ? request[3] : (request.latDeg ?? 28.6139));
-  const lonDeg = Number(isTypedReq ? request[4] : (request.lonDeg ?? 77.2090));
+  const latDeg = Number(isTypedReq ? request[3] : (request.latDeg ?? request.latitudeDeg ?? request.latitude ?? 28.6139));
+  const lonDeg = Number(isTypedReq ? request[4] : (request.lonDeg ?? request.longitudeDeg ?? request.longitude ?? 77.2090));
   const altM = Number(isTypedReq ? request[5] : (request.altM ?? request.elevM ?? 0.0));
-  const ayanamsaId = (isTypedReq ? Number(request[6] ?? 0) : Number(request.ayanamsaId ?? 0)) >>> 0;
+  const ayanamsaMap = { lahiri: 0, raman: 1, krishnamurti: 2, kp: 2, yukteshwar: 3, fagan_bradley: 4, true_citra: 5 };
+  const resolvedAyanamsaId =
+    !isTypedReq && request.ayanamsaId == null && typeof request.ayanamsa === "string"
+      ? (ayanamsaMap[resolveAyanamsaKey(request.ayanamsa)] ?? 0)
+      : (isTypedReq ? Number(request[6] ?? 0) : Number(request.ayanamsaId ?? 0));
+  const ayanamsaId = resolvedAyanamsaId >>> 0;
   const houseSystemId = (isTypedReq ? Number(request[7] ?? 0) : Number(request.houseSystemId ?? 0)) >>> 0;
-  const nodeMode = Number(request.nodeMode ?? 0) >>> 0;
+  const nodeMode = (typeof request.nodeMode === "string" ? (request.nodeMode === "true" ? 1 : 0) : Number(request.nodeMode ?? 0)) >>> 0;
 
   let buf = _fallbackArenaBuffer;
   let reqBase = 0;

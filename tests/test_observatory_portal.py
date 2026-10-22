@@ -459,7 +459,10 @@ def test_four_runtime_sdk_quickstart_switcher_across_all_html_surfaces() -> None
             "sdk-tab-wasm",
             "sdk-tab-cli",
             "sdk-code-preview",
+            "sdk-live-output-box",
             "copy-sdk-snippet-btn",
+            "run-sdk-snippet-live-btn",
+            "sync-sdk-to-workbench-btn",
             "copy-sdk-snippet-status",
         ):
             assert f'data-testid="{test_id}"' in html, f"Missing {test_id!r} in {path}"
@@ -472,11 +475,16 @@ def test_four_runtime_sdk_quickstart_switcher_across_all_html_surfaces() -> None
             "WebAssembly / JS",
             "CLI &amp; MCP",
             "@theagistudio/jyotish-wasm",
+            "import { initEphemerisWasm, computeChart, computeFullChartZeroCopy }",
+            "arena.planetLonSidereal[1]",
             "unsafe { wasm_compute_full_kundali(&req, &mut out) }",
             "out.ashtakavarga_sav.iter().map(|&b| u32::from(b)).sum::<u32>()",
-            "uvx ephemeris-oss jyotish --compact --at 2026-10-15T06:30:00Z",
-            "uvx ephemeris-oss fact-sheet --compact --at 2026-10-15T06:30:00Z",
+            "uvx ephemeris-oss jyotish --compact --at",
+            "uvx ephemeris-oss fact-sheet --compact --at",
+            "Run Active Snippet in Browser",
+            "Sync to Workbench",
             "Clipboard blocked: select the snippet above",
         ):
             assert token in html, f"Missing 4-runtime SDK switcher token {token!r} in {path}"
         assert "\u2014" not in html
+
