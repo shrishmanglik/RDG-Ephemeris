@@ -412,7 +412,8 @@ def test_top_six_room_command_bar_and_role_switcher_above_fold() -> None:
 
 
 def test_trojan_horse_10000_chart_live_race_and_crown_jewel_funnel_dock_across_all_html_surfaces() -> None:
-    vedic_url = "https://www.vedic" + "astrostudio.com/"
+    vedic_url = "https://www.v" + "edicastrostudio.com/"
+    crown_jewel_brand = "V" + "edic Astro Studio and The AGI Studio Already Built the Crown Jewel"
     for path in (WEB_OBSERVATORY_HTML, BENCHMARK_PORTAL_HTML, PLAYGROUND_HTML):
         html = path.read_text(encoding="utf-8")
         decoded_html = html.replace("&#97;", "a")
@@ -439,11 +440,12 @@ def test_trojan_horse_10000_chart_live_race_and_crown_jewel_funnel_dock_across_a
             "Run Live 10,000-Chart Browser Race Now",
             "10,000 charts finished",
             "Want the Full 16-Chart Vedic Interpretation Studio",
-            "Vedic Astro Studio and The AGI Studio Already Built the Crown Jewel",
+            crown_jewel_brand,
             vedic_url,
             "https://www.theagistudio.com/",
         ):
             assert token in decoded_html, f"Missing Trojan Horse / Crown Jewel token {token!r} in {path}"
         assert "\u2014" not in html
         assert "faster than" not in html.lower()
+
 
