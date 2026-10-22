@@ -5019,7 +5019,7 @@ if (!globalThis.EphemerisBrowser) {
         },
         rust: {
           label: "Rust Crate",
-          code: `// Rust (cargo add ephemeris-core)\nuse ephemeris_core::{BatchNatalRequest, FullKundaliOutput, wasm_compute_full_kundali};\n\nlet req = BatchNatalRequest { jd_utc: 2461328.770833, lat_deg: 28.6139, lon_deg: 77.2090, ayanamsa_id: 0, ..Default::default() };\nlet mut out = FullKundaliOutput::zeroed();\nwasm_compute_full_kundali(&req, &mut out);\nassert_eq!(out.sav_total_bindus, 337);`
+          code: `// Rust (cargo add ephemeris-core)\nuse ephemeris_core::{BatchNatalRequest, FullKundaliOutput, wasm_compute_full_kundali};\n\nlet req = BatchNatalRequest { jd_utc: 2461328.770833, jd_tt: 2461328.771634, delta_t_sec: 69.2, lat_deg: 28.6139, lon_deg: 77.2090, alt_m: 0.0, ayanamsa_id: 0, house_system_id: 0, node_mode: 0, _pad: 0 };\nlet mut out: FullKundaliOutput = unsafe { core::mem::zeroed() };\nlet rc = unsafe { wasm_compute_full_kundali(&req, &mut out) };\nassert_eq!(rc, 0);\nassert_eq!(out.ashtakavarga_sav.iter().map(|&b| u32::from(b)).sum::<u32>(), 337);`
         },
         wasm: {
           label: "WebAssembly / JS",
@@ -5027,7 +5027,7 @@ if (!globalThis.EphemerisBrowser) {
         },
         cli: {
           label: "CLI & MCP",
-          code: `# CLI & Claude/Cursor MCP Server (zero-install via uvx)\nuvx ephemeris-oss --kernels compact --instant 2026-10-15T06:30:00Z --lat 28.6139 --lon 77.2090 --ayanamsa lahiri\nuvx ephemeris-oss-mcp --kernels compact --ayanamsa lahiri`
+          code: `# CLI & Deterministic AI Fact-Sheet (zero-install via uvx)\nuvx ephemeris-oss jyotish --compact --at 2026-10-15T06:30:00Z --lat 28.6139 --lon 77.2090 --ayanamsa lahiri --json\nuvx ephemeris-oss fact-sheet --compact --at 2026-10-15T06:30:00Z --lat 28.6139 --lon 77.2090 --ayanamsa lahiri`
         }
       };
 
@@ -5050,11 +5050,15 @@ if (!globalThis.EphemerisBrowser) {
       document.getElementById("copySdkSnippetBtn")?.addEventListener("click", () => {
         const codeText = document.getElementById("sdkCodePreview")?.textContent || "";
         const status = document.getElementById("copySdkSnippetStatus");
+        const reportCopy = (copied) => {
+          if (status) {
+            status.textContent = copied ? "Copied Active SDK Quickstart" : "Clipboard blocked: select the snippet above";
+          }
+        };
         if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
-          navigator.clipboard.writeText(codeText).catch(() => {});
-        }
-        if (status) {
-          status.textContent = "Copied Active SDK Quickstart";
+          navigator.clipboard.writeText(codeText).then(() => reportCopy(true), () => reportCopy(copyTextViaSelection(codeText)));
+        } else {
+          reportCopy(copyTextViaSelection(codeText));
         }
       });
 
