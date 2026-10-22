@@ -412,6 +412,10 @@ export function benchmarkClientKundali(iterations?: number): ClientKundaliBenchm
 export function isWasmArenaInitialized(): boolean;
 export function initEphemerisWasm(kernelBytes?: Uint8Array | ArrayBuffer | string): Promise<void>;
 export function computeFullChartZeroCopy(request: BatchNatalRequestInput): FullKundaliZeroCopyView;
+export function exportVerificationDossier(
+  request?: BatchNatalRequestInput | ChartInputOptions,
+  format?: "markdown" | "json"
+): string;
 
 export const EphemerisBrowser: {
   readonly ENGINE_VERSION: string;
@@ -449,6 +453,7 @@ export const EphemerisBrowser: {
   readonly isWasmArenaInitialized: typeof isWasmArenaInitialized;
   readonly initEphemerisWasm: typeof initEphemerisWasm;
   readonly computeFullChartZeroCopy: typeof computeFullChartZeroCopy;
+  readonly exportVerificationDossier: typeof exportVerificationDossier;
 };
 
 export default EphemerisBrowser;

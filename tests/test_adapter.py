@@ -239,3 +239,86 @@ def test_monthly_panchang_calendar_generation() -> None:
     assert any(d.is_ekadashi for d in sheet.days)
     assert any(d.is_purnima or d.is_amavasya for d in sheet.days)
     assert any(d.sankranti_rashi_name is not None for d in sheet.days)
+
+
+# ---------------------------------------------------------------------------
+# 4. Downstream IEphemerisProvider Contract Tests (get_planet_positions)
+# ---------------------------------------------------------------------------
+
+
+def test_adapter_get_planet_positions_contract() -> None:
+    dt = datetime(2026, 10, 22, 12, 0, tzinfo=timezone.utc)
+    from ephemeris_oss import GeoCoords, NakshatraInfo, PlanetPosition
+
+    loc = GeoCoords(latitude=28.6139, longitude=77.2090)
+
+    # 1. AnalyticalEphemerisProvider
+    alt = AnalyticalEphemerisProvider()
+    alt_positions = alt.get_planet_positions(dt, loc)
+    assert len(alt_positions) == 9
+    for name in ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"):
+        assert name in alt_positions
+        p = alt_positions[name]
+        assert isinstance(p, PlanetPosition)
+        assert p.name == name
+        assert 0.0 <= p.longitude < 360.0
+        assert 0 <= p.sign_num <= 11
+        assert 0.0 <= p.degree_in_sign < 30.0
+        assert isinstance(p.retrograde, bool)
+        assert isinstance(p.nakshatra, NakshatraInfo)
+        assert 0 <= p.nakshatra.index <= 26
+        assert 1 <= p.nakshatra.number <= 27
+        assert 1 <= p.nakshatra.pada <= 4
+        assert 0.0 <= p.nakshatra.degrees_in_nakshatra < 360.0 / 27.0
+
+    # 2. EphemerisAdapter (compact DE440 kernel)
+    with EphemerisAdapter(kernels="compact") as adapter:
+        adapter_positions = adapter.get_planet_positions(dt, loc)
+        assert len(adapter_positions) == 9
+        for name in ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"):
+            assert name in adapter_positions
+            p = adapter_positions[name]
+            assert isinstance(p, PlanetPosition)
+            assert p.name == name
+            assert 0.0 <= p.longitude < 360.0
+            assert 0 <= p.sign_num <= 11
+            assert 0.0 <= p.degree_in_sign < 30.0
+            assert isinstance(p.retrograde, bool)
+            assert isinstance(p.nakshatra, NakshatraInfo)
+            assert 1 <= p.nakshatra.pada <= 4
+
+        # Compare longitude parity between analytical and compact DE440
+        for name in ("Sun", "Moon", "Mars", "Jupiter", "Saturn"):
+            diff = abs((alt_positions[name].longitude - adapter_positions[name].longitude + 180.0) % 360.0 - 180.0)
+            assert diff < 0.25, f"{name} longitude divergence {diff} deg exceeds 0.25 deg limit"
+
+        # Explicit planets filter subset
+        subset = adapter.get_planet_positions(dt, loc, planets=["Moon", "Jupiter"])
+        assert set(subset.keys()) == {"Moon", "Jupiter"}
+
+
+def test_adapter_get_planet_positions_timezone_normalization() -> None:
+    from datetime import timedelta
+    from ephemeris_oss import GeoCoords
+    loc = GeoCoords(latitude=28.6139, longitude=77.2090, altitude_m=216.0)
+    dt_utc = datetime(2026, 10, 22, 12, 0, 0, tzinfo=timezone.utc)
+    tz_ist = timezone(timedelta(hours=5, minutes=30))
+    dt_ist = datetime(2026, 10, 22, 17, 30, 0, tzinfo=tz_ist)
+
+    # 1. Analytical provider
+    alt = AnalyticalEphemerisProvider()
+    pos_utc = alt.get_planet_positions(dt_utc, loc)
+    pos_ist = alt.get_planet_positions(dt_ist, loc)
+    for graha in ("Sun", "Moon", "Mars", "Jupiter", "Saturn"):
+        diff = abs((pos_utc[graha].longitude - pos_ist[graha].longitude + 180.0) % 360.0 - 180.0)
+        assert diff < 1e-9, f"Analytical timezone mismatch on {graha}: diff={diff}"
+
+    # 2. Compact DE440 adapter
+    with EphemerisAdapter(kernels="compact") as adapter:
+        pos_adapter_utc = adapter.get_planet_positions(dt_utc, loc)
+        pos_adapter_ist = adapter.get_planet_positions(dt_ist, loc)
+        for graha in ("Sun", "Moon", "Mars", "Jupiter", "Saturn"):
+            diff = abs((pos_adapter_utc[graha].longitude - pos_adapter_ist[graha].longitude + 180.0) % 360.0 - 180.0)
+            assert diff < 1e-9, f"Adapter timezone mismatch on {graha}: diff={diff}"
+
+
