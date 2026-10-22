@@ -476,6 +476,8 @@ class EphemerisAdapter:
         """Sidereal positions at UTC datetime dt matching IEphemerisProvider."""
         if dt.tzinfo is None:
             dt = dt.replace(tzinfo=timezone.utc)
+        else:
+            dt = dt.astimezone(timezone.utc)
         if location is not None:
             self.set_topo(location.longitude, location.latitude, getattr(location, "altitude_m", 0.0))
         hour_ut = (
@@ -1804,6 +1806,8 @@ class AnalyticalEphemerisProvider:
         """Sidereal positions at UTC datetime dt matching IEphemerisProvider."""
         if dt.tzinfo is None:
             dt = dt.replace(tzinfo=timezone.utc)
+        else:
+            dt = dt.astimezone(timezone.utc)
         if location is not None:
             self.set_topo(location.longitude, location.latitude, getattr(location, "altitude_m", 0.0))
         y, m, d = dt.year, dt.month, dt.day

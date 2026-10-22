@@ -296,3 +296,29 @@ def test_adapter_get_planet_positions_contract() -> None:
         subset = adapter.get_planet_positions(dt, loc, planets=["Moon", "Jupiter"])
         assert set(subset.keys()) == {"Moon", "Jupiter"}
 
+
+def test_adapter_get_planet_positions_timezone_normalization() -> None:
+    from datetime import timedelta
+    from ephemeris_oss import GeoCoords
+    loc = GeoCoords(latitude=28.6139, longitude=77.2090, altitude_m=216.0)
+    dt_utc = datetime(2026, 10, 22, 12, 0, 0, tzinfo=timezone.utc)
+    tz_ist = timezone(timedelta(hours=5, minutes=30))
+    dt_ist = datetime(2026, 10, 22, 17, 30, 0, tzinfo=tz_ist)
+
+    # 1. Analytical provider
+    alt = AnalyticalEphemerisProvider()
+    pos_utc = alt.get_planet_positions(dt_utc, loc)
+    pos_ist = alt.get_planet_positions(dt_ist, loc)
+    for graha in ("Sun", "Moon", "Mars", "Jupiter", "Saturn"):
+        diff = abs((pos_utc[graha].longitude - pos_ist[graha].longitude + 180.0) % 360.0 - 180.0)
+        assert diff < 1e-9, f"Analytical timezone mismatch on {graha}: diff={diff}"
+
+    # 2. Compact DE440 adapter
+    with EphemerisAdapter(kernels="compact") as adapter:
+        pos_adapter_utc = adapter.get_planet_positions(dt_utc, loc)
+        pos_adapter_ist = adapter.get_planet_positions(dt_ist, loc)
+        for graha in ("Sun", "Moon", "Mars", "Jupiter", "Saturn"):
+            diff = abs((pos_adapter_utc[graha].longitude - pos_adapter_ist[graha].longitude + 180.0) % 360.0 - 180.0)
+            assert diff < 1e-9, f"Adapter timezone mismatch on {graha}: diff={diff}"
+
+

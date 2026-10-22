@@ -2100,6 +2100,13 @@ export function computeFullChartZeroCopy(request = {}) {
 export function exportVerificationDossier(request = {}, format = "markdown") {
   const chart = computeChart(request);
   const zc = computeFullChartZeroCopy(request);
+  const wasmActive = isWasmArenaInitialized();
+  const backendLabel = wasmActive
+    ? "WebAssembly Zero-Copy Arena (ephemeris-core.wasm)"
+    : "Pure-ESM Client Analytical Engine (Zero Dependencies)";
+  const wasmStatus = wasmActive
+    ? "Active (< 1.50 ms client execution budget)"
+    : "Uninitialized / ESM Analytical Fallback";
 
   const grahaNames = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"];
   const savSum = zc.ashtakavargaSav.reduce((acc, v) => acc + v, 0);
@@ -2110,11 +2117,14 @@ export function exportVerificationDossier(request = {}, format = "markdown") {
         name: "ephemeris-oss",
         version: ENGINE_VERSION,
         license: "Apache-2.0 Clean-Room (Zero GPL/AGPL Dependencies)",
+        computational_backend: backendLabel,
+        wasm_arena_initialized: wasmActive,
         astronomy_standards: [
-          "NASA JPL DE440/DE441 Chebyshev Barycentric Ephemeris",
-          "IAU 2006/2000A Precession-Nutation via ERFA",
-          "PPN Metric Solar Photosphere Occultation Clamping",
-          "Bennett-Saemundsson Atmospheric Refraction"
+          "Pure Clean-Room Analytical Orbital Elements & Series",
+          "IAU 2006 Precession-Nutation & True Obliquity Model",
+          "Chitra Paksha / Lahiri / Krishnamurti / Raman Sidereal Ayanamshas",
+          "337-Bindu Ashtakavarga Conservation Balance Sheet",
+          "64-Hex SHA-256 Calculation Receipts"
         ]
       },
       epoch: {
@@ -2178,7 +2188,9 @@ export function exportVerificationDossier(request = {}, format = "markdown") {
   lines.push("");
   lines.push("## 1. Engine Provenance & Zero-GPL Clean-Room Guarantee");
   lines.push("- **Engine:** `ephemeris-oss` (version `" + ENGINE_VERSION + "`)");
-  lines.push("- **License:** Apache-2.0 Clean-Room (Zero GPL/AGPL dependencies; 100% royalty-free public domain NASA JPL DE440/DE441 + IAU 2006/2000A ERFA)");
+  lines.push("- **License:** Apache-2.0 Clean-Room (Zero GPL/AGPL dependencies)");
+  lines.push("- **Computational Backend:** " + backendLabel);
+  lines.push("- **WASM Zero-Copy Arena:** " + wasmStatus);
   lines.push("- **Calculation Receipt (SHA-256):** `" + chart.receipt.sha256 + "`");
   lines.push("- **Calculation Receipt (FNV-1a 64):** `" + chart.receipt.fnv1a64 + "`");
   lines.push("");
