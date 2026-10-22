@@ -566,15 +566,15 @@
     .live-graha-sub { display: block; margin-top: 0.12rem; font-size: 0.68rem; color: var(--text-muted); font-weight: 400; }
     @media (max-width: 768px) {
       .container { padding: 0 0.85rem; }
-      header.observatory-header { padding: 0.5rem 4.3rem 0 0.6rem; }
-      header.observatory-header .dock-surface { padding: 0.55rem 0.65rem; border-radius: 15px; gap: 0.45rem; }
-      .ags-theme-switcher { top: 14px; right: 10px; }
-      .brand-block { gap: 0.6rem; }
-      .brand-emblem { width: 32px; height: 32px; border-radius: 8px; }
-      .brand-title { font-size: 0.86rem; line-height: 1.3; }
+      header.observatory-header { padding: 0.35rem 0.6rem 0 0.6rem; }
+      header.observatory-header .dock-surface { padding: 0.4rem 0.55rem; border-radius: 13px; gap: 0.32rem; }
+      .ags-theme-switcher { top: 12px; right: 12px; }
+      .brand-block { gap: 0.5rem; }
+      .brand-emblem { width: 28px; height: 28px; border-radius: 7px; }
+      .brand-title { font-size: 0.82rem; line-height: 1.25; }
       .brand-subtitle { display: none; }
-      .dock-primary { gap: 0.45rem; }
-      .dock-actions { width: 100%; gap: 0.35rem; }
+      .dock-primary { gap: 0.35rem; }
+      .dock-actions { width: 100%; gap: 0.25rem; }
       .native-presets-bar { padding: 0.8rem 0.75rem; }
       .native-preset-rail {
         display: flex; overflow-x: auto; scroll-snap-type: x proximity; overscroll-behavior-x: contain;
@@ -592,15 +592,31 @@
       table.data-table th, table.data-table td { padding: 0.45rem 0.5rem; }
       .bar-row { grid-template-columns: 92px 1fr 56px; }
     }
+    @media (max-width: 640px) {
+      header.observatory-header { padding: 0.25rem 0.5rem 0 0.5rem; }
+      header.observatory-header .dock-surface { padding: 0.3rem 0.45rem; border-radius: 11px; gap: 0.22rem; }
+      .ags-theme-switcher { top: 8px; right: 8px; }
+      .ags-theme-switcher-trigger { width: 34px; height: 34px; min-width: 34px; min-height: 34px; }
+      .app-command-navbar { padding: 0.22rem 0.38rem; gap: 0.18rem; border-radius: 8px; }
+      .role-portal-readout { display: none; }
+      .role-portal-switcher { gap: 0.22rem; }
+      .role-portal-btn { padding: 0.16rem 0.42rem; font-size: 0.65rem; }
+      .app-command-rooms-rail { gap: 0.2rem; padding: 0.1rem 0; }
+      .app-room-pill { padding: 0.16rem 0.42rem; font-size: 0.63rem; }
+      .dock-primary { flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: 0.25rem; }
+      .brand-block { padding-right: 2.5rem; gap: 0.35rem; }
+      .brand-emblem { width: 24px; height: 24px; border-radius: 6px; }
+      .brand-title { font-size: 0.78rem; }
+      .dock-actions { flex-direction: row; align-items: center; justify-content: flex-end; gap: 0.25rem; width: auto; }
+      .dock-telemetry { font-size: 0.58rem; padding: 0.15rem 0.38rem; }
+      .dock-funnel { font-size: 0.58rem; }
+      .dock-surface .dock-rail { display: none; }
+    }
     /* On a phone the dock runs full width with the theme switcher seated in its top corner, and keeps the brand,
        telemetry and attribution on one line each; Panel 1 repeats the instrument readouts the rail carries. */
     @media (max-width: 560px) {
-      header.observatory-header { padding-right: 0.6rem; }
-      .ags-theme-switcher { top: 16px; right: 18px; }
-      .brand-block { padding-right: 3.3rem; }
-      .dock-actions { flex-direction: column; align-items: flex-start; gap: 0.3rem; }
-      .dock-telemetry, .dock-funnel { font-size: 0.64rem; }
-      .dock-surface .dock-rail { display: none; }
+      header.observatory-header { padding-right: 0.5rem; }
+      .brand-block { padding-right: 2.5rem; }
     }
     .sidebar-search { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-bottom: 1rem; }
     .sidebar-search input { flex: 1; min-width: 180px; padding: 0.65rem 0.8rem; border: 1px solid var(--border-subtle); border-radius: 8px; background: var(--bg-panel); color: var(--text-primary); font: inherit; }
@@ -1164,12 +1180,102 @@
       }
     }
     @media (max-width: 640px) {
-      .trojan-hero-proof-strip {
-        grid-template-columns: 1fr;
+      .trojan-hero-banner {
+        padding: 0.65rem 0.75rem;
+        margin-bottom: 0.5rem;
+        border-radius: 12px;
+      }
+      .trojan-hero-split-stage {
+        gap: 0.55rem;
+      }
+      .trojan-hero-kicker {
+        font-size: 0.62rem;
+        padding: 0.14rem 0.45rem 0.14rem 0.35rem;
+        margin-bottom: 0.22rem;
+      }
+      .trojan-hero-title {
+        font-size: clamp(0.96rem, 4vw, 1.12rem);
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+      }
+      .trojan-hero-card-lead {
+        margin-bottom: 0.4rem;
+      }
+      .trojan-hero-subtitle {
+        font-size: 0.70rem;
+        line-height: 1.32;
+      }
+      .trojan-hero-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.35rem;
+        margin-bottom: 0.45rem;
       }
       .trojan-hero-btn {
-        width: 100%;
+        padding: 0.32rem 0.45rem;
+        font-size: 0.64rem;
         justify-content: center;
+        text-align: center;
+      }
+      .trojan-hero-btn#heroCopyInstallBtn {
+        grid-column: 1 / -1;
+        padding: 0.26rem 0.42rem;
+        font-size: 0.62rem;
+      }
+      .trojan-hero-proof-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.3rem;
+        margin-top: 0.4rem;
+      }
+      .trojan-proof-card {
+        padding: 0.24rem 0.32rem;
+        border-radius: 7px;
+      }
+      .trojan-proof-label {
+        font-size: 0.52rem;
+        margin-bottom: 0.05rem;
+      }
+      .trojan-proof-val {
+        font-size: 0.68rem;
+      }
+      .trojan-proof-sub {
+        display: none;
+      }
+      .trojan-hero-chassis {
+        padding: 0.45rem 0.55rem;
+        gap: 0.28rem;
+        border-radius: 10px;
+      }
+      .chassis-head {
+        padding-bottom: 0.18rem;
+      }
+      .chassis-kicker {
+        font-size: 0.58rem;
+      }
+      .chassis-badge {
+        font-size: 0.52rem;
+        padding: 0.08rem 0.3rem;
+      }
+      .trojan-hero-readout {
+        font-size: 0.63rem;
+        padding: 0.28rem 0.45rem;
+        max-height: 48px;
+        overflow-y: auto;
+      }
+      .chassis-mini-race {
+        padding: 0.28rem 0.45rem;
+        gap: 0.14rem;
+      }
+      .mini-race-label-row {
+        font-size: 0.58rem;
+      }
+      .race-bar-outer {
+        height: 6px;
+      }
+      .chassis-receipt-row {
+        font-size: 0.56rem;
+        padding-top: 0.18rem;
       }
     }
     .trojan-hero-readout {

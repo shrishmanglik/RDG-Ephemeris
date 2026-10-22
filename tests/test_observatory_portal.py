@@ -536,6 +536,8 @@ def test_first_screen_100dvh_split_stage_and_single_axis_alignment_across_all_ht
             "Live Browser Instrument Stage",
             "align-items: flex-start",
             "text-align: left",
+            "@media (max-width: 640px)",
+            "repeat(3, minmax(0, 1fr))",
         ):
             assert token in html, f"Missing split-stage layout token {token!r} in {path}"
         assert "\u2014" not in html
