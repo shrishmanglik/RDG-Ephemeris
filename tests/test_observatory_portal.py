@@ -488,5 +488,3 @@ def test_four_runtime_sdk_quickstart_switcher_across_all_html_surfaces() -> None
         ):
             assert token in html, f"Missing 4-runtime SDK switcher token {token!r} in {path}"
         assert "\u2014" not in html
-
-

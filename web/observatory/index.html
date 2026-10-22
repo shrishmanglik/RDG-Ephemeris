@@ -5112,11 +5112,11 @@ if (!globalThis.EphemerisBrowser) {
         const isoUtc = `${dStr}T${normTime}Z`;
         const jdInfo = sdkCore.dateToJulianDate(isoUtc);
         const [yy, mm, dd] = dStr.split("-").map((x) => Number(x));
-        const [hh, mi] = normTime.split(":").map((x) => Number(x));
+        const [hh, mi, ss] = normTime.split(":").map((x) => Number(x || 0));
         const ayanMap = { lahiri: 0, raman: 1, krishnamurti: 2, kp: 2, yukteshwar: 3, fagan_bradley: 4, true_citra: 5, pushya: 6 };
         sdkState = {
           isoUtc,
-          pyDateArgs: `${yy}, ${mm}, ${dd}, ${hh}, ${mi}`,
+          pyDateArgs: ss > 0 ? `${yy}, ${mm}, ${dd}, ${hh}, ${mi}, ${ss}` : `${yy}, ${mm}, ${dd}, ${hh}, ${mi}`,
           jdUtc: jdInfo.jdUtc,
           jdTt: jdInfo.jdTt,
           deltaTSec: jdInfo.deltaTSeconds,
