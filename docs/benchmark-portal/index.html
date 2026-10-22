@@ -603,11 +603,11 @@
       .role-portal-btn { padding: 0.16rem 0.42rem; font-size: 0.65rem; }
       .app-command-rooms-rail { gap: 0.2rem; padding: 0.1rem 0; }
       .app-room-pill { padding: 0.16rem 0.42rem; font-size: 0.63rem; }
-      .dock-primary { flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: 0.25rem; }
-      .brand-block { padding-right: 2.5rem; gap: 0.35rem; }
+      .dock-primary { flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.2rem 0.45rem; }
+      .brand-block { padding-right: 0; gap: 0.35rem; }
       .brand-emblem { width: 24px; height: 24px; border-radius: 6px; }
       .brand-title { font-size: 0.78rem; }
-      .dock-actions { flex-direction: row; align-items: center; justify-content: flex-end; gap: 0.25rem; width: auto; }
+      .dock-actions { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: 0.25rem 0.45rem; width: auto; }
       .dock-telemetry { font-size: 0.58rem; padding: 0.15rem 0.38rem; }
       .dock-funnel { font-size: 0.58rem; }
       .dock-surface .dock-rail { display: none; }
@@ -616,7 +616,7 @@
        telemetry and attribution on one line each; Panel 1 repeats the instrument readouts the rail carries. */
     @media (max-width: 560px) {
       header.observatory-header { padding-right: 0.5rem; }
-      .brand-block { padding-right: 2.5rem; }
+      .brand-block { padding-right: 0; }
     }
     .sidebar-search { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-bottom: 1rem; }
     .sidebar-search input { flex: 1; min-width: 180px; padding: 0.65rem 0.8rem; border: 1px solid var(--border-subtle); border-radius: 8px; background: var(--bg-panel); color: var(--text-primary); font: inherit; }
