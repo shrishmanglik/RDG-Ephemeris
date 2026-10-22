@@ -362,16 +362,22 @@ export interface ClientKundaliBenchmarkResult {
 }
 
 export interface BatchNatalRequestInput {
-  readonly jdUtc: number;
+  readonly jdUtc?: number;
+  readonly datetime?: string | Date | { year: number; month: number; day: number; hour?: number; minute?: number; second?: number };
   readonly jdTt?: number;
   readonly deltaTSec?: number;
-  readonly latDeg: number;
-  readonly lonDeg: number;
+  readonly latDeg?: number;
+  readonly latitudeDeg?: number;
+  readonly latitude?: number;
+  readonly lonDeg?: number;
+  readonly longitudeDeg?: number;
+  readonly longitude?: number;
   readonly altM?: number;
   readonly elevM?: number;
   readonly ayanamsaId?: number;
+  readonly ayanamsa?: AyanamsaConvention | string;
   readonly houseSystemId?: number;
-  readonly nodeMode?: number;
+  readonly nodeMode?: number | NodeMode;
 }
 
 export interface FullKundaliZeroCopyView {

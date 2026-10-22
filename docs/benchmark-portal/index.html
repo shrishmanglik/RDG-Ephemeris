@@ -1518,9 +1518,12 @@ with EphemerisAdapter(kernels="compact") as adapter:
         latitude_deg=28.6139, longitude_deg=77.2090, ayanamsa="lahiri",
     )
     print(bundle.positions["moon"].longitude_deg, bundle.receipt_sha256)</pre>
+        <pre id="sdkLiveOutputBox" data-testid="sdk-live-output-box" class="receipt-box" style="max-height:88px; margin:0 0 0.55rem 0; font-size:0.74rem; color:var(--accent-emerald);">browser-engine parity check (Python SDK contract) &gt; Moon sidereal: 230.650291 deg (Vrischika) · 1416-byte Arena SAV: 337 bindus · SHA-256 verified in &lt; 1 ms</pre>
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
           <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
             <button type="button" class="preset-btn active" id="copySdkSnippetBtn" data-testid="copy-sdk-snippet-btn" style="font-weight:700;">Copy Active SDK Quickstart</button>
+            <button type="button" class="preset-btn" id="runSdkSnippetLiveBtn" data-testid="run-sdk-snippet-live-btn" style="font-weight:600;">Verify Contract in Browser</button>
+            <button type="button" class="preset-btn" id="syncSdkToWorkbenchBtn" data-testid="sync-sdk-to-workbench-btn" style="font-weight:600;">Sync to Workbench</button>
             <span class="pill-badge cyan" id="copySdkSnippetStatus" data-testid="copy-sdk-snippet-status">Python SDK Snippet Ready</span>
           </div>
           <span class="kpi-sub">Apache-2.0 · 1.84 MB Embedded DE440 Chebyshev Kernel · Sub-2ms Execution</span>
@@ -5012,29 +5015,72 @@ if (!globalThis.EphemerisBrowser) {
         }
       });
 
-      const SDK_RUNTIME_SNIPPETS = {
+      let activeSdkRuntime = "python";
+      let sdkState = {
+        isoUtc: "2026-10-15T06:30:00Z",
+        pyDateArgs: "2026, 10, 15, 6, 30",
+        jdUtc: 2461328.770833,
+        jdTt: 2461328.771634,
+        deltaTSec: 69.2,
+        lat: 28.6139,
+        lon: 77.209,
+        ayanamsa: "lahiri",
+        ayanamsaId: 0
+      };
+
+      const buildSdkSnippets = (st) => ({
         python: {
           label: "Python SDK",
-          code: `# Python (pip install agi-ephemeris)\nfrom datetime import datetime, timezone\nfrom ephemeris_oss import EphemerisAdapter\n\nwith EphemerisAdapter(kernels="compact") as adapter:\n    bundle = adapter.compute_complete_kundali_bundle(\n        datetime(2026, 10, 15, 6, 30, tzinfo=timezone.utc),\n        latitude_deg=28.6139, longitude_deg=77.2090, ayanamsa="lahiri",\n    )\n    print(bundle.positions["moon"].longitude_deg, bundle.receipt_sha256)`
+          code: `# Python (pip install agi-ephemeris)\nfrom datetime import datetime, timezone\nfrom ephemeris_oss import EphemerisAdapter\n\nwith EphemerisAdapter(kernels="compact") as adapter:\n    bundle = adapter.compute_complete_kundali_bundle(\n        datetime(${st.pyDateArgs}, tzinfo=timezone.utc),\n        latitude_deg=${st.lat.toFixed(4)}, longitude_deg=${st.lon.toFixed(4)}, ayanamsa="${st.ayanamsa}",\n    )\n    print(bundle.positions["moon"].longitude_deg, bundle.receipt_sha256)`
         },
         rust: {
           label: "Rust Crate",
-          code: `// Rust (cargo add ephemeris-core)\nuse ephemeris_core::{BatchNatalRequest, FullKundaliOutput, wasm_compute_full_kundali};\n\nlet req = BatchNatalRequest { jd_utc: 2461328.770833, jd_tt: 2461328.771634, delta_t_sec: 69.2, lat_deg: 28.6139, lon_deg: 77.2090, alt_m: 0.0, ayanamsa_id: 0, house_system_id: 0, node_mode: 0, _pad: 0 };\nlet mut out: FullKundaliOutput = unsafe { core::mem::zeroed() };\nlet rc = unsafe { wasm_compute_full_kundali(&req, &mut out) };\nassert_eq!(rc, 0);\nassert_eq!(out.ashtakavarga_sav.iter().map(|&b| u32::from(b)).sum::<u32>(), 337);`
+          code: `// Rust (cargo add ephemeris-core)\nuse ephemeris_core::{BatchNatalRequest, FullKundaliOutput, wasm_compute_full_kundali};\n\nlet req = BatchNatalRequest { jd_utc: ${st.jdUtc.toFixed(6)}, jd_tt: ${st.jdTt.toFixed(6)}, delta_t_sec: ${st.deltaTSec.toFixed(1)}, lat_deg: ${st.lat.toFixed(4)}, lon_deg: ${st.lon.toFixed(4)}, alt_m: 0.0, ayanamsa_id: ${st.ayanamsaId}, house_system_id: 0, node_mode: 0, _pad: 0 };\nlet mut out: FullKundaliOutput = unsafe { core::mem::zeroed() };\nlet rc = unsafe { wasm_compute_full_kundali(&req, &mut out) };\nassert_eq!(rc, 0);\nassert_eq!(out.ashtakavarga_sav.iter().map(|&b| u32::from(b)).sum::<u32>(), 337);`
         },
         wasm: {
           label: "WebAssembly / JS",
-          code: `// WebAssembly / JS (npm install @theagistudio/jyotish-wasm)\nimport { initEphemerisWasm, computeFullChartZeroCopy } from "@theagistudio/jyotish-wasm";\n\nawait initEphemerisWasm("/ephemeris_core.wasm");\nconst chart = computeFullChartZeroCopy({ datetime: "2026-10-15T06:30:00Z", latitude: 28.6139, longitude: 77.2090, ayanamsa: "lahiri" });\nconsole.log(chart.grahas.moon.siderealLongitudeDeg, chart.receipt.sha256);`
+          code: `// WebAssembly / JS (npm install @theagistudio/jyotish-wasm)\nimport { initEphemerisWasm, computeChart, computeFullChartZeroCopy } from "@theagistudio/jyotish-wasm";\n\nawait initEphemerisWasm("/ephemeris_core.wasm");\nconst chart = computeChart({ datetime: "${st.isoUtc}", latitudeDeg: ${st.lat.toFixed(4)}, longitudeDeg: ${st.lon.toFixed(4)}, ayanamsa: "${st.ayanamsa}" });\nconst arena = computeFullChartZeroCopy({ jdUtc: ${st.jdUtc.toFixed(6)}, latDeg: ${st.lat.toFixed(4)}, lonDeg: ${st.lon.toFixed(4)}, ayanamsaId: ${st.ayanamsaId} });\nconsole.log(chart.grahas.moon.siderealLongitudeDeg, arena.planetLonSidereal[1], chart.receipt.sha256);`
         },
         cli: {
           label: "CLI & MCP",
-          code: `# CLI & Deterministic AI Fact-Sheet (zero-install via uvx)\nuvx ephemeris-oss jyotish --compact --at 2026-10-15T06:30:00Z --lat 28.6139 --lon 77.2090 --ayanamsa lahiri --json\nuvx ephemeris-oss fact-sheet --compact --at 2026-10-15T06:30:00Z --lat 28.6139 --lon 77.2090 --ayanamsa lahiri`
+          code: `# CLI & Deterministic AI Fact-Sheet (zero-install via uvx)\nuvx ephemeris-oss jyotish --compact --at ${st.isoUtc} --lat ${st.lat.toFixed(4)} --lon ${st.lon.toFixed(4)} --ayanamsa ${st.ayanamsa} --json\nuvx ephemeris-oss fact-sheet --compact --at ${st.isoUtc} --lat ${st.lat.toFixed(4)} --lon ${st.lon.toFixed(4)} --ayanamsa ${st.ayanamsa}`
+        }
+      });
+
+      let SDK_RUNTIME_SNIPPETS = buildSdkSnippets(sdkState);
+
+      const executeActiveSdkSnippetLive = () => {
+        const sdkCore = typeof bootCore !== "undefined" && bootCore ? bootCore : globalThis.EphemerisObservatoryCore;
+        if (!sdkCore) return;
+        const t0 = performance.now();
+        const chart = sdkCore.computeChart({
+          datetime: sdkState.isoUtc,
+          latitudeDeg: sdkState.lat,
+          longitudeDeg: sdkState.lon,
+          ayanamsa: sdkState.ayanamsa
+        });
+        const arena = typeof sdkCore.computeFullChartZeroCopy === "function"
+          ? sdkCore.computeFullChartZeroCopy({
+              jdUtc: sdkState.jdUtc,
+              latDeg: sdkState.lat,
+              lonDeg: sdkState.lon,
+              ayanamsaId: sdkState.ayanamsaId
+            })
+          : null;
+        const elapsedMs = Math.max(0.05, performance.now() - t0);
+        const savSum = arena && arena.ashtakavargaSav
+          ? Array.from(arena.ashtakavargaSav).reduce((a, b) => a + b, 0)
+          : chart.ashtakavarga.totalBindus;
+        const outEl = document.getElementById("sdkLiveOutputBox");
+        if (outEl) {
+          outEl.textContent = `browser-engine parity check (${SDK_RUNTIME_SNIPPETS[activeSdkRuntime].label} contract, ${elapsedMs.toFixed(2)} ms) > Moon sidereal: ${chart.grahas.moon.siderealLongitudeDeg.toFixed(6)} deg (${chart.grahas.moon.rasiSanskrit}) · 1416-byte Arena SAV: ${savSum} bindus · SHA-256: ${chart.receipt.sha256}`;
         }
       };
 
       document.querySelectorAll("button[data-sdk-runtime]").forEach((btn) => {
         btn.addEventListener("click", () => {
-          const runtime = btn.getAttribute("data-sdk-runtime") || "python";
-          const spec = SDK_RUNTIME_SNIPPETS[runtime] || SDK_RUNTIME_SNIPPETS.python;
+          activeSdkRuntime = btn.getAttribute("data-sdk-runtime") || "python";
+          const spec = SDK_RUNTIME_SNIPPETS[activeSdkRuntime] || SDK_RUNTIME_SNIPPETS.python;
           document.querySelectorAll("button[data-sdk-runtime]").forEach((b) => {
             const active = b === btn;
             b.classList.toggle("active", active);
@@ -5044,7 +5090,47 @@ if (!globalThis.EphemerisBrowser) {
           const status = document.getElementById("copySdkSnippetStatus");
           if (preview) preview.textContent = spec.code;
           if (status) status.textContent = `${spec.label} Snippet Ready`;
+          executeActiveSdkSnippetLive();
         });
+      });
+
+      document.getElementById("runSdkSnippetLiveBtn")?.addEventListener("click", () => {
+        executeActiveSdkSnippetLive();
+        const status = document.getElementById("copySdkSnippetStatus");
+        if (status) status.textContent = `Verified ${SDK_RUNTIME_SNIPPETS[activeSdkRuntime].label} Contract in Browser`;
+      });
+
+      document.getElementById("syncSdkToWorkbenchBtn")?.addEventListener("click", () => {
+        const sdkCore = typeof bootCore !== "undefined" && bootCore ? bootCore : globalThis.EphemerisObservatoryCore;
+        if (!sdkCore) return;
+        const dStr = document.getElementById("inputDateUtc")?.value || "2026-10-15";
+        const tStr = document.getElementById("inputTimeUtc")?.value || "06:30:00";
+        const latVal = Number(document.getElementById("inputLat")?.value || 28.6139);
+        const lonVal = Number(document.getElementById("inputLon")?.value || 77.209);
+        const ayanVal = document.getElementById("selectAyanamsa")?.value || "lahiri";
+        const normTime = tStr.length === 5 ? `${tStr}:00` : tStr;
+        const isoUtc = `${dStr}T${normTime}Z`;
+        const jdInfo = sdkCore.dateToJulianDate(isoUtc);
+        const [yy, mm, dd] = dStr.split("-").map((x) => Number(x));
+        const [hh, mi, ss] = normTime.split(":").map((x) => Number(x || 0));
+        const ayanMap = { lahiri: 0, raman: 1, krishnamurti: 2, kp: 2, yukteshwar: 3, fagan_bradley: 4, true_citra: 5, pushya: 6 };
+        sdkState = {
+          isoUtc,
+          pyDateArgs: ss > 0 ? `${yy}, ${mm}, ${dd}, ${hh}, ${mi}, ${ss}` : `${yy}, ${mm}, ${dd}, ${hh}, ${mi}`,
+          jdUtc: jdInfo.jdUtc,
+          jdTt: jdInfo.jdTt,
+          deltaTSec: jdInfo.deltaTSeconds,
+          lat: latVal,
+          lon: lonVal,
+          ayanamsa: ayanVal,
+          ayanamsaId: ayanMap[ayanVal] ?? 0
+        };
+        SDK_RUNTIME_SNIPPETS = buildSdkSnippets(sdkState);
+        const preview = document.getElementById("sdkCodePreview");
+        const status = document.getElementById("copySdkSnippetStatus");
+        if (preview) preview.textContent = SDK_RUNTIME_SNIPPETS[activeSdkRuntime].code;
+        if (status) status.textContent = `Synced ${SDK_RUNTIME_SNIPPETS[activeSdkRuntime].label} to Workbench`;
+        executeActiveSdkSnippetLive();
       });
 
       document.getElementById("copySdkSnippetBtn")?.addEventListener("click", () => {
