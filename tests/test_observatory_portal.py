@@ -481,10 +481,12 @@ def test_four_runtime_sdk_quickstart_switcher_across_all_html_surfaces() -> None
             "out.ashtakavarga_sav.iter().map(|&b| u32::from(b)).sum::<u32>()",
             "uvx ephemeris-oss jyotish --compact --at",
             "uvx ephemeris-oss fact-sheet --compact --at",
-            "Run Active Snippet in Browser",
+            "Verify Contract in Browser",
+            "browser-engine parity check",
             "Sync to Workbench",
             "Clipboard blocked: select the snippet above",
         ):
             assert token in html, f"Missing 4-runtime SDK switcher token {token!r} in {path}"
         assert "\u2014" not in html
+
 

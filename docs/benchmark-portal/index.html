@@ -1518,11 +1518,11 @@ with EphemerisAdapter(kernels="compact") as adapter:
         latitude_deg=28.6139, longitude_deg=77.2090, ayanamsa="lahiri",
     )
     print(bundle.positions["moon"].longitude_deg, bundle.receipt_sha256)</pre>
-        <pre id="sdkLiveOutputBox" data-testid="sdk-live-output-box" class="receipt-box" style="max-height:88px; margin:0 0 0.55rem 0; font-size:0.74rem; color:var(--accent-emerald);">stdout &gt; Moon sidereal: 230.650291 deg (Vrischika) · 1416-byte Arena SAV: 337 bindus · SHA-256 verified in &lt; 1 ms</pre>
+        <pre id="sdkLiveOutputBox" data-testid="sdk-live-output-box" class="receipt-box" style="max-height:88px; margin:0 0 0.55rem 0; font-size:0.74rem; color:var(--accent-emerald);">browser-engine parity check (Python SDK contract) &gt; Moon sidereal: 230.650291 deg (Vrischika) · 1416-byte Arena SAV: 337 bindus · SHA-256 verified in &lt; 1 ms</pre>
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
           <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
             <button type="button" class="preset-btn active" id="copySdkSnippetBtn" data-testid="copy-sdk-snippet-btn" style="font-weight:700;">Copy Active SDK Quickstart</button>
-            <button type="button" class="preset-btn" id="runSdkSnippetLiveBtn" data-testid="run-sdk-snippet-live-btn" style="font-weight:600;">Run Active Snippet in Browser</button>
+            <button type="button" class="preset-btn" id="runSdkSnippetLiveBtn" data-testid="run-sdk-snippet-live-btn" style="font-weight:600;">Verify Contract in Browser</button>
             <button type="button" class="preset-btn" id="syncSdkToWorkbenchBtn" data-testid="sync-sdk-to-workbench-btn" style="font-weight:600;">Sync to Workbench</button>
             <span class="pill-badge cyan" id="copySdkSnippetStatus" data-testid="copy-sdk-snippet-status">Python SDK Snippet Ready</span>
           </div>
@@ -5050,15 +5050,17 @@ if (!globalThis.EphemerisBrowser) {
       let SDK_RUNTIME_SNIPPETS = buildSdkSnippets(sdkState);
 
       const executeActiveSdkSnippetLive = () => {
+        const sdkCore = typeof bootCore !== "undefined" && bootCore ? bootCore : globalThis.EphemerisObservatoryCore;
+        if (!sdkCore) return;
         const t0 = performance.now();
-        const chart = core.computeChart({
+        const chart = sdkCore.computeChart({
           datetime: sdkState.isoUtc,
           latitudeDeg: sdkState.lat,
           longitudeDeg: sdkState.lon,
           ayanamsa: sdkState.ayanamsa
         });
-        const arena = typeof core.computeFullChartZeroCopy === "function"
-          ? core.computeFullChartZeroCopy({
+        const arena = typeof sdkCore.computeFullChartZeroCopy === "function"
+          ? sdkCore.computeFullChartZeroCopy({
               jdUtc: sdkState.jdUtc,
               latDeg: sdkState.lat,
               lonDeg: sdkState.lon,
@@ -5071,7 +5073,7 @@ if (!globalThis.EphemerisBrowser) {
           : chart.ashtakavarga.totalBindus;
         const outEl = document.getElementById("sdkLiveOutputBox");
         if (outEl) {
-          outEl.textContent = `stdout (${SDK_RUNTIME_SNIPPETS[activeSdkRuntime].label}, ${elapsedMs.toFixed(2)} ms) > Moon sidereal: ${chart.grahas.moon.siderealLongitudeDeg.toFixed(6)} deg (${chart.grahas.moon.rasiSanskrit}) · 1416-byte Arena SAV: ${savSum} bindus · SHA-256: ${chart.receipt.sha256}`;
+          outEl.textContent = `browser-engine parity check (${SDK_RUNTIME_SNIPPETS[activeSdkRuntime].label} contract, ${elapsedMs.toFixed(2)} ms) > Moon sidereal: ${chart.grahas.moon.siderealLongitudeDeg.toFixed(6)} deg (${chart.grahas.moon.rasiSanskrit}) · 1416-byte Arena SAV: ${savSum} bindus · SHA-256: ${chart.receipt.sha256}`;
         }
       };
 
@@ -5095,10 +5097,12 @@ if (!globalThis.EphemerisBrowser) {
       document.getElementById("runSdkSnippetLiveBtn")?.addEventListener("click", () => {
         executeActiveSdkSnippetLive();
         const status = document.getElementById("copySdkSnippetStatus");
-        if (status) status.textContent = `Executed ${SDK_RUNTIME_SNIPPETS[activeSdkRuntime].label} Live`;
+        if (status) status.textContent = `Verified ${SDK_RUNTIME_SNIPPETS[activeSdkRuntime].label} Contract in Browser`;
       });
 
       document.getElementById("syncSdkToWorkbenchBtn")?.addEventListener("click", () => {
+        const sdkCore = typeof bootCore !== "undefined" && bootCore ? bootCore : globalThis.EphemerisObservatoryCore;
+        if (!sdkCore) return;
         const dStr = document.getElementById("inputDateUtc")?.value || "2026-10-15";
         const tStr = document.getElementById("inputTimeUtc")?.value || "06:30:00";
         const latVal = Number(document.getElementById("inputLat")?.value || 28.6139);
@@ -5106,10 +5110,10 @@ if (!globalThis.EphemerisBrowser) {
         const ayanVal = document.getElementById("selectAyanamsa")?.value || "lahiri";
         const normTime = tStr.length === 5 ? `${tStr}:00` : tStr;
         const isoUtc = `${dStr}T${normTime}Z`;
-        const jdInfo = core.dateToJulianDate(isoUtc);
+        const jdInfo = sdkCore.dateToJulianDate(isoUtc);
         const [yy, mm, dd] = dStr.split("-").map((x) => Number(x));
         const [hh, mi] = normTime.split(":").map((x) => Number(x));
-        const ayanMap = { lahiri: 0, raman: 1, krishnamurti: 2, kp: 2, yukteshwar: 3, fagan_bradley: 4, true_citra: 5 };
+        const ayanMap = { lahiri: 0, raman: 1, krishnamurti: 2, kp: 2, yukteshwar: 3, fagan_bradley: 4, true_citra: 5, pushya: 6 };
         sdkState = {
           isoUtc,
           pyDateArgs: `${yy}, ${mm}, ${dd}, ${hh}, ${mi}`,

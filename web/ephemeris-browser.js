@@ -1869,7 +1869,7 @@ export function computeFullChartZeroCopy(request = {}) {
   const latDeg = Number(isTypedReq ? request[3] : (request.latDeg ?? request.latitudeDeg ?? request.latitude ?? 28.6139));
   const lonDeg = Number(isTypedReq ? request[4] : (request.lonDeg ?? request.longitudeDeg ?? request.longitude ?? 77.2090));
   const altM = Number(isTypedReq ? request[5] : (request.altM ?? request.elevM ?? 0.0));
-  const ayanamsaMap = { lahiri: 0, raman: 1, krishnamurti: 2, kp: 2, yukteshwar: 3, fagan_bradley: 4, true_citra: 5 };
+  const ayanamsaMap = { lahiri: 0, raman: 1, krishnamurti: 2, kp: 2, yukteshwar: 3, fagan_bradley: 4, true_citra: 5, pushya: 6 };
   const resolvedAyanamsaId =
     !isTypedReq && request.ayanamsaId == null && typeof request.ayanamsa === "string"
       ? (ayanamsaMap[resolveAyanamsaKey(request.ayanamsa)] ?? 0)
@@ -1882,7 +1882,7 @@ export function computeFullChartZeroCopy(request = {}) {
   let reqBase = 0;
   let outBase = 64;
 
-  if (_wasmExports && _wasmExports.memory) {
+  if (_wasmExports && _wasmExports.memory && ayanamsaId <= 5) {
     reqBase = _wasmExports.wasm_arena_request_ptr() >>> 0;
     outBase = _wasmExports.wasm_arena_output_ptr() >>> 0;
     buf = _wasmExports.memory.buffer;
@@ -1901,7 +1901,7 @@ export function computeFullChartZeroCopy(request = {}) {
   reqU32[2] = nodeMode;
   reqU32[3] = 0;
 
-  if (_wasmExports && _wasmExports.wasm_compute_full_kundali) {
+  if (_wasmExports && _wasmExports.wasm_compute_full_kundali && ayanamsaId <= 5) {
     _wasmExports.wasm_compute_full_kundali(reqBase, outBase);
     buf = _wasmExports.memory.buffer;
   } else {
@@ -1918,7 +1918,7 @@ export function computeFullChartZeroCopy(request = {}) {
     const dashaAntardashaStartJd = new Float64Array(buf, outBase + 760, 81);
     const polarWords = new Uint32Array(buf, outBase + 1408, 2);
 
-    const ayanamsaKeys = ["lahiri", "raman", "krishnamurti", "yukteshwar", "fagan_bradley", "true_citra"];
+    const ayanamsaKeys = ["lahiri", "raman", "krishnamurti", "yukteshwar", "fagan_bradley", "true_citra", "pushya"];
     const ayanamsaKey = ayanamsaKeys[ayanamsaId] || "lahiri";
     const clampedLat = Math.max(-89.85, Math.min(89.85, latDeg));
     const planetary = computePlanets(jdTt, { ayanamsa: ayanamsaKey, nodeMode: nodeMode === 1 ? "true" : "mean" });
