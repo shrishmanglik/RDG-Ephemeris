@@ -512,3 +512,28 @@ def test_sovereign_18pillar_verification_dossier_exporter() -> None:
         assert "Export 18-Pillar Verification Dossier" in html
         assert "exportDossierHandler" in html
         assert "\u2014" not in html
+
+
+def test_first_screen_100dvh_split_stage_and_single_axis_alignment_across_all_html_surfaces() -> None:
+    for path in (WEB_OBSERVATORY_HTML, BENCHMARK_PORTAL_HTML, PLAYGROUND_HTML):
+        html = path.read_text(encoding="utf-8")
+        for token in (
+            "trojan-hero-split-stage",
+            "trojan-hero-editorial-col",
+            "trojan-hero-instrument-col",
+            "trojan-hero-card-lead",
+            "trojan-hero-proof-strip",
+            "trojan-proof-card",
+            "trojan-hero-chassis",
+            "chassis-head",
+            "chassis-mini-race",
+            "NASA JPL DE440 Parity",
+            "Compact Chebyshev Kernel",
+            "Permissive Commercial IP",
+            "Live Browser Instrument Stage",
+            "align-items: flex-start",
+            "text-align: left",
+        ):
+            assert token in html, f"Missing split-stage layout token {token!r} in {path}"
+        assert "\u2014" not in html
+
