@@ -449,3 +449,33 @@ def test_trojan_horse_10000_chart_live_race_and_crown_jewel_funnel_dock_across_a
         assert "faster than" not in html.lower()
 
 
+def test_four_runtime_sdk_quickstart_switcher_across_all_html_surfaces() -> None:
+    for path in (WEB_OBSERVATORY_HTML, BENCHMARK_PORTAL_HTML, PLAYGROUND_HTML):
+        html = path.read_text(encoding="utf-8")
+        for test_id in (
+            "ephemeris-sdk-snippet-switcher",
+            "sdk-tab-python",
+            "sdk-tab-rust",
+            "sdk-tab-wasm",
+            "sdk-tab-cli",
+            "sdk-code-preview",
+            "copy-sdk-snippet-btn",
+            "copy-sdk-snippet-status",
+        ):
+            assert f'data-testid="{test_id}"' in html, f"Missing {test_id!r} in {path}"
+        for runtime in ("python", "rust", "wasm", "cli"):
+            assert f'data-sdk-runtime="{runtime}"' in html, f"Missing data-sdk-runtime={runtime!r} in {path}"
+        for token in (
+            "Interactive 4-Runtime SDK Quickstart Switcher",
+            "Python SDK",
+            "Rust Crate",
+            "WebAssembly / JS",
+            "CLI &amp; MCP",
+            "@theagistudio/jyotish-wasm",
+            "wasm_compute_full_kundali",
+        ):
+            assert token in html, f"Missing 4-runtime SDK switcher token {token!r} in {path}"
+        assert "\u2014" not in html
+
+
+

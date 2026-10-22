@@ -1494,6 +1494,38 @@ with EphemerisAdapter(kernels="compact") as adapter:
     print(bundle.positions["moon"].longitude_deg, bundle.receipt_sha256)</pre>
         </div>
       </div>
+
+      <div class="race-arena" id="ephemerisSdkSnippetSwitcher" data-testid="ephemeris-sdk-snippet-switcher" role="region" aria-label="Interactive 4-Runtime SDK Quickstart Switcher" style="margin-top:0.9rem; margin-bottom:0;">
+        <div class="race-arena-head">
+          <div>
+            <div class="limb-name">Interactive 4-Runtime SDK Quickstart Switcher (Python · Rust · WebAssembly/JS · CLI)</div>
+            <div class="kpi-sub">Switch between all 4 Apache-2.0 zero-royalty runtimes sharing the same 0.001 arcsec JPL DE440 Chebyshev kernel and deterministic 64-hex SHA-256 receipt contract.</div>
+          </div>
+          <div style="display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center;" role="tablist" aria-label="Select SDK runtime">
+            <button type="button" role="tab" class="preset-btn active" data-sdk-runtime="python" data-testid="sdk-tab-python" aria-selected="true">Python SDK</button>
+            <button type="button" role="tab" class="preset-btn" data-sdk-runtime="rust" data-testid="sdk-tab-rust" aria-selected="false">Rust Crate</button>
+            <button type="button" role="tab" class="preset-btn" data-sdk-runtime="wasm" data-testid="sdk-tab-wasm" aria-selected="false">WebAssembly / JS</button>
+            <button type="button" role="tab" class="preset-btn" data-sdk-runtime="cli" data-testid="sdk-tab-cli" aria-selected="false">CLI &amp; MCP</button>
+          </div>
+        </div>
+        <pre id="sdkCodePreview" data-testid="sdk-code-preview" class="receipt-box" style="max-height:175px; margin:0 0 0.55rem 0;"># Python (pip install agi-ephemeris)
+from datetime import datetime, timezone
+from ephemeris_oss import EphemerisAdapter
+
+with EphemerisAdapter(kernels="compact") as adapter:
+    bundle = adapter.compute_complete_kundali_bundle(
+        datetime(2026, 10, 15, 6, 30, tzinfo=timezone.utc),
+        latitude_deg=28.6139, longitude_deg=77.2090, ayanamsa="lahiri",
+    )
+    print(bundle.positions["moon"].longitude_deg, bundle.receipt_sha256)</pre>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+          <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+            <button type="button" class="preset-btn active" id="copySdkSnippetBtn" data-testid="copy-sdk-snippet-btn" style="font-weight:700;">Copy Active SDK Quickstart</button>
+            <span class="pill-badge cyan" id="copySdkSnippetStatus" data-testid="copy-sdk-snippet-status">Python SDK Snippet Ready</span>
+          </div>
+          <span class="kpi-sub">Apache-2.0 · 1.84 MB Embedded DE440 Chebyshev Kernel · Sub-2ms Execution</span>
+        </div>
+      </div>
     </section>
 
     <section class="card" data-testid="live-graha-ephemeris-table" aria-label="3-Second Live 9-Graha Planetary Ephemeris and Retrograde Table">
@@ -4977,6 +5009,52 @@ if (!globalThis.EphemerisBrowser) {
         }
         if (statusBadge) {
           statusBadge.textContent = "Copied Python Quickstart";
+        }
+      });
+
+      const SDK_RUNTIME_SNIPPETS = {
+        python: {
+          label: "Python SDK",
+          code: `# Python (pip install agi-ephemeris)\nfrom datetime import datetime, timezone\nfrom ephemeris_oss import EphemerisAdapter\n\nwith EphemerisAdapter(kernels="compact") as adapter:\n    bundle = adapter.compute_complete_kundali_bundle(\n        datetime(2026, 10, 15, 6, 30, tzinfo=timezone.utc),\n        latitude_deg=28.6139, longitude_deg=77.2090, ayanamsa="lahiri",\n    )\n    print(bundle.positions["moon"].longitude_deg, bundle.receipt_sha256)`
+        },
+        rust: {
+          label: "Rust Crate",
+          code: `// Rust (cargo add ephemeris-core)\nuse ephemeris_core::{BatchNatalRequest, FullKundaliOutput, wasm_compute_full_kundali};\n\nlet req = BatchNatalRequest { jd_utc: 2461328.770833, lat_deg: 28.6139, lon_deg: 77.2090, ayanamsa_id: 0, ..Default::default() };\nlet mut out = FullKundaliOutput::zeroed();\nwasm_compute_full_kundali(&req, &mut out);\nassert_eq!(out.sav_total_bindus, 337);`
+        },
+        wasm: {
+          label: "WebAssembly / JS",
+          code: `// WebAssembly / JS (npm install @theagistudio/jyotish-wasm)\nimport { initEphemerisWasm, computeFullChartZeroCopy } from "@theagistudio/jyotish-wasm";\n\nawait initEphemerisWasm("/ephemeris_core.wasm");\nconst chart = computeFullChartZeroCopy({ datetime: "2026-10-15T06:30:00Z", latitude: 28.6139, longitude: 77.2090, ayanamsa: "lahiri" });\nconsole.log(chart.grahas.moon.siderealLongitudeDeg, chart.receipt.sha256);`
+        },
+        cli: {
+          label: "CLI & MCP",
+          code: `# CLI & Claude/Cursor MCP Server (zero-install via uvx)\nuvx ephemeris-oss --kernels compact --instant 2026-10-15T06:30:00Z --lat 28.6139 --lon 77.2090 --ayanamsa lahiri\nuvx ephemeris-oss-mcp --kernels compact --ayanamsa lahiri`
+        }
+      };
+
+      document.querySelectorAll("button[data-sdk-runtime]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const runtime = btn.getAttribute("data-sdk-runtime") || "python";
+          const spec = SDK_RUNTIME_SNIPPETS[runtime] || SDK_RUNTIME_SNIPPETS.python;
+          document.querySelectorAll("button[data-sdk-runtime]").forEach((b) => {
+            const active = b === btn;
+            b.classList.toggle("active", active);
+            b.setAttribute("aria-selected", String(active));
+          });
+          const preview = document.getElementById("sdkCodePreview");
+          const status = document.getElementById("copySdkSnippetStatus");
+          if (preview) preview.textContent = spec.code;
+          if (status) status.textContent = `${spec.label} Snippet Ready`;
+        });
+      });
+
+      document.getElementById("copySdkSnippetBtn")?.addEventListener("click", () => {
+        const codeText = document.getElementById("sdkCodePreview")?.textContent || "";
+        const status = document.getElementById("copySdkSnippetStatus");
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+          navigator.clipboard.writeText(codeText).catch(() => {});
+        }
+        if (status) {
+          status.textContent = "Copied Active SDK Quickstart";
         }
       });
 
