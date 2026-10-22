@@ -422,6 +422,7 @@ def test_trojan_horse_10000_chart_live_race_and_crown_jewel_funnel_dock_across_a
             "hero-run-10000-race-btn",
             "hero-instant-test-drive-btn",
             "hero-copy-install-btn",
+            "hero-chassis-receipt-code",
             "live-10000-chart-race-arena",
             "run-10000-chart-race-btn",
             "race-bar-agi",
@@ -438,6 +439,8 @@ def test_trojan_horse_10000_chart_live_race_and_crown_jewel_funnel_dock_across_a
             assert f'data-testid="{test_id}"' in html, f"Missing {test_id!r} in {path}"
         for token in (
             "Run Live 10,000-Chart Browser Race Now",
+            "Run 10,000-Chart Race",
+            "heroChassisReceiptCode",
             "10,000 charts finished",
             "Want the Full 16-Chart Vedic Interpretation Studio",
             crown_jewel_brand,

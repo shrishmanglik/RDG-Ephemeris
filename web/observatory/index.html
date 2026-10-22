@@ -894,19 +894,19 @@
     }
     .trojan-hero-actions {
       display: flex;
-      flex-wrap: nowrap;
-      gap: 0.55rem;
+      flex-wrap: wrap;
+      gap: 0.45rem;
       align-items: center;
-      margin-bottom: 0.85rem;
+      margin-bottom: 0.75rem;
       width: 100%;
     }
     .trojan-hero-btn {
       appearance: none;
       cursor: pointer;
-      border-radius: 9px;
-      padding: 0.54rem 0.88rem;
+      border-radius: 8px;
+      padding: 0.42rem 0.68rem;
       font-family: var(--font-mono);
-      font-size: 0.74rem;
+      font-size: 0.70rem;
       font-weight: 700;
       white-space: nowrap;
       color: var(--text-primary);
@@ -915,7 +915,8 @@
       transition: all 0.14s ease;
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.35rem;
+      max-width: 100%;
     }
     .trojan-hero-btn.primary {
       background: rgba(16, 185, 129, 0.18);
@@ -1362,9 +1363,9 @@
             <p class="trojan-hero-subtitle">Zero install required to test-drive. Powered by our 1.84 MB JPL DE440 Chebyshev engine (0.001 arcsec accuracy · 12.50x to 15.07x speedup · Apache-2.0 $0 royalty forever).</p>
           </div>
           <div class="trojan-hero-actions" role="group" aria-label="Instant browser test-drive controls">
-            <button type="button" class="trojan-hero-btn primary" id="heroRun10000RaceBtn" data-testid="hero-run-10000-race-btn">Run Live 10,000-Chart Speed Race</button>
-            <button type="button" class="trojan-hero-btn cyan" id="heroInstantTestDriveBtn" data-testid="hero-instant-test-drive-btn">Test-Drive Live Browser Engine Now (&lt; 1 ms)</button>
-            <button type="button" class="trojan-hero-btn" id="heroCopyInstallBtn" data-testid="hero-copy-install-btn"><code>pip install agi-ephemeris</code> · <code>uvx ephemeris-oss-mcp</code></button>
+            <button type="button" class="trojan-hero-btn primary" id="heroRun10000RaceBtn" data-testid="hero-run-10000-race-btn">Run 10,000-Chart Race</button>
+            <button type="button" class="trojan-hero-btn cyan" id="heroInstantTestDriveBtn" data-testid="hero-instant-test-drive-btn">Test-Drive Engine (&lt; 1 ms)</button>
+            <button type="button" class="trojan-hero-btn" id="heroCopyInstallBtn" data-testid="hero-copy-install-btn"><code>pip install agi-ephemeris</code> · MCP</button>
           </div>
           <div class="trojan-hero-proof-strip" role="group" aria-label="Three sovereign precision commitments">
             <div class="trojan-proof-card">
@@ -1407,7 +1408,7 @@
             </div>
             <div class="chassis-receipt-row">
               <span>Receipt (SHA-256):</span>
-              <code style="color:var(--accent-cyan); font-size:0.68rem;">a94f6c8d2031e57b...0d2e4f</code>
+              <code style="color:var(--accent-cyan); font-size:0.68rem;" id="heroChassisReceiptCode" data-testid="hero-chassis-receipt-code" title="SHA-256 calculation receipt">a94f6c8d2031e57b...0d2e4f</code>
             </div>
           </div>
         </div>
@@ -5019,6 +5020,13 @@ if (!globalThis.EphemerisBrowser) {
         if (receiptEl) {
           receiptEl.textContent = batchSha256;
         }
+        const chassisReceiptEl = document.getElementById("heroChassisReceiptCode");
+        if (chassisReceiptEl) {
+          chassisReceiptEl.textContent = batchSha256.length > 24
+            ? `${batchSha256.slice(0, 16)}...${batchSha256.slice(-6)}`
+            : batchSha256;
+          chassisReceiptEl.title = `Computed Batch SHA-256: ${batchSha256}`;
+        }
       };
 
       const updateSpeedupCalculator = (batchKey) => {
@@ -5061,6 +5069,7 @@ if (!globalThis.EphemerisBrowser) {
       document.getElementById("heroInstantTestDriveBtn")?.addEventListener("click", () => {
         const core = globalThis.EphemerisBrowser || globalThis.EphemerisObservatoryCore;
         const readout = document.getElementById("heroInstantTestDriveReadout");
+        const chassisReceiptEl = document.getElementById("heroChassisReceiptCode");
         if (!core || typeof core.computeChart !== "function" || !readout) return;
         const nowIso = new Date().toISOString().slice(0, 19) + "Z";
         const t0 = performance.now();
@@ -5073,6 +5082,11 @@ if (!globalThis.EphemerisBrowser) {
         });
         const elapsedMs = Math.max(0.05, performance.now() - t0);
         readout.innerHTML = `<strong>Live Browser Vector (${nowIso}):</strong> Lagna <code>${chart.houses.lagnaRasiName} ${chart.houses.lagnaDms}</code> · Surya <code>${chart.grahas.sun.rasiSanskrit} ${chart.grahas.sun.dmsInRasi}</code> · Chandra <code>${chart.grahas.moon.rasiSanskrit} ${chart.grahas.moon.dmsInRasi}</code> (${chart.grahas.moon.nakshatra.name} Pada ${chart.grahas.moon.nakshatra.pada}) · Lahiri <code>${chart.ayanamsa.degrees.toFixed(6)}°</code> · Executed in <strong style="color:var(--accent-emerald);">${elapsedMs.toFixed(2)} ms (&lt; 1 ms)</strong> · SHA-256: <code style="color:var(--accent-cyan);">${chart.receipt.sha256}</code>`;
+        if (chassisReceiptEl && chart.receipt && chart.receipt.sha256) {
+          const sha = chart.receipt.sha256;
+          chassisReceiptEl.textContent = sha.length > 24 ? `${sha.slice(0, 16)}...${sha.slice(-6)}` : sha;
+          chassisReceiptEl.title = `Computed Chart SHA-256: ${sha}`;
+        }
       });
 
       document.getElementById("heroCopyInstallBtn")?.addEventListener("click", () => {
