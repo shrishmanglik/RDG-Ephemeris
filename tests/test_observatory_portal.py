@@ -488,3 +488,27 @@ def test_four_runtime_sdk_quickstart_switcher_across_all_html_surfaces() -> None
         ):
             assert token in html, f"Missing 4-runtime SDK switcher token {token!r} in {path}"
         assert "\u2014" not in html
+
+
+def test_sovereign_18pillar_verification_dossier_exporter() -> None:
+    js_path = REPO_ROOT / "web" / "ephemeris-browser.js"
+    dts_path = REPO_ROOT / "web" / "ephemeris-browser.d.ts"
+    js_text = js_path.read_text(encoding="utf-8")
+    dts_text = dts_path.read_text(encoding="utf-8")
+
+    assert "export function exportVerificationDossier" in js_text
+    assert "export function exportVerificationDossier" in dts_text
+    assert "exportVerificationDossier" in js_text
+    assert "SOVEREIGN 18-PILLAR EPHEMERIS & KUNDALI VERIFICATION DOSSIER" in js_text
+
+    for path in (WEB_OBSERVATORY_HTML, BENCHMARK_PORTAL_HTML, PLAYGROUND_HTML):
+        html = path.read_text(encoding="utf-8")
+        for test_id in (
+            "copy-18pillar-verification-dossier-btn",
+            "copy-18pillar-verification-dossier-status",
+            "copy-inspector-dossier-btn",
+        ):
+            assert f'data-testid="{test_id}"' in html, f"Missing {test_id!r} in {path}"
+        assert "Export 18-Pillar Verification Dossier" in html
+        assert "exportDossierHandler" in html
+        assert "\u2014" not in html

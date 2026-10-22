@@ -145,6 +145,48 @@
     .preset-btn:hover, .preset-btn.active {
       color: var(--text-primary); border-color: var(--accent-cyan); background: rgba(56, 189, 248, 0.14);
     }
+    .preset-btn.emerald {
+      border-color: rgba(16, 185, 129, 0.45); color: #34d399; background: rgba(16, 185, 129, 0.12);
+    }
+    .preset-btn.emerald:hover, .preset-btn.emerald.active {
+      border-color: #10b981; color: #ffffff; background: rgba(16, 185, 129, 0.28);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.35);
+    }
+    :root[data-theme="paper"] .preset-btn.emerald {
+      border-color: rgba(15, 122, 85, 0.5); color: #0B6E4F; background: rgba(15, 122, 85, 0.08);
+    }
+    :root[data-theme="paper"] .preset-btn.emerald:hover {
+      border-color: #0B6E4F; color: #064E3B; background: rgba(15, 122, 85, 0.18);
+    }
+    :root[data-theme="contrast"] .preset-btn.emerald {
+      border-color: #00FF66; color: #00FF66; background: transparent;
+    }
+    :root[data-theme="contrast"] .preset-btn.emerald:hover {
+      border-color: #00FF66; color: #000000; background: #00FF66;
+    }
+    :root[data-theme="daltonic"] .preset-btn.emerald {
+      border-color: rgba(43, 108, 176, 0.6); color: #2B6CB0; background: rgba(43, 108, 176, 0.12);
+    }
+    .precision-milled-edge {
+      background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0px, rgba(255, 255, 255, 0.02) 2px, transparent 2px, transparent 4px);
+    }
+    :root[data-theme="paper"] .precision-milled-edge {
+      background-image: repeating-linear-gradient(45deg, rgba(26, 22, 18, 0.025) 0px, rgba(26, 22, 18, 0.025) 2px, transparent 2px, transparent 4px);
+    }
+    .leica-datum-dot {
+      display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+      background: #E5A93C; box-shadow: 0 0 6px rgba(229, 169, 60, 0.7);
+      margin-right: 0.4rem; vertical-align: middle;
+    }
+    :root[data-theme="paper"] .leica-datum-dot {
+      background: #C84B31; box-shadow: 0 0 4px rgba(200, 75, 49, 0.5);
+    }
+    :root[data-theme="contrast"] .leica-datum-dot {
+      background: #FFD700; box-shadow: 0 0 4px rgba(255, 215, 0, 0.8);
+    }
+    :root[data-theme="daltonic"] .leica-datum-dot {
+      background: #2B6CB0; box-shadow: 0 0 4px rgba(43, 108, 176, 0.8);
+    }
     .native-presets-bar {
       margin-top: 1.1rem; padding: 0.95rem 1rem 0.9rem; border-radius: 16px;
       background: var(--bg-panel); border: 1px solid var(--border-subtle);
@@ -1524,7 +1566,9 @@ with EphemerisAdapter(kernels="compact") as adapter:
             <button type="button" class="preset-btn active" id="copySdkSnippetBtn" data-testid="copy-sdk-snippet-btn" style="font-weight:700;">Copy Active SDK Quickstart</button>
             <button type="button" class="preset-btn" id="runSdkSnippetLiveBtn" data-testid="run-sdk-snippet-live-btn" style="font-weight:600;">Verify Contract in Browser</button>
             <button type="button" class="preset-btn" id="syncSdkToWorkbenchBtn" data-testid="sync-sdk-to-workbench-btn" style="font-weight:600;">Sync to Workbench</button>
+            <button type="button" class="preset-btn emerald" id="copy18PillarVerificationDossierBtn" data-testid="copy-18pillar-verification-dossier-btn" style="font-weight:700;"><span class="leica-datum-dot"></span>Export 18-Pillar Verification Dossier</button>
             <span class="pill-badge cyan" id="copySdkSnippetStatus" data-testid="copy-sdk-snippet-status">Python SDK Snippet Ready</span>
+            <span class="pill-badge emerald" id="copy18PillarVerificationDossierStatus" data-testid="copy-18pillar-verification-dossier-status">Sovereign Dossier Ready</span>
           </div>
           <span class="kpi-sub">Apache-2.0 · 1.84 MB Embedded DE440 Chebyshev Kernel · Sub-2ms Execution</span>
         </div>
@@ -2015,11 +2059,12 @@ with EphemerisAdapter(kernels="compact") as adapter:
         </div>
 
         <div class="card">
-          <div class="card-header">
+          <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
             <div>
               <div class="card-title">Live 64-Hex SHA-256 &amp; FNV-1a Cryptographic Calculation Receipt</div>
               <div class="card-subtitle">Canonical JSON payload sealing inputs, convention catalog versions, and output state</div>
             </div>
+            <button type="button" class="preset-btn emerald" id="copyInspectorDossierBtn" data-testid="copy-inspector-dossier-btn" style="font-weight:600; font-size:0.75rem;"><span class="leica-datum-dot"></span>Export Verification Dossier (.md)</button>
           </div>
           <div id="receiptInspector" class="receipt-box"></div>
         </div>
@@ -5147,6 +5192,43 @@ if (!globalThis.EphemerisBrowser) {
           reportCopy(copyTextViaSelection(codeText));
         }
       });
+
+      const exportDossierHandler = () => {
+        const sdkCore = typeof bootCore !== "undefined" && bootCore ? bootCore : globalThis.EphemerisObservatoryCore;
+        const exporter = globalThis.EphemerisBrowser?.exportVerificationDossier || sdkCore?.exportVerificationDossier;
+        const status = document.getElementById("copy18PillarVerificationDossierStatus");
+        if (!exporter) {
+          if (status) status.textContent = "Engine Ready";
+          return;
+        }
+        const dossierMarkdown = exporter(sdkState, "markdown");
+        const reportCopy = (copied) => {
+          if (status) {
+            status.textContent = copied ? "18-Pillar Sovereign Dossier Exported" : "Clipboard blocked: select dossier text";
+          }
+        };
+        try {
+          const blob = new Blob([dossierMarkdown], { type: "text/markdown;charset=utf-8" });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = "sovereign-18pillar-ephemeris-verification-dossier.md";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        } catch (_e) {
+          // Fallback if Blob URL is blocked
+        }
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+          navigator.clipboard.writeText(dossierMarkdown).then(() => reportCopy(true), () => reportCopy(copyTextViaSelection(dossierMarkdown)));
+        } else {
+          reportCopy(copyTextViaSelection(dossierMarkdown));
+        }
+      };
+
+      document.getElementById("copy18PillarVerificationDossierBtn")?.addEventListener("click", exportDossierHandler);
+      document.getElementById("copyInspectorDossierBtn")?.addEventListener("click", exportDossierHandler);
 
       const LIVE_GRAHA_ROWS = [
         ["sun", "Surya (Sun)"],

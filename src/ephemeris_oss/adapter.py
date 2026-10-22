@@ -231,6 +231,117 @@ class PlanetCoordinateResult:
         }
 
 
+NAKSHATRA_ARC: float = 360.0 / 27.0
+
+NAKSHATRAS_27: tuple[tuple[str, str], ...] = (
+    ("Ashwini", "Ketu"),
+    ("Bharani", "Venus"),
+    ("Krittika", "Sun"),
+    ("Rohini", "Moon"),
+    ("Mrigashira", "Mars"),
+    ("Ardra", "Rahu"),
+    ("Punarvasu", "Jupiter"),
+    ("Pushya", "Saturn"),
+    ("Ashlesha", "Mercury"),
+    ("Magha", "Ketu"),
+    ("Purva Phalguni", "Venus"),
+    ("Uttara Phalguni", "Sun"),
+    ("Hasta", "Moon"),
+    ("Chitra", "Mars"),
+    ("Swati", "Rahu"),
+    ("Vishakha", "Jupiter"),
+    ("Anuradha", "Saturn"),
+    ("Jyeshtha", "Mercury"),
+    ("Mula", "Ketu"),
+    ("Purva Ashadha", "Venus"),
+    ("Uttara Ashadha", "Sun"),
+    ("Shravana", "Moon"),
+    ("Dhanishta", "Mars"),
+    ("Shatabhisha", "Rahu"),
+    ("Purva Bhadrapada", "Jupiter"),
+    ("Uttara Bhadrapada", "Saturn"),
+    ("Revati", "Mercury"),
+)
+
+SIGNS_12: tuple[str, ...] = (
+    "Aries",
+    "Taurus",
+    "Gemini",
+    "Cancer",
+    "Leo",
+    "Virgo",
+    "Libra",
+    "Scorpio",
+    "Sagittarius",
+    "Capricorn",
+    "Aquarius",
+    "Pisces",
+)
+
+
+@dataclass(frozen=True)
+class GeoCoords:
+    """Observer geographic coordinates."""
+
+    latitude: float = 0.0
+    longitude: float = 0.0
+    altitude_m: float = 0.0
+
+
+@dataclass(frozen=True)
+class NakshatraInfo:
+    """Complete Nakshatra coordinate, pada, and arc interval mapping."""
+
+    index: int
+    number: int
+    name: str
+    lord: str
+    pada: int
+    degrees_in_nakshatra: float
+    start_longitude: float
+    end_longitude: float
+
+
+@dataclass(frozen=True)
+class PlanetPosition:
+    """Standardized planetary coordinate matching downstream IEphemerisProvider."""
+
+    name: str
+    longitude: float
+    sign: str
+    sign_num: int
+    degree_in_sign: float
+    retrograde: bool
+    speed: float
+    nakshatra: NakshatraInfo
+
+
+def nakshatra_from_longitude(longitude: float) -> NakshatraInfo:
+    """Map a sidereal longitude to its nakshatra, lord, and pada."""
+    lon = longitude % 360.0
+    idx = int(lon / NAKSHATRA_ARC) % 27
+    pos_in = lon - idx * NAKSHATRA_ARC
+    pada = min(4, int(pos_in / (NAKSHATRA_ARC / 4.0)) + 1)
+    name, lord = NAKSHATRAS_27[idx]
+    return NakshatraInfo(
+        index=idx,
+        number=idx + 1,
+        name=name,
+        lord=lord,
+        pada=pada,
+        degrees_in_nakshatra=pos_in,
+        start_longitude=idx * NAKSHATRA_ARC,
+        end_longitude=(idx + 1) * NAKSHATRA_ARC,
+    )
+
+
+def sign_from_longitude(longitude: float) -> tuple[int, str, float]:
+    """Return (sign_num 0..11, sign_name, degree_in_sign) for a celestial longitude."""
+    lon = longitude % 360.0
+    sign_num = int(lon / 30.0) % 12
+    return sign_num, SIGNS_12[sign_num], lon - sign_num * 30.0
+
+
 @dataclass(frozen=True)
 class HouseSystemResult:
     """Computed 12 house cusps, Ascendant, MC, Vertex, and SHA-256 receipt."""
@@ -328,6 +439,8 @@ class EphemerisAdapter:
 
         self._kernels_spec = kernels
         self._engine = Engine.load(kernels=kernel_arg, eop=eop, cache_dir=cache_dir)
+        self._ayanamsa_mode: str = "lahiri"
+        self._topo_coords: tuple[float, float, float] | None = None
 
     @property
     def engine(self) -> Engine:
@@ -341,6 +454,56 @@ class EphemerisAdapter:
 
     def __exit__(self, *_exc: object) -> None:
         self.close()
+
+    def set_ayanamsa(self, mode: str | int = "lahiri") -> None:
+        """Set active ayanamsa mode for sidereal calculations."""
+        self._ayanamsa_mode = str(mode or "lahiri").strip().lower().replace("-", "_")
+
+    def set_topo(self, longitude: float, latitude: float, altitude_m: float = 0.0) -> None:
+        """Set topocentric observer coordinates."""
+        self._topo_coords = (float(longitude), float(latitude), float(altitude_m))
+
+    def clear_topo(self) -> None:
+        """Clear topocentric observer coordinates (reset to geocentric)."""
+        self._topo_coords = None
+
+    def get_planet_positions(
+        self,
+        dt: datetime,
+        location: GeoCoords | None = None,
+        planets: Sequence[str] | None = None,
+    ) -> dict[str, PlanetPosition]:
+        """Sidereal positions at UTC datetime dt matching IEphemerisProvider."""
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        if location is not None:
+            self.set_topo(location.longitude, location.latitude, getattr(location, "altitude_m", 0.0))
+        hour_ut = (
+            float(dt.hour)
+            + float(dt.minute) / 60.0
+            + (float(dt.second) + float(dt.microsecond) / 1_000_000.0) / 3600.0
+        )
+        jd = self.julday(dt.year, dt.month, dt.day, hour_ut)
+        candidates = list(planets) if planets is not None else list(VEDIC_NINE_GRAHAS)
+        result: dict[str, PlanetPosition] = {}
+        for p in candidates:
+            resolved_key = _resolve_body_name(p)
+            canonical_name = resolved_key.capitalize() if resolved_key != "true_node" else "True Node"
+            coord = self.calc_ut(jd, resolved_key, sidereal=True, ayanamsa=self._ayanamsa_mode)
+            lon = coord.longitude_deg % 360.0
+            sign_num, sign_name, deg_in_sign = sign_from_longitude(lon)
+            nak = nakshatra_from_longitude(lon)
+            result[canonical_name] = PlanetPosition(
+                name=canonical_name,
+                longitude=lon,
+                sign=sign_name,
+                sign_num=sign_num,
+                degree_in_sign=deg_in_sign,
+                retrograde=coord.is_retrograde,
+                speed=coord.longitude_speed_deg_per_day,
+                nakshatra=nak,
+            )
+        return result
 
     @staticmethod
     def julday(
@@ -1632,6 +1795,57 @@ class AnalyticalEphemerisProvider:
     def get_version(self) -> str:
         return f"ephemeris-oss {__version__}-analytical (Apache-2.0 clean-room)"
 
+    def get_planet_positions(
+        self,
+        dt: datetime,
+        location: GeoCoords | None = None,
+        planets: Sequence[str] | None = None,
+    ) -> dict[str, PlanetPosition]:
+        """Sidereal positions at UTC datetime dt matching IEphemerisProvider."""
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        if location is not None:
+            self.set_topo(location.longitude, location.latitude, getattr(location, "altitude_m", 0.0))
+        y, m, d = dt.year, dt.month, dt.day
+        hour_ut = (
+            float(dt.hour)
+            + float(dt.minute) / 60.0
+            + (float(dt.second) + float(dt.microsecond) / 1_000_000.0) / 3600.0
+        )
+        if m <= 2:
+            y -= 1
+            m += 12
+        a = y // 100
+        b = 2 - a + (a // 4)
+        jd = math.floor(365.25 * (y + 4716)) + math.floor(30.6001 * (m + 1)) + d + b - 1524.5 + hour_ut / 24.0
+
+        candidates = (
+            list(planets)
+            if planets is not None
+            else ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"]
+        )
+        result: dict[str, PlanetPosition] = {}
+        for p in candidates:
+            body_key = str(p).strip().lower()
+            canonical_name = body_key.capitalize() if body_key != "true_node" else "True Node"
+            coords, _ = self.calc_ut(jd, body_key, flags=FLG_SIDEREAL)
+            lon = coords[0] % 360.0
+            speed = coords[3]
+            retrograde = speed < 0.0
+            sign_num, sign_name, deg_in_sign = sign_from_longitude(lon)
+            nak = nakshatra_from_longitude(lon)
+            result[canonical_name] = PlanetPosition(
+                name=canonical_name,
+                longitude=lon,
+                sign=sign_name,
+                sign_num=sign_num,
+                degree_in_sign=deg_in_sign,
+                retrograde=retrograde,
+                speed=speed,
+                nakshatra=nak,
+            )
+        return result
+
 
 def normalize_ephemeris_source(
     source: str | None = None,
@@ -1717,6 +1931,7 @@ __all__ = [
     "FLG_SPEED",
     "FLG_SWIEPH",
     "FLG_TOPOCTR",
+    "GeoCoords",
     "HouseSystemResult",
     "JUPITER",
     "KETU",
@@ -1724,16 +1939,23 @@ __all__ = [
     "MEAN_NODE",
     "MERCURY",
     "MOON",
+    "NAKSHATRAS_27",
+    "NAKSHATRA_ARC",
     "NEPTUNE",
+    "NakshatraInfo",
     "PLUTO",
     "PlanetCoordinateResult",
+    "PlanetPosition",
     "RAHU",
     "SATURN",
+    "SIGNS_12",
     "SOUTH_NODE",
     "SUN",
     "TRUE_NODE",
     "URANUS",
     "VEDIC_NINE_GRAHAS",
     "VENUS",
+    "nakshatra_from_longitude",
     "normalize_ephemeris_source",
+    "sign_from_longitude",
 ]
