@@ -84,6 +84,36 @@ def test_deliverable_files_exist_and_pass_provenance_and_internal_id_gates() -> 
         assert prov_findings == [], f"Provenance findings in {target}: {prov_findings}"
 
 
+def test_generated_source_manifest_accepts_only_declared_compatibility_filenames(tmp_path):
+    metadata = tmp_path / "ephemeris_oss.egg-info" / "SOURCES.txt"
+    metadata.parent.mkdir()
+    metadata.write_text(
+        "src/ephemeris_oss/swisseph_compat.py\n"
+        "tests/test_swisseph_compat.py\n"
+        "tests/test_swisseph_compat_contract.py\n", encoding="utf-8",
+    )
+    findings, stale = check_provenance.scan(tmp_path, {})
+    assert findings == []
+    assert stale == []
+
+
+def test_generated_manifest_exemption_still_refuses_code_and_other_filenames(tmp_path):
+    metadata = tmp_path / "ephemeris_oss.egg-info" / "SOURCES.txt"
+    metadata.parent.mkdir()
+    metadata.write_text("import swisseph\nsrc/other_swisseph.py\n", encoding="utf-8")
+    findings, _ = check_provenance.scan(tmp_path, {})
+    assert any(item.rule == "IMPORT" and item.line == 1 for item in findings)
+    assert any(item.rule == "SOURCE" and item.line == 2 for item in findings)
+
+
+def test_another_manifest_does_not_receive_the_compatibility_name_exemption(tmp_path):
+    metadata = tmp_path / "other.egg-info" / "SOURCES.txt"
+    metadata.parent.mkdir()
+    metadata.write_text("src/ephemeris_oss/swisseph_compat.py\n", encoding="utf-8")
+    findings, _ = check_provenance.scan(tmp_path, {})
+    assert any(item.rule == "SOURCE" for item in findings)
+
+
 def test_benchmark_portal_contains_verified_ledger_and_shodashvarga_workbench() -> None:
     portal_html = (REPO_ROOT / "docs" / "benchmark-portal" / "index.html").read_text(encoding="utf-8")
     manifest = check_claims.load_claims_manifest(REPO_ROOT / "docs" / "claims.yaml")

@@ -1,6 +1,6 @@
 {
   "schema": "track-a-author-qualification-v1",
-  "timestamp_utc": "2026-10-26T08:24:06.895879+00:00",
+  "timestamp_utc": "2026-10-26T08:35:49.118199+00:00",
   "review_status": "AUTHOR_QUALIFIED_PENDING_EXACT_HEAD_CI_AND_TRACK_R",
   "source_file_sha256": {
     "rust/ephemeris-core/Cargo.lock": "d3bdfe87d340a99eb948c052dad45b475b6b72640f6b0384b9b9606a64bf7cea",
@@ -83,7 +83,7 @@
     "tests/test_astronomy_provider_foundation.py": "fa1dd12c16da3cb9c3928d256268c43cfbf8f532bf3668ddb8235b7a15c5306d",
     "tests/test_ayanamsa_catalog_generation.py": "6f18303ca15cfbd22f94d10aff34b3120d4819c5bd1fc5978917cbeb08dfce5f",
     "tests/test_civil_time.py": "ace4c3bfb01f8cd1e315cbb72b959fd8fca4cc951294b185e4cd0abf34d91584",
-    "tests/test_claims_checker.py": "226b19c1c792da7e7bb5a9b95954508e465b999e530d7037997d70f2a844eec7",
+    "tests/test_claims_checker.py": "ed50fcdf257b3b9316d136dfd94f26fd3b71557e8dfdf1d71ff1104e715373ca",
     "tests/test_cli_extended.py": "d510f89b1215d2395999d56c4fe05209171a70ec59bba41386b390d61c9df3e9",
     "tests/test_compact_kernel.py": "e52e92fa433469ea535be6893a1633f3934b00a7724b917c91f066dd5f77ae0f",
     "tests/test_distribution_data.py": "3f47dccd9295bc108991fc8a79d19d554850c3574bda1ea54adb50bdb2a923ea",
@@ -119,7 +119,7 @@
     "tools/build_rust_inputs.py": "222ee916176d340386d7c0958a3157d0d0a51fa8a0c2321893336c014a26dd36",
     "tools/check_claims.py": "d84830cd003e46e245489e3ce426cb2bac2f96dff33b24a8a0cd4484aef1f011",
     "tools/check_internal_ids.py": "bd8fa3a9fd2ab8f4fe5df363dc530395d99e06549116988427204a58624467bd",
-    "tools/check_provenance.py": "06c9cc5c540f9b877adc60eb089f69c80c8feedd0b7722af2f38d0fffe470d5f",
+    "tools/check_provenance.py": "90664cf5747a9f925e291333b0afc99bc8bbc85e70e18c6d688e7eb4f2331410",
     "tools/check_wheel.py": "3562209ac03540a234783481870150683ba72ca017dddea7aac2cdf703e108b3",
     "tools/generate_ayanamsa_catalog.py": "9a214dcfaf839eb03085f68cc4a4313edd3b886e884bdbaf3bb3f019b1f87e6e",
     "tools/qualify_spk_reader.py": "5e1ecaf62b15f7463b0b04d1427ddda6d31b0b42729fed6da03494c66ca502ab",
@@ -130,7 +130,7 @@
     "web/ephemeris-browser.js": "7c7ae6f2aa527058a60ddf7cfcd36f2ce34b82150c710013c4eeeb3eaf587b77",
     "web/package.json": "5c82ac473e273c2120a4a08e1a6e11020c45ed0c7a204bc455bafd3516d4f827"
   },
-  "source_set_sha256": "be80912c364eb054cc1d651e581647ebbaf229f6ac5f4ed76edfe7b039e5fd97",
+  "source_set_sha256": "c8e4e6c1cee30c029146410597008a550ca519037fe10ba4c60d7fc3f951106c",
   "evidence_sha256": {
     "final-build.txt": "fee72188c1bf992aab57219df99f41d81161788372e41acce41f06789d37d467",
     "final-rust.txt": "effd20dcc036c79c0b026dd60bc8dd74525ec8b6d255a2c982339a865a51c1ef",
@@ -143,7 +143,9 @@
     "current-jpl-qualification-wasm-input.json": "a27d362b735f8bf37df24d1e6ac9c712fd1eca830f615e43d0c0baee0374254f",
     "second-resume-red.txt": "1d4718ef67f9c2fc5743648a4cd13b50803d9eea6b3e8a5a142dd225b3ee5df2",
     "wheel-compatibility-red.txt": "8729d252235a140a5cadc14af8ba1a9d2d837092982b45bfae696963acc7eac7",
-    "wheel-compatibility-green.txt": "a95fc5b92ee23f7a2db474a51e4539d1bb15a4189a04f08bd354de3d30fa6929"
+    "wheel-compatibility-green.txt": "a95fc5b92ee23f7a2db474a51e4539d1bb15a4189a04f08bd354de3d30fa6929",
+    "source-manifest-red.txt": "602bcb665a9f91b61bb8302ccd75aadf1cd60c5817ca678c422cea2843fe74b7",
+    "source-manifest-green.txt": "4991def502ee5b78dc3c67b979a73b35c90aa2406c39a4ffcbaf72cffbecf841"
   },
   "python": {
     "3.13": {
@@ -190,5 +192,26 @@
     "no public release or provider replacement",
     "retained machine paths block public whole-repository export"
   ],
-  "exact_head_ci": "Run all declared workflow jobs on the frozen private PR head; no waiver or author approval substitutes for Track R."
+  "exact_head_ci": "Run all declared workflow jobs on the frozen private PR head; no waiver or author approval substitutes for Track R.",
+  "qualification_round": 2,
+  "prior_exact_head_ci": {
+    "head": "c4462ffb9e5ec258e42527a2291500e1b3e96e89",
+    "python_3_11_passed": 918,
+    "python_3_13_passed": 918,
+    "skipped": 0,
+    "passed_jobs": 5,
+    "failed_jobs": 1,
+    "failure": "provenance SOURCE false positive for the independently authored compatibility names in generated SOURCES.txt; fixed with exact-path/exact-line controls",
+    "transfer_to_repaired_head": false
+  },
+  "generated_manifest_controls": {
+    "pre_fix_failed": 1,
+    "pre_fix_passed": 2,
+    "current_module_passed": 9,
+    "self_test_planted": 10,
+    "self_test_found": 13,
+    "source_scan_findings": 0,
+    "stale_allow_entries": 0,
+    "new_tests": 3
+  }
 }

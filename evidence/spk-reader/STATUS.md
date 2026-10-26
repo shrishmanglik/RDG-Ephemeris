@@ -171,3 +171,19 @@ whitespace checking passed with evidence data excluded. A full whitespace check
 had incorrectly treated verbatim Windows log line endings as source whitespace
 and produced excessive output; the raw evidence bytes were preserved. Neither
 syntax parsing nor whitespace checks are runtime tests or scientific proof.
+
+
+## Exact-head CI integration repair, 2026-10-26 08:35 UTC
+
+At c4462ffb9 both Python matrix jobs passed 918 tests with no skips. Internal-ID,
+import graph and distribution jobs also passed. The source provenance job failed
+on three intentional compatibility filenames repeated in generated egg-info
+SOURCES.txt after installation. The clean-manifest reproduction failed first
+(1 failed, 2 passed); the repair permits only SOURCE name matches for three exact
+lines in that exact metadata path. IMPORT/LICENCE/DATAFILE checks and every other
+line/path remain active. Focused checks now pass 9 tests; expanded self-test
+finds 13 hits from 10 planted inputs and the installed-source scan has no findings
+or stale allow entries. Independent static intake found no widened bypass; this
+is not a Track R approval. The repaired head must rerun all six CI jobs. The
+earlier five passes are not transferred to it. Source and tests are frozen
+together in the same existing private PR; no new numerical algorithm changed.
