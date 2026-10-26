@@ -14,10 +14,12 @@ def main() -> None:
     cargo = shutil.which("cargo")
     if cargo is None:
         raise RuntimeError("Rust cargo is required to build the declared test inputs")
+    subprocess.run([sys.executable, str(ROOT / "tools/generate_ayanamsa_catalog.py"), "--check"],
+                   cwd=ROOT, check=True)
     command = [cargo, "build", "--release", "--manifest-path", str(CRATE / "Cargo.toml")]
     subprocess.run(command, cwd=ROOT, check=True)
     wasm_command = command + ["--target", "wasm32-unknown-unknown"]
-    subprocess.run(wasm_command, cwd=ROOT, check=True)
+    subprocess.run(wasm_command + ["--no-default-features"], cwd=ROOT, check=True)
     output = CRATE / "target/wasm32-unknown-unknown/release/ephemeris_core.wasm"
     math_bytes = output.read_bytes()
     subprocess.run(wasm_command + ["--features", "spk-reader"], cwd=ROOT, check=True)

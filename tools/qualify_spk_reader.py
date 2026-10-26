@@ -7,6 +7,7 @@ from importlib.metadata import version
 import json
 import math
 from pathlib import Path
+import subprocess
 
 import numpy as np
 from jplephem.spk import SPK
@@ -20,6 +21,7 @@ def main() -> None:
     parser.add_argument("kernels", nargs="+", type=Path)
     parser.add_argument("--library", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--wasm", type=Path, help="Also qualify the actual seekable browser SDK")
     args = parser.parse_args()
     receipt = {
         "scope": "same-kernel geometric reader agreement, not physical or apparent-place accuracy",
@@ -33,6 +35,7 @@ def main() -> None:
         "kernels": [],
         "passed": False,
     }
+    wasm_input = {"kernels": []}
     try:
         for path in args.kernels:
             digest = sha256_file(path)
@@ -43,6 +46,9 @@ def main() -> None:
             kernel_record = {"identifier": matches[0].identifier, "sha256": digest,
                              "bytes": path.stat().st_size, "samples": rows}
             receipt["kernels"].append(kernel_record)
+            wasm_kernel = {"path": str(path.resolve()), "identifier": matches[0].identifier,
+                           "sha256": digest, "bytes": path.stat().st_size, "samples": []}
+            wasm_input["kernels"].append(wasm_kernel)
             with SPK.open(str(path)) as reference:
                 for segment in reference.segments:
                     if segment.data_type not in (2, 3):
@@ -55,6 +61,11 @@ def main() -> None:
                         position, velocity_day = segment.compute_and_differentiate(2451545., float(seconds)/86400.)
                         actual = np.asarray(state[:3])
                         expected = np.asarray(position)
+                        wasm_kernel["samples"].append({
+                            "target": segment.target, "center": segment.center,
+                            "tdb_seconds": float(seconds),
+                            "expected": [float(v) for v in (*position, *(velocity_day/86400.))],
+                        })
                         position_error = float(np.max(np.abs(actual-expected)))
                         velocity_error = float(np.max(np.abs(np.asarray(state[3:])-velocity_day/86400.)))
                         angular = None
@@ -75,6 +86,17 @@ def main() -> None:
                             raise ValueError("Sample exceeds the declared reader agreement bounds")
             if not rows:
                 raise ValueError("A kernel with no sampled segments cannot pass qualification")
+        if args.wasm is not None:
+            input_path = args.output.with_name(args.output.stem + "-wasm-input.json")
+            wasm_output = args.output.with_name(args.output.stem + "-wasm.json")
+            input_path.write_text(json.dumps(wasm_input, indent=2)+"\n", encoding="utf-8")
+            subprocess.run(["node", str(Path(__file__).with_name("qualify_wasm_reader.mjs")),
+                            str(input_path), str(args.wasm), str(wasm_output)], check=True)
+            wasm_receipt = json.loads(wasm_output.read_text(encoding="utf-8"))
+            if wasm_receipt.get("pass") is not True:
+                raise ValueError("WASM reader qualification did not pass")
+            receipt["wasm_qualification"] = {"file": wasm_output.name,
+                                             "sha256": sha256_file(wasm_output), "passed": True}
         receipt["passed"] = True
     except Exception as error:
         receipt["error"] = str(error)

@@ -127,7 +127,7 @@ def _jyotish(args: argparse.Namespace) -> int:
         )
         lons = {b: float(place["longitude_deg"]) for b, place in positions.value.items()}
         speeds = {
-            b: float(place.get("longitude_speed_deg_per_day", 0.0))
+            b: float(place["speed_deg_per_day"])
             for b, place in positions.value.items()
         }
         sheet = compile_ai_fact_sheet(
@@ -171,7 +171,7 @@ def _fact_sheet(args: argparse.Namespace) -> int:
         )
         lons = {b: float(place["longitude_deg"]) for b, place in positions.value.items()}
         speeds = {
-            b: float(place.get("longitude_speed_deg_per_day", 0.0))
+            b: float(place["speed_deg_per_day"])
             for b, place in positions.value.items()
         }
         sheet = compile_ai_fact_sheet(
@@ -202,7 +202,7 @@ def _svg(args: argparse.Namespace) -> int:
         retros = {
             b
             for b, place in positions.value.items()
-            if b not in ("sun", "moon") and float(place.get("longitude_speed_deg_per_day", 0.0)) < 0.0
+            if b not in ("sun", "moon") and float(place["speed_deg_per_day"]) < 0.0
         }
     if args.style == "north_indian":
         artifact = render_north_indian_svg(

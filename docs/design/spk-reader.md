@@ -10,7 +10,8 @@ velocity in km/s. Epoch is TDB seconds since J2000, not TT, UT1 or UTC. The read
 hides DAF byte order, linked summaries, one-based word addressing, segment
 priority, center paths, record selection and analytic polynomial derivatives.
 It reads one record at a time. Native DE441 access does not allocate the whole
-kernel. No new dependency or network call is introduced.
+kernel. The reader itself adds no dependency or network call. The optional
+long-term convention layer adds the pinned permissive dependency described below.
 
 Python exposes the opt-in `rust_bridge.read_spk_state()` with an explicit native
 library path. JavaScript/TypeScript exposes `readSpkState()` after loading the
@@ -18,6 +19,16 @@ reader-enabled WebAssembly artifact. The browser copies caller-supplied bytes
 into a temporary WASM allocation and releases it in `finally`; output is copied
 before that allocation is freed. A multi-gigabyte DE441 browser allocation may
 be refused. Neither SDK silently falls back to approximate coordinates.
+
+`readSpkStateSeekable({size, read(offset, length)}, ...)` provides the large-file
+browser path. Its asynchronous source supplies exact byte ranges; callers can
+adapt a File, local range service, or permitted HTTP range endpoint. Sparse
+records are passed to the same Rust parser using a framed virtual-file view.
+Each call owns its cache, bounded to 512 requests and 16 MiB by default, with
+caller limits allowed only downward. No WASM allocation survives an await.
+Malformed, short, out-of-range, repeated-no-progress or exhausted requests fail.
+The SDK never fetches an external asset or accepts its identity on the caller's
+behalf. Whole-file `readSpkState` remains available for smaller supplied buffers.
 
 The old math-only `ephemeris_core.wasm` retains its existing 64 KiB gate. The
 optional `spk-reader` feature produces `ephemeris_spk.wasm`, containing the same
@@ -100,7 +111,7 @@ Rejected: widening the old IAU 2006 polynomial's date check; treating aliases as
 new conventions; inferring UTC or terrestrial rotation throughout the JPL span;
 using one residual measurement to claim physical accuracy for every date.
 
-Implementation contract for the pending extension:
+Implemented extension contract:
 
 - Keep the existing seven catalog entries first, then the twenty entries listed
   in the research intake. Catalog iteration defines stable v2 integer IDs;
@@ -125,6 +136,17 @@ Implementation contract for the pending extension:
   qualification target. A complete chart, civil-time input and physical stellar
   propagation have independent requirements beyond this convention operation.
 
-Status: this section records a pending interface decision. Source generation,
-the permissive dependency, the v2 export and runtime qualification have not yet
-been implemented or run.
+The source generator, permissive dependency, v2 export, sparse reader and actual
+native/browser execution are implemented. Runtime evidence, generated catalog
+freshness controls and precise binary bindings are retained in the task's
+qualification record. These establish the sampled mathematical and reader
+contracts; they do not establish full-range physical apparent-place accuracy.
+
+The Python TT interface accepts explicit `jd_tdb` and `mean_equinox=True` for
+the long-term mean frame. Beyond 1600..2400 TT it refuses derived TDB or true
+nutation. The compatibility facade uses the same policy through `calc` with
+`FLG_NONUT`; modern UTC remains a separately versioned input with explicit DUT1.
+Neither TT entry point invents terrestrial rotation or leap seconds for remote
+dates. The convention catalog is a set of 27 mathematical definitions; stellar
+and polar entries require date-specific caller anchors, and their speed output
+additionally requires the corresponding caller-supplied anchor rate.

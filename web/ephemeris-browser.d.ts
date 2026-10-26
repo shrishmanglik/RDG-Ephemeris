@@ -15,6 +15,27 @@ export type AyanamsaConvention =
   | "fagan_bradley"
   | "pushya";
 
+/** Canonical names and aliases are generated and may grow without a declaration update. */
+export type LongTermAyanamsaConvention = string;
+
+export interface LongTermAyanamsaCatalogRecord {
+  readonly id: number;
+  readonly key: string;
+  readonly label: string;
+  readonly model: string;
+  readonly aliases: readonly string[];
+  readonly reference_jd_tt: number | null;
+  readonly reference_offset_deg: number | null;
+  readonly sidereal_anchor_deg: number | null;
+  readonly source_reference: string;
+  readonly reference_equinox_displacement_arcsec: number;
+  readonly precession_model: string;
+  readonly reference_frame: string;
+  readonly original_author_ambiguity: string;
+  readonly galactic_pole_icrs_deg: readonly [number, number] | null;
+  readonly [field: string]: unknown;
+}
+
 export type NodeMode = "mean" | "true";
 
 export type GrahaId =
@@ -307,8 +328,10 @@ export interface CompleteChartResult {
 
 export const ENGINE_VERSION: string;
 export const AYANAMSA_CATALOG_VERSION: string;
+export const LONG_TERM_AYANAMSA_CATALOG_VERSION: string;
 export const HOUSE_CONVENTIONS_VERSION: string;
 export const LUNAR_NODE_CONVENTIONS_VERSION: string;
+export const LONG_TERM_AYANAMSA_CATALOG: readonly LongTermAyanamsaCatalogRecord[];
 export const RASI_CATALOG: readonly RasiMetadata[];
 export const NAKSHATRA_CATALOG: readonly NakshatraMetadata[];
 export const SHODASHVARGA_DEFINITIONS: readonly ShodashvargaDefinition[];
@@ -319,7 +342,14 @@ export function dateToJulianDate(input?: string | number | Date | Record<string,
 export function julianDateToIsoUtc(jdUtc: number): string;
 export function estimateDeltaTSeconds(decimalYear: number): number;
 export function resolveAyanamsaKey(convention?: AyanamsaConvention | string): string;
+/** Legacy approximate modern method fitted over 1600..2400 TT. */
 export function computeAyanamsa(jdTt: number, convention?: AyanamsaConvention | string): number;
+/** Strict optional long-term evaluator; requires an initialized compatible WebAssembly module. */
+export function computeAyanamsaLongTerm(
+  jdTt: number,
+  convention?: LongTermAyanamsaConvention,
+  options?: { readonly anchorTropicalLongitudeDeg?: number }
+): number;
 export function computeMeanLunarNode(jdTt: number): number;
 export function computeTrueLunarNode(jdTt: number): number;
 export function computeNakshatra(siderealLongitudeDeg: number): NakshatraPosition;
@@ -396,6 +426,16 @@ export interface FullKundaliZeroCopyView {
   readonly byteLength: 1416;
 }
 
+export interface SeekableSpkSource {
+  readonly size: number;
+  read(offset: number, length: number): Promise<Uint8Array>;
+}
+
+export interface SeekableSpkOptions {
+  readonly maxRequests?: number;
+  readonly maxCacheBytes?: number;
+}
+
 export function sha256Hex(asciiString: string): string;
 export function fnv1a64Hex(str: string): string;
 export function computeReceipt(requestPayload: Record<string, unknown>, numericSummary: Record<string, unknown>): CalculationReceipt;
@@ -413,6 +453,14 @@ export function isWasmArenaInitialized(): boolean;
 export function initEphemerisWasm(kernelBytes?: Uint8Array | ArrayBuffer | string): Promise<void>;
 /** Geometric J2000 state, km and km/s, at TDB seconds since J2000. */
 export function readSpkState(kernelBytes: Uint8Array | ArrayBuffer, target: number, center: number, tdbSeconds: number): [number, number, number, number, number, number];
+/** Strict bounded range-reader route; all SPK parsing and numeric work executes in Rust/WASM. */
+export function readSpkStateSeekable(
+  source: SeekableSpkSource,
+  target: number,
+  center: number,
+  tdbSeconds: number,
+  options?: SeekableSpkOptions
+): Promise<[number, number, number, number, number, number]>;
 export function computeFullChartZeroCopy(request: BatchNatalRequestInput): FullKundaliZeroCopyView;
 export function exportVerificationDossier(
   request?: BatchNatalRequestInput | ChartInputOptions,
@@ -422,8 +470,10 @@ export function exportVerificationDossier(
 export const EphemerisBrowser: {
   readonly ENGINE_VERSION: string;
   readonly AYANAMSA_CATALOG_VERSION: string;
+  readonly LONG_TERM_AYANAMSA_CATALOG_VERSION: string;
   readonly HOUSE_CONVENTIONS_VERSION: string;
   readonly LUNAR_NODE_CONVENTIONS_VERSION: string;
+  readonly LONG_TERM_AYANAMSA_CATALOG: readonly LongTermAyanamsaCatalogRecord[];
   readonly RASI_CATALOG: readonly RasiMetadata[];
   readonly NAKSHATRA_CATALOG: readonly NakshatraMetadata[];
   readonly SHODASHVARGA_DEFINITIONS: readonly ShodashvargaDefinition[];
@@ -434,6 +484,7 @@ export const EphemerisBrowser: {
   readonly estimateDeltaTSeconds: typeof estimateDeltaTSeconds;
   readonly resolveAyanamsaKey: typeof resolveAyanamsaKey;
   readonly computeAyanamsa: typeof computeAyanamsa;
+  readonly computeAyanamsaLongTerm: typeof computeAyanamsaLongTerm;
   readonly computeMeanLunarNode: typeof computeMeanLunarNode;
   readonly computeTrueLunarNode: typeof computeTrueLunarNode;
   readonly computeNakshatra: typeof computeNakshatra;
@@ -455,6 +506,7 @@ export const EphemerisBrowser: {
   readonly isWasmArenaInitialized: typeof isWasmArenaInitialized;
   readonly initEphemerisWasm: typeof initEphemerisWasm;
   readonly readSpkState: typeof readSpkState;
+  readonly readSpkStateSeekable: typeof readSpkStateSeekable;
   readonly computeFullChartZeroCopy: typeof computeFullChartZeroCopy;
   readonly exportVerificationDossier: typeof exportVerificationDossier;
 };

@@ -1,0 +1,2 @@
+PASS qualify_wasm_reader: 3 kernels, 714 samples
+{"passed": true, "kernels": 3, "samples": 714}

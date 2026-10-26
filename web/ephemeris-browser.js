@@ -8,6 +8,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import {
+  LONG_TERM_AYANAMSA_CATALOG_VERSION,
+  LONG_TERM_AYANAMSA_CATALOG
+} from "./ayanamsa-catalog.js";
+
+export {
+  LONG_TERM_AYANAMSA_CATALOG_VERSION,
+  LONG_TERM_AYANAMSA_CATALOG
+} from "./ayanamsa-catalog.js";
+
 const DEG2RAD = Math.PI / 180.0;
 const RAD2DEG = 180.0 / Math.PI;
 const J2000_JD = 2451545.0;
@@ -15,7 +25,7 @@ const JULIAN_CENTURY = 36525.0;
 const TROPICAL_YEAR_DAYS = 365.2421897;
 
 export const ENGINE_VERSION = "ephemeris-browser-1.0.0";
-export const AYANAMSA_CATALOG_VERSION = "ephemeris-oss-ayanamsa-anchors-1.3.0";
+export const AYANAMSA_CATALOG_VERSION = "ephemeris-oss-ayanamsa-anchors-1.4.0";
 export const HOUSE_CONVENTIONS_VERSION = "ephemeris-oss-houses-1.1.0-iau2006";
 export const LUNAR_NODE_CONVENTIONS_VERSION = "ephemeris-oss-lunar-nodes-1.1.0-meeus47.7";
 
@@ -203,8 +213,8 @@ export function estimateDeltaTSeconds(decimalYear) {
 }
 
 /**
- * Named Ayanamsa realisations fitted to match src/ephemeris_oss/engine/conventions.py
- * to within < 0.00001 arcseconds across 1600..2400 TT.
+ * Legacy approximate modern ayanamsa method, fitted over 1600..2400 TT.
+ * This table is not the strict optional long-term convention evaluator.
  */
 const AYANAMSA_POLYNOMIALS = Object.freeze({
   lahiri: {
@@ -297,6 +307,58 @@ export function computeAyanamsa(jdTt, convention = "lahiri") {
   const [c0, c1, c2, c3, c4] = spec.coeffs;
   const val = c0 + t * (c1 + t * (c2 + t * (c3 + t * c4)));
   return normalizeDegrees(val);
+}
+
+const LONG_TERM_AYANAMSA_BY_NAME = (() => {
+  const names = Object.create(null);
+  for (const record of LONG_TERM_AYANAMSA_CATALOG) {
+    for (const name of [record.key, ...(record.aliases ?? [])]) {
+      const normalized = String(name).trim().toLowerCase().replace(/\s+/g, "_");
+      if (normalized) names[normalized] = record;
+    }
+  }
+  return Object.freeze(names);
+})();
+
+/**
+ * Strict optional long-term convention evaluator backed by the initialized
+ * Rust/WebAssembly module.  This function never falls back to the legacy
+ * polynomial approximation above.
+ */
+export function computeAyanamsaLongTerm(
+  jdTt,
+  convention = "lahiri",
+  { anchorTropicalLongitudeDeg } = {}
+) {
+  if (!Number.isFinite(jdTt)) {
+    throw new Error("TT Julian date must be finite");
+  }
+  if (jdTt < -3100015.5 || jdTt > 8000016.5) {
+    throw new Error("TT Julian date is outside the long-term DE441 convention interval");
+  }
+  const normalized = String(convention ?? "lahiri").trim().toLowerCase().replace(/\s+/g, "_");
+  const record = LONG_TERM_AYANAMSA_BY_NAME[normalized];
+  if (!record) {
+    throw new Error(`Unsupported long-term ayanamsa convention: ${convention}`);
+  }
+
+  const requiresAnchor = record.model === "star_anchor" || record.model === "polar_anchor";
+  if (requiresAnchor && !Number.isFinite(anchorTropicalLongitudeDeg)) {
+    throw new Error(`${record.key} requires a finite date-specific tropical anchor longitude`);
+  }
+  if (anchorTropicalLongitudeDeg !== undefined && !Number.isFinite(anchorTropicalLongitudeDeg)) {
+    throw new Error("Anchor tropical longitude must be finite when provided");
+  }
+  if (!_wasmExports || typeof _wasmExports.ephemeris_ayanamsa_v2 !== "function") {
+    throw new Error("Initialize a WebAssembly build with the long-term convention evaluator first");
+  }
+
+  const anchor = anchorTropicalLongitudeDeg === undefined ? Number.NaN : anchorTropicalLongitudeDeg;
+  const result = _wasmExports.ephemeris_ayanamsa_v2(jdTt, record.id, anchor);
+  if (!Number.isFinite(result)) {
+    throw new Error(`Long-term ayanamsa evaluator refused ${record.key} at TT JD ${jdTt}`);
+  }
+  return result;
 }
 
 export function getAyanamsaMetadata(convention = "lahiri") {
@@ -1795,6 +1857,150 @@ export function readSpkState(kernelBytes, target, center, tdbSeconds) {
     _wasmExports.ephemeris_spk_buffer_free(pointer, bytes.byteLength);
   }
 }
+
+function validateSpkStateArguments(target, center, tdbSeconds) {
+  for (const body of [target, center]) {
+    if (!Number.isInteger(body) || body < -2147483648 || body > 2147483647) {
+      throw new Error("NAIF target and center must be signed 32-bit integers");
+    }
+  }
+  if (!Number.isFinite(tdbSeconds)) throw new Error("TDB epoch must be finite");
+}
+
+function serializeSparseSpkCache(size, chunks) {
+  const length = 12 + chunks.reduce((total, chunk) => total + 12 + chunk.bytes.byteLength, 0);
+  const serialized = new Uint8Array(length);
+  const view = new DataView(serialized.buffer);
+  view.setBigUint64(0, BigInt(size), true);
+  view.setUint32(8, chunks.length, true);
+  let cursor = 12;
+  for (const chunk of chunks) {
+    view.setBigUint64(cursor, BigInt(chunk.offset), true);
+    view.setUint32(cursor + 8, chunk.bytes.byteLength, true);
+    cursor += 12;
+    serialized.set(chunk.bytes, cursor);
+    cursor += chunk.bytes.byteLength;
+  }
+  return serialized;
+}
+
+function mergeSparseSpkChunk(chunks, incoming) {
+  const ordered = [...chunks, incoming].sort((left, right) => left.offset - right.offset);
+  const merged = [];
+  for (const chunk of ordered) {
+    const previous = merged[merged.length - 1];
+    if (!previous || chunk.offset > previous.offset + previous.bytes.byteLength) {
+      merged.push(chunk);
+      continue;
+    }
+    const end = Math.max(
+      previous.offset + previous.bytes.byteLength,
+      chunk.offset + chunk.bytes.byteLength
+    );
+    const bytes = new Uint8Array(end - previous.offset);
+    bytes.set(previous.bytes);
+    bytes.set(chunk.bytes, chunk.offset - previous.offset);
+    merged[merged.length - 1] = { offset: previous.offset, bytes };
+  }
+  return merged;
+}
+
+/**
+ * Geometric J2000 [x,y,z,vx,vy,vz], km and km/s, using bounded asynchronous
+ * reads from a seekable SPK source. All SPK parsing and numeric work remains in Rust.
+ */
+export async function readSpkStateSeekable(
+  source,
+  target,
+  center,
+  tdbSeconds,
+  options = {}
+) {
+  if (!_wasmExports?.ephemeris_spk_sparse_state) {
+    throw new Error("Initialize a WebAssembly build with the sparse SPK reader first");
+  }
+  const wasm = _wasmExports;
+  validateSpkStateArguments(target, center, tdbSeconds);
+  if (!source || !Number.isSafeInteger(source.size) || source.size <= 0 || typeof source.read !== "function") {
+    throw new Error("Seekable SPK source requires a positive exact byte size and read(offset, length)");
+  }
+  if (options === null || typeof options !== "object") {
+    throw new Error("Seekable SPK options must be an object");
+  }
+  const maxRequests = options.maxRequests ?? 512;
+  const maxCacheBytes = options.maxCacheBytes ?? 16 * 1024 * 1024;
+  if (!Number.isInteger(maxRequests) || maxRequests < 1 || maxRequests > 512) {
+    throw new Error("maxRequests must be an integer from 1 through 512");
+  }
+  if (!Number.isInteger(maxCacheBytes) || maxCacheBytes < 1 || maxCacheBytes > 16 * 1024 * 1024) {
+    throw new Error("maxCacheBytes must be an integer from 1 through 16777216");
+  }
+
+  let chunks = [];
+  let requests = 0;
+  for (;;) {
+    const serialized = serializeSparseSpkCache(source.size, chunks);
+    const pointer = wasm.ephemeris_spk_buffer_new(serialized.byteLength) >>> 0;
+    if (!pointer) throw new Error("Insufficient WebAssembly memory for sparse SPK cache");
+    let response;
+    try {
+      new Uint8Array(wasm.memory.buffer, pointer, serialized.byteLength).set(serialized);
+      const output = wasm.wasm_arena_output_ptr() >>> 0;
+      const status = wasm.ephemeris_spk_sparse_state(
+        pointer,
+        serialized.byteLength,
+        target,
+        center,
+        tdbSeconds,
+        output
+      );
+      response = {
+        status,
+        values: Array.from(new Float64Array(wasm.memory.buffer, output, 6))
+      };
+    } finally {
+      wasm.ephemeris_spk_buffer_free(pointer, serialized.byteLength);
+    }
+
+    if (response.status === 0) return response.values;
+    if (response.status !== 100) {
+      throw new Error(`Sparse SPK reader refused input (status ${response.status})`);
+    }
+    const [offset, length] = response.values;
+    if (
+      !Number.isSafeInteger(offset) ||
+      !Number.isSafeInteger(length) ||
+      length <= 0 ||
+      offset < 0 ||
+      offset + length > source.size
+    ) {
+      throw new Error("Sparse SPK reader requested an invalid byte range");
+    }
+    if (requests >= maxRequests) {
+      throw new Error(`Sparse SPK reader exceeded maxRequests (${maxRequests})`);
+    }
+    const alreadyCached = chunks.some(
+      chunk => offset >= chunk.offset && offset + length <= chunk.offset + chunk.bytes.byteLength
+    );
+    if (alreadyCached) throw new Error("Sparse SPK reader made no cache progress");
+
+    const cachedBytes = chunks.reduce((total, chunk) => total + chunk.bytes.byteLength, 0);
+    if (cachedBytes + length > maxCacheBytes) {
+      throw new Error(`Sparse SPK reader exceeded maxCacheBytes (${maxCacheBytes})`);
+    }
+
+    requests += 1;
+    const bytes = await source.read(offset, length);
+    if (!(bytes instanceof Uint8Array) || bytes.byteLength !== length) {
+      throw new Error(`Seekable SPK source returned a short range at byte ${offset}`);
+    }
+    chunks = mergeSparseSpkChunk(chunks, { offset, bytes: new Uint8Array(bytes) });
+    const cacheBytes = chunks.reduce((total, chunk) => total + chunk.bytes.byteLength, 0);
+    if (cacheBytes > maxCacheBytes) {
+      throw new Error(`Sparse SPK reader exceeded maxCacheBytes (${maxCacheBytes})`);
+    }
+  }
+}
 let _decompressedKernelBytes = null;
 
 function solvePlacidusCuspTropicalDeg(ramcRad, phiRad, epsRad, fraction, isNocturnal) {
@@ -2265,8 +2471,10 @@ export function exportVerificationDossier(request = {}, format = "markdown") {
 export const EphemerisBrowser = Object.freeze({
   ENGINE_VERSION,
   AYANAMSA_CATALOG_VERSION,
+  LONG_TERM_AYANAMSA_CATALOG_VERSION,
   HOUSE_CONVENTIONS_VERSION,
   LUNAR_NODE_CONVENTIONS_VERSION,
+  LONG_TERM_AYANAMSA_CATALOG,
   RASI_CATALOG,
   NAKSHATRA_CATALOG,
   SHODASHVARGA_DEFINITIONS,
@@ -2279,6 +2487,7 @@ export const EphemerisBrowser = Object.freeze({
   estimateDeltaTSeconds,
   resolveAyanamsaKey,
   computeAyanamsa,
+  computeAyanamsaLongTerm,
   getAyanamsaMetadata,
   computeMeanLunarNode,
   computeTrueLunarNode,
@@ -2302,6 +2511,7 @@ export const EphemerisBrowser = Object.freeze({
   isWasmArenaInitialized,
   initEphemerisWasm,
   readSpkState,
+  readSpkStateSeekable,
   computeFullChartZeroCopy,
   exportVerificationDossier
 });

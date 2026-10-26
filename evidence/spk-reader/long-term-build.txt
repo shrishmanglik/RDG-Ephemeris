@@ -1,0 +1,28 @@
+Convention data checked
+    Updating crates.io index
+     Locking 1 package to latest compatible version
+      Adding sofars v0.6.1 (available: v0.6.2)
+ Downloading crates ...
+  Downloaded sofars v0.6.1
+   Compiling sofars v0.6.1
+   Compiling ephemeris-core v0.2.0 (C:\AGI\worktrees\ephemeris-oss-staging\chebyshev-reader-20261026\rust\ephemeris-core)
+    Finished `release` profile [optimized] target(s) in 5.54s
+   Compiling ephemeris-core v0.2.0 (C:\AGI\worktrees\ephemeris-oss-staging\chebyshev-reader-20261026\rust\ephemeris-core)
+    Finished `release` profile [optimized] target(s) in 0.73s
+   Compiling sofars v0.6.1
+   Compiling ephemeris-core v0.2.0 (C:\AGI\worktrees\ephemeris-oss-staging\chebyshev-reader-20261026\rust\ephemeris-core)
+    Finished `release` profile [optimized] target(s) in 2.44s
+{
+  "ephemeris_core.wasm": {
+    "bytes": 63184,
+    "sha256": "df52df5f3020445f6334fe72f33f44bfb6ca79a283ed0c6175f573bf6402c166"
+  },
+  "ephemeris_spk.wasm": {
+    "bytes": 117329,
+    "sha256": "e015a08221031b4d3c8256de43ecd1c7dd8af1132f75bc8f935a81aa13eea674"
+  },
+  "native": {
+    "bytes": 204800,
+    "sha256": "7fd94909bfef29cdf889a38cb53d82ea76e53ce08659f5f2f340971536662cda"
+  }
+}

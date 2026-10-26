@@ -1,5 +1,54 @@
 # Binary reader checkpoint
 
+## Latest author qualification, 2026-10-26 08:22 UTC
+
+The historical checkpoints below are superseded by this qualification, not
+rewritten. The saved source now implements the long-term conventions and sparse
+browser reader. Full Python 3.13 and isolated Python 3.11 runs each passed
+914 tests with no skips and two expected dubious-year warnings. The later wheel
+boundary change adds four focused cases (7/7 distribution cases passed); the
+exact-head local CI reruns the full suite before Track R readiness is reported.
+Rust passed 8 unit and 11 integration tests. Final-build.txt binds the native
+binary and both real WASM artifacts. The math-only artifact remains 63,184 bytes.
+
+Current-jpl-qualification.json and its linked -wasm.json sample 714 states in
+DE440 and both split DE441 files (17 per segment, including endpoints). Both
+native and actual seekable browser SDK execution passed with sampled position
+and velocity residuals of zero against jplephem on those identical inputs.
+The browser additionally repeated first/last cases and used individual ranges
+of at most 1,024 bytes; it did not copy either multi-gigabyte DE441 file.
+This is geometric same-kernel reader agreement, not apparent-place accuracy.
+
+The 27 distinct convention operations execute through Python, the native v2
+export and actual optional WASM at five epochs, including both JPL bounds.
+Stale generated catalog bytes are rejected. Stellar/polar anchors and their
+rates remain explicit caller inputs. True nutation and mean lunar polynomials
+retain their modern bounds. Remote public TT calls require explicit TDB and
+mean-equinox output; a one-second guard rejects unrelated time-scale epochs.
+Full-span calendar arithmetic uses astronomical years without datetime/ERFA's
+ancient-calendar floor. Actual far-date checks cover each DE441 half.
+
+The original compatibility contribution remains preserved at its owner's
+checkout. Its adopted copy now binds final values/flags/time policy into receipts,
+uses UT1 by default and explicit DUT1 for UTC, reports actual JPL selection,
+returns real coordinate derivatives, distinguishes true/mean nodes, and labels
+sidereal reduction correctly. CLI retrograde outputs consume the actual speed
+field. Independent static intake findings were repaired; that intake is not a
+Track R verdict. The wheel gate now permits only this independently authored
+module's exact filename and matching RECORD filename field, while still refusing
+comparator imports/text/data, including planted controls inside that module.
+Both built release archives pass their separate bounded inspections.
+
+No universal <0.001 arcsecond apparent-place claim, complete-chart throughput,
+full signature parity, physical-center expansion, broad star/asteroid catalog,
+new deep-time compact pack, product integration or public release is established.
+The unchanged Moon/Horizons baseline remains in the accuracy document and the
+broader master targets remain explicitly open in SWISS-GAP-MATRIX.md. Track R
+must independently review this bounded increment. Public whole-repository export
+is still blocked by retained machine paths in forensic evidence; no secret was
+reported. Only private branch/PR review in the already-private repository is in
+scope. No merge/deploy/provider action has occurred.
+
 Owner: Codex chat 01a17381-8eb1-73e0-86ce-b39e8680dbfc, Track A ephemeris-oss.
 Date: 2026-10-26. Base: 2bc89be35dac39c38f0ec189acc83a1a4918b369.
 Workspace: C:/AGI/worktrees/ephemeris-oss-staging/chebyshev-reader-20261026.

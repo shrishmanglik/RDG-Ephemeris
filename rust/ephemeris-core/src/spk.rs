@@ -1,6 +1,8 @@
 //! JPL SPK Type 2/3 reader. Public formats: NAIF DAF and SPK Required Reading.
+use std::cell::Cell;
 use std::collections::BTreeSet;
 use std::io::{Read, Seek, SeekFrom};
+use std::rc::Rc;
 
 const RECORD_BYTES: u64 = 1024;
 const MAX_RECORD_WORDS: usize = 65536;
@@ -372,6 +374,158 @@ impl<R: Read + Seek> SpkKernel<R> {
     }
 }
 
+const MAX_JS_EXACT_INTEGER: u64 = (1u64 << 53) - 1;
+
+struct SparseChunk {
+    offset: u64,
+    bytes: Vec<u8>,
+}
+
+struct SparseReader {
+    size: u64,
+    position: u64,
+    chunks: Vec<SparseChunk>,
+    needed: Rc<Cell<Option<(u64, usize)>>>,
+}
+
+impl SparseReader {
+    fn parse(serialized: &[u8], needed: Rc<Cell<Option<(u64, usize)>>>) -> Result<Self, SpkError> {
+        fn take<'a>(
+            input: &'a [u8],
+            cursor: &mut usize,
+            length: usize,
+        ) -> Result<&'a [u8], SpkError> {
+            let end = cursor
+                .checked_add(length)
+                .ok_or(SpkError::Invalid("sparse input length overflow"))?;
+            let bytes = input
+                .get(*cursor..end)
+                .ok_or(SpkError::Invalid("truncated sparse input"))?;
+            *cursor = end;
+            Ok(bytes)
+        }
+        fn little_u64(bytes: &[u8]) -> u64 {
+            let mut value = [0u8; 8];
+            value.copy_from_slice(bytes);
+            u64::from_le_bytes(value)
+        }
+        fn little_u32(bytes: &[u8]) -> u32 {
+            let mut value = [0u8; 4];
+            value.copy_from_slice(bytes);
+            u32::from_le_bytes(value)
+        }
+
+        let mut cursor = 0usize;
+        let size = little_u64(take(serialized, &mut cursor, 8)?);
+        if size > MAX_JS_EXACT_INTEGER {
+            return Err(SpkError::Invalid(
+                "sparse virtual size exceeds exact JavaScript integer",
+            ));
+        }
+        let count = little_u32(take(serialized, &mut cursor, 4)?) as usize;
+        if count > serialized.len().saturating_sub(cursor) / 12 {
+            return Err(SpkError::Invalid("sparse chunk count exceeds input"));
+        }
+        let mut chunks = Vec::new();
+        chunks
+            .try_reserve_exact(count)
+            .map_err(|_| SpkError::Invalid("sparse chunk allocation"))?;
+        for _ in 0..count {
+            let offset = little_u64(take(serialized, &mut cursor, 8)?);
+            let length = little_u32(take(serialized, &mut cursor, 4)?) as usize;
+            if length == 0 {
+                return Err(SpkError::Invalid("empty sparse chunk"));
+            }
+            let end = offset
+                .checked_add(length as u64)
+                .ok_or(SpkError::Invalid("sparse chunk range overflow"))?;
+            if end > size {
+                return Err(SpkError::Invalid("sparse chunk outside virtual file"));
+            }
+            chunks.push(SparseChunk {
+                offset,
+                bytes: take(serialized, &mut cursor, length)?.to_vec(),
+            });
+        }
+        if cursor != serialized.len() {
+            return Err(SpkError::Invalid("trailing sparse input"));
+        }
+        chunks.sort_unstable_by_key(|chunk| chunk.offset);
+        for pair in chunks.windows(2) {
+            let first_end = pair[0].offset + pair[0].bytes.len() as u64;
+            if pair[1].offset < first_end {
+                return Err(SpkError::Invalid("overlapping sparse chunks"));
+            }
+        }
+        Ok(Self {
+            size,
+            position: 0,
+            chunks,
+            needed,
+        })
+    }
+
+    fn seek_position(&self, base: u64, delta: i64) -> std::io::Result<u64> {
+        let position = base as i128 + delta as i128;
+        if position < 0 || position > u64::MAX as i128 {
+            Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "invalid sparse seek",
+            ))
+        } else {
+            Ok(position as u64)
+        }
+    }
+}
+
+impl Read for SparseReader {
+    fn read(&mut self, output: &mut [u8]) -> std::io::Result<usize> {
+        if output.is_empty() || self.position >= self.size {
+            return Ok(0);
+        }
+        if let Some(chunk) = self.chunks.iter().find(|chunk| {
+            self.position >= chunk.offset
+                && self.position < chunk.offset + chunk.bytes.len() as u64
+        }) {
+            let within = (self.position - chunk.offset) as usize;
+            let length = output.len().min(chunk.bytes.len() - within);
+            output[..length].copy_from_slice(&chunk.bytes[within..within + length]);
+            self.position += length as u64;
+            return Ok(length);
+        }
+
+        let remaining_file = (self.size - self.position).min(usize::MAX as u64) as usize;
+        let next_chunk = self
+            .chunks
+            .iter()
+            .filter(|chunk| chunk.offset > self.position)
+            .map(|chunk| chunk.offset - self.position)
+            .min()
+            .unwrap_or(u64::MAX)
+            .min(usize::MAX as u64) as usize;
+        let length = output.len().min(remaining_file).min(next_chunk);
+        if length == 0 {
+            return Ok(0);
+        }
+        self.needed.set(Some((self.position, length)));
+        Err(std::io::Error::new(
+            std::io::ErrorKind::WouldBlock,
+            "sparse range is not cached",
+        ))
+    }
+}
+
+impl Seek for SparseReader {
+    fn seek(&mut self, position: SeekFrom) -> std::io::Result<u64> {
+        self.position = match position {
+            SeekFrom::Start(offset) => offset,
+            SeekFrom::End(delta) => self.seek_position(self.size, delta)?,
+            SeekFrom::Current(delta) => self.seek_position(self.position, delta)?,
+        };
+        Ok(self.position)
+    }
+}
+
 fn status(error: SpkError) -> i32 {
     match error {
         SpkError::Invalid(_) => 1,
@@ -432,6 +586,48 @@ pub unsafe extern "C" fn ephemeris_spk_state(
             0
         }
         Err(error) => status(error),
+    }
+}
+
+/// Seekable sparse browser entry point. Input is a virtual-size/chunk stream;
+/// missing range status 100 writes its exact offset and length to output[0..2].
+/// Other status values and successful state output match `ephemeris_spk_state`.
+/// # Safety
+/// Input must point to length readable bytes; output to six writable doubles.
+#[no_mangle]
+pub unsafe extern "C" fn ephemeris_spk_sparse_state(
+    pointer: *const u8,
+    length: usize,
+    target: i32,
+    center: i32,
+    tdb_seconds: f64,
+    output: *mut f64,
+) -> i32 {
+    if pointer.is_null() || output.is_null() || length == 0 {
+        return 1;
+    }
+    let serialized = std::slice::from_raw_parts(pointer, length);
+    let needed = Rc::new(Cell::new(None));
+    let result = SparseReader::parse(serialized, Rc::clone(&needed))
+        .and_then(SpkKernel::open)
+        .and_then(|mut kernel| kernel.state(target, center, tdb_seconds));
+    match result {
+        Ok(state) => {
+            for axis in 0..3 {
+                *output.add(axis) = state.position_km[axis];
+                *output.add(axis + 3) = state.velocity_km_s[axis];
+            }
+            0
+        }
+        Err(error) => {
+            if let Some((offset, missing_length)) = needed.get() {
+                *output = offset as f64;
+                *output.add(1) = missing_length as f64;
+                100
+            } else {
+                status(error)
+            }
+        }
     }
 }
 

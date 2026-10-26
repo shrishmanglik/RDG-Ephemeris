@@ -10,7 +10,12 @@ name = "ephemeris_core"
 crate-type = ["cdylib", "rlib"]
 
 [features]
-spk-reader = []
+default = ["long-term"]
+long-term = ["dep:sofars"]
+spk-reader = ["long-term"]
+
+[dependencies]
+sofars = { version = "=0.6.1", optional = true }
 
 [profile.release]
 opt-level = 3

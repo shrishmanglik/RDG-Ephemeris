@@ -1,0 +1,169 @@
+C:\Users\Shris\AppData\Local\Programs\Python\Python313\Lib\site-packages\pytest_asyncio\plugin.py:208: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+FFFFFF.F.F.FFFFFFFFFFFFFFFF                                              [100%]
+================================== FAILURES ===================================
+__________ test_cli_preserves_real_engine_retrograde_motion[jyotish] __________
+tests\test_cli_extended.py:32: in test_cli_preserves_real_engine_retrograde_motion
+    assert json.loads(output)["bodies"]["mercury"]["retro"] is True
+E   assert False is True
+________ test_cli_preserves_real_engine_retrograde_motion[fact-sheet] _________
+tests\test_cli_extended.py:32: in test_cli_preserves_real_engine_retrograde_motion
+    assert json.loads(output)["bodies"]["mercury"]["retro"] is True
+E   assert False is True
+____________ test_cli_preserves_real_engine_retrograde_motion[svg] ____________
+tests\test_cli_extended.py:30: in test_cli_preserves_real_engine_retrograde_motion
+    assert labels and any("(R)" in label for label in labels)
+E   assert (["Me 29�25'"] and False)
+E    +  where False = any(<generator object test_cli_preserves_real_engine_retrograde_motion.<locals>.<genexpr> at 0x0000018AB8F7F370>)
+_ test_calendar_arithmetic_round_trips_astronomical_years_without_datetime[date0-0] _
+tests\test_swisseph_compat_contract.py:26: in test_calendar_arithmetic_round_trips_astronomical_years_without_datetime
+    jd = swe.julday(*date, cal=calendar)
+src\ephemeris_oss\swisseph_compat.py:115: in julday
+    raise EphemerisError("Julian-calendar conversion is not implemented")
+E   ephemeris_oss._api.EphemerisError: Julian-calendar conversion is not implemented
+_ test_calendar_arithmetic_round_trips_astronomical_years_without_datetime[date0-1] _
+tests\test_swisseph_compat_contract.py:26: in test_calendar_arithmetic_round_trips_astronomical_years_without_datetime
+    jd = swe.julday(*date, cal=calendar)
+src\ephemeris_oss\swisseph_compat.py:116: in julday
+    return _adapter().julday(year, month, day, hour)
+src\ephemeris_oss\adapter.py:521: in julday
+    djm0, djm = erfa.cal2jd(int(year), int(month), int(day))
+C:\Users\Shris\AppData\Local\Programs\Python\Python313\Lib\site-packages\erfa\core.py:274: in cal2jd
+    check_errwarn(c_retval, 'cal2jd')
+C:\Users\Shris\AppData\Local\Programs\Python\Python313\Lib\site-packages\erfa\core.py:110: in check_errwarn
+    statcodes[statcodes == before] = after
+E   TypeError: 'numpy.intc' object does not support item assignment
+_ test_calendar_arithmetic_round_trips_astronomical_years_without_datetime[date1-0] _
+tests\test_swisseph_compat_contract.py:26: in test_calendar_arithmetic_round_trips_astronomical_years_without_datetime
+    jd = swe.julday(*date, cal=calendar)
+src\ephemeris_oss\swisseph_compat.py:115: in julday
+    raise EphemerisError("Julian-calendar conversion is not implemented")
+E   ephemeris_oss._api.EphemerisError: Julian-calendar conversion is not implemented
+_ test_calendar_arithmetic_round_trips_astronomical_years_without_datetime[date2-0] _
+tests\test_swisseph_compat_contract.py:26: in test_calendar_arithmetic_round_trips_astronomical_years_without_datetime
+    jd = swe.julday(*date, cal=calendar)
+src\ephemeris_oss\swisseph_compat.py:115: in julday
+    raise EphemerisError("Julian-calendar conversion is not implemented")
+E   ephemeris_oss._api.EphemerisError: Julian-calendar conversion is not implemented
+_ test_calendar_arithmetic_round_trips_astronomical_years_without_datetime[date3-0] _
+tests\test_swisseph_compat_contract.py:26: in test_calendar_arithmetic_round_trips_astronomical_years_without_datetime
+    jd = swe.julday(*date, cal=calendar)
+src\ephemeris_oss\swisseph_compat.py:115: in julday
+    raise EphemerisError("Julian-calendar conversion is not implemented")
+E   ephemeris_oss._api.EphemerisError: Julian-calendar conversion is not implemented
+__________ test_calendar_definitions_have_independent_known_anchors ___________
+tests\test_swisseph_compat_contract.py:34: in test_calendar_definitions_have_independent_known_anchors
+    assert swe.julday(1582, 10, 4, 0., cal=0) + 1 == swe.julday(1582, 10, 15, 0., cal=1)
+src\ephemeris_oss\swisseph_compat.py:115: in julday
+    raise EphemerisError("Julian-calendar conversion is not implemented")
+E   ephemeris_oss._api.EphemerisError: Julian-calendar conversion is not implemented
+____ test_true_node_standard_id_is_distinct_from_mean_and_mean_south_node _____
+tests\test_swisseph_compat_contract.py:46: in test_true_node_standard_id_is_distinct_from_mean_and_mean_south_node
+    assert swe.TRUE_NODE == 11
+E   assert 100 == 11
+E    +  where 100 = swe.TRUE_NODE
+______ test_facade_receipt_binds_flag_dependent_values_and_is_repeatable ______
+tests\test_swisseph_compat_contract.py:66: in test_facade_receipt_binds_flag_dependent_values_and_is_repeatable
+    assert position_only.receipt_sha256 != with_speed.receipt_sha256
+E   AssertionError: assert '55ef56977403656ac29e0e5e7a378517c7dabcf5178ebad172cc9f4186925924' != '55ef56977403656ac29e0e5e7a378517c7dabcf5178ebad172cc9f4186925924'
+E    +  where '55ef56977403656ac29e0e5e7a378517c7dabcf5178ebad172cc9f4186925924' = CompatibilityCalculation(values=(343.04016890995365, -1.2446936665275372, 2.060818794038215, 0.0, 0.0, 0.0), flags=2, ...nput_time_scale='UTC', ayanamsa='lahiri', coordinate_convention='apparent geocentric ecliptic-of-date; degrees and AU').receipt_sha256
+E    +  and   '55ef56977403656ac29e0e5e7a378517c7dabcf5178ebad172cc9f4186925924' = CompatibilityCalculation(values=(343.04016890995365, -1.2446936665275372, 2.060818794038215, 0.7774340064419517, 0.0, ...nput_time_scale='UTC', ayanamsa='lahiri', coordinate_convention='apparent geocentric ecliptic-of-date; degrees and AU').receipt_sha256
+_________ test_speed_flag_returns_all_centered_coordinate_derivatives _________
+tests\test_swisseph_compat_contract.py:89: in test_speed_flag_returns_all_centered_coordinate_derivatives
+    assert values[4] == pytest.approx(expected[1], abs=1e-4)
+E   assert 0.0 == 1.386502138330692 � 1.0e-04
+E     
+E     comparison failed
+E     Obtained: 0.0
+E     Expected: 1.386502138330692 � 1.0e-04
+__________ test_houses_require_finite_dut1_and_use_it_to_derive_ut1 ___________
+tests\test_swisseph_compat_contract.py:97: in test_houses_require_finite_dut1_and_use_it_to_derive_ut1
+    with pytest.raises(EphemerisError, match="DUT1"):
+E   Failed: DID NOT RAISE <class 'ephemeris_oss._api.EphemerisError'>
+____________ test_distinct_conventions_have_explicit_realizations _____________
+tests\test_long_term_ayanamsa.py:28: in test_distinct_conventions_have_explicit_realizations
+    assert ADDITIONS <= AYANAMSA_CATALOG.keys()
+E   AssertionError: assert {'aldebaran', 'ardra_galactic_plane', 'aryabhata_522', 'aryabhata_equinox', 'aryabhata_mean_sun', 'dhruva_middle_mula', ...} <= dict_keys(['lahiri', 'raman', 'kp', 'yukteshwar', 'fagan_bradley', 'true_citra', 'pushya'])
+E    +  where dict_keys(['lahiri', 'raman', 'kp', 'yukteshwar', 'fagan_bradley', 'true_citra', 'pushya']) = <built-in method keys of mappingproxy object at 0x0000018AB5795600>()
+E    +    where <built-in method keys of mappingproxy object at 0x0000018AB5795600> = mappingproxy({'lahiri': AyanamsaDefinition(key='lahiri', label='Lahiri / Chitra Paksha (mean)', model='published_lahir...precession_model='IAU2006', reference_frame='mean ecliptic/equinox of reference epoch', original_author_ambiguity='')}).keys
+_ test_all_convention_operations_accept_complete_jpl_coordinate_range[-3100015.5] _
+tests\test_long_term_ayanamsa.py:43: in test_all_convention_operations_accept_complete_jpl_coordinate_range
+    assert ADDITIONS <= AYANAMSA_CATALOG.keys()
+E   AssertionError: assert {'aldebaran', 'ardra_galactic_plane', 'aryabhata_522', 'aryabhata_equinox', 'aryabhata_mean_sun', 'dhruva_middle_mula', ...} <= dict_keys(['lahiri', 'raman', 'kp', 'yukteshwar', 'fagan_bradley', 'true_citra', 'pushya'])
+E    +  where dict_keys(['lahiri', 'raman', 'kp', 'yukteshwar', 'fagan_bradley', 'true_citra', 'pushya']) = <built-in method keys of mappingproxy object at 0x0000018AB5795600>()
+E    +    where <built-in method keys of mappingproxy object at 0x0000018AB5795600> = mappingproxy({'lahiri': AyanamsaDefinition(key='lahiri', label='Lahiri / Chitra Paksha (mean)', model='published_lahir...precession_model='IAU2006', reference_frame='mean ecliptic/equinox of reference epoch', original_author_ambiguity='')}).keys
+_ test_all_convention_operations_accept_complete_jpl_coordinate_range[8000016.5] _
+tests\test_long_term_ayanamsa.py:43: in test_all_convention_operations_accept_complete_jpl_coordinate_range
+    assert ADDITIONS <= AYANAMSA_CATALOG.keys()
+E   AssertionError: assert {'aldebaran', 'ardra_galactic_plane', 'aryabhata_522', 'aryabhata_equinox', 'aryabhata_mean_sun', 'dhruva_middle_mula', ...} <= dict_keys(['lahiri', 'raman', 'kp', 'yukteshwar', 'fagan_bradley', 'true_citra', 'pushya'])
+E    +  where dict_keys(['lahiri', 'raman', 'kp', 'yukteshwar', 'fagan_bradley', 'true_citra', 'pushya']) = <built-in method keys of mappingproxy object at 0x0000018AB5795600>()
+E    +    where <built-in method keys of mappingproxy object at 0x0000018AB5795600> = mappingproxy({'lahiri': AyanamsaDefinition(key='lahiri', label='Lahiri / Chitra Paksha (mean)', model='published_lahir...precession_model='IAU2006', reference_frame='mean ecliptic/equinox of reference epoch', original_author_ambiguity='')}).keys
+_ test_all_convention_operations_accept_complete_jpl_coordinate_range[2451545.0] _
+tests\test_long_term_ayanamsa.py:43: in test_all_convention_operations_accept_complete_jpl_coordinate_range
+    assert ADDITIONS <= AYANAMSA_CATALOG.keys()
+E   AssertionError: assert {'aldebaran', 'ardra_galactic_plane', 'aryabhata_522', 'aryabhata_equinox', 'aryabhata_mean_sun', 'dhruva_middle_mula', ...} <= dict_keys(['lahiri', 'raman', 'kp', 'yukteshwar', 'fagan_bradley', 'true_citra', 'pushya'])
+E    +  where dict_keys(['lahiri', 'raman', 'kp', 'yukteshwar', 'fagan_bradley', 'true_citra', 'pushya']) = <built-in method keys of mappingproxy object at 0x0000018AB5795600>()
+E    +    where <built-in method keys of mappingproxy object at 0x0000018AB5795600> = mappingproxy({'lahiri': AyanamsaDefinition(key='lahiri', label='Lahiri / Chitra Paksha (mean)', model='published_lahir...precession_model='IAU2006', reference_frame='mean ecliptic/equinox of reference epoch', original_author_ambiguity='')}).keys
+____ test_long_term_reference_ray_is_independently_constructed_from_poles _____
+tests\test_long_term_ayanamsa.py:54: in test_long_term_reference_ray_is_independently_constructed_from_poles
+    reference = AYANAMSA_CATALOG["kp_senthilathiban"]
+E   KeyError: 'kp_senthilathiban'
+_____ test_long_term_ayanamsa_does_not_extend_short_term_lunar_polynomial _____
+tests\test_long_term_ayanamsa.py:69: in test_long_term_ayanamsa_does_not_extend_short_term_lunar_polynomial
+    assert math.isfinite(ayanamsa_degrees(ENDPOINTS[0], "lahiri"))
+src\ephemeris_oss\engine\conventions.py:336: in ayanamsa_degrees
+    _validate_tt_jd(jd_tt)
+src\ephemeris_oss\engine\conventions.py:297: in _validate_tt_jd
+    raise AstronomyDataUnavailable(
+E   ephemeris_oss.engine.contracts.AstronomyDataUnavailable: ayanamsa policy is versioned only for TT dates from 1600 through 2400
+_________ test_stellar_and_polar_inputs_are_required_not_synthesized __________
+tests\test_long_term_ayanamsa.py:78: in test_stellar_and_polar_inputs_are_required_not_synthesized
+    assert ADDITIONS <= AYANAMSA_CATALOG.keys()
+E   AssertionError: assert {'aldebaran', 'ardra_galactic_plane', 'aryabhata_522', 'aryabhata_equinox', 'aryabhata_mean_sun', 'dhruva_middle_mula', ...} <= dict_keys(['lahiri', 'raman', 'kp', 'yukteshwar', 'fagan_bradley', 'true_citra', 'pushya'])
+E    +  where dict_keys(['lahiri', 'raman', 'kp', 'yukteshwar', 'fagan_bradley', 'true_citra', 'pushya']) = <built-in method keys of mappingproxy object at 0x0000018AB5795600>()
+E    +    where <built-in method keys of mappingproxy object at 0x0000018AB5795600> = mappingproxy({'lahiri': AyanamsaDefinition(key='lahiri', label='Lahiri / Chitra Paksha (mean)', model='published_lahir...precession_model='IAU2006', reference_frame='mean ecliptic/equinox of reference epoch', original_author_ambiguity='')}).keys
+_ test_historical_realizations_keep_ut1_to_tt_policy_explicit[suryasiddhanta_equinox-499-27031.57] _
+tests\test_long_term_ayanamsa.py:98: in test_historical_realizations_keep_ut1_to_tt_policy_explicit
+    definition = AYANAMSA_CATALOG[key]
+E   KeyError: 'suryasiddhanta_equinox'
+_ test_historical_realizations_keep_ut1_to_tt_policy_explicit[aryabhata_equinox-499-25015.57] _
+tests\test_long_term_ayanamsa.py:98: in test_historical_realizations_keep_ut1_to_tt_policy_explicit
+    definition = AYANAMSA_CATALOG[key]
+E   KeyError: 'aryabhata_equinox'
+_ test_historical_realizations_keep_ut1_to_tt_policy_explicit[aryabhata_522-522-20804.0] _
+tests\test_long_term_ayanamsa.py:98: in test_historical_realizations_keep_ut1_to_tt_policy_explicit
+    definition = AYANAMSA_CATALOG[key]
+E   KeyError: 'aryabhata_522'
+______ test_native_and_optional_wasm_execute_identical_named_conventions ______
+tests\test_long_term_ayanamsa_sdk.py:17: in test_native_and_optional_wasm_execute_identical_named_conventions
+    assert len(AYANAMSA_CATALOG) >= 27
+E   AssertionError: assert 7 >= 27
+E    +  where 7 = len(mappingproxy({'lahiri': AyanamsaDefinition(key='lahiri', label='Lahiri / Chitra Paksha (mean)', model='published_lahir...precession_model='IAU2006', reference_frame='mean ecliptic/equinox of reference epoch', original_author_ambiguity='')}))
+=========================== short test summary info ===========================
+FAILED tests/test_cli_extended.py::test_cli_preserves_real_engine_retrograde_motion[jyotish]
+FAILED tests/test_cli_extended.py::test_cli_preserves_real_engine_retrograde_motion[fact-sheet]
+FAILED tests/test_cli_extended.py::test_cli_preserves_real_engine_retrograde_motion[svg]
+FAILED tests/test_swisseph_compat_contract.py::test_calendar_arithmetic_round_trips_astronomical_years_without_datetime[date0-0]
+FAILED tests/test_swisseph_compat_contract.py::test_calendar_arithmetic_round_trips_astronomical_years_without_datetime[date0-1]
+FAILED tests/test_swisseph_compat_contract.py::test_calendar_arithmetic_round_trips_astronomical_years_without_datetime[date1-0]
+FAILED tests/test_swisseph_compat_contract.py::test_calendar_arithmetic_round_trips_astronomical_years_without_datetime[date2-0]
+FAILED tests/test_swisseph_compat_contract.py::test_calendar_arithmetic_round_trips_astronomical_years_without_datetime[date3-0]
+FAILED tests/test_swisseph_compat_contract.py::test_calendar_definitions_have_independent_known_anchors
+FAILED tests/test_swisseph_compat_contract.py::test_true_node_standard_id_is_distinct_from_mean_and_mean_south_node
+FAILED tests/test_swisseph_compat_contract.py::test_facade_receipt_binds_flag_dependent_values_and_is_repeatable
+FAILED tests/test_swisseph_compat_contract.py::test_speed_flag_returns_all_centered_coordinate_derivatives
+FAILED tests/test_swisseph_compat_contract.py::test_houses_require_finite_dut1_and_use_it_to_derive_ut1
+FAILED tests/test_long_term_ayanamsa.py::test_distinct_conventions_have_explicit_realizations
+FAILED tests/test_long_term_ayanamsa.py::test_all_convention_operations_accept_complete_jpl_coordinate_range[-3100015.5]
+FAILED tests/test_long_term_ayanamsa.py::test_all_convention_operations_accept_complete_jpl_coordinate_range[8000016.5]
+FAILED tests/test_long_term_ayanamsa.py::test_all_convention_operations_accept_complete_jpl_coordinate_range[2451545.0]
+FAILED tests/test_long_term_ayanamsa.py::test_long_term_reference_ray_is_independently_constructed_from_poles
+FAILED tests/test_long_term_ayanamsa.py::test_long_term_ayanamsa_does_not_extend_short_term_lunar_polynomial
+FAILED tests/test_long_term_ayanamsa.py::test_stellar_and_polar_inputs_are_required_not_synthesized
+FAILED tests/test_long_term_ayanamsa.py::test_historical_realizations_keep_ut1_to_tt_policy_explicit[suryasiddhanta_equinox-499-27031.57]
+FAILED tests/test_long_term_ayanamsa.py::test_historical_realizations_keep_ut1_to_tt_policy_explicit[aryabhata_equinox-499-25015.57]
+FAILED tests/test_long_term_ayanamsa.py::test_historical_realizations_keep_ut1_to_tt_policy_explicit[aryabhata_522-522-20804.0]
+FAILED tests/test_long_term_ayanamsa_sdk.py::test_native_and_optional_wasm_execute_identical_named_conventions
+24 failed, 3 passed in 1.32s

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import ctypes
 import json
 import math
 import os
@@ -50,6 +51,72 @@ def test_native_file_sdk_reads_real_bytes_and_fails_closed(tmp_path):
     path.write_bytes(b'not a kernel')
     with pytest.raises(ValueError, match='invalid'):
         read_spk_state(path, 301, 0, 0., library_path=LIBRARY)
+
+
+def test_sparse_native_protocol_validates_framing_and_requests_missing_bytes():
+    library = ctypes.CDLL(str(LIBRARY))
+    function = library.ephemeris_spk_sparse_state
+    function.argtypes = [ctypes.c_void_p, ctypes.c_size_t, ctypes.c_int32,
+                         ctypes.c_int32, ctypes.c_double, ctypes.POINTER(ctypes.c_double)]
+    function.restype = ctypes.c_int32
+
+    def run(data):
+        buffer = ctypes.create_string_buffer(data)
+        output = (ctypes.c_double * 6)()
+        return function(buffer, len(data), 301, 0, 5., output), tuple(output)
+
+    status, request = run(struct.pack('<QI', 4096, 0))
+    assert status == 100
+    assert request[0] == 0. and 0. < request[1] <= 4096.
+    complete = struct.pack('<QI', 4096, 1)+struct.pack('<QI', 0, 4096)+_fixture()
+    for _ in range(2):
+        status, state = run(complete)
+        assert status == 0
+        assert state == (9.5, 20., -5., .8, 0., 0.)
+    for malformed in (
+        b'bad', struct.pack('<QI', 2**53, 0), struct.pack('<QI', 4096, 0)+b'x',
+        struct.pack('<QI', 4096, 1)+struct.pack('<QI', 0, 0),
+        struct.pack('<QI', 4096, 1)+struct.pack('<QI', 4095, 2)+b'xx',
+        struct.pack('<QI', 4096, 2)+struct.pack('<QI', 0, 2)+b'ab'
+        +struct.pack('<QI', 1, 2)+b'cd',
+    ):
+        assert run(malformed)[0] not in (0, 100)
+
+
+def test_seekable_wasm_reuses_reader_with_bounded_async_ranges(tmp_path):
+    path = tmp_path / 'seekable.bsp'
+    path.write_bytes(_fixture())
+    script = '''
+import fs from 'node:fs';
+import {pathToFileURL} from 'node:url';
+import assert from 'node:assert/strict';
+const sdk=await import(pathToFileURL(process.argv[1]));
+await sdk.initEphemerisWasm(new Uint8Array(fs.readFileSync(process.argv[2])));
+const bytes=new Uint8Array(fs.readFileSync(process.argv[3]));
+const reads=[];
+const source={size:bytes.length,async read(offset,length){
+  reads.push([offset,length]); await Promise.resolve(); return bytes.slice(offset,offset+length);
+}};
+for(let repeat=0;repeat<2;repeat++) {
+  const [a,b]=await Promise.all([sdk.readSpkStateSeekable(source,301,0,5),
+                                 sdk.readSpkStateSeekable(source,301,0,-5)]);
+  assert.deepEqual(a,[9.5,20,-5,.8,0,0]);
+  assert.deepEqual(b,[7.5,20,-5,-.4,0,0]);
+}
+assert.ok(reads.length>1 && reads.every(([o,n])=>n<bytes.length));
+await assert.rejects(sdk.readSpkStateSeekable(source,301,0,11),/status 3/);
+await assert.rejects(sdk.readSpkStateSeekable(source,301,0,5,{maxRequests:1}),/request|limit/i);
+await assert.rejects(sdk.readSpkStateSeekable(source,301,0,5,{maxCacheBytes:16}),/cache|limit/i);
+await assert.rejects(sdk.readSpkStateSeekable({size:4096,async read(o,n){return bytes.slice(o,o+n-1);}},
+                                          301,0,5),/short|length/i);
+await assert.rejects(sdk.readSpkStateSeekable({size:NaN,read:source.read},301,0,5),/size|integer/i);
+console.log('Seekable WASM ranges, concurrency, repeats and refusal controls passed');
+'''
+    result = subprocess.run(['node', '--input-type=module', '-e', script,
+                             str(ROOT/'web/ephemeris-browser.js'),
+                             str(ROOT/'rust/ephemeris-core/wasm/ephemeris_spk.wasm'), str(path)],
+                            cwd=ROOT, capture_output=True, text=True, check=True)
+    assert 'Seekable WASM' in result.stdout
 
 
 def test_actual_wasm_sdk_executes_reader_and_preserves_math_module_size(tmp_path):

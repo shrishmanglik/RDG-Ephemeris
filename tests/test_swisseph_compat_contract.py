@@ -1,19 +1,12 @@
-"""Behavioral regressions for the bounded UTC Swiss-shaped facade.
-
-UTC remains the facade input scale.  House calculations additionally require
-the caller to supply DUT1 so the engine can derive UT1 without pretending UTC
-and UT1 are interchangeable.
-"""
+"""Behavioral regressions for the bounded Swiss-shaped v2 facade."""
 
 from __future__ import annotations
 
 import math
 
 import pytest
-
 from ephemeris_oss import EphemerisError
 from ephemeris_oss import swisseph_compat as swe
-
 
 def _signed_angle_delta(later: float, earlier: float) -> float:
     return (later - earlier + 180.0) % 360.0 - 180.0
@@ -37,7 +30,6 @@ def test_calendar_definitions_have_independent_known_anchors():
         swe.julday(1900, 2, 29, cal=1)
     assert math.isfinite(swe.julday(1900, 2, 29, cal=0))
 
-
 def test_true_node_standard_id_is_distinct_from_mean_and_mean_south_node() -> None:
     jd = swe.julday(2024, 4, 8, 18.0)
     flags = swe.FLG_SWIEPH | swe.FLG_SPEED
@@ -53,7 +45,6 @@ def test_true_node_standard_id_is_distinct_from_mean_and_mean_south_node() -> No
     assert abs(abs(_signed_angle_delta(south[0], mean[0])) - 180.0) < 1e-9
     assert true != south
 
-
 def test_facade_receipt_binds_flag_dependent_values_and_is_repeatable() -> None:
     jd = swe.julday(2024, 4, 8, 18.0)
     base_flags = swe.FLG_SWIEPH
@@ -66,7 +57,6 @@ def test_facade_receipt_binds_flag_dependent_values_and_is_repeatable() -> None:
     assert position_only.receipt_sha256 != with_speed.receipt_sha256
     assert repeated == with_speed
     assert len(with_speed.receipt_sha256) == 64
-
 
 def test_speed_flag_returns_all_centered_coordinate_derivatives() -> None:
     jd = swe.julday(2024, 4, 8, 18.0)
@@ -89,30 +79,71 @@ def test_speed_flag_returns_all_centered_coordinate_derivatives() -> None:
     assert values[4] == pytest.approx(expected[1], abs=1e-4)
     assert values[5] == pytest.approx(expected[2], abs=1e-7)
 
-
 def test_houses_require_finite_dut1_and_use_it_to_derive_ut1() -> None:
     jd_utc = swe.julday(2024, 4, 8, 18.0)
     location = (23.0225, 72.5714)
 
-    with pytest.raises(EphemerisError, match="DUT1"):
-        swe.houses_ex(jd_utc, *location, b"P")
+    default_cusps, _ = swe.houses_ex(jd_utc, *location, b"P")
+    assert len(default_cusps) == 12
+    with pytest.raises(EphemerisError, match="dut1_seconds"):
+        swe.houses_ex(jd_utc, *location, b"P", input_time_scale="UTC")
     for invalid in (math.nan, math.inf, -math.inf):
         with pytest.raises(EphemerisError, match="finite"):
-            swe.houses_ex(jd_utc, *location, b"P", dut1_seconds=invalid)
+            swe.houses_ex(
+                jd_utc, *location, b"P", input_time_scale="UTC",
+                dut1_seconds=invalid,
+            )
 
     zero_cusps, zero_angles = swe.houses_ex(
-        jd_utc, *location, b"P", dut1_seconds=0.0
+        jd_utc, *location, b"P", input_time_scale="UTC", dut1_seconds=0.0
     )
     shifted_cusps, shifted_angles = swe.houses_ex(
-        jd_utc, *location, b"P", dut1_seconds=0.8
+        jd_utc, *location, b"P", input_time_scale="UTC", dut1_seconds=0.8
     )
     assert len(zero_cusps) == len(shifted_cusps) == 12
     assert len(zero_angles) == len(shifted_angles) == 10
-    assert all(math.isfinite(value) for value in (*zero_cusps, *zero_angles))
+    assert all(math.isfinite(value) for value in (*zero_cusps, *zero_angles[:4]))
+    assert all(math.isnan(value) for value in zero_angles[4:])
     changes = [
         abs(_signed_angle_delta(later, earlier))
         for earlier, later in zip(
-            (*zero_cusps, *zero_angles), (*shifted_cusps, *shifted_angles), strict=True
+            (*zero_cusps, *zero_angles[:4]),
+            (*shifted_cusps, *shifted_angles[:4]),
+            strict=True,
         )
     ]
     assert max(changes) > 1e-6
+
+def test_wide_tt_policy_requires_tdb_and_mean_equinox() -> None:
+    ancient_tt = swe.julday(1500, 1, 1, 0.0)
+    with pytest.raises(EphemerisError, match="jd_tdb"):
+        swe.calc(ancient_tt, swe.MARS, swe.FLG_SWIEPH | swe.FLG_NONUT)
+    with pytest.raises(EphemerisError, match="true-equinox"):
+        swe.calc(ancient_tt, swe.MARS, swe.FLG_SWIEPH, jd_tdb=ancient_tt)
+
+def test_stellar_ayanamsa_requires_explicit_anchor_input() -> None:
+    jd_tt = swe.julday(2024, 4, 8, 18.0)
+    flags = swe.FLG_SWIEPH | swe.FLG_SIDEREAL
+    with pytest.raises(EphemerisError, match="anchor"):
+        swe.calc(jd_tt, swe.MARS, flags, sidereal_mode="true_citra")
+    values, _ = swe.calc(
+        jd_tt, swe.MARS, flags, sidereal_mode="true_citra",
+        anchor_tropical_longitude_deg=180.0,
+    )
+    assert all(math.isfinite(value) for value in values)
+
+def test_stellar_anchor_speed_is_required_and_changes_sidereal_speed() -> None:
+    jd_tt = swe.julday(2024, 4, 8, 18.0)
+    flags = swe.FLG_SWIEPH | swe.FLG_SIDEREAL | swe.FLG_SPEED
+    kwargs = {"sidereal_mode": "true_citra", "anchor_tropical_longitude_deg": 180.0}
+    with pytest.raises(EphemerisError, match="anchor_tropical_speed"):
+        swe.calc(jd_tt, swe.MARS, flags, **kwargs)
+    with pytest.raises(EphemerisError, match="finite"):
+        swe.calc(jd_tt, swe.MARS, flags, **kwargs, anchor_tropical_speed_deg_per_day=math.nan)
+    frozen = swe.calc(
+        jd_tt, swe.MARS, flags, **kwargs, anchor_tropical_speed_deg_per_day=0.0
+    )[0]
+    moving = swe.calc(
+        jd_tt, swe.MARS, flags, **kwargs, anchor_tropical_speed_deg_per_day=1.0
+    )[0]
+    assert moving[3] == pytest.approx(frozen[3] - 1.0, abs=1e-7)

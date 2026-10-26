@@ -8,6 +8,12 @@
 
 use std::slice;
 
+#[cfg(feature = "long-term")]
+mod ayanamsa_catalog;
+
+#[cfg(feature = "long-term")]
+pub mod long_term;
+
 #[cfg(any(not(target_arch = "wasm32"), feature = "spk-reader"))]
 pub mod spk;
 

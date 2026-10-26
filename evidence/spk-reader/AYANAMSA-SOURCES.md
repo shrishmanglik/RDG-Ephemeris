@@ -1,10 +1,10 @@
 # Long-term convention intake, 2026-10-26
 
-Research intake, not implemented coverage or a physical accuracy certificate.
+Definition intake and implementation source record, not a physical accuracy certificate.
 No competing implementation source was consulted. Mathematical definitions
 were read from the public theory manual and the primary works below.
 
-Existing seven distinct conventions are retained. Proposed additions:
+Existing seven distinct conventions are retained. Twenty implemented additions:
 
 | Key | Definition |
 |---|---|
@@ -62,6 +62,11 @@ Sources:
 - [Vondrak 2011 presentation](https://syrte.obspm.fr/jsr/journees2011/pdf/vondrak.pdf)
 - [sofars 0.6.1 license including SOFA terms](https://raw.githubusercontent.com/astro-xao/sofars/v0.6.1/LICENSE)
 
-The sofars dependency has not yet been added. Its complete license was read;
-MIT permission and SOFA derived-work notices must be retained if it is used.
-No source from that dependency has yet been copied or modified.
+The pinned sofars 0.6.1 dependency is now used behind the long-term feature.
+Its complete MIT and SOFA derived-work notices are retained in the Rust crate's
+THIRD_PARTY_NOTICES.md. Its source is an unmodified dependency. A single Python
+definition catalog generates the native table and browser metadata; a stale-byte
+control protects synchronization. Catalog version 1.4.0 contains 27 definitions.
+The strict native/WASM v2 evaluator implements these definitions, including
+explicit caller-supplied stellar anchors. The existing approximate legacy
+precession API remains separately labelled and does not qualify this evaluator.

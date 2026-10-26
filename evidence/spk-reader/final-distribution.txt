@@ -1,0 +1,489 @@
+* Creating isolated environment: venv+pip...
+* Installing packages in isolated environment:
+  - setuptools>=77
+* Getting build dependencies for sdist...
+running egg_info
+writing src\ephemeris_oss.egg-info\PKG-INFO
+writing dependency_links to src\ephemeris_oss.egg-info\dependency_links.txt
+writing entry points to src\ephemeris_oss.egg-info\entry_points.txt
+writing requirements to src\ephemeris_oss.egg-info\requires.txt
+writing top-level names to src\ephemeris_oss.egg-info\top_level.txt
+reading manifest file 'src\ephemeris_oss.egg-info\SOURCES.txt'
+reading manifest template 'MANIFEST.in'
+no previously-included directories found matching 'bench'
+no previously-included directories found matching 'evidence'
+no previously-included directories found matching '.venv-release'
+no previously-included directories found matching '.venv-wheel'
+no previously-included directories found matching '.venv-sdist'
+warning: no previously-included files matching '*.bsp' found anywhere in distribution
+warning: no previously-included files matching '*.se1' found anywhere in distribution
+warning: no previously-included files matching '*.sqlite' found anywhere in distribution
+warning: no previously-included files matching '*.db' found anywhere in distribution
+warning: no previously-included files matching '*.pyc' found anywhere in distribution
+warning: no previously-included files matching '.env' found anywhere in distribution
+warning: no previously-included files found matching 'tools\verify_release.py'
+adding license file 'LICENSE'
+adding license file 'NOTICE'
+writing manifest file 'src\ephemeris_oss.egg-info\SOURCES.txt'
+* Installed build dependency versions:
+  - setuptools==84.2.1
+* Building sdist...
+running sdist
+running egg_info
+writing src\ephemeris_oss.egg-info\PKG-INFO
+writing dependency_links to src\ephemeris_oss.egg-info\dependency_links.txt
+writing entry points to src\ephemeris_oss.egg-info\entry_points.txt
+writing requirements to src\ephemeris_oss.egg-info\requires.txt
+writing top-level names to src\ephemeris_oss.egg-info\top_level.txt
+reading manifest file 'src\ephemeris_oss.egg-info\SOURCES.txt'
+reading manifest template 'MANIFEST.in'
+no previously-included directories found matching 'bench'
+no previously-included directories found matching 'evidence'
+no previously-included directories found matching '.venv-release'
+no previously-included directories found matching '.venv-wheel'
+no previously-included directories found matching '.venv-sdist'
+warning: no previously-included files matching '*.bsp' found anywhere in distribution
+warning: no previously-included files matching '*.se1' found anywhere in distribution
+warning: no previously-included files matching '*.sqlite' found anywhere in distribution
+warning: no previously-included files matching '*.db' found anywhere in distribution
+warning: no previously-included files matching '*.pyc' found anywhere in distribution
+warning: no previously-included files matching '.env' found anywhere in distribution
+warning: no previously-included files found matching 'tools\verify_release.py'
+adding license file 'LICENSE'
+adding license file 'NOTICE'
+writing manifest file 'src\ephemeris_oss.egg-info\SOURCES.txt'
+running check
+creating ephemeris_oss-0.2.0.dev1
+creating ephemeris_oss-0.2.0.dev1\docs
+creating ephemeris_oss-0.2.0.dev1\docs\design
+creating ephemeris_oss-0.2.0.dev1\src\ephemeris_oss
+creating ephemeris_oss-0.2.0.dev1\src\ephemeris_oss.egg-info
+creating ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\almanac
+creating ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\data
+creating ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+creating ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish
+creating ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_advanced
+creating ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_jaimini
+creating ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_nadi
+creating ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_rectification
+creating ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_siddhanta
+creating ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_transit
+creating ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\visualization
+creating ephemeris_oss-0.2.0.dev1\tests
+creating ephemeris_oss-0.2.0.dev1\tools
+copying files to ephemeris_oss-0.2.0.dev1...
+copying CODE_OF_CONDUCT.md -> ephemeris_oss-0.2.0.dev1
+copying CONTRIBUTING.md -> ephemeris_oss-0.2.0.dev1
+copying LICENSE -> ephemeris_oss-0.2.0.dev1
+copying MANIFEST.in -> ephemeris_oss-0.2.0.dev1
+copying NOTICE -> ephemeris_oss-0.2.0.dev1
+copying README.md -> ephemeris_oss-0.2.0.dev1
+copying SECURITY.md -> ephemeris_oss-0.2.0.dev1
+copying pyproject.toml -> ephemeris_oss-0.2.0.dev1
+copying docs\ACCURACY.md -> ephemeris_oss-0.2.0.dev1\docs
+copying docs\researcher-benchmark.json -> ephemeris_oss-0.2.0.dev1\docs
+copying docs\design\api.md -> ephemeris_oss-0.2.0.dev1\docs\design
+copying src\ephemeris_oss\__init__.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss
+copying src\ephemeris_oss\_api.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss
+copying src\ephemeris_oss\_version.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss
+copying src\ephemeris_oss\adapter.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss
+copying src\ephemeris_oss\cli.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss
+copying src\ephemeris_oss\compact_kernel.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss
+copying src\ephemeris_oss\fact_sheet.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss
+copying src\ephemeris_oss\kernels.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss
+copying src\ephemeris_oss\researcher_benchmark.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss
+copying src\ephemeris_oss\rust_bridge.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss
+copying src\ephemeris_oss\swisseph_compat.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss
+copying src\ephemeris_oss\time.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss
+copying src\ephemeris_oss.egg-info\PKG-INFO -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss.egg-info
+copying src\ephemeris_oss.egg-info\SOURCES.txt -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss.egg-info
+copying src\ephemeris_oss.egg-info\dependency_links.txt -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss.egg-info
+copying src\ephemeris_oss.egg-info\entry_points.txt -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss.egg-info
+copying src\ephemeris_oss.egg-info\requires.txt -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss.egg-info
+copying src\ephemeris_oss.egg-info\top_level.txt -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss.egg-info
+copying src\ephemeris_oss\almanac\__init__.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\almanac
+copying src\ephemeris_oss\almanac\ephemeris_tables.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\almanac
+copying src\ephemeris_oss\almanac\panchang_calendar.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\almanac
+copying src\ephemeris_oss\almanac\regional_panchang.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\almanac
+copying src\ephemeris_oss\almanac\visibility.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\almanac
+copying src\ephemeris_oss\data\de440_compact.bin.zlib -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\data
+copying src\ephemeris_oss\engine\__init__.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\apparent.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\civil_time.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\contracts.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\conventions.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\earth_orientation.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\eclipses.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\events.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\kernel_registry.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\numerical_provider.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\phenomena.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\receipt.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\stellar_anchors.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\uncertainty_envelope.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\engine
+copying src\ephemeris_oss\jyotish\__init__.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish
+copying src\ephemeris_oss\jyotish\ashtakavarga.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish
+copying src\ephemeris_oss\jyotish\dasha.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish
+copying src\ephemeris_oss\jyotish\nakshatra.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish
+copying src\ephemeris_oss\jyotish\panchanga.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish
+copying src\ephemeris_oss\jyotish\shadbala.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish
+copying src\ephemeris_oss\jyotish\vargas.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish
+copying src\ephemeris_oss\jyotish_advanced\__init__.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_advanced
+copying src\ephemeris_oss\jyotish_advanced\koota.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_advanced
+copying src\ephemeris_oss\jyotish_advanced\kp.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_advanced
+copying src\ephemeris_oss\jyotish_advanced\varshphal.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_advanced
+copying src\ephemeris_oss\jyotish_advanced\yogas.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_advanced
+copying src\ephemeris_oss\jyotish_jaimini\__init__.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_jaimini
+copying src\ephemeris_oss\jyotish_jaimini\sutras.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_jaimini
+copying src\ephemeris_oss\jyotish_nadi\__init__.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_nadi
+copying src\ephemeris_oss\jyotish_nadi\ayurdaya.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_nadi
+copying src\ephemeris_oss\jyotish_nadi\bhrigu.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_nadi
+copying src\ephemeris_oss\jyotish_nadi\khara_mrityu.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_nadi
+copying src\ephemeris_oss\jyotish_rectification\__init__.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_rectification
+copying src\ephemeris_oss\jyotish_rectification\ashtamangala.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_rectification
+copying src\ephemeris_oss\jyotish_rectification\rectify.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_rectification
+copying src\ephemeris_oss\jyotish_siddhanta\__init__.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_siddhanta
+copying src\ephemeris_oss\jyotish_siddhanta\surya_siddhanta.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_siddhanta
+copying src\ephemeris_oss\jyotish_siddhanta\vedanga_jyotisha.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_siddhanta
+copying src\ephemeris_oss\jyotish_transit\__init__.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_transit
+copying src\ephemeris_oss\jyotish_transit\chakras.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_transit
+copying src\ephemeris_oss\jyotish_transit\muhurta_search.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_transit
+copying src\ephemeris_oss\jyotish_transit\prashna.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\jyotish_transit
+copying src\ephemeris_oss\visualization\__init__.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\visualization
+copying src\ephemeris_oss\visualization\kundali_svg.py -> ephemeris_oss-0.2.0.dev1\src\ephemeris_oss\visualization
+copying tests\conftest.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_adapter.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_api.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_apparent_place.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_astronomy_conventions.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_astronomy_events.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_astronomy_provider_foundation.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_ayanamsa_catalog_generation.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_civil_time.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_claims_checker.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_cli_extended.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_compact_kernel.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_distribution_data.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_documentation_integrity.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_earth_orientation.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_eclipses_and_phenomena.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_ephemeris_tables.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_fact_sheet.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_golden_corpus_100.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_import_graph.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_jaimini_and_uncertainty.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_jpl_erfa_numerical_provider.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_jyotish_advanced.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_jyotish_nadi.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_jyotish_rectification.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_jyotish_siddhanta.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_jyotish_suite.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_jyotish_transit.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_kernels.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_long_term_ayanamsa.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_long_term_ayanamsa_sdk.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_measured_tt_api.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_observatory_portal.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_property_invariants.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_regional_panchang.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_researcher_benchmark.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_rust_crate_parity.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_spk_reader.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_swisseph_compat.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_swisseph_compat_contract.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tests\test_visualization_svg.py -> ephemeris_oss-0.2.0.dev1\tests
+copying tools\check_wheel.py -> ephemeris_oss-0.2.0.dev1\tools
+Writing ephemeris_oss-0.2.0.dev1\setup.cfg
+Creating tar archive
+removing 'ephemeris_oss-0.2.0.dev1' (and everything under it)
+* Building wheel from sdist
+* Creating isolated environment: venv+pip...
+* Installing packages in isolated environment:
+  - setuptools>=77
+* Getting build dependencies for wheel...
+running egg_info
+writing src\ephemeris_oss.egg-info\PKG-INFO
+writing dependency_links to src\ephemeris_oss.egg-info\dependency_links.txt
+writing entry points to src\ephemeris_oss.egg-info\entry_points.txt
+writing requirements to src\ephemeris_oss.egg-info\requires.txt
+writing top-level names to src\ephemeris_oss.egg-info\top_level.txt
+reading manifest file 'src\ephemeris_oss.egg-info\SOURCES.txt'
+reading manifest template 'MANIFEST.in'
+no previously-included directories found matching 'bench'
+no previously-included directories found matching 'evidence'
+no previously-included directories found matching '.venv-release'
+no previously-included directories found matching '.venv-wheel'
+no previously-included directories found matching '.venv-sdist'
+warning: no previously-included files matching '*.bsp' found anywhere in distribution
+warning: no previously-included files matching '*.se1' found anywhere in distribution
+warning: no previously-included files matching '*.sqlite' found anywhere in distribution
+warning: no previously-included files matching '*.db' found anywhere in distribution
+warning: no previously-included files matching '*.pyc' found anywhere in distribution
+warning: no previously-included files matching '.env' found anywhere in distribution
+warning: no previously-included files found matching 'tests\test_release_archives.py'
+warning: no previously-included files found matching 'tools\verify_release.py'
+adding license file 'LICENSE'
+adding license file 'NOTICE'
+writing manifest file 'src\ephemeris_oss.egg-info\SOURCES.txt'
+* Installed build dependency versions:
+  - setuptools==84.2.1
+* Building wheel...
+running bdist_wheel
+running build
+running build_py
+creating build\lib\ephemeris_oss
+copying src\ephemeris_oss\adapter.py -> build\lib\ephemeris_oss
+copying src\ephemeris_oss\cli.py -> build\lib\ephemeris_oss
+copying src\ephemeris_oss\compact_kernel.py -> build\lib\ephemeris_oss
+copying src\ephemeris_oss\fact_sheet.py -> build\lib\ephemeris_oss
+copying src\ephemeris_oss\kernels.py -> build\lib\ephemeris_oss
+copying src\ephemeris_oss\researcher_benchmark.py -> build\lib\ephemeris_oss
+copying src\ephemeris_oss\rust_bridge.py -> build\lib\ephemeris_oss
+copying src\ephemeris_oss\swisseph_compat.py -> build\lib\ephemeris_oss
+copying src\ephemeris_oss\time.py -> build\lib\ephemeris_oss
+copying src\ephemeris_oss\_api.py -> build\lib\ephemeris_oss
+copying src\ephemeris_oss\_version.py -> build\lib\ephemeris_oss
+copying src\ephemeris_oss\__init__.py -> build\lib\ephemeris_oss
+creating build\lib\ephemeris_oss\almanac
+copying src\ephemeris_oss\almanac\ephemeris_tables.py -> build\lib\ephemeris_oss\almanac
+copying src\ephemeris_oss\almanac\panchang_calendar.py -> build\lib\ephemeris_oss\almanac
+copying src\ephemeris_oss\almanac\regional_panchang.py -> build\lib\ephemeris_oss\almanac
+copying src\ephemeris_oss\almanac\visibility.py -> build\lib\ephemeris_oss\almanac
+copying src\ephemeris_oss\almanac\__init__.py -> build\lib\ephemeris_oss\almanac
+creating build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\apparent.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\civil_time.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\contracts.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\conventions.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\earth_orientation.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\eclipses.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\events.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\kernel_registry.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\numerical_provider.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\phenomena.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\receipt.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\stellar_anchors.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\uncertainty_envelope.py -> build\lib\ephemeris_oss\engine
+copying src\ephemeris_oss\engine\__init__.py -> build\lib\ephemeris_oss\engine
+creating build\lib\ephemeris_oss\jyotish
+copying src\ephemeris_oss\jyotish\ashtakavarga.py -> build\lib\ephemeris_oss\jyotish
+copying src\ephemeris_oss\jyotish\dasha.py -> build\lib\ephemeris_oss\jyotish
+copying src\ephemeris_oss\jyotish\nakshatra.py -> build\lib\ephemeris_oss\jyotish
+copying src\ephemeris_oss\jyotish\panchanga.py -> build\lib\ephemeris_oss\jyotish
+copying src\ephemeris_oss\jyotish\shadbala.py -> build\lib\ephemeris_oss\jyotish
+copying src\ephemeris_oss\jyotish\vargas.py -> build\lib\ephemeris_oss\jyotish
+copying src\ephemeris_oss\jyotish\__init__.py -> build\lib\ephemeris_oss\jyotish
+creating build\lib\ephemeris_oss\jyotish_advanced
+copying src\ephemeris_oss\jyotish_advanced\koota.py -> build\lib\ephemeris_oss\jyotish_advanced
+copying src\ephemeris_oss\jyotish_advanced\kp.py -> build\lib\ephemeris_oss\jyotish_advanced
+copying src\ephemeris_oss\jyotish_advanced\varshphal.py -> build\lib\ephemeris_oss\jyotish_advanced
+copying src\ephemeris_oss\jyotish_advanced\yogas.py -> build\lib\ephemeris_oss\jyotish_advanced
+copying src\ephemeris_oss\jyotish_advanced\__init__.py -> build\lib\ephemeris_oss\jyotish_advanced
+creating build\lib\ephemeris_oss\jyotish_jaimini
+copying src\ephemeris_oss\jyotish_jaimini\sutras.py -> build\lib\ephemeris_oss\jyotish_jaimini
+copying src\ephemeris_oss\jyotish_jaimini\__init__.py -> build\lib\ephemeris_oss\jyotish_jaimini
+creating build\lib\ephemeris_oss\jyotish_nadi
+copying src\ephemeris_oss\jyotish_nadi\ayurdaya.py -> build\lib\ephemeris_oss\jyotish_nadi
+copying src\ephemeris_oss\jyotish_nadi\bhrigu.py -> build\lib\ephemeris_oss\jyotish_nadi
+copying src\ephemeris_oss\jyotish_nadi\khara_mrityu.py -> build\lib\ephemeris_oss\jyotish_nadi
+copying src\ephemeris_oss\jyotish_nadi\__init__.py -> build\lib\ephemeris_oss\jyotish_nadi
+creating build\lib\ephemeris_oss\jyotish_rectification
+copying src\ephemeris_oss\jyotish_rectification\ashtamangala.py -> build\lib\ephemeris_oss\jyotish_rectification
+copying src\ephemeris_oss\jyotish_rectification\rectify.py -> build\lib\ephemeris_oss\jyotish_rectification
+copying src\ephemeris_oss\jyotish_rectification\__init__.py -> build\lib\ephemeris_oss\jyotish_rectification
+creating build\lib\ephemeris_oss\jyotish_siddhanta
+copying src\ephemeris_oss\jyotish_siddhanta\surya_siddhanta.py -> build\lib\ephemeris_oss\jyotish_siddhanta
+copying src\ephemeris_oss\jyotish_siddhanta\vedanga_jyotisha.py -> build\lib\ephemeris_oss\jyotish_siddhanta
+copying src\ephemeris_oss\jyotish_siddhanta\__init__.py -> build\lib\ephemeris_oss\jyotish_siddhanta
+creating build\lib\ephemeris_oss\jyotish_transit
+copying src\ephemeris_oss\jyotish_transit\chakras.py -> build\lib\ephemeris_oss\jyotish_transit
+copying src\ephemeris_oss\jyotish_transit\muhurta_search.py -> build\lib\ephemeris_oss\jyotish_transit
+copying src\ephemeris_oss\jyotish_transit\prashna.py -> build\lib\ephemeris_oss\jyotish_transit
+copying src\ephemeris_oss\jyotish_transit\__init__.py -> build\lib\ephemeris_oss\jyotish_transit
+creating build\lib\ephemeris_oss\visualization
+copying src\ephemeris_oss\visualization\kundali_svg.py -> build\lib\ephemeris_oss\visualization
+copying src\ephemeris_oss\visualization\__init__.py -> build\lib\ephemeris_oss\visualization
+running egg_info
+writing src\ephemeris_oss.egg-info\PKG-INFO
+writing dependency_links to src\ephemeris_oss.egg-info\dependency_links.txt
+writing entry points to src\ephemeris_oss.egg-info\entry_points.txt
+writing requirements to src\ephemeris_oss.egg-info\requires.txt
+writing top-level names to src\ephemeris_oss.egg-info\top_level.txt
+reading manifest file 'src\ephemeris_oss.egg-info\SOURCES.txt'
+reading manifest template 'MANIFEST.in'
+no previously-included directories found matching 'bench'
+no previously-included directories found matching 'evidence'
+no previously-included directories found matching '.venv-release'
+no previously-included directories found matching '.venv-wheel'
+no previously-included directories found matching '.venv-sdist'
+warning: no previously-included files matching '*.bsp' found anywhere in distribution
+warning: no previously-included files matching '*.se1' found anywhere in distribution
+warning: no previously-included files matching '*.sqlite' found anywhere in distribution
+warning: no previously-included files matching '*.db' found anywhere in distribution
+warning: no previously-included files matching '*.pyc' found anywhere in distribution
+warning: no previously-included files matching '.env' found anywhere in distribution
+warning: no previously-included files found matching 'tests\test_release_archives.py'
+warning: no previously-included files found matching 'tools\verify_release.py'
+adding license file 'LICENSE'
+adding license file 'NOTICE'
+writing manifest file 'src\ephemeris_oss.egg-info\SOURCES.txt'
+creating build\lib\ephemeris_oss\data
+copying src\ephemeris_oss\data\de440_compact.bin.zlib -> build\lib\ephemeris_oss\data
+installing to build\bdist.win-amd64\wheel
+running install
+running install_lib
+creating build\bdist.win-amd64\wheel
+creating build\bdist.win-amd64\wheel\ephemeris_oss
+copying build\lib\ephemeris_oss\adapter.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss
+creating build\bdist.win-amd64\wheel\ephemeris_oss\almanac
+copying build\lib\ephemeris_oss\almanac\ephemeris_tables.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\almanac
+copying build\lib\ephemeris_oss\almanac\panchang_calendar.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\almanac
+copying build\lib\ephemeris_oss\almanac\regional_panchang.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\almanac
+copying build\lib\ephemeris_oss\almanac\visibility.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\almanac
+copying build\lib\ephemeris_oss\almanac\__init__.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\almanac
+copying build\lib\ephemeris_oss\cli.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss
+copying build\lib\ephemeris_oss\compact_kernel.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss
+creating build\bdist.win-amd64\wheel\ephemeris_oss\data
+copying build\lib\ephemeris_oss\data\de440_compact.bin.zlib -> build\bdist.win-amd64\wheel\.\ephemeris_oss\data
+creating build\bdist.win-amd64\wheel\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\apparent.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\civil_time.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\contracts.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\conventions.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\earth_orientation.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\eclipses.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\events.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\kernel_registry.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\numerical_provider.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\phenomena.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\receipt.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\stellar_anchors.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\uncertainty_envelope.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\engine\__init__.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\engine
+copying build\lib\ephemeris_oss\fact_sheet.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss
+creating build\bdist.win-amd64\wheel\ephemeris_oss\jyotish
+copying build\lib\ephemeris_oss\jyotish\ashtakavarga.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish
+copying build\lib\ephemeris_oss\jyotish\dasha.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish
+copying build\lib\ephemeris_oss\jyotish\nakshatra.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish
+copying build\lib\ephemeris_oss\jyotish\panchanga.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish
+copying build\lib\ephemeris_oss\jyotish\shadbala.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish
+copying build\lib\ephemeris_oss\jyotish\vargas.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish
+copying build\lib\ephemeris_oss\jyotish\__init__.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish
+creating build\bdist.win-amd64\wheel\ephemeris_oss\jyotish_advanced
+copying build\lib\ephemeris_oss\jyotish_advanced\koota.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish_advanced
+copying build\lib\ephemeris_oss\jyotish_advanced\kp.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish_advanced
+copying build\lib\ephemeris_oss\jyotish_advanced\varshphal.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish_advanced
+copying build\lib\ephemeris_oss\jyotish_advanced\yogas.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish_advanced
+copying build\lib\ephemeris_oss\jyotish_advanced\__init__.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish_advanced
+creating build\bdist.win-amd64\wheel\ephemeris_oss\jyotish_jaimini
+copying build\lib\ephemeris_oss\jyotish_jaimini\sutras.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish_jaimini
+copying build\lib\ephemeris_oss\jyotish_jaimini\__init__.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish_jaimini
+creating build\bdist.win-amd64\wheel\ephemeris_oss\jyotish_nadi
+copying build\lib\ephemeris_oss\jyotish_nadi\ayurdaya.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish_nadi
+copying build\lib\ephemeris_oss\jyotish_nadi\bhrigu.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish_nadi
+copying build\lib\ephemeris_oss\jyotish_nadi\khara_mrityu.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish_nadi
+copying build\lib\ephemeris_oss\jyotish_nadi\__init__.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish_nadi
+creating build\bdist.win-amd64\wheel\ephemeris_oss\jyotish_rectification
+copying build\lib\ephemeris_oss\jyotish_rectification\ashtamangala.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish_rectification
+copying build\lib\ephemeris_oss\jyotish_rectification\rectify.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish_rectification
+copying build\lib\ephemeris_oss\jyotish_rectification\__init__.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish_rectification
+creating build\bdist.win-amd64\wheel\ephemeris_oss\jyotish_siddhanta
+copying build\lib\ephemeris_oss\jyotish_siddhanta\surya_siddhanta.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish_siddhanta
+copying build\lib\ephemeris_oss\jyotish_siddhanta\vedanga_jyotisha.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish_siddhanta
+copying build\lib\ephemeris_oss\jyotish_siddhanta\__init__.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish_siddhanta
+creating build\bdist.win-amd64\wheel\ephemeris_oss\jyotish_transit
+copying build\lib\ephemeris_oss\jyotish_transit\chakras.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish_transit
+copying build\lib\ephemeris_oss\jyotish_transit\muhurta_search.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish_transit
+copying build\lib\ephemeris_oss\jyotish_transit\prashna.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish_transit
+copying build\lib\ephemeris_oss\jyotish_transit\__init__.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\jyotish_transit
+copying build\lib\ephemeris_oss\kernels.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss
+copying build\lib\ephemeris_oss\researcher_benchmark.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss
+copying build\lib\ephemeris_oss\rust_bridge.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss
+copying build\lib\ephemeris_oss\swisseph_compat.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss
+copying build\lib\ephemeris_oss\time.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss
+creating build\bdist.win-amd64\wheel\ephemeris_oss\visualization
+copying build\lib\ephemeris_oss\visualization\kundali_svg.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\visualization
+copying build\lib\ephemeris_oss\visualization\__init__.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss\visualization
+copying build\lib\ephemeris_oss\_api.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss
+copying build\lib\ephemeris_oss\_version.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss
+copying build\lib\ephemeris_oss\__init__.py -> build\bdist.win-amd64\wheel\.\ephemeris_oss
+running install_egg_info
+Copying src\ephemeris_oss.egg-info to build\bdist.win-amd64\wheel\.\ephemeris_oss-0.2.0.dev1-py3.11.egg-info
+running install_scripts
+creating build\bdist.win-amd64\wheel\ephemeris_oss-0.2.0.dev1.dist-info\WHEEL
+creating 'C:\\AGI\\worktrees\\ephemeris-oss-staging\\chebyshev-reader-20261026\\dist\\.tmp-1314dvd4\\ephemeris_oss-0.2.0.dev1-py3-none-any.whl' and adding 'build\\bdist.win-amd64\\wheel' to it
+adding 'ephemeris_oss/__init__.py'
+adding 'ephemeris_oss/_api.py'
+adding 'ephemeris_oss/_version.py'
+adding 'ephemeris_oss/adapter.py'
+adding 'ephemeris_oss/cli.py'
+adding 'ephemeris_oss/compact_kernel.py'
+adding 'ephemeris_oss/fact_sheet.py'
+adding 'ephemeris_oss/kernels.py'
+adding 'ephemeris_oss/researcher_benchmark.py'
+adding 'ephemeris_oss/rust_bridge.py'
+adding 'ephemeris_oss/swisseph_compat.py'
+adding 'ephemeris_oss/time.py'
+adding 'ephemeris_oss/almanac/__init__.py'
+adding 'ephemeris_oss/almanac/ephemeris_tables.py'
+adding 'ephemeris_oss/almanac/panchang_calendar.py'
+adding 'ephemeris_oss/almanac/regional_panchang.py'
+adding 'ephemeris_oss/almanac/visibility.py'
+adding 'ephemeris_oss/data/de440_compact.bin.zlib'
+adding 'ephemeris_oss/engine/__init__.py'
+adding 'ephemeris_oss/engine/apparent.py'
+adding 'ephemeris_oss/engine/civil_time.py'
+adding 'ephemeris_oss/engine/contracts.py'
+adding 'ephemeris_oss/engine/conventions.py'
+adding 'ephemeris_oss/engine/earth_orientation.py'
+adding 'ephemeris_oss/engine/eclipses.py'
+adding 'ephemeris_oss/engine/events.py'
+adding 'ephemeris_oss/engine/kernel_registry.py'
+adding 'ephemeris_oss/engine/numerical_provider.py'
+adding 'ephemeris_oss/engine/phenomena.py'
+adding 'ephemeris_oss/engine/receipt.py'
+adding 'ephemeris_oss/engine/stellar_anchors.py'
+adding 'ephemeris_oss/engine/uncertainty_envelope.py'
+adding 'ephemeris_oss/jyotish/__init__.py'
+adding 'ephemeris_oss/jyotish/ashtakavarga.py'
+adding 'ephemeris_oss/jyotish/dasha.py'
+adding 'ephemeris_oss/jyotish/nakshatra.py'
+adding 'ephemeris_oss/jyotish/panchanga.py'
+adding 'ephemeris_oss/jyotish/shadbala.py'
+adding 'ephemeris_oss/jyotish/vargas.py'
+adding 'ephemeris_oss/jyotish_advanced/__init__.py'
+adding 'ephemeris_oss/jyotish_advanced/koota.py'
+adding 'ephemeris_oss/jyotish_advanced/kp.py'
+adding 'ephemeris_oss/jyotish_advanced/varshphal.py'
+adding 'ephemeris_oss/jyotish_advanced/yogas.py'
+adding 'ephemeris_oss/jyotish_jaimini/__init__.py'
+adding 'ephemeris_oss/jyotish_jaimini/sutras.py'
+adding 'ephemeris_oss/jyotish_nadi/__init__.py'
+adding 'ephemeris_oss/jyotish_nadi/ayurdaya.py'
+adding 'ephemeris_oss/jyotish_nadi/bhrigu.py'
+adding 'ephemeris_oss/jyotish_nadi/khara_mrityu.py'
+adding 'ephemeris_oss/jyotish_rectification/__init__.py'
+adding 'ephemeris_oss/jyotish_rectification/ashtamangala.py'
+adding 'ephemeris_oss/jyotish_rectification/rectify.py'
+adding 'ephemeris_oss/jyotish_siddhanta/__init__.py'
+adding 'ephemeris_oss/jyotish_siddhanta/surya_siddhanta.py'
+adding 'ephemeris_oss/jyotish_siddhanta/vedanga_jyotisha.py'
+adding 'ephemeris_oss/jyotish_transit/__init__.py'
+adding 'ephemeris_oss/jyotish_transit/chakras.py'
+adding 'ephemeris_oss/jyotish_transit/muhurta_search.py'
+adding 'ephemeris_oss/jyotish_transit/prashna.py'
+adding 'ephemeris_oss/visualization/__init__.py'
+adding 'ephemeris_oss/visualization/kundali_svg.py'
+adding 'ephemeris_oss-0.2.0.dev1.dist-info/licenses/LICENSE'
+adding 'ephemeris_oss-0.2.0.dev1.dist-info/licenses/NOTICE'
+adding 'ephemeris_oss-0.2.0.dev1.dist-info/METADATA'
+adding 'ephemeris_oss-0.2.0.dev1.dist-info/WHEEL'
+adding 'ephemeris_oss-0.2.0.dev1.dist-info/entry_points.txt'
+adding 'ephemeris_oss-0.2.0.dev1.dist-info/top_level.txt'
+adding 'ephemeris_oss-0.2.0.dev1.dist-info/RECORD'
+removing build\bdist.win-amd64\wheel
+Successfully built ephemeris_oss-0.2.0.dev1.tar.gz and ephemeris_oss-0.2.0.dev1-py3-none-any.whl
+check_wheel self-test: PASS
+ephemeris_oss-0.2.0.dev1-py3-none-any.whl: ephemeris_oss/swisseph_compat.py: contains a swisseph/sweph string
+ephemeris_oss-0.2.0.dev1-py3-none-any.whl: ephemeris_oss-0.2.0.dev1.dist-info/RECORD: contains a swisseph/sweph string
+check_wheel: 2 problem(s) in 1 wheel(s)
