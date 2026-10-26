@@ -1,0 +1,2 @@
+3.13.13 (tags/v3.13.13:01104ce, Apr  7 2026, 19:25:48) [MSC v.1944 64 bit (AMD64)]
+C:\AGI\worktrees\ephemeris-oss-staging\local-ci-d30d22469\src\ephemeris_oss\__init__.py

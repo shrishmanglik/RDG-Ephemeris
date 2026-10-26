@@ -1,0 +1,354 @@
+{
+  "repo": "shrishmanglik/ephemeris-oss-staging",
+  "sha": "d30d224699b3e1e49f0cc76b85bcc3e1374d8a87",
+  "pr": 22,
+  "event": "pull_request",
+  "started": "20261026T101147",
+  "machine": "LAPTOP-Q18C9I4O",
+  "jobs": [
+    {
+      "workflow": "CI",
+      "job": "tests (3.11)",
+      "context": "local-ci / CI / tests (3.11)",
+      "state": "success",
+      "description": "passed in 201s; python 3.11.9 from py launcher; node 24 here, workflow asks for 22",
+      "steps": [
+        {
+          "step": "actions/checkout@v4",
+          "result": "ok (setup)"
+        },
+        {
+          "step": "actions/setup-python@v5",
+          "result": "ok (setup)"
+        },
+        {
+          "step": "Install",
+          "result": "ok",
+          "seconds": 89
+        },
+        {
+          "step": "Provision declared DE440 input",
+          "result": "ok",
+          "seconds": 3
+        },
+        {
+          "step": "actions/setup-node@v4",
+          "result": "ok (setup)"
+        },
+        {
+          "step": "Provision Rust WebAssembly target",
+          "result": "ok",
+          "seconds": 0
+        },
+        {
+          "step": "Build declared native and browser inputs",
+          "result": "ok",
+          "seconds": 18
+        },
+        {
+          "step": "Rust tests",
+          "result": "ok",
+          "seconds": 4
+        },
+        {
+          "step": "Run tests",
+          "result": "ok",
+          "seconds": 58
+        }
+      ],
+      "notes": [
+        "python 3.11.9 from py launcher",
+        "node 24 here, workflow asks for 22"
+      ],
+      "unresolved": [],
+      "seconds": 201
+    },
+    {
+      "workflow": "CI",
+      "job": "tests (3.13)",
+      "context": "local-ci / CI / tests (3.13)",
+      "state": "success",
+      "description": "passed in 125s; python 3.13.13 from py launcher; node 24 here, workflow asks for 22",
+      "steps": [
+        {
+          "step": "actions/checkout@v4",
+          "result": "ok (setup)"
+        },
+        {
+          "step": "actions/setup-python@v5",
+          "result": "ok (setup)"
+        },
+        {
+          "step": "Install",
+          "result": "ok",
+          "seconds": 43
+        },
+        {
+          "step": "Provision declared DE440 input",
+          "result": "ok",
+          "seconds": 3
+        },
+        {
+          "step": "actions/setup-node@v4",
+          "result": "ok (setup)"
+        },
+        {
+          "step": "Provision Rust WebAssembly target",
+          "result": "ok",
+          "seconds": 0
+        },
+        {
+          "step": "Build declared native and browser inputs",
+          "result": "ok",
+          "seconds": 4
+        },
+        {
+          "step": "Rust tests",
+          "result": "ok",
+          "seconds": 0
+        },
+        {
+          "step": "Run tests",
+          "result": "ok",
+          "seconds": 53
+        }
+      ],
+      "notes": [
+        "python 3.13.13 from py launcher",
+        "node 24 here, workflow asks for 22"
+      ],
+      "unresolved": [],
+      "seconds": 125
+    },
+    {
+      "workflow": "CI",
+      "job": "provenance",
+      "context": "local-ci / CI / provenance",
+      "state": "success",
+      "description": "passed in 12s; python 3.13.13 from py launcher",
+      "steps": [
+        {
+          "step": "actions/checkout@v4",
+          "result": "ok (setup)"
+        },
+        {
+          "step": "actions/setup-python@v5",
+          "result": "ok (setup)"
+        },
+        {
+          "step": "Provenance checker self-test",
+          "result": "ok",
+          "seconds": 1
+        },
+        {
+          "step": "Provenance check on src",
+          "result": "ok",
+          "seconds": 1
+        }
+      ],
+      "notes": [
+        "python 3.13.13 from py launcher"
+      ],
+      "unresolved": [],
+      "seconds": 12
+    },
+    {
+      "workflow": "CI",
+      "job": "internal-ids",
+      "context": "local-ci / CI / internal-ids",
+      "state": "success",
+      "description": "passed in 12s; python 3.13.13 from py launcher",
+      "steps": [
+        {
+          "step": "actions/checkout@v4",
+          "result": "ok (setup)"
+        },
+        {
+          "step": "actions/setup-python@v5",
+          "result": "ok (setup)"
+        },
+        {
+          "step": "Internal-id checker self-test",
+          "result": "ok",
+          "seconds": 1
+        },
+        {
+          "step": "Internal-id check on src and tests",
+          "result": "ok",
+          "seconds": 2
+        }
+      ],
+      "notes": [
+        "python 3.13.13 from py launcher"
+      ],
+      "unresolved": [],
+      "seconds": 12
+    },
+    {
+      "workflow": "CI",
+      "job": "import-graph",
+      "context": "local-ci / CI / import-graph",
+      "state": "success",
+      "description": "passed in 108s; python 3.13.13 from py launcher",
+      "steps": [
+        {
+          "step": "actions/checkout@v4",
+          "result": "ok (setup)"
+        },
+        {
+          "step": "actions/setup-python@v5",
+          "result": "ok (setup)"
+        },
+        {
+          "step": "Install",
+          "result": "ok",
+          "seconds": 89
+        },
+        {
+          "step": "Import graph test",
+          "result": "ok",
+          "seconds": 7
+        }
+      ],
+      "notes": [
+        "python 3.13.13 from py launcher"
+      ],
+      "unresolved": [],
+      "seconds": 108
+    },
+    {
+      "workflow": "CI",
+      "job": "distribution",
+      "context": "local-ci / CI / distribution",
+      "state": "success",
+      "description": "passed in 63s; python 3.13.13 from py launcher",
+      "steps": [
+        {
+          "step": "actions/checkout@v4",
+          "result": "ok (setup)"
+        },
+        {
+          "step": "actions/setup-python@v5",
+          "result": "ok (setup)"
+        },
+        {
+          "step": "Install build tool",
+          "result": "ok",
+          "seconds": 5
+        },
+        {
+          "step": "Build source and wheel distributions",
+          "result": "ok",
+          "seconds": 44
+        },
+        {
+          "step": "Distribution boundary controls",
+          "result": "ok",
+          "seconds": 1
+        },
+        {
+          "step": "Inspect built wheel",
+          "result": "ok",
+          "seconds": 1
+        },
+        {
+          "step": "Inspect both release archives",
+          "result": "ok",
+          "seconds": 2
+        }
+      ],
+      "notes": [
+        "python 3.13.13 from py launcher"
+      ],
+      "unresolved": [],
+      "seconds": 63
+    }
+  ],
+  "expectedContexts": [
+    "local-ci / CI / tests (3.11)",
+    "local-ci / CI / tests (3.13)",
+    "local-ci / CI / provenance",
+    "local-ci / CI / internal-ids",
+    "local-ci / CI / import-graph",
+    "local-ci / CI / distribution"
+  ],
+  "notRunnable": [],
+  "statusPosts": [
+    {
+      "context": "local-ci / CI / tests (3.11)",
+      "state": "pending",
+      "description": "running on LAPTOP-Q18C9I4O",
+      "posted": true
+    },
+    {
+      "context": "local-ci / CI / tests (3.11)",
+      "state": "success",
+      "description": "passed in 201s; python 3.11.9 from py launcher; node 24 here, workflow asks for 22",
+      "posted": true
+    },
+    {
+      "context": "local-ci / CI / tests (3.13)",
+      "state": "pending",
+      "description": "running on LAPTOP-Q18C9I4O",
+      "posted": true
+    },
+    {
+      "context": "local-ci / CI / tests (3.13)",
+      "state": "success",
+      "description": "passed in 125s; python 3.13.13 from py launcher; node 24 here, workflow asks for 22",
+      "posted": true
+    },
+    {
+      "context": "local-ci / CI / provenance",
+      "state": "pending",
+      "description": "running on LAPTOP-Q18C9I4O",
+      "posted": true
+    },
+    {
+      "context": "local-ci / CI / provenance",
+      "state": "success",
+      "description": "passed in 12s; python 3.13.13 from py launcher",
+      "posted": true
+    },
+    {
+      "context": "local-ci / CI / internal-ids",
+      "state": "pending",
+      "description": "running on LAPTOP-Q18C9I4O",
+      "posted": true
+    },
+    {
+      "context": "local-ci / CI / internal-ids",
+      "state": "success",
+      "description": "passed in 12s; python 3.13.13 from py launcher",
+      "posted": true
+    },
+    {
+      "context": "local-ci / CI / import-graph",
+      "state": "pending",
+      "description": "running on LAPTOP-Q18C9I4O",
+      "posted": true
+    },
+    {
+      "context": "local-ci / CI / import-graph",
+      "state": "success",
+      "description": "passed in 108s; python 3.13.13 from py launcher",
+      "posted": true
+    },
+    {
+      "context": "local-ci / CI / distribution",
+      "state": "pending",
+      "description": "running on LAPTOP-Q18C9I4O",
+      "posted": true
+    },
+    {
+      "context": "local-ci / CI / distribution",
+      "state": "success",
+      "description": "passed in 63s; python 3.13.13 from py launcher",
+      "posted": true
+    }
+  ],
+  "executionComplete": true,
+  "result": "pass",
+  "updated": "20261026T102046",
+  "finished": "20261026T102046"
+}
