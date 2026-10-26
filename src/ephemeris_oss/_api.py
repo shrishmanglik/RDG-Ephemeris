@@ -239,23 +239,41 @@ class Engine:
         raise EphemerisError(f"engine returned no position for {body!r}")
 
     def positions_tt(
-        self, jd_tt: float, bodies: Sequence[str]
+        self,
+        jd_tt: float,
+        bodies: Sequence[str],
+        *,
+        jd_tdb: float | None = None,
+        mean_equinox: bool = False,
     ) -> Result[dict[str, dict[str, Any]]]:
-        """Apparent geocentric true-ecliptic positions at an explicit TT instant.
+        """Apparent geocentric ecliptic positions at explicit dynamical times.
 
-        This is the entry point measured over 1800..2100. It does not infer
-        civil time, UTC, UT1 or Earth orientation. Nodes use their separately
-        declared definition interface rather than this physical-body method.
+        The default true-ecliptic path is unchanged and bounded to 1600..2400.
+        Outside that interval callers must supply ``jd_tdb`` and request the
+        long-term ``mean_equinox`` frame. UTC, UT1 and EOP are never inferred.
         """
         normalized_bodies = tuple(body.strip().lower() for body in bodies)
         try:
-            raw = self._provider.planet_positions_tt(jd_tt=jd_tt, bodies=normalized_bodies)
+            raw = self._provider.planet_positions_tt(
+                jd_tt=jd_tt,
+                bodies=normalized_bodies,
+                jd_tdb=jd_tdb,
+                mean_equinox=mean_equinox,
+            )
         except (AstronomyDataUnavailable, ValueError) as error:
             raise _error(error) from error
         positions = raw["positions"]
         value = {body: dict(positions[self._key(positions, body)]) for body in normalized_bodies}
         targets = {body: self._provider._body(body)[0] for body in normalized_bodies}
         request = {"jd_tt": raw["jd_tt"], "bodies": list(normalized_bodies), "targets": targets}
+        extended_policy = jd_tdb is not None or mean_equinox
+        if extended_policy:
+            request.update({
+                "jd_tdb": None if jd_tdb is None else float(jd_tdb),
+                "tdb_policy": raw["tdb_policy"],
+                "mean_equinox": raw["mean_equinox"],
+                "frame": raw["frame"],
+            })
         receipt: dict[str, Any] = {
             "package": __version__, "time_scale": "TT", "jd_tt": raw["jd_tt"],
             "jd_tdb": raw["jd_tdb"], "utc_inferred": False,
@@ -266,6 +284,9 @@ class Engine:
         }
         if "kernel_mode" in raw:
             receipt["kernel_mode"] = raw["kernel_mode"]
+        if extended_policy:
+            receipt["tdb_policy"] = raw["tdb_policy"]
+            receipt["mean_equinox"] = raw["mean_equinox"]
         return Result(value=value, receipt=receipt, receipt_sha256=_digest(receipt))
 
     def ayanamsa(self, t: Instant, system: str = "lahiri", mode: str = "mean") -> Result[float]:

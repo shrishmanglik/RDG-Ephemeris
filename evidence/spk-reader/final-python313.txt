@@ -1,0 +1,44 @@
+C:\Users\Shris\AppData\Local\Programs\Python\Python313\Lib\site-packages\pytest_asyncio\plugin.py:208: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+......................................................................FF [  7%]
+F....................................................................... [ 15%]
+........................................................................ [ 23%]
+........................................................................ [ 31%]
+........................................................................ [ 39%]
+........................................................................ [ 47%]
+........................................................................ [ 55%]
+........................................................................ [ 63%]
+........................................................................ [ 70%]
+........................................................................ [ 78%]
+........................................................................ [ 86%]
+........................................................................ [ 94%]
+..................................................                       [100%]
+================================== FAILURES ===================================
+__ test_r3_modern_realizations_do_not_claim_original_author_fidelity[raman] ___
+tests\test_astronomy_conventions.py:305: in test_r3_modern_realizations_do_not_claim_original_author_fidelity
+    assert "IAU2006" in definition.precession_model
+E   AssertionError: assert 'IAU2006' in 'Vondrak2011 long-term reference-ray transport'
+E    +  where 'Vondrak2011 long-term reference-ray transport' = AyanamsaDefinition(key='raman', label='Raman (Hand/NOVA modern realization)', model='modern_reference_ecliptic', refer...d original tables are not precisely reproduced by a single documented precession theory.', galactic_pole_icrs_deg=None).precession_model
+____ test_r3_modern_realizations_do_not_claim_original_author_fidelity[kp] ____
+tests\test_astronomy_conventions.py:305: in test_r3_modern_realizations_do_not_claim_original_author_fidelity
+    assert "IAU2006" in definition.precession_model
+E   AssertionError: assert 'IAU2006' in 'Vondrak2011 long-term reference-ray transport'
+E    +  where 'Vondrak2011 long-term reference-ray transport' = AyanamsaDefinition(key='kp', label='KP (Hand/NOVA modern realization)', model='modern_reference_ecliptic', reference_j...and values repeat in1918-1921. This realization does not assert original-table fidelity.', galactic_pole_icrs_deg=None).precession_model
+_ test_r3_modern_realizations_do_not_claim_original_author_fidelity[yukteshwar] _
+tests\test_astronomy_conventions.py:305: in test_r3_modern_realizations_do_not_claim_original_author_fidelity
+    assert "IAU2006" in definition.precession_model
+E   AssertionError: assert 'IAU2006' in 'Vondrak2011 long-term reference-ray transport'
+E    +  where 'Vondrak2011 long-term reference-ray transport' = AyanamsaDefinition(key='yukteshwar', label='Yukteshwar (Cochrane/Dawson modern realization)', model='modern_reference_...equinox; editions differ between1893 and1894. This is not that author-stated rate model.', galactic_pole_icrs_deg=None).precession_model
+============================== warnings summary ===============================
+tests/test_jpl_erfa_numerical_provider.py::test_pre_utc_time_scale_conversion_fails_closed
+  C:\Users\Shris\AppData\Local\Programs\Python\Python313\Lib\site-packages\erfa\core.py:133: ErfaWarning: ERFA function "dtf2d" yielded 1 of "dubious year (Note 6)"
+    warn(f'ERFA function "{func_name}" yielded {wmsg}', ErfaWarning)
+
+tests/test_jpl_erfa_numerical_provider.py::test_reverse_julian_day_enforces_versioned_utc_window[1900]
+  C:\Users\Shris\AppData\Local\Programs\Python\Python313\Lib\site-packages\erfa\core.py:133: ErfaWarning: ERFA function "d2dtf" yielded 1 of "dubious year (Note 5)"
+    warn(f'ERFA function "{func_name}" yielded {wmsg}', ErfaWarning)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+3 failed, 911 passed, 2 warnings in 79.51s (0:01:19)

@@ -43,9 +43,12 @@ from .conventions import (
     ayanamsa_degrees,
     house_angles,
     house_layout,
+    mean_ecliptic_matrix,
     mean_lunar_node_longitude_degrees,
     osculating_lunar_node_longitude_degrees,
+    validate_tt_tdb,
 )
+from .civil_time import CalendarSystem, calendar_date
 from .events import (
     MOON_RADIUS_KM,
     SUN_RADIUS_KM,
@@ -305,22 +308,55 @@ class JplErfaAstronomyProvider(AstronomyProvider):
                 kernel.close()
             self._open_kernels.clear()
 
-    def planet_positions_tt(self, *, jd_tt: float, bodies: Sequence[str]) -> dict[str, Any]:
-        """Apparent geocentric ecliptic positions at an explicit TT instant, without UTC/EOP inference."""
+    def planet_positions_tt(
+        self,
+        *,
+        jd_tt: float,
+        bodies: Sequence[str],
+        jd_tdb: float | None = None,
+        mean_equinox: bool = False,
+    ) -> dict[str, Any]:
+        """Apparent geocentric ecliptic positions at explicit dynamical times."""
         if not math.isfinite(jd_tt) or not bodies:
             raise AstronomyDataUnavailable("TT instant must be finite and bodies nonempty")
+        if jd_tdb is not None and not math.isfinite(jd_tdb):
+            raise AstronomyDataUnavailable("TDB instant must be finite")
+        if jd_tdb is not None:
+            validate_tt_tdb(jd_tt, jd_tdb)
         keys = tuple(body.strip().lower() for body in bodies)
         if any(key not in {"sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn"} for key in keys):
             raise AstronomyDataUnavailable("TT apparent output supports the seven classical bodies")
         tt = (J2000_JD, jd_tt - J2000_JD)
-        year = int(erfa.jd2cal(*tt)[0])
-        offset = float(erfa.dtdb(*tt, 0.0, 0.0, 0.0, 0.0))
-        tdb = tuple(float(v) for v in erfa.tttdb(*tt, offset))
+        year = int(calendar_date(
+            jd_tt, calendar=CalendarSystem.PROLEPTIC_GREGORIAN
+        )[0])
+        modern = 1600 <= year <= 2400
+        if not modern and jd_tdb is None:
+            raise AstronomyDataUnavailable(
+                "jd_tdb is required outside TT years 1600..2400"
+            )
+        if not modern and not mean_equinox:
+            raise AstronomyDataUnavailable(
+                "mean_equinox=True is required outside TT years 1600..2400"
+            )
+        if jd_tdb is None:
+            offset = float(erfa.dtdb(*tt, 0.0, 0.0, 0.0, 0.0))
+            tdb = tuple(float(v) for v in erfa.tttdb(*tt, offset))
+            tdb_policy = "erfa-dtdb-from-tt"
+        else:
+            tdb = (J2000_JD, float(jd_tdb) - J2000_JD)
+            tdb_policy = "caller-supplied"
         # UTC is unknown and unused in this geocentric Tier A operation.
         times = TimeScaleState(utc=(math.nan, math.nan), tt=tt, tdb=tdb)
         artifact = self._kernel_registry.artifact_for_tdb_jd(times.tdb_jd)
-        frame = np.asarray(erfa.ecm06(*tt), dtype=np.float64)
-        nutation = math.degrees(float(erfa.nut06a(*tt)[0]))
+        if mean_equinox:
+            frame = np.asarray(mean_ecliptic_matrix(jd_tt), dtype=np.float64)
+            nutation = 0.0
+            frame_name = "apparent-geocentric-mean-ecliptic-of-date"
+        else:
+            frame = np.asarray(erfa.ecm06(*tt), dtype=np.float64)
+            nutation = math.degrees(float(erfa.nut06a(*tt)[0]))
+            frame_name = "apparent-geocentric-true-ecliptic-of-date"
         earth = self.barycentric_state_at_tdb(body="earth", tdb=tdb, kernel_year=year)
         sun_cache: dict[float, BarycentricState] = {}
         def sun_at(jd: float) -> BarycentricState:
@@ -341,9 +377,14 @@ class JplErfaAstronomyProvider(AstronomyProvider):
             "jd_tt": jd_tt,
             "jd_tdb": times.tdb_jd,
             "positions": positions,
-            "frame": "apparent-geocentric-true-ecliptic-of-date",
+            "frame": frame_name,
             "kernel_sha256": artifact.sha256.lower(),
         }
+        if jd_tdb is not None or mean_equinox:
+            result_payload.update({
+                "tdb_policy": tdb_policy,
+                "mean_equinox": bool(mean_equinox),
+            })
         if artifact.identifier == "COMPACT-DE440":
             result_payload["kernel_mode"] = "compact-chebyshev-de440"
         return result_payload

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from numbers import Integral
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from enum import Enum
@@ -137,29 +138,60 @@ def calendar_jd(
 
     if not math.isfinite(day_fraction) or not 0.0 <= day_fraction < 1.0:
         raise ValueError("day_fraction must be finite and within [0, 1)")
-    civil = date(year, month, day)
+    if any(isinstance(v, bool) or not isinstance(v, Integral) for v in (year, month, day)):
+        raise ValueError("calendar year, month and day must be integers")
+    year, month, day = int(year), int(month), int(day)
+    if not isinstance(calendar, CalendarSystem):
+        raise ValueError("an explicit supported calendar is required")
+    civil = (year, month, day)
     effective = calendar
     if calendar is CalendarSystem.HISTORICAL_1582:
-        if date(1582, 10, 5) <= civil <= date(1582, 10, 14):
+        if (1582, 10, 5) <= civil <= (1582, 10, 14):
             raise AstronomyDataUnavailable("date was omitted by the 1582 calendar transition")
         effective = (
             CalendarSystem.JULIAN
-            if civil <= date(1582, 10, 4)
+            if civil <= (1582, 10, 4)
             else CalendarSystem.PROLEPTIC_GREGORIAN
         )
+    leap = year % 4 == 0 and (effective is CalendarSystem.JULIAN
+                             or year % 100 != 0 or year % 400 == 0)
+    lengths = (31, 29 if leap else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+    if not 1 <= month <= 12 or not 1 <= day <= lengths[month-1]:
+        raise ValueError("invalid date in the declared calendar")
+    # Integer JDN arithmetic uses floor division for astronomical negative years.
+    # It avoids both datetime's year-1 floor and ERFA cal2jd's -4799 floor.
+    a = (14-month)//12
+    y, m = year+4800-a, month+12*a-3
+    jdn = day+(153*m+2)//5+365*y+y//4-32083
     if effective is CalendarSystem.PROLEPTIC_GREGORIAN:
-        first, second = erfa.cal2jd(year, month, day)
-        return float(first + second + day_fraction)
+        jdn = day+(153*m+2)//5+365*y+y//4-y//100+y//400-32045
+    return float(jdn)-.5+day_fraction
 
-    adjusted_year = year - 1 if month <= 2 else year
-    adjusted_month = month + 12 if month <= 2 else month
-    return float(
-        math.floor(365.25 * (adjusted_year + 4716))
-        + math.floor(30.6001 * (adjusted_month + 1))
-        + day
-        - 1524.5
-        + day_fraction
-    )
+
+def calendar_date(jd: float, *, calendar: CalendarSystem = CalendarSystem.HISTORICAL_1582
+                  ) -> tuple[int, int, int, float]:
+    """Invert calendar_jd, retaining astronomical year zero and the day fraction."""
+    if not math.isfinite(jd):
+        raise ValueError("Julian date must be finite")
+    if not isinstance(calendar, CalendarSystem):
+        raise ValueError("an explicit supported calendar is required")
+    z = math.floor(jd+.5)
+    fraction = jd+.5-z
+    gregorian = (calendar is CalendarSystem.PROLEPTIC_GREGORIAN
+                 or (calendar is CalendarSystem.HISTORICAL_1582 and jd >= 2299160.5))
+    if gregorian:
+        a = z+32044
+        b = (4*a+3)//146097
+        c = a-(146097*b)//4
+    else:
+        b, c = 0, z+32082
+    d = (4*c+3)//1461
+    e = c-(1461*d)//4
+    m = (5*e+2)//153
+    day = e-(153*m+2)//5+1
+    month = m+3-12*(m//10)
+    year = 100*b+d-4800+m//10
+    return year, month, day, fraction
 
 
 def resolve_local_mean_time_as_ut1(

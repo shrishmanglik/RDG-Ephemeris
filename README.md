@@ -134,3 +134,15 @@ rounds. These are warm TT workload timings, not saved human hours.
 Both A/A controls qualified within the declared 0.9 to 1.1 ratio band. The
 [raw measurement](docs/researcher-benchmark.json) binds the runtime source and
 kernel hashes. The comparison does not qualify complete-chart performance.
+
+
+### Optional native and browser binary reader
+
+The existing Rust core can read verified JPL DAF/SPK Type 2 and Type 3 files
+through `ephemeris_oss.rust_bridge.read_spk_state` and the browser SDK's
+`readSpkState`. These explicit entry points return geometric J2000 coordinates
+in km and km/s at TDB seconds since J2000. They do not replace the apparent-place
+`Engine` interface or accept UTC as TDB. Native access seeks individual records;
+the browser copies supplied kernel bytes and may refuse an oversized allocation.
+The math-only browser module keeps its existing size limit; the optional reader
+uses a separate module. See the [reader contract and build steps](docs/design/spk-reader.md).

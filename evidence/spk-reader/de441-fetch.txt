@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    from pathlib import Path; from ephemeris_oss.kernels import fetch; fetch(("DE441_PART_1", "DE441_PART_2"), directory=Path("C:/Users/Shris/.agi/assets/jpl"))
+                                                                       ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\AGI\worktrees\ephemeris-oss-staging\chebyshev-reader-20261026\src\ephemeris_oss\kernels.py", line 89, in fetch
+    spec = KERNELS[identifier]
+           ~~~~~~~^^^^^^^^^^^^
+KeyError: 'DE441_PART_1'

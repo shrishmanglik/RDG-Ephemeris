@@ -9,3 +9,4 @@ finals2000A.all
 *.se1
 
 .venv-*/
+rust/ephemeris-core/target/

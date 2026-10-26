@@ -36,7 +36,8 @@ References
   between Ascendant, IC, Descendant, and MC. Sripati uses those twelve points
   as bhava centres and places boundaries halfway between adjacent centres.
 
-The fixed-epoch catalog is intentionally valid only from 1600 through 2400 TT.
+Mean convention operations cover the declared DE441 Julian-date interval using
+Vondrak long-term precession. True-frame nutation retains its modern bound.
 Star-anchored conventions require a separately computed, provenance-bearing
 stellar longitude for the requested instant and never fall back to a mean
 offset.
@@ -52,11 +53,16 @@ from typing import Mapping, Sequence
 import erfa
 
 from .contracts import AstronomyDataUnavailable
+from .civil_time import CalendarSystem, calendar_jd
+from .earth_orientation import estimate_delta_t
 
 J2000_TT_JD = 2451545.0
 JULIAN_CENTURY_DAYS = 36525.0
 AYANAMSA_VALID_CENTURIES = 4.0
-AYANAMSA_CATALOG_VERSION = "ephemeris-oss-ayanamsa-anchors-1.3.0"
+AYANAMSA_CATALOG_VERSION = "ephemeris-oss-ayanamsa-anchors-1.4.0"
+AYANAMSA_MIN_TT_JD = -3100015.5
+AYANAMSA_MAX_TT_JD = 8000016.5
+TT_TDB_MAX_ABS_DAYS = 1.0 / 86400.0
 HOUSE_CONVENTIONS_VERSION = "ephemeris-oss-houses-1.1.0-iau2006"
 LUNAR_NODE_CONVENTIONS_VERSION = "ephemeris-oss-lunar-nodes-1.1.0-meeus47.7"
 
@@ -65,10 +71,9 @@ LUNAR_NODE_CONVENTIONS_VERSION = "ephemeris-oss-lunar-nodes-1.1.0-meeus47.7"
 class AyanamsaDefinition:
     """One explicit named sidereal-zero policy.
 
-    ``mean_precession_anchor`` entries add IAU 2006 general precession in
-    longitude to the recorded J2000 offset. ``star_anchor`` entries derive the
-    offset from a caller-supplied tropical stellar longitude at the same TT
-    instant.
+    Fixed entries transport the date equinox to a declared reference ecliptic
+    using long-term precession. Stellar and polar entries consume a separately
+    supplied longitude at the same TT instant; they do not invent astrometry.
     """
 
     key: str
@@ -83,6 +88,7 @@ class AyanamsaDefinition:
     precession_model: str = "IAU2006"
     reference_frame: str = "mean ecliptic/equinox of reference epoch"
     original_author_ambiguity: str = ""
+    galactic_pole_icrs_deg: tuple[float, float] | None = None
 
 
 def _dms(degrees: float, minutes: float, seconds: float) -> float:
@@ -135,8 +141,10 @@ _CATALOG = {
             "IAU 1980 nutation, IAU 1976 reference equinox and Vondrak et al. 2011 precession"
         ),
         aliases=("chitra_paksha", "chitrapaksha", "lahiri_chitra_paksha"),
+        reference_equinox_displacement_arcsec=_LAHIRI_EQUINOX_CORRECTION_DEG*3600.,
         precession_model="Vondrak2011; IAE1989 reference with IAU1976/Wahr1980 reduction",
-        reference_frame="IAE1956 reference ecliptic; modern mean/true of date",
+        reference_frame=("IAE1956 reference ecliptic transported in the Vondrak2011 long-term mean frame; "
+                         "true-mode IAU2006/2000A nutation is limited to +/-4 centuries"),
     ),
     "raman": AyanamsaDefinition(
         key="raman",
@@ -149,12 +157,14 @@ _CATALOG = {
             "Swiss-compatible realisation: 21.01444 deg at JD 2415020.0 and the 0.828\" Newcomb-to-modern "
             "reference-equinox offset are the widely used realisation, not derived here. Raman, Hindu Predictive "
             "Astrology, App. A (zero year 397, 50 1/3\"/yr) gives 21.01417 deg for 1900, 1\" away. "
-            "Independent IAU 2006 ray transport."
+            "The recorded reference ray is transported with Vondrak et al. (2011); this convention does not "
+            "claim uniform physical accuracy across the full long-term interval."
         ),
         aliases=("bv_raman",),
         reference_equinox_displacement_arcsec=0.828,
-        precession_model="IAU2006 (independent SOFA/ERFA implementation)",
-        reference_frame='Newcomb',
+        precession_model="Vondrak2011 long-term reference-ray transport",
+        reference_frame=("Newcomb reference anchor transported in the Vondrak2011 long-term mean frame; "
+                         "true-mode IAU2006/2000A nutation is limited to +/-4 centuries"),
         original_author_ambiguity='Raman states zero year389 without exact date; published original tables are not precisely reproduced by a single documented precession theory.',
     ),
     "kp": AyanamsaDefinition(
@@ -167,12 +177,14 @@ _CATALOG = {
         source_reference=(
             "Swiss-compatible realisation: 22.363889 deg (22 21 50) at JD 2415020.0 and the 0.828\" offset are "
             "the widely used realisation, not derived here. Agrees to its 1' precision with the 1900 entry "
-            "(22 22) of Krishnamurti, Krishnamurti Padhdhati Vol. I. Independent IAU 2006 ray transport."
+            "(22 22) of Krishnamurti, Krishnamurti Padhdhati Vol. I. The recorded reference ray is transported "
+            "with Vondrak et al. (2011), without a claim of uniform physical accuracy over the full interval."
         ),
         aliases=("krishnamurti", "kp_krishnamurti"),
         reference_equinox_displacement_arcsec=0.828,
-        precession_model="IAU2006 (independent SOFA/ERFA implementation)",
-        reference_frame='Newcomb',
+        precession_model="Vondrak2011 long-term reference-ray transport",
+        reference_frame=("Newcomb reference anchor transported in the Vondrak2011 long-term mean frame; "
+                         "true-mode IAU2006/2000A nutation is limited to +/-4 centuries"),
         original_author_ambiguity='Zero year291 has no exact date; ReaderI table dates are ambiguous and values repeat in1918-1921. This realization does not assert original-table fidelity.',
     ),
     "yukteshwar": AyanamsaDefinition(
@@ -185,12 +197,14 @@ _CATALOG = {
         source_reference=(
             "Swiss-compatible realisation: 21.082222 deg at JD 2415020.0 follows the widely used Dawson "
             "definition, not derived here. Sri Yukteswar, The Holy Science (1894) states 20 54 36 at the "
-            "1894 spring equinox, a different anchor. Independent IAU 2006 ray transport."
+            "1894 spring equinox, a different anchor. The recorded reference ray is transported with Vondrak "
+            "et al. (2011), without a claim of uniform physical accuracy over the full interval."
         ),
         aliases=("yukteswar", "sri_yukteswar", "sri_yukteshwar"),
         reference_equinox_displacement_arcsec=0.0,
-        precession_model="IAU2006 (independent SOFA/ERFA implementation)",
-        reference_frame='modern reference equinox',
+        precession_model="Vondrak2011 long-term reference-ray transport",
+        reference_frame=("modern reference anchor transported in the Vondrak2011 long-term mean frame; "
+                         "true-mode IAU2006/2000A nutation is limited to +/-4 centuries"),
         original_author_ambiguity='Author states54 arcsec/year and20deg54min36sec at the spring equinox; editions differ between1893 and1894. This is not that author-stated rate model.',
     ),
     "fagan_bradley": AyanamsaDefinition(
@@ -203,12 +217,14 @@ _CATALOG = {
         source_reference=(
             "Swiss-compatible realisation: SVP 335 57 28.64 (ayanamsa 24 02 31.36) at Besselian 1950.0 "
             "(ERFA epb2jd: JD 2433282.42346), as defined by Fagan and Allen; the 0.41256\" Newcomb-to-modern "
-            "offset is the widely used realisation, not derived here. Independent IAU 2006 ray transport."
+            "offset is the widely used realisation, not derived here. The recorded reference ray is transported "
+            "with Vondrak et al. (2011), without a claim of uniform physical accuracy over the full interval."
         ),
         aliases=("fagan", "bradley", "fagan-bradley"),
         reference_equinox_displacement_arcsec=0.41256,
-        precession_model="IAU2006 (independent SOFA/ERFA implementation)",
-        reference_frame='Newcomb',
+        precession_model="Vondrak2011 long-term reference-ray transport",
+        reference_frame=("Newcomb reference anchor transported in the Vondrak2011 long-term mean frame; "
+                         "true-mode IAU2006/2000A nutation is limited to +/-4 centuries"),
         original_author_ambiguity='Published calendar date is represented by the explicit published B1950 epoch; fully pinned here.',
     ),
     "true_citra": AyanamsaDefinition(
@@ -235,6 +251,99 @@ _CATALOG = {
         aliases=("pushya_paksha", "true_pushya", "true_pushya_paksha"),
     ),
 }
+
+
+def _fixed_definition(key, label, jd, offset, source, *, correction=0., ambiguity=""):
+    return AyanamsaDefinition(
+        key, label, "modern_reference_ecliptic", jd, offset, None, source,
+        reference_equinox_displacement_arcsec=correction,
+        precession_model="Vondrak2011 long-term reference-ray transport",
+        reference_frame=("declared reference anchor transported in the Vondrak2011 long-term mean frame; "
+                         "true-mode IAU2006/2000A nutation is limited to +/-4 centuries"),
+        original_author_ambiguity=ambiguity,
+    )
+
+
+def _historical_definition(key, label, year, seconds, offset):
+    ut1 = calendar_jd(year, 3, 21, seconds / 86400., calendar=CalendarSystem.JULIAN)
+    first = calendar_jd(year, 1, 1, calendar=CalendarSystem.JULIAN)
+    last = calendar_jd(year+1, 1, 1, calendar=CalendarSystem.JULIAN)
+    delta_t = estimate_delta_t(year+(ut1-first)/(last-first))
+    return _fixed_definition(
+        key, label, ut1+delta_t.seconds/86400., offset,
+        "Surya-Siddhanta / Aryabhatiya; Swiss-compatible realisation: published "
+        f"modern UT1 realization, Julian {year}-03-21 + {seconds} seconds; "
+        f"Espenak/Meeus Delta-T policy {delta_t.model}; Ujjain/Lanka realization",
+        ambiguity=("Historical operation with a documentation-derived modern realization; "
+                   "the ancient author did not specify TT, Delta-T or these modern offsets. "
+                   "The 522 day/time is a software realization of a year tradition."),
+    )
+
+
+_CATALOG.update({
+    "lahiri_icrc": _fixed_definition(
+        "lahiri_icrc", "Lahiri ICRC (1956 realization)", LAHIRI_REFERENCE_TT_JD,
+        23.25-math.degrees(float(erfa.nut80(*_LAHIRI_TT)[0])),
+        "Calendar Reform Committee (1955), 23 degrees 15 minutes true at 1956-03-21; "
+        "explicit IAU1976/Wahr1980 modern reference reduction",
+        correction=_LAHIRI_EQUINOX_CORRECTION_DEG*3600.),
+    "lahiri_1940": _fixed_definition(
+        "lahiri_1940", "Lahiri 1940 realization", 2415020., _dms(22,26,45.50),
+        "Swiss-compatible realisation: Lahiri's published 1940 mean reference, "
+        "22 degrees 26 minutes 45.50 seconds at JD2415020.0 TT"),
+    "kp_senthilathiban": _fixed_definition(
+        "kp_senthilathiban", "KP Senthilathiban realization", 1827424.7572800927, 0.,
+        "Swiss-compatible realisation: Senthilathiban, zero at JD1827424.7572800927 TT"),
+    "sassanian": _fixed_definition(
+        "sassanian", "Sassanian (Mercier modern realization)", 1927135.8747793, 0.,
+        "Mercier, Studies in the Medieval Conception of Precession (1976/1977); "
+        "Swiss-compatible realisation: published ET JD1927135.8747793 represented as TT",
+        ambiguity="A modern reference realization, not an observationally exact ancient TT instant."),
+})
+
+for _key, _label, _longitude, _model in (
+    ("true_revati", "True Revati (zeta Piscium A)", 359+50/60, "star_anchor"),
+    ("true_mula", "True Mula (lambda Scorpii)", 240., "star_anchor"),
+    ("aldebaran", "Aldebaran at 15 Taurus", 45., "star_anchor"),
+    ("galactic_center_sagittarius", "Galactic center at 0 Sagittarius", 240., "star_anchor"),
+    ("galactic_center_capricorn", "Galactic center at 0 Capricorn", 270., "star_anchor"),
+    ("dhruva_middle_mula", "Dhruva Middle Mula (polar longitude)", 246+40/60, "polar_anchor"),
+):
+    _CATALOG[_key] = AyanamsaDefinition(
+        _key, _label, _model, None, None, _longitude,
+        f"Published {_label} geometric definition; separately supplied date-specific "
+        f"{'polar' if _model == 'polar_anchor' else 'ordinary ecliptic'} longitude required",
+        precession_model="Vondrak2011 frame; supplied date-specific anchor",
+        original_author_ambiguity="The convention does not certify the supplied stellar astrometry.",
+    )
+
+for _key, _label, _pole, _longitude in (
+    ("galactic_equator_iau1958", "IAU1958 transformed galactic plane",
+     (192.85948125, 27.12825111111111), 240.),
+    ("galactic_equator_modern", "Liu/Zhu/Zhang proposed ICRS galactic plane",
+     (192.902979992083, 27.103109214444), 240.),
+    ("ardra_galactic_plane", "Ardra / middle Mula galactic intersection",
+     (192.902979992083, 27.103109214444), 246+40/60),
+):
+    _CATALOG[_key] = AyanamsaDefinition(
+        _key, _label, "galactic_plane", None, None, _longitude,
+        "Liu, Zhu & Hu 2011 A&A536 A102; Liu, Zhu & Zhang 2011 A&A526 A16: "
+        "ascending intersection of the frozen ICRS galactic plane with mean ecliptic of date",
+        precession_model="Vondrak2011 long-term mean ecliptic",
+        galactic_pole_icrs_deg=_pole,
+        original_author_ambiguity="The proposed ICRS plane is a convention, not IAU-adopted physical truth.",
+    )
+
+for _key, _label, _year, _seconds, _offset in (
+    ("suryasiddhanta_equinox", "Surya-Siddhanta equinox", 499, 27031.57, 0.),
+    ("suryasiddhanta_mean_sun", "Surya-Siddhanta mean Sun", 499, 27031.57, -.21463395),
+    ("aryabhata_equinox", "Aryabhata equinox", 499, 25015.57, 0.),
+    ("aryabhata_mean_sun", "Aryabhata mean Sun", 499, 25015.57, -.23763238),
+    ("aryabhata_522", "Aryabhata / Govindasvamin 522", 522, 20804., 0.),
+    ("suryasiddhanta_revati", "Surya-Siddhanta Revati polar realization", 499, 27031.57, -.79167046),
+    ("suryasiddhanta_citra", "Surya-Siddhanta Citra polar realization", 499, 27031.57, 2.11070444),
+):
+    _CATALOG[_key] = _historical_definition(_key, _label, _year, _seconds, _offset)
 
 AYANAMSA_CATALOG: Mapping[str, AyanamsaDefinition] = MappingProxyType(_CATALOG)
 _AYANAMSA_ALIASES = MappingProxyType(
@@ -303,6 +412,38 @@ def _split_j2000(jd: float) -> tuple[float, float]:
     return J2000_TT_JD, jd - J2000_TT_JD
 
 
+def validate_tt_tdb(jd_tt: float, jd_tdb: float) -> None:
+    """Reject unrelated TT/TDB epochs with a deliberately loose guard.
+
+    The one-second ceiling is deliberately above the physical millisecond-scale
+    separation described in JPL's Horizons time-scale documentation. It catches
+    wrong-date/scale inputs, not subsecond timing errors, and is not an accuracy
+    certificate: https://ssd.jpl.nasa.gov/horizons/manual.html#time
+    """
+
+    if not math.isfinite(jd_tt) or not math.isfinite(jd_tdb):
+        raise AstronomyDataUnavailable("TT and TDB Julian dates must be finite")
+    if abs(jd_tdb - jd_tt) > TT_TDB_MAX_ABS_DAYS:
+        raise AstronomyDataUnavailable(
+            "TT and TDB Julian dates must identify the same epoch within one second"
+        )
+
+
+def _validate_long_term_tt(jd_tt: float) -> None:
+    if not math.isfinite(jd_tt):
+        raise AstronomyDataUnavailable("TT Julian date must be finite")
+    if not AYANAMSA_MIN_TT_JD <= jd_tt <= AYANAMSA_MAX_TT_JD:
+        raise AstronomyDataUnavailable("TT Julian date is outside the declared DE441 convention interval")
+
+
+def mean_ecliptic_matrix(jd_tt: float):
+    """ICRS to mean ecliptic of date, retaining the established modern frame."""
+    _validate_long_term_tt(jd_tt)
+    if abs((jd_tt-J2000_TT_JD)/JULIAN_CENTURY_DAYS) <= AYANAMSA_VALID_CENTURIES:
+        return erfa.ecm06(*_split_j2000(jd_tt))
+    return erfa.ltecm(2000.+(jd_tt-J2000_TT_JD)/365.25)
+
+
 def general_precession_longitude_degrees(jd_tt: float) -> float:
     """Return IAU 2006 general precession in longitude ``p_A`` from J2000."""
 
@@ -311,9 +452,13 @@ def general_precession_longitude_degrees(jd_tt: float) -> float:
 
 
 def _modern_reference_ecliptic_ayanamsa(jd_tt, definition):
-    ref = _split_j2000(definition.reference_jd_tt)
-    vector = erfa.pmat06(*ref) @ erfa.pmat06(*_split_j2000(jd_tt))[0]
-    eps = float(erfa.obl06(*ref))
+    if jd_tt == definition.reference_jd_tt:
+        return normalize_degrees(definition.reference_offset_deg
+                                 - definition.reference_equinox_displacement_arcsec/3600)
+    ref_epoch = 2000.+(definition.reference_jd_tt-J2000_TT_JD)/365.25
+    date_epoch = 2000.+(jd_tt-J2000_TT_JD)/365.25
+    vector = erfa.ltp(ref_epoch) @ erfa.ltp(date_epoch)[0]
+    eps = math.acos(float(erfa.pdp(erfa.ltpequ(ref_epoch), erfa.ltpecl(ref_epoch))))
     longitude = math.degrees(math.atan2(vector[1]*math.cos(eps)+vector[2]*math.sin(eps),vector[0]))
     return normalize_degrees(definition.reference_offset_deg
         - definition.reference_equinox_displacement_arcsec/3600 - longitude)
@@ -333,18 +478,34 @@ def ayanamsa_degrees(
     place calculation at the same instant; this function will not invent one.
     """
 
-    _validate_tt_jd(jd_tt)
+    _validate_long_term_tt(jd_tt)
+    if true:
+        _validate_tt_jd(jd_tt)
     definition = _canonical_ayanamsa(convention)
-    if definition.model == "star_anchor":
+    if definition.model in {"star_anchor", "polar_anchor"}:
         if anchor_tropical_longitude_deg is None:
             raise AstronomyDataUnavailable(
                 f"{definition.key} requires a tropical anchor-star longitude"
+                + (" measured as polar longitude" if definition.model == "polar_anchor" else "")
             )
         assert definition.sidereal_anchor_deg is not None
         return normalize_degrees(
             normalize_degrees(anchor_tropical_longitude_deg) - definition.sidereal_anchor_deg
             + (math.degrees(float(erfa.nut06a(*_split_j2000(jd_tt))[0])) if true else 0.0)
         )
+
+    if definition.model == "galactic_plane":
+        assert definition.galactic_pole_icrs_deg is not None
+        ra, dec = map(math.radians, definition.galactic_pole_icrs_deg)
+        pole = (math.cos(ra)*math.cos(dec), math.sin(ra)*math.cos(dec), math.sin(dec))
+        matrix = erfa.ltecm(2000.+(jd_tt-J2000_TT_JD)/365.25)
+        intersection = erfa.pxp(pole, matrix[2])
+        if float(erfa.pm(intersection)) <= 1e-15:
+            raise AstronomyDataUnavailable("galactic and ecliptic planes have no unique intersection")
+        vector = matrix @ intersection
+        mean = math.degrees(math.atan2(float(vector[1]), float(vector[0])))
+        return normalize_degrees(mean-definition.sidereal_anchor_deg
+                                 + (math.degrees(float(erfa.nut06a(*_split_j2000(jd_tt))[0])) if true else 0.))
 
     if definition.model == "modern_reference_ecliptic":
         mean = _modern_reference_ecliptic_ayanamsa(jd_tt, definition)

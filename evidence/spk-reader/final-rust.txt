@@ -1,0 +1,39 @@
+   Compiling ephemeris-core v0.2.0 (C:\AGI\worktrees\ephemeris-oss-staging\chebyshev-reader-20261026\rust\ephemeris-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.51s
+     Running unittests src\lib.rs (rust\ephemeris-core\target\debug\deps\ephemeris_core-04694e8bf934e1c5.exe)
+
+running 8 tests
+test long_term::tests::fixed_ray_returns_corrected_offset_at_defining_epoch ... ok
+test long_term::tests::fixed_ray_long_term_transport_is_finite_away_from_epoch ... ok
+test tests::chebyshev_clenshaw_matches_exact_polynomial_and_derivative ... ok
+test long_term::tests::node_cross_product_selects_ascending_intersection ... ok
+test tests::meeus_mean_lunar_node_at_j2000_is_exact ... ok
+test tests::panchanga_boundaries_are_consistent ... ok
+test tests::zero_copy_arena_structs_and_kp_sub_index_invariants ... ok
+test tests::shodashvarga_all_16_charts_return_valid_signs ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\spk_reader.rs (rust\ephemeris-core\target\debug\deps\spk_reader-d24bf1088b526e94.exe)
+
+running 11 tests
+test rejects_truncation_cycle_and_directory_overlap ... ok
+test direct_relative_segment_does_not_require_solar_system_root ... ok
+test comment_records_are_not_arrays_and_valid_comments_remain_supported ... ok
+test record_boundary_uses_later_record_and_zero_self_is_finite_only ... ok
+test malformed_trailer_radius_and_summary_counts_fail_closed ... ok
+test type_three_uses_supplied_velocity_and_inclusive_final_epoch ... ok
+test refuses_unsupported_frame_type_and_bad_coefficients_without_fallback ... ok
+test shifted_midpoint_or_radius_cannot_change_the_record_time_scale ... ok
+test reads_type_two_real_binary_polynomial_and_analytic_velocity ... ok
+test ffi_leaves_output_untouched_on_error ... ok
+test relative_state_ignores_an_unsupported_edge_above_the_common_ancestor ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests ephemeris_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

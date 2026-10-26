@@ -9,6 +9,14 @@ description = "Clean-room Chebyshev polynomial evaluator, relativistic time scal
 name = "ephemeris_core"
 crate-type = ["cdylib", "rlib"]
 
+[features]
+default = ["long-term"]
+long-term = ["dep:sofars"]
+spk-reader = ["long-term"]
+
+[dependencies]
+sofars = { version = "=0.6.1", optional = true }
+
 [profile.release]
 opt-level = 3
 lto = true

@@ -1,0 +1,80 @@
+{
+  "schema": "ephemeris-oss-wasm-reader-qualification-v1",
+  "scope": "Same-kernel geometric J2000 SPK reader agreement only; not physical or apparent-position accuracy.",
+  "pass": true,
+  "input": {
+    "path": "evidence\\spk-reader\\current-jpl-qualification-wasm-input.json"
+  },
+  "inputJsonSha256": "a27d362b735f8bf37df24d1e6ac9c712fd1eca830f615e43d0c0baee0374254f",
+  "sources": {
+    "wasm": {
+      "path": "rust\\ephemeris-core\\wasm\\ephemeris_spk.wasm",
+      "sha256": "ced2f4d0ec2858249015af37b9d6d97e92eaddc7db351ace300f7c360b7ed554",
+      "bytes": 117329
+    },
+    "sdkJavaScript": {
+      "path": "C:\\AGI\\worktrees\\ephemeris-oss-staging\\chebyshev-reader-20261026\\web\\ephemeris-browser.js",
+      "sha256": "7c7ae6f2aa527058a60ddf7cfcd36f2ce34b82150c710013c4eeeb3eaf587b77",
+      "bytes": 104773
+    },
+    "generatedCatalogJavaScript": {
+      "path": "C:\\AGI\\worktrees\\ephemeris-oss-staging\\chebyshev-reader-20261026\\web\\ayanamsa-catalog.js",
+      "sha256": "50bdebd662aef9fb15ff5f1c4e2bace66aa877e53487aad628d30e2e92705a52",
+      "bytes": 25384
+    }
+  },
+  "tolerances": {
+    "positionKm": 0.000002,
+    "velocityKmS": 1e-10
+  },
+  "kernels": [
+    {
+      "identifier": "DE440",
+      "sha256": "a4ce9bf9b3282becc9f4b2ac3cebe03a2ae7599981aabd7265fd8482fff7c4b5",
+      "bytes": 119799808,
+      "actualSampleCount": 238,
+      "repeatedSampleCount": 2,
+      "requestCount": 1098,
+      "maxRequestedBytes": 1024,
+      "totalReadBytes": 577152,
+      "maxPositionErrorKm": 0,
+      "maxVelocityErrorKmS": 0,
+      "failingIndices": [],
+      "repeatFailures": [],
+      "pass": true,
+      "fileStable": true
+    },
+    {
+      "identifier": "DE441-PART1",
+      "sha256": "13757827f5db41b835a24bbd637488636ce79a8ca754062fed17844f7d5b618e",
+      "bytes": 1651119104,
+      "actualSampleCount": 238,
+      "repeatedSampleCount": 2,
+      "requestCount": 1098,
+      "maxRequestedBytes": 1024,
+      "totalReadBytes": 577152,
+      "maxPositionErrorKm": 0,
+      "maxVelocityErrorKmS": 0,
+      "failingIndices": [],
+      "repeatFailures": [],
+      "pass": true,
+      "fileStable": true
+    },
+    {
+      "identifier": "DE441-PART2",
+      "sha256": "3abb17dae2d78dd34880377544aacb54892104a0d4462b322cb9f4454d4887f6",
+      "bytes": 1656830976,
+      "actualSampleCount": 238,
+      "repeatedSampleCount": 2,
+      "requestCount": 1098,
+      "maxRequestedBytes": 1024,
+      "totalReadBytes": 577152,
+      "maxPositionErrorKm": 0,
+      "maxVelocityErrorKmS": 0,
+      "failingIndices": [],
+      "repeatFailures": [],
+      "pass": true,
+      "fileStable": true
+    }
+  ]
+}

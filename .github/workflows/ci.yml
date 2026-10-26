@@ -27,6 +27,15 @@ jobs:
         run: pip install -e .[test]
       - name: Provision declared DE440 input
         run: ephemeris-oss kernels fetch --verify
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Provision Rust WebAssembly target
+        run: rustup target add wasm32-unknown-unknown
+      - name: Build declared native and browser inputs
+        run: python tools/build_rust_inputs.py
+      - name: Rust tests
+        run: cargo test --manifest-path rust/ephemeris-core/Cargo.toml
       - name: Run tests
         run: pytest -q
 

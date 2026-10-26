@@ -15,7 +15,8 @@
   },
   "files": [
     "ephemeris-browser.js",
-    "ephemeris-browser.d.ts"
+    "ephemeris-browser.d.ts",
+    "ayanamsa-catalog.js"
   ],
   "sideEffects": false,
   "dependencies": {},

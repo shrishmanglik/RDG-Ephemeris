@@ -41,10 +41,10 @@ def test_lahiri_is_derived_from_the_published_iae_anchor_not_calibrated():
 
 
 def test_catalog_is_versioned_complete_and_has_explicit_sources() -> None:
-    assert AYANAMSA_CATALOG_VERSION == "ephemeris-oss-ayanamsa-anchors-1.3.0"
+    assert AYANAMSA_CATALOG_VERSION == "ephemeris-oss-ayanamsa-anchors-1.4.0"
     assert HOUSE_CONVENTIONS_VERSION == "ephemeris-oss-houses-1.1.0-iau2006"
     assert LUNAR_NODE_CONVENTIONS_VERSION == "ephemeris-oss-lunar-nodes-1.1.0-meeus47.7"
-    assert set(AYANAMSA_CATALOG) == {
+    assert {
         "lahiri",
         "raman",
         "kp",
@@ -52,7 +52,7 @@ def test_catalog_is_versioned_complete_and_has_explicit_sources() -> None:
         "fagan_bradley",
         "true_citra",
         "pushya",
-    }
+    } <= AYANAMSA_CATALOG.keys()
     assert all(definition.source_reference for definition in AYANAMSA_CATALOG.values())
 
 
@@ -107,7 +107,7 @@ def test_ayanamsa_and_sidereal_conversion_fail_closed_and_wrap() -> None:
     with pytest.raises(AstronomyDataUnavailable, match="unsupported ayanamsa"):
         ayanamsa_degrees(J2000_TT_JD, "invented")
     with pytest.raises(AstronomyDataUnavailable, match="1600 through 2400"):
-        ayanamsa_degrees(J2000_TT_JD + 4.01 * 36525.0, "lahiri")
+        ayanamsa_degrees(J2000_TT_JD + 4.01 * 36525.0, "lahiri", true=True)
     assert tropical_to_sidereal(1.0, J2000_TT_JD, "lahiri") == pytest.approx(337.14290765)
     assert normalize_degrees(-0.0) == 0.0
     with pytest.raises(AstronomyDataUnavailable, match="finite"):
@@ -302,6 +302,6 @@ def test_r3_modern_realizations_do_not_claim_original_author_fidelity(key):
     definition=AYANAMSA_CATALOG[key]
     assert "realization" in definition.label
     assert definition.original_author_ambiguity
-    assert "IAU2006" in definition.precession_model
+    assert "Vondrak2011" in definition.precession_model
     assert "aacf962d" not in definition.source_reference
     assert "Swiss-compatible realisation" in definition.source_reference

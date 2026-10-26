@@ -1,0 +1,26 @@
+C:\Users\Shris\AppData\Local\Programs\Python\Python313\Lib\site-packages\pytest_asyncio\plugin.py:208: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+...F...                                                                  [100%]
+================================== FAILURES ===================================
+_ test_wheel_accepts_only_the_independently_authored_compatibility_module_name _
+
+tmp_path = WindowsPath('C:/Users/Shris/AppData/Local/Temp/pytest-of-Shris/pytest-5402/test_wheel_accepts_only_the_in0')
+
+    def test_wheel_accepts_only_the_independently_authored_compatibility_module_name(tmp_path):
+        wheel = tmp_path / "compatibility.whl"
+        with zipfile.ZipFile(wheel, "w") as archive:
+            archive.writestr("ephemeris_oss/swisseph_compat.py", "VALUE = 1\n")
+            archive.writestr("ephemeris_oss-0.0.dist-info/RECORD",
+                             "ephemeris_oss/swisseph_compat.py,sha256-test,10\n")
+>       assert wheel_gate.scan(wheel) == []
+E       AssertionError: assert ['ephemeris_o...sweph string'] == []
+E         
+E         Left contains 2 more items, first extra item: 'ephemeris_oss/swisseph_compat.py: contains a swisseph/sweph string'
+E         Use -v to get more diff
+
+tests\test_distribution_data.py:29: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_distribution_data.py::test_wheel_accepts_only_the_independently_authored_compatibility_module_name
+1 failed, 6 passed in 0.52s

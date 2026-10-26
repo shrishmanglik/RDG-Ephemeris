@@ -26,8 +26,12 @@ from .engine.conventions import (
     house_angles,
     house_layout,
     mean_lunar_node_longitude_degrees,
+    mean_ecliptic_matrix,
     normalize_degrees,
+    osculating_lunar_node_longitude_degrees,
+    validate_tt_tdb,
 )
+from .engine.civil_time import CalendarSystem, calendar_date
 from .engine.earth_orientation import UtcCalendarInstant, estimate_delta_t
 from .engine.eclipses import find_lunar_eclipses, find_solar_eclipses
 from .engine.numerical_provider import J2000_JD, SECONDS_PER_DAY, TimeScaleState
@@ -191,6 +195,8 @@ class PlanetCoordinateResult:
     is_retrograde: bool
     receipt_sha256: str
     body: str = "sun"
+    latitude_speed_deg_per_day: float = 0.0
+    distance_speed_au_per_day: float = 0.0
 
     @property
     def speed_deg_per_day(self) -> float:
@@ -226,6 +232,8 @@ class PlanetCoordinateResult:
             "latitude_deg": self.latitude_deg,
             "distance_au": self.distance_au,
             "longitude_speed_deg_per_day": self.longitude_speed_deg_per_day,
+            "latitude_speed_deg_per_day": self.latitude_speed_deg_per_day,
+            "distance_speed_au_per_day": self.distance_speed_au_per_day,
             "is_retrograde": self.is_retrograde,
             "receipt_sha256": self.receipt_sha256,
         }
@@ -612,6 +620,265 @@ class EphemerisAdapter:
             )
         )
 
+    @staticmethod
+    def _numeric_body(body: str | int) -> str:
+        """Resolve the numeric-TT surface without inheriting legacy node IDs."""
+        if isinstance(body, int) and not isinstance(body, bool):
+            if body == 10:
+                return "mean_node"
+            if body == 11:
+                return "true_node"
+            return _resolve_body_name(body)
+        key = str(body).strip().lower().replace(" ", "_")
+        aliases = {
+            "rahu": "mean_node",
+            "mean_lunar_node": "mean_node",
+            "north_node": "mean_node",
+            "ketu": "south_node",
+            "south_lunar_node": "south_node",
+            "osculating_node": "true_node",
+        }
+        key = aliases.get(key, key)
+        if key in {"mean_node", "true_node", "south_node"}:
+            return key
+        return _resolve_body_name(key)
+
+    @staticmethod
+    def _calendar_year(jd: float) -> int:
+        return int(calendar_date(
+            jd, calendar=CalendarSystem.PROLEPTIC_GREGORIAN
+        )[0])
+
+    def get_ayanamsa_tt(
+        self,
+        jd_tt: float,
+        mode: str = "lahiri",
+        *,
+        anchor_tropical_longitude_deg: float | None = None,
+        true: bool = False,
+    ) -> float:
+        """Return a named ayanamsa at an explicit TT Julian date."""
+        value = float(jd_tt)
+        if not math.isfinite(value):
+            raise EphemerisError("jd_tt must be finite")
+        convention = str(mode or "lahiri").strip().lower().replace("-", "_")
+        anchor_lon = (
+            None
+            if anchor_tropical_longitude_deg is None
+            else float(anchor_tropical_longitude_deg)
+        )
+        if anchor_lon is not None and not math.isfinite(anchor_lon):
+            raise EphemerisError("anchor_tropical_longitude_deg must be finite")
+        try:
+            return float(ayanamsa_degrees(
+                value,
+                convention,
+                anchor_tropical_longitude_deg=anchor_lon,
+                true=bool(true),
+            ))
+        except Exception as error:
+            raise EphemerisError(str(error)) from error
+
+    def _coordinate_at_tt(
+        self,
+        jd_tt: float,
+        body: str | int,
+        *,
+        jd_tdb: float | None,
+        sidereal: bool,
+        ayanamsa: str,
+        nonut: bool,
+        anchor_tropical_longitude_deg: float | None,
+    ) -> tuple[tuple[float, float, float], Mapping[str, Any]]:
+        """Evaluate one apparent geocentric coordinate through the JPL pipeline."""
+        tt_value = float(jd_tt)
+        if not math.isfinite(tt_value):
+            raise EphemerisError("jd_tt must be finite")
+        year = self._calendar_year(tt_value)
+        modern = 1600 <= year <= 2400
+        if not modern and not nonut:
+            raise EphemerisError(
+                "true-equinox output is supported only for TT years 1600..2400; "
+                "request FLG_NONUT for the long-term mean ecliptic"
+            )
+        if jd_tdb is None:
+            if not modern:
+                raise EphemerisError("jd_tdb is required outside TT years 1600..2400")
+            tt = (J2000_JD, tt_value - J2000_JD)
+            offset = float(erfa.dtdb(*tt, 0.0, 0.0, 0.0, 0.0))
+            tdb_value = float(sum(erfa.tttdb(*tt, offset)))
+        else:
+            tdb_value = float(jd_tdb)
+            if not math.isfinite(tdb_value):
+                raise EphemerisError("jd_tdb must be finite")
+        tt = (J2000_JD, tt_value - J2000_JD)
+        tdb = (J2000_JD, tdb_value - J2000_JD)
+        times = TimeScaleState(utc=tt, tt=tt, tdb=tdb)
+        body_key = self._numeric_body(body)
+        provider = self._engine._provider
+        artifact = provider._kernel_registry.artifact_for_tdb_jd(tdb_value)
+        frame = np.asarray(mean_ecliptic_matrix(tt_value), dtype=np.float64)
+
+        if body_key in {"mean_node", "south_node"}:
+            if not modern:
+                raise EphemerisError("mean lunar node is supported only for TT years 1600..2400")
+            longitude = mean_lunar_node_longitude_degrees(tt_value)
+            if body_key == "south_node":
+                longitude = normalize_degrees(longitude + 180.0)
+            latitude = 0.0
+            distance_au = 0.00256955529
+            position_type = "mean_lunar_node_axis"
+        elif body_key == "true_node":
+            state = provider.geocentric_state_at_tdb(body="moon", tdb=tdb, kernel_year=year)
+            position = frame @ np.asarray(state.position_km, dtype=np.float64)
+            velocity = frame @ np.asarray(state.velocity_km_per_day, dtype=np.float64)
+            longitude = osculating_lunar_node_longitude_degrees(position, velocity)
+            latitude = 0.0
+            distance_au = float(np.linalg.norm(position) / AU_KM)
+            position_type = "osculating_lunar_node_axis"
+        else:
+            earth_state = provider.barycentric_state_at_tdb(
+                body="earth", tdb=tdb, kernel_year=year
+            )
+            sun_cache: dict[float, Any] = {}
+
+            def sun_at(jd: float) -> Any:
+                if jd not in sun_cache:
+                    sun_cache[jd] = provider.barycentric_state_at_tdb(
+                        body="sun", tdb=(J2000_JD, jd - J2000_JD), kernel_year=year
+                    )
+                return sun_cache[jd]
+
+            apparent, _ = provider._apparent_state(
+                body=body_key,
+                instant_utc=None,
+                kernel_year=year,
+                observer=None,
+                times=times,
+                apply_deflection=(body_key != "sun"),
+                apply_aberration=True,
+                precomputed_earth_state=earth_state,
+                precomputed_sun_func=sun_at,
+            )
+            transformed = frame @ np.asarray(apparent.apparent_vector_km, dtype=np.float64)
+            longitude, latitude, radius_km = provider._spherical(transformed)
+            distance_au = float(radius_km / AU_KM)
+            position_type = "apparent_geocentric"
+
+        if not nonut:
+            longitude = normalize_degrees(
+                longitude + math.degrees(float(erfa.nut06a(*tt)[0]))
+            )
+        ayan_deg = (
+            self.get_ayanamsa_tt(
+                tt_value,
+                ayanamsa,
+                anchor_tropical_longitude_deg=anchor_tropical_longitude_deg,
+                true=not nonut,
+            )
+            if sidereal
+            else 0.0
+        )
+        if sidereal:
+            longitude = normalize_degrees(longitude - ayan_deg)
+        values = (float(longitude), float(latitude), float(distance_au))
+        receipt = {
+            "schema": "ephemeris-oss.adapter.calc-tt.v1",
+            "version": __version__,
+            "jd_tt": tt_value,
+            "jd_tdb": tdb_value,
+            "body": body_key,
+            "position_type": position_type,
+            "sidereal": sidereal,
+            "ayanamsa": ayanamsa if sidereal else None,
+            "ayanamsa_deg": ayan_deg,
+            "ayanamsa_true": bool(sidereal and not nonut),
+            "anchor_tropical_longitude_deg": anchor_tropical_longitude_deg,
+            "nonut": nonut,
+            "kernel_identifier": artifact.identifier,
+            "kernel_sha256": artifact.sha256.lower(),
+            "values": values,
+        }
+        return values, receipt
+
+    def calc_tt(
+        self,
+        jd_tt: float,
+        body: str | int,
+        *,
+        jd_tdb: float | None = None,
+        sidereal: bool = False,
+        ayanamsa: str = "lahiri",
+        nonut: bool = False,
+        derivative_step_days: float = 0.001,
+        anchor_tropical_longitude_deg: float | None = None,
+        anchor_tropical_speed_deg_per_day: float | None = None,
+        include_derivatives: bool = True,
+    ) -> PlanetCoordinateResult:
+        """Calculate apparent geocentric coordinates from explicit TT/TDB."""
+        if jd_tdb is not None:
+            try:
+                validate_tt_tdb(jd_tt, jd_tdb)
+            except Exception as error:
+                raise EphemerisError(str(error)) from error
+        step = float(derivative_step_days)
+        if not math.isfinite(step) or step <= 0.0:
+            raise EphemerisError("derivative_step_days must be finite and positive")
+        anchor_speed = None
+        if anchor_tropical_speed_deg_per_day is not None:
+            anchor_speed = float(anchor_tropical_speed_deg_per_day)
+            if not math.isfinite(anchor_speed):
+                raise EphemerisError("anchor_tropical_speed_deg_per_day must be finite")
+        if include_derivatives and anchor_tropical_longitude_deg is not None and anchor_speed is None:
+            raise EphemerisError(
+                "anchor_tropical_speed_deg_per_day is required for stellar-anchor derivatives"
+            )
+        center, payload = self._coordinate_at_tt(
+            jd_tt, body, jd_tdb=jd_tdb, sidereal=sidereal,
+            ayanamsa=ayanamsa, nonut=nonut,
+            anchor_tropical_longitude_deg=anchor_tropical_longitude_deg,
+        )
+        longitude_speed = latitude_speed = distance_speed = 0.0
+        if include_derivatives:
+            tdb_plus = None if jd_tdb is None else float(jd_tdb) + step
+            tdb_minus = None if jd_tdb is None else float(jd_tdb) - step
+            before, _ = self._coordinate_at_tt(
+                float(jd_tt) - step, body, jd_tdb=tdb_minus, sidereal=sidereal,
+                ayanamsa=ayanamsa, nonut=nonut,
+                anchor_tropical_longitude_deg=(
+                    None if anchor_tropical_longitude_deg is None
+                    else float(anchor_tropical_longitude_deg) - step * float(anchor_speed)
+                ),
+            )
+            after, _ = self._coordinate_at_tt(
+                float(jd_tt) + step, body, jd_tdb=tdb_plus, sidereal=sidereal,
+                ayanamsa=ayanamsa, nonut=nonut,
+                anchor_tropical_longitude_deg=(
+                    None if anchor_tropical_longitude_deg is None
+                    else float(anchor_tropical_longitude_deg) + step * float(anchor_speed)
+                ),
+            )
+            longitude_speed = ((after[0] - before[0] + 180.0) % 360.0 - 180.0) / (2.0 * step)
+            latitude_speed = (after[1] - before[1]) / (2.0 * step)
+            distance_speed = (after[2] - before[2]) / (2.0 * step)
+        payload = {
+            **payload,
+            "derivative_step_days": step if include_derivatives else None,
+            "longitude_speed_deg_per_day": longitude_speed,
+            "latitude_speed_deg_per_day": latitude_speed,
+            "distance_speed_au_per_day": distance_speed,
+            "anchor_tropical_speed_deg_per_day": anchor_speed,
+        }
+        body_key = self._numeric_body(body)
+        return PlanetCoordinateResult(
+            longitude_deg=center[0], latitude_deg=center[1], distance_au=center[2],
+            longitude_speed_deg_per_day=longitude_speed,
+            latitude_speed_deg_per_day=latitude_speed,
+            distance_speed_au_per_day=distance_speed,
+            is_retrograde=longitude_speed < 0.0,
+            receipt_sha256=canonical_hash(payload), body=body_key,
+        )
+
     def calc_ut(
         self,
         jd_ut: float,
@@ -737,6 +1004,7 @@ class EphemerisAdapter:
         *,
         system: str = "whole_sign",
         ayanamsa: str | None = "lahiri",
+        tt_jd: float | None = None,
     ) -> HouseSystemResult:
         """Compute 12 house cusps, Ascendant, MC, Vertex, and SHA-256 receipt."""
         jd_val = self._coerce_jd_ut(jd_ut)
@@ -747,7 +1015,9 @@ class EphemerisAdapter:
         if not math.isfinite(lon) or not -180.0 <= lon <= 180.0:
             raise EphemerisError("longitude_deg must be finite and within [-180, 180]")
 
-        jd_tt = self._jd_ut_to_jd_tt(jd_val)
+        jd_tt = self._jd_ut_to_jd_tt(jd_val) if tt_jd is None else float(tt_jd)
+        if not math.isfinite(jd_tt):
+            raise EphemerisError("tt_jd must be finite")
         tt = (J2000_JD, jd_tt - J2000_JD)
         angles = house_angles(
             tt_jd=jd_tt,
@@ -771,7 +1041,11 @@ class EphemerisAdapter:
         use_sidereal = ayanamsa is not None and str(ayanamsa).strip().lower() not in {"", "none", "tropical"}
         if use_sidereal:
             ayan_name = str(ayanamsa).strip().lower()
-            ayan_mean = self.get_ayanamsa_ut(jd_val, mode=ayan_name)
+            ayan_mean = (
+                self.get_ayanamsa_ut(jd_val, mode=ayan_name)
+                if tt_jd is None
+                else self.get_ayanamsa_tt(jd_tt, mode=ayan_name)
+            )
             dpsi, _ = erfa.nut06a(*tt)
             total_offset = ayan_mean + math.degrees(float(dpsi))
         else:
@@ -995,6 +1269,8 @@ class EphemerisAdapter:
         lon: float,
         hsys: str | bytes = b"P",
         flags: int = 0,
+        *,
+        tt_jd: float | None = None,
     ) -> tuple[tuple[float, ...], tuple[float, ...]]:
         """Sidecar-compatible house cusps and angles ``(cusps_12, ascmc_10)``.
 
@@ -1029,9 +1305,12 @@ class EphemerisAdapter:
             lon,
             system=system_map[hsys_code],
             ayanamsa=ayan_mode,
+            tt_jd=tt_jd,
         )
         jd_val = self._coerce_jd_ut(jd_ut)
-        jd_tt = self._jd_ut_to_jd_tt(jd_val)
+        jd_tt = self._jd_ut_to_jd_tt(jd_val) if tt_jd is None else float(tt_jd)
+        if not math.isfinite(jd_tt):
+            raise EphemerisError("tt_jd must be finite")
         angles = house_angles(
             tt_jd=jd_tt,
             ut1_jd=jd_val,
@@ -1043,12 +1322,12 @@ class EphemerisAdapter:
             res.mc_deg,
             angles.local_apparent_sidereal_deg,
             res.vertex_deg,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
+            math.nan,
+            math.nan,
+            math.nan,
+            math.nan,
+            math.nan,
+            math.nan,
         )
         return res.cusps_deg, ascmc
 

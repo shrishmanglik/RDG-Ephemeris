@@ -60,6 +60,14 @@ SELF_NAMES = {
     "test_import_graph.py",
     "test_api.py",
 }
+# Generated package inventories contain filenames, not implementation sources.
+# Only these declared API/test paths in this exact manifest are name exceptions;
+# imports, source citations, other paths and all other files remain scanned.
+COMPATIBILITY_MANIFEST_PATHS = {
+    "src/ephemeris_oss/swisseph_compat.py",
+    "tests/test_swisseph_compat.py",
+    "tests/test_swisseph_compat_contract.py",
+}
 
 
 @dataclass(frozen=True)
@@ -107,6 +115,9 @@ def scan(root: Path, allow: dict[tuple[str, str], str]) -> tuple[list[Finding], 
         for number, line in enumerate(text.splitlines(), start=1):
             stripped = line.strip()
             for rule, pattern in RULES:
+                if (rule == "SOURCE" and rel == "ephemeris_oss.egg-info/SOURCES.txt"
+                        and stripped in COMPATIBILITY_MANIFEST_PATHS):
+                    continue
                 subject = LABEL_PHRASES.sub("", line) if rule == "SOURCE" else line
                 if not pattern.search(subject):
                     continue
@@ -147,6 +158,8 @@ def self_test() -> int:
         "a/horizon.py": ("# Saemundsson / Swiss horizon formulation\n", "SOURCE"),
         "a/labelled_but_cited.py": ("# Swiss-compatible realisation, from sweph.h\n", "SOURCE"),
         "ephe/sepl_18.se1": ("x", "DATAFILE"),
+        "ephemeris_oss.egg-info/SOURCES.txt": (
+            "src/ephemeris_oss/swisseph_compat.py\nimport swisseph\n", "IMPORT"),
     }
     clean = "# planet and plane text; Swiss-compatible realisation of the anchor\nimport erfa\n"
     with tempfile.TemporaryDirectory() as tmp:
@@ -158,7 +171,8 @@ def self_test() -> int:
         findings, _ = scan(root, {})
         found = {(f.path, f.rule) for f in findings}
         missed = [(rel, rule) for rel, (_b, rule) in planted.items() if (rel, rule) not in found]
-        false = [f for f in findings if f.path == "clean.py"]
+        false = [f for f in findings if f.path == "clean.py" or
+                 (f.path == "ephemeris_oss.egg-info/SOURCES.txt" and f.line == 1)]
         # An allow entry silences exactly its line, and a stale one is reported.
         allow = {("a/cite.py", "# documented at astro.com/swisseph/swisseph.htm"): "test",
                  ("a/none.py", "nothing"): "stale"}

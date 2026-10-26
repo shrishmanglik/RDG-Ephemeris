@@ -25,6 +25,17 @@ installed separately under its own licence.
    IANA time zone database packaged for Python, used where the operating
    system provides none.
 
+Optional repository builds
+--------------------------
+
+The native Rust long-term feature and optional reader-enabled WebAssembly
+artifact compile sofars 0.6.1 (MIT, with retained SOFA terms). These artifacts
+are separate from the pure-Python wheel and dependency-free JavaScript loader.
+The complete upstream notice is retained at
+rust/ephemeris-core/THIRD_PARTY_NOTICES.md and must accompany redistribution
+of those builds. Neither those builds nor this package are endorsed by the
+IAU SOFA Board.
+
 Ephemeris kernels
 -----------------
 

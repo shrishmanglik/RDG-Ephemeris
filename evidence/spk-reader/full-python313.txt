@@ -1,0 +1,60 @@
+C:\Users\Shris\AppData\Local\Programs\Python\Python313\Lib\site-packages\pytest_asyncio\plugin.py:208: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+........................................................................ [  8%]
+.....................................F.................................. [ 16%]
+........................................................................ [ 25%]
+........................................................................ [ 33%]
+..................................................ssss.................. [ 41%]
+........................................................................ [ 50%]
+........................................................................ [ 58%]
+........................................................................ [ 67%]
+........................................................................ [ 75%]
+........................................................................ [ 83%]
+........................................................................ [ 92%]
+...................................................................      [100%]
+================================== FAILURES ===================================
+___ test_deliverable_files_exist_and_pass_provenance_and_internal_id_gates ____
+
+    def test_deliverable_files_exist_and_pass_provenance_and_internal_id_gates() -> None:
+        required_files = [
+            REPO_ROOT / "docs" / "claims.yaml",
+            REPO_ROOT / "tools" / "check_claims.py",
+            REPO_ROOT / "web" / "ephemeris-browser.js",
+            REPO_ROOT / "web" / "ephemeris-browser.d.ts",
+            REPO_ROOT / "docs" / "benchmark-portal" / "index.html",
+        ]
+        for path in required_files:
+            assert path.is_file(), f"Missing required deliverable: {path}"
+            content = path.read_text(encoding="utf-8")
+            assert "\u2014" not in content, f"Em dash found in {path}"
+    
+        for target in (REPO_ROOT / "web", REPO_ROOT / "docs", REPO_ROOT / "tools"):
+            id_hits = check_internal_ids.scan(target)
+            assert id_hits == [], f"Internal ID findings in {target}: {id_hits}"
+    
+        allow = check_provenance.load_allow(REPO_ROOT / "tools" / "provenance-allow.txt")
+        for target in (REPO_ROOT / "web", REPO_ROOT / "docs", REPO_ROOT / "tools"):
+            prov_findings, _ = check_provenance.scan(target, allow)
+>           assert prov_findings == [], f"Provenance findings in {target}: {prov_findings}"
+E           AssertionError: Provenance findings in C:\AGI\worktrees\ephemeris-oss-staging\chebyshev-reader-20261026\docs: [Finding(path='design/spk-reader.md', line=69, rule='SOURCE', text='were used; no Swiss implementation source was read or copied.'), Finding(path='SWISS-GAP-MATRIX.md', line=36, rule='SOURCE', text='| Swiss signature compatibility | Separate active compatibility worktree | OWNED ELSEWHERE. Do not duplicate or overwrite its uncommitted adapter. |'), Finding(path='SWISS-GAP-MATRIX.md', line=46, rule='SOURCE', text='Swiss comparison intake used only its [published programming documentation](https://www.astro.com/swisseph/swephprg.htm),')]
+E           assert [Finding(path...phprg.htm),')] == []
+E             
+E             Left contains 3 more items, first extra item: Finding(path='design/spk-reader.md', line=69, rule='SOURCE', text='were used; no Swiss implementation source was read or copied.')
+E             Use -v to get more diff
+
+tests\test_claims_checker.py:84: AssertionError
+============================== warnings summary ===============================
+tests/test_jpl_erfa_numerical_provider.py::test_pre_utc_time_scale_conversion_fails_closed
+  C:\Users\Shris\AppData\Local\Programs\Python\Python313\Lib\site-packages\erfa\core.py:133: ErfaWarning: ERFA function "dtf2d" yielded 1 of "dubious year (Note 6)"
+    warn(f'ERFA function "{func_name}" yielded {wmsg}', ErfaWarning)
+
+tests/test_jpl_erfa_numerical_provider.py::test_reverse_julian_day_enforces_versioned_utc_window[1900]
+  C:\Users\Shris\AppData\Local\Programs\Python\Python313\Lib\site-packages\erfa\core.py:133: ErfaWarning: ERFA function "d2dtf" yielded 1 of "dubious year (Note 5)"
+    warn(f'ERFA function "{func_name}" yielded {wmsg}', ErfaWarning)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_claims_checker.py::test_deliverable_files_exist_and_pass_provenance_and_internal_id_gates
+1 failed, 854 passed, 4 skipped, 2 warnings in 57.78s

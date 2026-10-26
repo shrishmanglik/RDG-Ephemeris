@@ -1,0 +1,5 @@
+check_provenance self-test: PASS (9 planted, 11 found)
+check_provenance: 0 finding(s), 0 stale allow entr(y/ies)
+check_internal_ids self-test: PASS (9 planted, 9 found)
+check_internal_ids: 0 finding(s)
+Convention data checked

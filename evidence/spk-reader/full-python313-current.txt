@@ -1,0 +1,49 @@
+C:\Users\Shris\AppData\Local\Programs\Python\Python313\Lib\site-packages\pytest_asyncio\plugin.py:208: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+.................sssss.................................................. [  7%]
+..........................................................s............. [ 15%]
+........................................................................ [ 23%]
+........................................................................ [ 31%]
+................................................sssssssss............... [ 39%]
+........................................................................ [ 47%]
+........................................................................ [ 55%]
+........................................................................ [ 63%]
+........................................................................ [ 71%]
+.........................................................s.............. [ 79%]
+........................................................................ [ 87%]
+..................................................F..................... [ 95%]
+...........................................                              [100%]
+================================== FAILURES ===================================
+____________ test_true_sidereal_ayanamsa_cancels_tropical_nutation ____________
+tests\test_swisseph_compat.py:103: in test_true_sidereal_ayanamsa_cancels_tropical_nutation
+    assert _signed_angle_delta(true_tropical, mean_tropical) == pytest.approx(
+E   NameError: name '_signed_angle_delta' is not defined
+============================== warnings summary ===============================
+tests/test_jpl_erfa_numerical_provider.py::test_pre_utc_time_scale_conversion_fails_closed
+  C:\Users\Shris\AppData\Local\Programs\Python\Python313\Lib\site-packages\erfa\core.py:133: ErfaWarning: ERFA function "dtf2d" yielded 1 of "dubious year (Note 6)"
+    warn(f'ERFA function "{func_name}" yielded {wmsg}', ErfaWarning)
+
+tests/test_jpl_erfa_numerical_provider.py::test_reverse_julian_day_enforces_versioned_utc_window[1900]
+  C:\Users\Shris\AppData\Local\Programs\Python\Python313\Lib\site-packages\erfa\core.py:133: ErfaWarning: ERFA function "d2dtf" yielded 1 of "dubious year (Note 5)"
+    warn(f'ERFA function "{func_name}" yielded {wmsg}', ErfaWarning)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+SKIPPED [1] tests\test_api.py:52: real DE440 kernel not supplied
+SKIPPED [1] tests\test_api.py:64: real DE440 kernel not supplied
+SKIPPED [1] tests\test_api.py:74: real DE440 kernel not supplied
+SKIPPED [1] tests\test_api.py:85: real DE440 kernel not supplied
+SKIPPED [1] tests\test_api.py:96: real DE440 kernel not supplied
+SKIPPED [1] tests\test_compact_kernel.py:160: real DE440 kernel not supplied
+SKIPPED [1] tests\test_jpl_erfa_numerical_provider.py:338: real DE440 kernel not supplied
+SKIPPED [1] tests\test_jpl_erfa_numerical_provider.py:349: real DE440 kernel not supplied
+SKIPPED [1] tests\test_jpl_erfa_numerical_provider.py:371: real DE440 kernel not supplied
+SKIPPED [1] tests\test_jpl_erfa_numerical_provider.py:390: real DE440 kernel not supplied
+SKIPPED [1] tests\test_jpl_erfa_numerical_provider.py:420: real DE440 kernel not supplied
+SKIPPED [2] tests\test_jpl_erfa_numerical_provider.py:446: real DE440 and split DE441 kernels not supplied
+SKIPPED [1] tests\test_jpl_erfa_numerical_provider.py:483: real DE440 and split DE441 kernels not supplied
+SKIPPED [1] tests\test_jpl_erfa_numerical_provider.py:504: real DE440 and split DE441 kernels not supplied
+SKIPPED [1] tests\test_jyotish_suite.py:707: DE440 kernel path not configured
+1 failed, 890 passed, 16 skipped, 2 warnings in 30.86s

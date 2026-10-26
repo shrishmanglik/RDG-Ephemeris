@@ -3,11 +3,33 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 import xml.etree.ElementTree as ET
 import pytest
 
 import ephemeris_oss
 from ephemeris_oss.cli import main
+
+
+@pytest.mark.parametrize("command", ["jyotish", "fact-sheet", "svg"])
+def test_cli_preserves_real_engine_retrograde_motion(command, capsys):
+    instant = datetime(2024, 4, 10, 12, tzinfo=timezone.utc)
+    with ephemeris_oss.Engine.load(kernels="compact") as engine:
+        mercury = engine.positions(instant, bodies=("mercury",)).value["mercury"]
+    assert mercury["speed_deg_per_day"] < 0., "The real-input control must be retrograde"
+    args = [command, "--at", instant.isoformat(), "--lat", "28.6139",
+            "--lon", "77.2090", "--compact"]
+    if command == "jyotish":
+        args.append("--json")
+    assert main(args) == 0
+    output = capsys.readouterr().out
+    if command == "svg":
+        root = ET.fromstring(output)
+        labels = ["".join(node.itertext()) for node in root.iter()
+                  if node.attrib.get("data-planet", "").lower() == "mercury"]
+        assert labels and any("(R)" in label for label in labels)
+    else:
+        assert json.loads(output)["bodies"]["mercury"]["retro"] is True
 
 
 def test_top_level_exports_complete() -> None:

@@ -1,0 +1,22 @@
+   Compiling ephemeris-core v0.2.0 (C:\AGI\worktrees\ephemeris-oss-staging\chebyshev-reader-20261026\rust\ephemeris-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.93s
+     Running tests\spk_reader.rs (rust\ephemeris-core\target\debug\deps\spk_reader-89c9c1782ad5ce32.exe)
+
+running 1 test
+test reads_type_two_real_binary_polynomial_and_analytic_velocity ... FAILED
+
+failures:
+
+---- reads_type_two_real_binary_polynomial_and_analytic_velocity stdout ----
+
+thread 'reads_type_two_real_binary_polynomial_and_analytic_velocity' (8892) panicked at tests\spk_reader.rs:45:42:
+Type 2 segment must be evaluated: Unsupported("binary segment reader not implemented")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    reads_type_two_real_binary_polynomial_and_analytic_velocity
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--test spk_reader`

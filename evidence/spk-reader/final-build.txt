@@ -1,0 +1,21 @@
+Convention data checked
+   Compiling ephemeris-core v0.2.0 (C:\AGI\worktrees\ephemeris-oss-staging\chebyshev-reader-20261026\rust\ephemeris-core)
+    Finished `release` profile [optimized] target(s) in 2.65s
+   Compiling ephemeris-core v0.2.0 (C:\AGI\worktrees\ephemeris-oss-staging\chebyshev-reader-20261026\rust\ephemeris-core)
+    Finished `release` profile [optimized] target(s) in 0.77s
+   Compiling ephemeris-core v0.2.0 (C:\AGI\worktrees\ephemeris-oss-staging\chebyshev-reader-20261026\rust\ephemeris-core)
+    Finished `release` profile [optimized] target(s) in 1.32s
+{
+  "ephemeris_core.wasm": {
+    "bytes": 63184,
+    "sha256": "df52df5f3020445f6334fe72f33f44bfb6ca79a283ed0c6175f573bf6402c166"
+  },
+  "ephemeris_spk.wasm": {
+    "bytes": 117329,
+    "sha256": "ced2f4d0ec2858249015af37b9d6d97e92eaddc7db351ace300f7c360b7ed554"
+  },
+  "native": {
+    "bytes": 204800,
+    "sha256": "8cc72916030f15d1d36081e62205c1d2082b8a96c2bd739abd2f4a4b9b60ee64"
+  }
+}
