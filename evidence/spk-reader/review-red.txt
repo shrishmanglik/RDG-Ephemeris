@@ -1,0 +1,37 @@
+   Compiling ephemeris-core v0.2.0 (C:\AGI\worktrees\ephemeris-oss-staging\chebyshev-reader-20261026\rust\ephemeris-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.47s
+     Running tests\spk_reader.rs (rust\ephemeris-core\target\debug\deps\spk_reader-89c9c1782ad5ce32.exe)
+
+running 10 tests
+test rejects_truncation_cycle_and_directory_overlap ... ok
+test direct_relative_segment_does_not_require_solar_system_root ... ok
+test malformed_trailer_radius_and_summary_counts_fail_closed ... ok
+test reads_type_two_real_binary_polynomial_and_analytic_velocity ... ok
+test comment_records_are_not_arrays_and_valid_comments_remain_supported ... FAILED
+test record_boundary_uses_later_record_and_zero_self_is_finite_only ... ok
+test refuses_unsupported_frame_type_and_bad_coefficients_without_fallback ... ok
+test ffi_leaves_output_untouched_on_error ... ok
+test shifted_midpoint_or_radius_cannot_change_the_record_time_scale ... FAILED
+test type_three_uses_supplied_velocity_and_inclusive_final_epoch ... ok
+
+failures:
+
+---- comment_records_are_not_arrays_and_valid_comments_remain_supported stdout ----
+
+thread 'comment_records_are_not_arrays_and_valid_comments_remain_supported' (31220) panicked at tests\spk_reader.rs:88:9:
+assertion failed: SpkKernel::open(Cursor::new(invalid)).is_err()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- shifted_midpoint_or_radius_cannot_change_the_record_time_scale stdout ----
+
+thread 'shifted_midpoint_or_radius_cannot_change_the_record_time_scale' (14616) panicked at tests\spk_reader.rs:102:13:
+assertion failed: matches!(k.state(301, 0, 5.), Err(SpkError::Invalid(_)))
+
+
+failures:
+    comment_records_are_not_arrays_and_valid_comments_remain_supported
+    shifted_midpoint_or_radius_cannot_change_the_record_time_scale
+
+test result: FAILED. 8 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--test spk_reader`

@@ -45,6 +45,41 @@ EXPECTED_WASM_EXPORTS: tuple[str, ...] = (
 )
 
 
+def read_spk_state(
+    kernel_path: str | Path,
+    target: int,
+    center: int,
+    tdb_seconds: float,
+    *,
+    library_path: str | Path,
+) -> tuple[float, float, float, float, float, float]:
+    """Read a geometric J2000 state from SPK Type 2/3 using the native Rust reader.
+
+    Units are km, km/s and TDB seconds since J2000, not UTC or TT. This is
+    opt-in and never replaces Engine's apparent-place reduction. The caller
+    verifies the kernel's provenance with the existing asset registry.
+    """
+    for body in (target, center):
+        if type(body) is not int or not -(2**31) <= body < 2**31:
+            raise ValueError("NAIF target and center must be signed 32-bit integers")
+    epoch = float(tdb_seconds)
+    if not math.isfinite(epoch):
+        raise ValueError("TDB epoch must be finite")
+    path_bytes = str(Path(kernel_path).resolve(strict=True)).encode("utf-8")
+    library = ctypes.CDLL(str(Path(library_path).resolve(strict=True)))
+    function = library.ephemeris_spk_file_state
+    function.argtypes = [ctypes.c_char_p, ctypes.c_size_t, ctypes.c_int32, ctypes.c_int32,
+                         ctypes.c_double, ctypes.POINTER(ctypes.c_double)]
+    function.restype = ctypes.c_int32
+    output = (ctypes.c_double * 6)()
+    result = function(path_bytes, len(path_bytes), target, center, epoch, output)
+    if result:
+        reasons = {1: "invalid SPK data or epoch", 2: "unsupported SPK format, type or frame",
+                   3: "no connected SPK coverage at epoch", 4: "SPK input could not be read"}
+        raise ValueError(reasons.get(result, "unknown native SPK failure"))
+    return tuple(float(value) for value in output)
+
+
 def normalize_deg(angle_deg: float) -> float:
     """Normalize an angle in degrees into `[0.0, 360.0)`."""
     r = math.fmod(float(angle_deg), 360.0)

@@ -411,6 +411,8 @@ export function evaluateChebyshevSegment3D(
 export function benchmarkClientKundali(iterations?: number): ClientKundaliBenchmarkResult;
 export function isWasmArenaInitialized(): boolean;
 export function initEphemerisWasm(kernelBytes?: Uint8Array | ArrayBuffer | string): Promise<void>;
+/** Geometric J2000 state, km and km/s, at TDB seconds since J2000. */
+export function readSpkState(kernelBytes: Uint8Array | ArrayBuffer, target: number, center: number, tdbSeconds: number): [number, number, number, number, number, number];
 export function computeFullChartZeroCopy(request: BatchNatalRequestInput): FullKundaliZeroCopyView;
 export function exportVerificationDossier(
   request?: BatchNatalRequestInput | ChartInputOptions,
@@ -452,6 +454,7 @@ export const EphemerisBrowser: {
   readonly benchmarkClientKundali: typeof benchmarkClientKundali;
   readonly isWasmArenaInitialized: typeof isWasmArenaInitialized;
   readonly initEphemerisWasm: typeof initEphemerisWasm;
+  readonly readSpkState: typeof readSpkState;
   readonly computeFullChartZeroCopy: typeof computeFullChartZeroCopy;
   readonly exportVerificationDossier: typeof exportVerificationDossier;
 };

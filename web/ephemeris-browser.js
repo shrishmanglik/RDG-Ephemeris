@@ -1766,6 +1766,35 @@ export function computeKpSubIndex249(siderealLonDeg) {
 
 const _fallbackArenaBuffer = new ArrayBuffer(1480);
 let _wasmExports = null;
+
+/** Geometric J2000 [x,y,z,vx,vy,vz], km and km/s at TDB seconds from J2000.
+ * The caller verifies the SPK bytes; there is no approximate JS fallback. */
+export function readSpkState(kernelBytes, target, center, tdbSeconds) {
+  if (!_wasmExports?.ephemeris_spk_state) {
+    throw new Error("Initialize a WebAssembly build with the SPK reader first");
+  }
+  for (const body of [target, center]) {
+    if (!Number.isInteger(body) || body < -2147483648 || body > 2147483647) {
+      throw new Error("NAIF target and center must be signed 32-bit integers");
+    }
+  }
+  if (!Number.isFinite(tdbSeconds)) throw new Error("TDB epoch must be finite");
+  const bytes = kernelBytes instanceof ArrayBuffer ? new Uint8Array(kernelBytes) : kernelBytes;
+  if (!(bytes instanceof Uint8Array) || bytes.byteLength === 0 || bytes.byteLength > 4294967295) {
+    throw new Error("SPK input must be nonempty bytes within the WASM32 address space");
+  }
+  const pointer = _wasmExports.ephemeris_spk_buffer_new(bytes.byteLength) >>> 0;
+  if (!pointer) throw new Error("Insufficient WebAssembly memory for SPK input");
+  try {
+    new Uint8Array(_wasmExports.memory.buffer, pointer, bytes.byteLength).set(bytes);
+    const output = _wasmExports.wasm_arena_output_ptr() >>> 0;
+    const status = _wasmExports.ephemeris_spk_state(pointer, bytes.byteLength, target, center, tdbSeconds, output);
+    if (status !== 0) throw new Error(`SPK reader refused input (status ${status})`);
+    return Array.from(new Float64Array(_wasmExports.memory.buffer, output, 6));
+  } finally {
+    _wasmExports.ephemeris_spk_buffer_free(pointer, bytes.byteLength);
+  }
+}
 let _decompressedKernelBytes = null;
 
 function solvePlacidusCuspTropicalDeg(ramcRad, phiRad, epsRad, fraction, isNocturnal) {
@@ -2272,6 +2301,7 @@ export const EphemerisBrowser = Object.freeze({
   benchmarkClientKundali,
   isWasmArenaInitialized,
   initEphemerisWasm,
+  readSpkState,
   computeFullChartZeroCopy,
   exportVerificationDossier
 });

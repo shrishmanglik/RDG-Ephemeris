@@ -8,6 +8,9 @@
 
 use std::slice;
 
+#[cfg(any(not(target_arch = "wasm32"), feature = "spk-reader"))]
+pub mod spk;
+
 pub const J2000_JD: f64 = 2451545.0;
 pub const JULIAN_CENTURY_DAYS: f64 = 36525.0;
 pub const TROPICAL_YEAR_DAYS: f64 = 365.242190402;

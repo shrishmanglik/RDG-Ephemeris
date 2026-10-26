@@ -1,0 +1,22 @@
+   Compiling ephemeris-core v0.2.0 (C:\AGI\worktrees\ephemeris-oss-staging\chebyshev-reader-20261026\rust\ephemeris-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.91s
+     Running tests\spk_reader.rs (rust\ephemeris-core\target\debug\deps\spk_reader-89c9c1782ad5ce32.exe)
+
+running 1 test
+test relative_state_ignores_an_unsupported_edge_above_the_common_ancestor ... FAILED
+
+failures:
+
+---- relative_state_ignores_an_unsupported_edge_above_the_common_ancestor stdout ----
+
+thread 'relative_state_ignores_an_unsupported_edge_above_the_common_ancestor' (46056) panicked at tests\spk_reader.rs:131:42:
+called `Result::unwrap()` on an `Err` value: Unsupported("only J2000 frame is supported")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    relative_state_ignores_an_unsupported_edge_above_the_common_ancestor
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 10 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--test spk_reader`

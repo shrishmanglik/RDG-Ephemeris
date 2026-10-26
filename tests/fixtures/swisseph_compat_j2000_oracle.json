@@ -1,0 +1,11 @@
+{
+  "source": "NASA/JPL Horizons",
+  "source_url": "https://ssd.jpl.nasa.gov/horizons/",
+  "query_contract": "target Sun (10), center Earth (399), geometric ICRF state, TDB JD 2451545.0",
+  "repository_cross_reference": "tests/test_jpl_erfa_numerical_provider.py::test_real_de440_j2000_sun_matches_horizons_reference",
+  "position_km": [26499033.6774305, -132757417.3383451, -57556718.47054072],
+  "mean_obliquity_deg": 23.439291111,
+  "au_km": 149597870.7,
+  "comparison_contract": "The facade uses UTC and apparent ecliptic-of-date coordinates; the test therefore uses this independent geometric J2000 vector only as a broad convention/unit negative control, not as a parity oracle.",
+  "rights_note": "Factual numeric values only; no Swiss Ephemeris code or content copied."
+}

@@ -1,0 +1,22 @@
+   Compiling ephemeris-core v0.2.0 (C:\AGI\worktrees\ephemeris-oss-staging\chebyshev-reader-20261026\rust\ephemeris-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.71s
+     Running tests\spk_reader.rs (rust\ephemeris-core\target\debug\deps\spk_reader-89c9c1782ad5ce32.exe)
+
+running 1 test
+test refuses_unsupported_frame_type_and_bad_coefficients_without_fallback ... FAILED
+
+failures:
+
+---- refuses_unsupported_frame_type_and_bad_coefficients_without_fallback stdout ----
+
+thread 'refuses_unsupported_frame_type_and_bad_coefficients_without_fallback' (49224) panicked at tests\spk_reader.rs:205:9:
+assertion failed: matches!(k.state(301, 0, 5.), Err(SpkError::Unsupported(_)))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    refuses_unsupported_frame_type_and_bad_coefficients_without_fallback
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 10 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--test spk_reader`

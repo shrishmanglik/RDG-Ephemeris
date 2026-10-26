@@ -1,0 +1,2 @@
+   Compiling ephemeris-core v0.2.0 (C:\AGI\worktrees\ephemeris-oss-staging\chebyshev-reader-20261026\rust\ephemeris-core)
+    Finished `release` profile [optimized] target(s) in 1.78s
