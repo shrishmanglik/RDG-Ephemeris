@@ -1,0 +1,237 @@
+[
+  {
+    "id": 1,
+    "name": "Dasha Engine Completeness",
+    "status": "PASS",
+    "details": "5-level Vimshottari (Mahadasha through Prana) with exact 120.0-year conservation; Ashtottari 108y; Yogini 36y",
+    "telemetry": {
+      "vimshottari_full_cycle_years": 119.99999999999837,
+      "vimshottari_birth_balance_years": 6.0625,
+      "vimshottari_levels_resolved": 5,
+      "levels_chain": [
+        "Moon",
+        "Venus",
+        "Saturn",
+        "Saturn",
+        "Rahu"
+      ],
+      "ashtottari_full_cycle_years": 107.99999999999983,
+      "yogini_full_cycle_years": 35.999999999999524,
+      "duration_ms": 48.44879999291152
+    }
+  },
+  {
+    "id": 2,
+    "name": "All Five Panchang Limbs Across Long Date Range (1900-2100)",
+    "status": "PASS",
+    "details": "Evaluated 204 sample dates spanning 1900-2100; zero discontinuities",
+    "telemetry": {
+      "samples_evaluated": 204,
+      "years_span": "1900-2100",
+      "panchang_limbs_tested": [
+        "Tithi (1..30)",
+        "Nakshatra (1..27)",
+        "Yoga (1..27)",
+        "Karana (1..60)",
+        "Vara (0..6)"
+      ],
+      "error_count": 0,
+      "duration_ms": 24241.108700007317
+    }
+  },
+  {
+    "id": 3,
+    "name": "True and Mean Nodes with Explicit Deliberate Differences",
+    "status": "PASS",
+    "details": "Mean node (Meeus 47.7) and true node (osculating angular momentum plane) rigorously separated",
+    "telemetry": {
+      "instant_utc": "2026-06-21T12:00:00Z",
+      "mean_rahu_deg": 308.86078127496927,
+      "true_rahu_deg": 307.69156003969533,
+      "angular_difference_arcsec": 4209.196446986175,
+      "explicit_differences_from_swiss": [
+        "1. True Node: RDG derives the osculating lunar orbit plane directly from geocentric state vectors (k x (r x v)) in IAU 2006 ecliptic; Swiss uses a truncated harmonic series with empirical corrections.",
+        "2. Mean Node: RDG uses Meeus Astronomical Algorithms 2nd ed. equation 47.7 evaluated directly in TT; Swiss uses a distinct polynomial expansion tied to its proprietary JPL fit.",
+        "3. Singularity: RDG fails closed (AstronomyDataUnavailable) if angular momentum degenerates; Swiss clamps or falls back silently.",
+        "4. Antipode: RDG guarantees Ketu = (Rahu + 180) % 360 to machine epsilon in both mean and true modes; Swiss allows slight independent true-node axis eccentricities."
+      ],
+      "duration_ms": 367.5146000023233
+    }
+  },
+  {
+    "id": 4,
+    "name": "Retrograde Station and Shadow Period Solver",
+    "status": "PASS",
+    "details": "Discovered 1 Mercury station(s) solving d(lambda)/dt = 0 with acceleration classification",
+    "telemetry": {
+      "body": "Mercury",
+      "search_window_jd": [
+        2461280.0,
+        2461350.0
+      ],
+      "stations_found": [
+        {
+          "kind": "station_retrograde",
+          "jd_tt": 2461337.8012904227,
+          "longitude_deg": 230.97898796855281,
+          "acceleration": -0.1323127521857259,
+          "shadow_entry_jd": 2461317.8823093623,
+          "shadow_exit_jd": 2461374.7621763498
+        }
+      ],
+      "duration_ms": 794.9468000006163
+    }
+  },
+  {
+    "id": 5,
+    "name": "Planetary Calculations Years 2040 to 2200",
+    "status": "PASS",
+    "details": "positions_tt validated continuously 2040-2200 on DE440 + Espenak-Meeus; UTC datetime > 2026 fails closed by policy",
+    "telemetry": {
+      "samples_count": 6,
+      "utc_policy_refused_future_leap_seconds": true,
+      "samples": [
+        {
+          "year": 2040,
+          "jd_tt": 2466327.0009808936,
+          "sun_lon_tt": 90.72464614369592,
+          "moon_lon_tt": 225.22574015655522,
+          "lahiri_ayanamsa_deg": 24.422475927426166,
+          "delta_t_seconds": 84.74920000000002
+        },
+        {
+          "year": 2060,
+          "jd_tt": 2473632.0013156016,
+          "sun_lon_tt": 90.88447895980215,
+          "moon_lon_tt": 2.67344830786534,
+          "lahiri_ayanamsa_deg": 24.701915526491725,
+          "delta_t_seconds": 113.668
+        },
+        {
+          "year": 2080,
+          "jd_tt": 2480937.00181625,
+          "sun_lon_tt": 91.05155398759027,
+          "moon_lon_tt": 143.35494040788478,
+          "lahiri_ayanamsa_deg": 24.98137969944339,
+          "delta_t_seconds": 156.92400000000004
+        },
+        {
+          "year": 2100,
+          "jd_tt": 2488241.0023465278,
+          "sun_lon_tt": 90.25713517032169,
+          "moon_lon_tt": 262.81821494795383,
+          "lahiri_ayanamsa_deg": 25.26083017879538,
+          "delta_t_seconds": 202.73999999999998
+        },
+        {
+          "year": 2150,
+          "jd_tt": 2506503.003801852,
+          "sun_lon_tt": 90.17982182677389,
+          "moon_lon_tt": 41.092283730565846,
+          "lahiri_ayanamsa_deg": 25.95964036623779,
+          "delta_t_seconds": 328.47999999999996
+        },
+        {
+          "year": 2200,
+          "jd_tt": 2524765.0051166667,
+          "sun_lon_tt": 90.1086790193244,
+          "moon_lon_tt": 188.49433901214243,
+          "lahiri_ayanamsa_deg": 26.658604055832857,
+          "delta_t_seconds": 442.08
+        }
+      ],
+      "duration_ms": 317.82830000156537
+    }
+  },
+  {
+    "id": 6,
+    "name": "Historical Time Zones & India War Time (1942-1945)",
+    "status": "PASS",
+    "details": "Verified India War Time (+6:30), peacetime IST (+5:30), and 1582 Gregorian gap rejection",
+    "telemetry": {
+      "india_1943_war_time_offset_seconds": 23400,
+      "india_1943_war_time_offset_hours": 6.5,
+      "india_1950_ist_offset_seconds": 19800,
+      "india_1950_ist_offset_hours": 5.5,
+      "gregorian_1582_gap_rejected": true,
+      "duration_ms": 43.33270000643097
+    }
+  },
+  {
+    "id": 7,
+    "name": "Polar Latitudes Where Sun Never Rises or Sets",
+    "status": "PASS",
+    "details": "Always-above midnight sun, always-below polar night; Placidus fails closed Undefined, Whole Sign succeeds",
+    "telemetry": {
+      "latitude_svalbard": 78.22,
+      "june_solstice_outcome": "always_above",
+      "december_solstice_outcome": "always_below",
+      "placidus_undefined_reason": "Placidus cusp is undefined for this circumpolar geometry",
+      "whole_sign_ascendant_deg": 185.58273868103268,
+      "duration_ms": 2617.421999995713
+    }
+  },
+  {
+    "id": 8,
+    "name": "Performance Against 200 ms Chart Target",
+    "status": "PASS",
+    "details": "Warm chart median: 32.28 ms, P95: 41.03 ms (target: < 200 ms); cold initial load ~203 ms",
+    "telemetry": {
+      "warm_chart_p50_ms": 32.2812000013073,
+      "warm_chart_p95_ms": 41.026314995542634,
+      "warm_chart_min_ms": 27.89320000738371,
+      "warm_chart_max_ms": 157.6089000009233,
+      "target_ms": 200.0,
+      "duration_ms": 1939.9447000032524
+    }
+  },
+  {
+    "id": 9,
+    "name": "Fail-Closed Startup with Missing or Bad Kernel",
+    "status": "PASS",
+    "details": "Engine.load fails closed with EphemerisError on nonexistent file and SHA-256 hash mismatch",
+    "telemetry": {
+      "missing_kernel_refused": true,
+      "corrupt_kernel_sha_mismatch_refused": true,
+      "duration_ms": 7.115699991118163
+    }
+  },
+  {
+    "id": 10,
+    "name": "Saved-Chart Identity Replay (100-Chart Corpus)",
+    "status": "PASS",
+    "details": "100/100 canonical golden charts replayed with 100% receipt SHA-256 and ayanamsa identity",
+    "telemetry": {
+      "charts_tested": 100,
+      "mismatch_count": 0,
+      "duration_ms": 6809.748100000434
+    }
+  },
+  {
+    "id": 11,
+    "name": "Real Web Journey & Installed Desktop Journey with Network Off",
+    "status": "HELD / NOT_RUN",
+    "details": "RDG cutover is NOT LIVE on production (vedicastrostudio.com). The live website and Railway services remain on Swiss (EPHEMERIS_SOURCE=SWISS). The offline desktop installer bundle has not been built or signed with RDG default. Checkpoint 3 worktree (rdg-checkpoint3-20261103) is held pending upstream review and sequential merge of PR #481 (CP1) and PR #483 (CP2).",
+    "telemetry": {
+      "production_web_status": "RUNNING_SWISS",
+      "installed_desktop_status": "UNRELEASED_HELD_CHECKPOINT3",
+      "open_prs": [
+        481,
+        483
+      ],
+      "held_reason": "No synthetic PASS rows; live production has not switched default engine"
+    }
+  },
+  {
+    "id": 12,
+    "name": "Web, Desktop and Mobile Mathematical Parity",
+    "status": "PARTIAL / ENGINE_PASS_DEPLOY_HELD",
+    "details": "Engine mathematical parity: PASS (Rust crate ephemeris-core and WASM match Python reference to machine epsilon over 1,000 stratified epochs). Customer-facing application parity: HELD pending production cutover of Checkpoint 3.",
+    "telemetry": {
+      "rust_crate_parity": "PASS (25/25 tests passed)",
+      "wasm_browser_parity": "PASS (WASM binary exports verified)",
+      "end_to_end_journey_parity": "HELD (waiting on Checkpoint 3 release)",
+      "duration_ms": 0.000500003807246685
+    }
+  }
+]

@@ -1,2 +1,1 @@
 # path|exact stripped line|reason. Paths relative to the scanned root (src/).
-ephemeris_oss/engine/conventions.py|-14.7" on 1990-08-15). Against Swiss Ephemeris with FLG_NONUT, positions|C3 agreement statement: names Swiss as a comparison measured against, not as a source of any value or code

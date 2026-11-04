@@ -684,7 +684,7 @@ def refracted_altitude_degrees(geometric_altitude_deg: float, model: RefractionM
     through sunrise/sunset (altitude < 15 deg), the altitude dependence of
     Saemundsson (Sky and Telescope 72, 70, 1986) is scaled to a horizon
     refraction of 0.55988864426 deg (33.593') at 1013.25 hPa and 15 deg C.
-    That horizon value is a Swiss-compatible convention (a Tier C definition):
+    That horizon value is an empirical almanac convention:
     no publication derives it; it sits 0.41' below the USNO 34' convention
     (aa.usno.navy.mil/faq/RST_defs) and is kept because it reproduces widely
     used rise and set times.

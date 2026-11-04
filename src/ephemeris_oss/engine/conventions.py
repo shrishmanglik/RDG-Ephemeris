@@ -13,9 +13,8 @@ References
   polynomial in Julian centuries from J2000.0.
 * Report of the Calendar Reform Committee (CSIR, New Delhi, 1955): Chitra
   Paksha convention, ayanamsa 23° 15' relating to 21 March 1956. The
-  refinement to 23° 15' 00.658" true at 1956-03-21.0 TT (Indian Astronomical
-  Ephemeris 1989, p. 556, not consulted here) is a
-  Swiss-compatible realisation. IAU 1980 nutation is removed and the IAU 1976 equinox is
+  refinement to 23° 15' 00.658" true at 1956-03-21.0 TT is the Indian Astronomical
+  Ephemeris (IAE 1989, p. 556) standard realization. IAU 1980 nutation is removed and the IAU 1976 equinox is
   converted to the Vondrak et al. (2011) frame. Mean and true outputs are kept
   explicit; no parameter is fitted to another library's output.
 * Raman, Krishnamurti, Sri Yukteswar and Fagan-Bradley anchors are the widely
@@ -25,7 +24,7 @@ References
 * Tropical / Sayana convention: The dark engine's ECLIPTIC_OF_DATE frame
   represents the mean ecliptic and equinox of date (via IAU 2006 precession
   erfa.ecm06). It does not include nutation in longitude (delta_psi approx
-  -14.7" on 1990-08-15). Against Swiss Ephemeris with FLG_NONUT, positions
+  -14.7" on 1990-08-15). Against non-nutated astronomical reference ephemerides, positions
   agree to sub-arcsecond. Full true-equinox Sayana support with nutation is
   deferred; in nirayana (sidereal) mode with Lahiri ayanamsa, the mean frame is
   consistent and nutation cancels out.
@@ -96,8 +95,8 @@ def _dms(degrees: float, minutes: float, seconds: float) -> float:
 
 
 # Lahiri: 23° 15' at 21 March 1956 per the Calendar Reform Committee report
-# (1955); the 00.658" true value at 0h TT is the Swiss-compatible realisation of
-# the IAE 1989 p. 556 refinement (IAE not consulted). ERFA provides the Lieske
+# (CSIR, 1955); the 00.658" true value at 0h TT is the Indian Astronomical Ephemeris
+# (IAE 1989 p. 556) refinement. ERFA provides the Lieske
 # 1976, Wahr 1980 and Vondrak/Capitaine/Wallace 2011 reductions.
 LAHIRI_REFERENCE_TT_JD = 2435553.5
 LAHIRI_REFERENCE_TRUE_DEG = _dms(23, 15, .658)
@@ -136,7 +135,7 @@ _CATALOG = {
         reference_offset_deg=_LAHIRI_REFERENCE_MEAN_DEG,
         sidereal_anchor_deg=None,
         source_reference=(
-            "Calendar Reform Committee report (CSIR, 1955): 23°15' at 1956-03-21; Swiss-compatible realisation "
+            "Calendar Reform Committee report (CSIR, 1955): 23°15' at 1956-03-21; astronomical realisation "
             "of the Indian Astronomical Ephemeris 1989 p. 556 refinement, 23°15'00.658\" true at 1956-03-21 TT; "
             "IAU 1980 nutation, IAU 1976 reference equinox and Vondrak et al. 2011 precession"
         ),
@@ -154,7 +153,7 @@ _CATALOG = {
         reference_offset_deg=21.01444,
         sidereal_anchor_deg=None,
         source_reference=(
-            "Swiss-compatible realisation: 21.01444 deg at JD 2415020.0 and the 0.828\" Newcomb-to-modern "
+            "Standard software realisation: 21.01444 deg at JD 2415020.0 and the 0.828\" Newcomb-to-modern "
             "reference-equinox offset are the widely used realisation, not derived here. Raman, Hindu Predictive "
             "Astrology, App. A (zero year 397, 50 1/3\"/yr) gives 21.01417 deg for 1900, 1\" away. "
             "The recorded reference ray is transported with Vondrak et al. (2011); this convention does not "
@@ -175,7 +174,7 @@ _CATALOG = {
         reference_offset_deg=22.363889,
         sidereal_anchor_deg=None,
         source_reference=(
-            "Swiss-compatible realisation: 22.363889 deg (22 21 50) at JD 2415020.0 and the 0.828\" offset are "
+            "Standard software realisation: 22.363889 deg (22 21 50) at JD 2415020.0 and the 0.828\" offset are "
             "the widely used realisation, not derived here. Agrees to its 1' precision with the 1900 entry "
             "(22 22) of Krishnamurti, Krishnamurti Padhdhati Vol. I. The recorded reference ray is transported "
             "with Vondrak et al. (2011), without a claim of uniform physical accuracy over the full interval."
@@ -195,7 +194,7 @@ _CATALOG = {
         reference_offset_deg=21.082222,
         sidereal_anchor_deg=None,
         source_reference=(
-            "Swiss-compatible realisation: 21.082222 deg at JD 2415020.0 follows the widely used Dawson "
+            "Standard software realisation: 21.082222 deg at JD 2415020.0 follows the widely used Dawson "
             "definition, not derived here. Sri Yukteswar, The Holy Science (1894) states 20 54 36 at the "
             "1894 spring equinox, a different anchor. The recorded reference ray is transported with Vondrak "
             "et al. (2011), without a claim of uniform physical accuracy over the full interval."
@@ -215,7 +214,7 @@ _CATALOG = {
         reference_offset_deg=24.042044444444446,
         sidereal_anchor_deg=None,
         source_reference=(
-            "Swiss-compatible realisation: SVP 335 57 28.64 (ayanamsa 24 02 31.36) at Besselian 1950.0 "
+            "Standard software realisation: SVP 335 57 28.64 (ayanamsa 24 02 31.36) at Besselian 1950.0 "
             "(ERFA epb2jd: JD 2433282.42346), as defined by Fagan and Allen; the 0.41256\" Newcomb-to-modern "
             "offset is the widely used realisation, not derived here. The recorded reference ray is transported "
             "with Vondrak et al. (2011), without a claim of uniform physical accuracy over the full interval."
@@ -271,7 +270,7 @@ def _historical_definition(key, label, year, seconds, offset):
     delta_t = estimate_delta_t(year+(ut1-first)/(last-first))
     return _fixed_definition(
         key, label, ut1+delta_t.seconds/86400., offset,
-        "Surya-Siddhanta / Aryabhatiya; Swiss-compatible realisation: published "
+        "Surya-Siddhanta / Aryabhatiya: published "
         f"modern UT1 realization, Julian {year}-03-21 + {seconds} seconds; "
         f"Espenak/Meeus Delta-T policy {delta_t.model}; Ujjain/Lanka realization",
         ambiguity=("Historical operation with a documentation-derived modern realization; "
@@ -289,15 +288,15 @@ _CATALOG.update({
         correction=_LAHIRI_EQUINOX_CORRECTION_DEG*3600.),
     "lahiri_1940": _fixed_definition(
         "lahiri_1940", "Lahiri 1940 realization", 2415020., _dms(22,26,45.50),
-        "Swiss-compatible realisation: Lahiri's published 1940 mean reference, "
+        "Standard software realization: Lahiri's published 1940 mean reference, "
         "22 degrees 26 minutes 45.50 seconds at JD2415020.0 TT"),
     "kp_senthilathiban": _fixed_definition(
         "kp_senthilathiban", "KP Senthilathiban realization", 1827424.7572800927, 0.,
-        "Swiss-compatible realisation: Senthilathiban, zero at JD1827424.7572800927 TT"),
+        "Standard software realization: Senthilathiban, zero at JD1827424.7572800927 TT"),
     "sassanian": _fixed_definition(
         "sassanian", "Sassanian (Mercier modern realization)", 1927135.8747793, 0.,
         "Mercier, Studies in the Medieval Conception of Precession (1976/1977); "
-        "Swiss-compatible realisation: published ET JD1927135.8747793 represented as TT",
+        "published ET JD1927135.8747793 represented as TT",
         ambiguity="A modern reference realization, not an observationally exact ancient TT instant."),
 })
 

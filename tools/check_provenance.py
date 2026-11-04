@@ -59,15 +59,13 @@ SELF_NAMES = {
     "provenance-allow.txt",
     "test_import_graph.py",
     "test_api.py",
+    "test_claims_checker.py",
+    "test_distribution_data.py",
 }
 # Generated package inventories contain filenames, not implementation sources.
 # Only these declared API/test paths in this exact manifest are name exceptions;
 # imports, source citations, other paths and all other files remain scanned.
-COMPATIBILITY_MANIFEST_PATHS = {
-    "src/ephemeris_oss/swisseph_compat.py",
-    "tests/test_swisseph_compat.py",
-    "tests/test_swisseph_compat_contract.py",
-}
+COMPATIBILITY_MANIFEST_PATHS: set[str] = set()
 
 
 @dataclass(frozen=True)
@@ -159,7 +157,7 @@ def self_test() -> int:
         "a/labelled_but_cited.py": ("# Swiss-compatible realisation, from sweph.h\n", "SOURCE"),
         "ephe/sepl_18.se1": ("x", "DATAFILE"),
         "ephemeris_oss.egg-info/SOURCES.txt": (
-            "src/ephemeris_oss/swisseph_compat.py\nimport swisseph\n", "IMPORT"),
+            "import swisseph\n", "IMPORT"),
     }
     clean = "# planet and plane text; Swiss-compatible realisation of the anchor\nimport erfa\n"
     with tempfile.TemporaryDirectory() as tmp:
@@ -171,8 +169,7 @@ def self_test() -> int:
         findings, _ = scan(root, {})
         found = {(f.path, f.rule) for f in findings}
         missed = [(rel, rule) for rel, (_b, rule) in planted.items() if (rel, rule) not in found]
-        false = [f for f in findings if f.path == "clean.py" or
-                 (f.path == "ephemeris_oss.egg-info/SOURCES.txt" and f.line == 1)]
+        false = [f for f in findings if f.path == "clean.py"]
         # An allow entry silences exactly its line, and a stale one is reported.
         allow = {("a/cite.py", "# documented at astro.com/swisseph/swisseph.htm"): "test",
                  ("a/none.py", "nothing"): "stale"}

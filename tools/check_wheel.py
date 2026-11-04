@@ -25,7 +25,7 @@ BANNED_NAMES = (
     re.compile(r"(^|/)comparators/"),
 )
 BANNED_TEXT = re.compile(rb"swisseph|sweph", re.I)
-COMPATIBILITY_PATH = "ephemeris_oss/swisseph_compat.py"
+COMPATIBILITY_PATH = ""
 
 
 def _scanned_content(name: str, content: bytes) -> bytes:

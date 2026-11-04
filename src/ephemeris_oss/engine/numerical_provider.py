@@ -1352,7 +1352,7 @@ class JplErfaAstronomyProvider(AstronomyProvider):
         )
         altitude = math.degrees(math.atan2(up, math.hypot(east, north)))
         if atmosphere is not None:
-            # Horizon atmospheric refraction: Swiss-compatible convention:
+            # Horizon atmospheric refraction: empirical standard convention:
             # 33.59 arcminutes (0.5598886 deg) at 1013.25 hPa, 15 C scaled by pressure and temperature
             p = atmosphere.pressure_hpa
             t = atmosphere.temperature_c

@@ -20,17 +20,17 @@ def test_wheel_rejects_bulk_kernel_and_private_state(tmp_path, path):
     assert wheel_gate.scan(wheel), f"distribution accepted {path}"
 
 
-def test_wheel_accepts_only_the_independently_authored_compatibility_module_name(tmp_path):
-    wheel = tmp_path / "compatibility.whl"
-    with zipfile.ZipFile(wheel, "w") as archive:
-        archive.writestr("ephemeris_oss/swisseph_compat.py", "VALUE = 1\n")
+def test_wheel_accepts_clean_module_and_refuses_banned_names(tmp_path):
+    clean_wheel = tmp_path / "clean.whl"
+    with zipfile.ZipFile(clean_wheel, "w") as archive:
+        archive.writestr("ephemeris_oss/engine.py", "VALUE = 1\n")
         archive.writestr("ephemeris_oss-0.0.dist-info/RECORD",
-                         "ephemeris_oss/swisseph_compat.py,sha256-test,10\n")
-    assert wheel_gate.scan(wheel) == []
+                         "ephemeris_oss/engine.py,sha256-test,10\n")
+    assert wheel_gate.scan(clean_wheel) == []
 
 
 @pytest.mark.parametrize("name,content", [
-    ("ephemeris_oss/swisseph_compat.py", "import swisseph\n"),
+    ("ephemeris_oss/swisseph_compat.py", "VALUE = 1\n"),
     ("ephemeris_oss/other_swisseph.py", "VALUE = 1\n"),
     ("ephemeris_oss-0.0.dist-info/RECORD", "swisseph.py,sha256-test,10\n"),
 ])
