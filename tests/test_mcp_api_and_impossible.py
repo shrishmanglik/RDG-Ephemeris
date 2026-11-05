@@ -477,3 +477,21 @@ def test_mcp_daily_panchanga_anchors_to_local_sunrise_and_separates_instantaneou
             break
 
     assert transition_day_sr is not None
+
+    # 3. Eastern observer (Tokyo, longitude +139.69 deg) whose local sunrise falls on the preceding UTC calendar date
+    from datetime import date
+
+    observer_cases = [
+        ("Delhi after sunrise", 28.6139, 77.2090, 2461046.625, date(2026, 1, 6).strftime("%A")),
+        ("Tokyo after sunrise", 35.68, 139.69, 2461046.625, date(2026, 1, 6).strftime("%A")),
+        ("Tokyo before sunrise", 35.68, 139.69, 2461046.3333333335, date(2026, 1, 5).strftime("%A")),
+    ]
+    for city, lat, lon, jd_req, expected_weekday in observer_cases:
+        obs_report = mcp_server.execute_mcp_tool(
+            "compute_panchanga",
+            {"jd_ut": jd_req, "latitude_deg": lat, "longitude_deg": lon},
+        )
+        assert obs_report["anchoring_mode"] == "sunrise", city
+        assert obs_report["active_sunrise_jd_ut"] <= jd_req, city
+        assert obs_report["vara_name"] == expected_weekday, (city, obs_report["vara_name"], expected_weekday)
+

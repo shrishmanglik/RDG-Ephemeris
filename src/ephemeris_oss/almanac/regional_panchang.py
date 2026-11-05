@@ -554,11 +554,23 @@ def compute_regional_panchang(
         anchoring_mode = "instantaneous"
 
     ce_year, _m, _d, _h = EphemerisAdapter.revjul(eval_jd)
+    # Explicit observer location weekday policy:
+    # A sunrise is a universal UT instant, but its Vedic weekday (Vara, 0=Sunday..6=Saturday)
+    # belongs to the observer's active local solar/civil day (shifted by longitude_deg / 360.0 days),
+    # never the UTC calendar date of the sunrise instant. This ensures eastern observers whose
+    # local morning sunrise occurs before 00:00 UTC (e.g. Tokyo at +139.69 deg) receive the
+    # true local weekday both after and before today's local sunrise.
+    local_vara_index: int | None = None
+    if (anchor_to_sunrise or sunrise_jd_ut is not None) and active_sunrise_jd is not None:
+        local_sunrise_solar_jd = float(active_sunrise_jd) + (lon / 360.0)
+        local_vara_index = (math.floor(local_sunrise_solar_jd + 0.5) + 1) % 7
+
     panch = compute_panchanga(
         sun_lon_deg=s_sid,
         moon_lon_deg=m_sid,
         jd_ut=jd_val,
-        sunrise_jd_ut=civil_sunrise_jd,
+        sunrise_jd_ut=civil_sunrise_jd if (anchor_to_sunrise or sunrise_jd_ut is not None) else None,
+        vara_index=local_vara_index,
         ce_year=ce_year,
     )
 
