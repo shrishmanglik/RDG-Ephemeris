@@ -564,7 +564,20 @@ def test_round5_release_reconciliation_contracts(monkeypatch) -> None:  # type: 
     assert len(ctrl_h.horizon_events) == 3
     assert len(cand_h.horizon_events) == 3
 
-    # 6. Contiguous war deduplication, numerical DE440 provider binding, and TT-to-UTC conversion
+    # 6. Contiguous war deduplication, numerical DE440 provider binding (1550-2306 wings), OpenAPI requestBody schemas, and TT-to-UTC conversion
+    from ephemeris_oss.api_server import _ROUTE_TO_TOOL, build_openapi_spec
+
+    openapi_spec = build_openapi_spec()
+    tool_schemas = {t["name"]: t["inputSchema"] for t in mcp_server.MCP_TOOLS}
+    for route_path, tool_name in _ROUTE_TO_TOOL.items():
+        rb = openapi_spec["paths"][route_path]["post"]["requestBody"]
+        assert rb["content"]["application/json"]["schema"] == tool_schemas[tool_name]
+
+    for wing_yr in (1550, 1599, 1700, 2200):
+        jd_wing = float(sum(erfa.cal2jd(wing_yr, 6, 1)))
+        rep_wing = impossible_astrology.scan_multi_century_rare_phenomena(jd_wing, jd_wing + 0.25, bodies=("mercury", "venus"))
+        assert rep_wing.ephemeris_source == "compact-de440-numerical"
+
     war_rep = impossible_astrology.scan_multi_century_rare_phenomena(2461041.5, 2461081.5, bodies=("mercury", "venus"))
     assert war_rep.ephemeris_source == "compact-de440-numerical"
     jan_events = [ev for ev in war_rep.graha_yuddha_events if 2461068.0 <= ev["jd_tt"] <= 2461072.0]

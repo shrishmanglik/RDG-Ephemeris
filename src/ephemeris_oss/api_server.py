@@ -15,6 +15,7 @@ Usage::
 from __future__ import annotations
 
 import argparse
+import copy
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import sys
@@ -27,6 +28,21 @@ from .mcp_server import MCP_TOOLS, execute_mcp_tool
 
 def build_openapi_spec(server_url: str = "http://127.0.0.1:8765") -> dict[str, Any]:
     """Generate the OpenAPI 3.1.0 specification for the RDG-Ephemeris REST API."""
+    tool_schemas: dict[str, Mapping[str, Any]] = {
+        str(t["name"]): t.get("inputSchema", {"type": "object"})
+        for t in MCP_TOOLS
+    }
+
+    def _request_body(tool_name: str) -> dict[str, Any]:
+        return {
+            "required": True,
+            "content": {
+                "application/json": {
+                    "schema": copy.deepcopy(dict(tool_schemas.get(tool_name, {"type": "object"}))),
+                }
+            },
+        }
+
     return {
         "openapi": "3.1.0",
         "info": {
@@ -66,48 +82,56 @@ def build_openapi_spec(server_url: str = "http://127.0.0.1:8765") -> dict[str, A
                 "post": {
                     "summary": "Compute planetary positions (3102 BCE to 3000 CE)",
                     "operationId": "computePlanetaryPositions",
+                    "requestBody": _request_body("compute_planetary_positions"),
                 }
             },
             "/v1/kundali": {
                 "post": {
                     "summary": "Compute complete Vedic Kundali (D1-D60, Dashas, Shadbala, Ashtakavarga, Yogas)",
                     "operationId": "computeCompleteKundali",
+                    "requestBody": _request_body("compute_complete_kundali"),
                 }
             },
             "/v1/panchanga": {
                 "post": {
                     "summary": "Compute regional sunrise-anchored Drik Panchanga",
                     "operationId": "computePanchanga",
+                    "requestBody": _request_body("compute_panchanga"),
                 }
             },
             "/v1/rectify": {
                 "post": {
                     "summary": "Solve sub-second D1-D60 varga cusp margins and Kunda/Pranapada/Tattwa birth-time rectification",
                     "operationId": "rectifyBirthTime",
+                    "requestBody": _request_body("rectify_birth_time_and_varga_cusps"),
                 }
             },
             "/v1/phenomena": {
                 "post": {
                     "summary": "Scan multi-century Graha Yuddha (planetary wars), retrograde stations, and combustion",
                     "operationId": "scanPhenomena",
+                    "requestBody": _request_body("scan_planetary_wars_and_stations"),
                 }
             },
             "/v1/siddhanta-diff": {
                 "post": {
                     "summary": "Compare classical Surya Siddhanta epicyclic positions against modern NASA JPL DE440",
                     "operationId": "compareSiddhanta",
+                    "requestBody": _request_body("compare_surya_siddhanta_vs_de440"),
                 }
             },
             "/v1/fact-sheet": {
                 "post": {
                     "summary": "Compile compact (<3 KB) SHA-256-sealed AI astrological fact sheet",
                     "operationId": "compileFactSheet",
+                    "requestBody": _request_body("compile_verified_ai_fact_sheet"),
                 }
             },
             "/v1/verify-text": {
                 "post": {
                     "summary": "Audit AI-generated astrological text for hallucinated placements",
                     "operationId": "verifyText",
+                    "requestBody": _request_body("verify_ai_astrology_text"),
                 }
             },
         },

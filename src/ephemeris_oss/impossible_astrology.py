@@ -39,6 +39,7 @@ from ._api import Engine
 from ._version import __version__
 from .adapter import CALC_RISE, EphemerisAdapter, VEDIC_NINE_GRAHAS
 from .compact_kernel import COMPACT_EARLY_START_JD, COMPACT_LATE_END_JD
+from .engine.civil_time import CalendarSystem, calendar_date
 from .engine.earth_orientation import estimate_delta_t
 from .engine.phenomena import (
     TARAGRAHAS,
@@ -55,7 +56,7 @@ _CACHED_COMPACT_PROVIDER: Any = None
 def _get_cached_compact_provider() -> Any:
     global _CACHED_COMPACT_PROVIDER
     if _CACHED_COMPACT_PROVIDER is None:
-        _CACHED_COMPACT_PROVIDER = Engine.load(kernels="compact")._provider
+        _CACHED_COMPACT_PROVIDER = Engine.load(kernels="compact-extended")._provider
     return _CACHED_COMPACT_PROVIDER
 from .engine.receipt import canonical_hash
 from .jyotish.dasha import jd_to_iso_utc
@@ -722,6 +723,14 @@ def scan_multi_century_rare_phenomena(
         except Exception:
             compact_provider = None
 
+    start_year = int(
+        calendar_date(float(start_jd_tt) - 2.0, calendar=CalendarSystem.PROLEPTIC_GREGORIAN)[0]
+    )
+    end_year = int(
+        calendar_date(float(end_jd_tt) + 2.0, calendar=CalendarSystem.PROLEPTIC_GREGORIAN)[0]
+    )
+    use_long_term_mean_frame = start_year < 1600 or end_year > 2400
+
     used_numerical = False
     used_analytical = False
 
@@ -734,46 +743,86 @@ def scan_multi_century_rare_phenomena(
             return "compact-de440-numerical"
         return "analytical-keplerian-fallback"
 
-    def _planet_apparent_at(body_key: str, jd_val: float) -> dict[str, float]:
+    def _evaluate_bodies_at(req_bodies: Sequence[str], jd_val: float) -> dict[str, dict[str, float]]:
         nonlocal used_numerical, used_analytical
-        key = body_key.strip().lower()
         t_val = float(jd_val)
+        keys = tuple(dict.fromkeys(b.strip().lower() for b in req_bodies))
         if (
             compact_provider is not None
             and COMPACT_EARLY_START_JD <= t_val <= COMPACT_LATE_END_JD
         ):
             used_numerical = True
-            positions = compact_provider.planet_positions_tt(jd_tt=t_val, bodies=(key,))["positions"]
-            entry = None
-            for k, v in positions.items():
-                if k.strip().lower() == key:
-                    entry = v
-                    break
-            if entry is not None:
-                dist_km: float | None = None
-                if "distance_km" in entry:
-                    dist_km = float(entry["distance_km"])
+            tt_pair = (2451545.0, t_val - 2451545.0)
+            epoch_year = int(
+                calendar_date(t_val, calendar=CalendarSystem.PROLEPTIC_GREGORIAN)[0]
+            )
+            if use_long_term_mean_frame or epoch_year < 1600 or epoch_year > 2400:
+                tdb_offset = float(erfa.dtdb(*tt_pair, 0.0, 0.0, 0.0, 0.0))
+                jd_tdb_val = float(sum(erfa.tttdb(*tt_pair, tdb_offset)))
+                positions = compact_provider.planet_positions_tt(
+                    jd_tt=t_val,
+                    bodies=keys,
+                    jd_tdb=jd_tdb_val,
+                    mean_equinox=True,
+                )["positions"]
+            else:
+                positions = compact_provider.planet_positions_tt(
+                    jd_tt=t_val,
+                    bodies=keys,
+                )["positions"]
+            lower_map = {k.strip().lower(): v for k, v in positions.items()}
+            out: dict[str, dict[str, float]] = {}
+            for key in keys:
+                entry = lower_map.get(key)
+                if entry is not None:
+                    dist_km: float | None = None
+                    if "distance_km" in entry:
+                        dist_km = float(entry["distance_km"])
+                    else:
+                        try:
+                            st = compact_provider.geocentric_state_at_tdb(
+                                body=key,
+                                tdb=tt_pair,
+                                kernel_year=2000,
+                            )
+                            dist_km = float(math.hypot(*st.position_km))
+                        except Exception:
+                            dist_km = None
+                    if dist_km is None:
+                        dist_km = float(_builtin_planet_apparent(key, t_val)["distance_km"])
+                    out[key] = {
+                        "longitude_deg": float(entry["longitude_deg"]) % 360.0,
+                        "latitude_deg": float(entry.get("latitude_deg", 0.0)),
+                        "distance_km": dist_km,
+                    }
                 else:
-                    try:
-                        pos_vec, _ = compact_provider.geocentric_state_at_tdb(key, t_val)
-                        dist_km = float(math.hypot(pos_vec[0], pos_vec[1], pos_vec[2]))
-                    except Exception:
-                        dist_km = None
-                if dist_km is None:
-                    dist_km = float(_builtin_planet_apparent(key, t_val)["distance_km"])
-                return {
-                    "longitude_deg": float(entry["longitude_deg"]) % 360.0,
-                    "latitude_deg": float(entry.get("latitude_deg", 0.0)),
-                    "distance_km": dist_km,
-                }
+                    used_analytical = True
+                    raw = dict(_builtin_planet_apparent(key, t_val))
+                    if use_long_term_mean_frame and not is_monkeypatched:
+                        dpsi_rad, _ = erfa.nut06a(2451545.0, t_val - 2451545.0)
+                        raw["longitude_deg"] = (float(raw["longitude_deg"]) - math.degrees(float(dpsi_rad))) % 360.0
+                    out[key] = raw
+            return out
+
         used_analytical = True
-        return _builtin_planet_apparent(key, t_val)
+        out_analytical: dict[str, dict[str, float]] = {}
+        dpsi_deg = 0.0
+        if use_long_term_mean_frame and not is_monkeypatched:
+            dpsi_rad, _ = erfa.nut06a(2451545.0, t_val - 2451545.0)
+            dpsi_deg = math.degrees(float(dpsi_rad))
+        for key in keys:
+            raw = dict(_builtin_planet_apparent(key, t_val))
+            if dpsi_deg != 0.0:
+                raw["longitude_deg"] = (float(raw["longitude_deg"]) - dpsi_deg) % 360.0
+            out_analytical[key] = raw
+        return out_analytical
+
+    def _planet_apparent_at(body_key: str, jd_val: float) -> dict[str, float]:
+        key = body_key.strip().lower()
+        return _evaluate_bodies_at((key,), jd_val)[key]
 
     def _hybrid_position_provider(jd_val: float, req_bodies: Sequence[str]) -> dict[str, dict[str, float]]:
-        return {
-            b.strip().lower(): _planet_apparent_at(b, float(jd_val))
-            for b in req_bodies
-        }
+        return _evaluate_bodies_at(req_bodies, float(jd_val))
 
     # Scan across [start_jd_tt, end_jd_tt] for contiguous Graha Yuddha encounters per body pair
     span_days = float(end_jd_tt) - float(start_jd_tt)
@@ -782,10 +831,7 @@ def scan_multi_century_rare_phenomena(
     completed_encounters: list[tuple[tuple[str, str], list[tuple[float, Any]]]] = []
     t_cur = float(start_jd_tt)
     while t_cur <= float(end_jd_tt) + 1.0e-9:
-        snap_positions = {
-            b: _planet_apparent_at(b, t_cur)
-            for b in normalized_bodies
-        }
+        snap_positions = _evaluate_bodies_at(normalized_bodies, t_cur)
         instant_wars = evaluate_graha_yuddha(
             snap_positions,
             max_longitude_separation_deg=float(max_war_separation_deg),
