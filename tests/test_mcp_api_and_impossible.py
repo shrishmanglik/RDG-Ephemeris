@@ -630,3 +630,17 @@ def test_round5_release_reconciliation_contracts(monkeypatch) -> None:  # type: 
     rep_w = impossible_astrology.scan_multi_century_rare_phenomena(start_w, start_w + 3.0, bodies=("mercury", "venus"))
     assert len(rep_w.graha_yuddha_events) == 1
     assert abs(rep_w.graha_yuddha_events[0]["jd_tt"] - center_w) * 86400.0 < 0.5
+
+    # 9. Short 0.1-day interval samples the clamped endpoint when separation enters war threshold near end
+    def _mock_endpoint_pos(body: str, jd: float) -> dict[str, float]:
+        frac = (jd - start_w) / 0.1
+        sep = 1.05 - 0.10 * frac
+        return {
+            "longitude_deg": 30.0 + (sep if body == "venus" else 0.0),
+            "latitude_deg": 0.1 if body == "venus" else 0.0,
+        }
+
+    monkeypatch.setattr(impossible_astrology, "_builtin_planet_apparent", _mock_endpoint_pos)
+    rep_short = impossible_astrology.scan_multi_century_rare_phenomena(start_w, start_w + 0.1, bodies=("mercury", "venus"))
+    assert len(rep_short.graha_yuddha_events) == 1
+    assert abs(rep_short.graha_yuddha_events[0]["jd_tt"] - (start_w + 0.1)) < 1.0e-5

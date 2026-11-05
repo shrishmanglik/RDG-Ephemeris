@@ -826,11 +826,12 @@ def scan_multi_century_rare_phenomena(
 
     # Scan across [start_jd_tt, end_jd_tt] for contiguous Graha Yuddha encounters per body pair
     span_days = float(end_jd_tt) - float(start_jd_tt)
-    step_days = min(1.0, max(0.25, span_days / 365.0))
+    step_days = min(1.0, max(0.25, span_days / 365.0), span_days)
     active_encounters: dict[tuple[str, str], list[tuple[float, Any]]] = {}
     completed_encounters: list[tuple[tuple[str, str], list[tuple[float, Any]]]] = []
     t_cur = float(start_jd_tt)
-    while t_cur <= float(end_jd_tt) + 1.0e-9:
+    end_val = float(end_jd_tt)
+    while True:
         snap_positions = _evaluate_bodies_at(normalized_bodies, t_cur)
         instant_wars = evaluate_graha_yuddha(
             snap_positions,
@@ -844,7 +845,9 @@ def scan_multi_century_rare_phenomena(
         for pair in list(active_encounters.keys()):
             if pair not in present_pairs:
                 completed_encounters.append((pair, active_encounters.pop(pair)))
-        t_cur += step_days
+        if t_cur >= end_val:
+            break
+        t_cur = min(end_val, t_cur + step_days)
 
     for pair, samples in list(active_encounters.items()):
         completed_encounters.append((pair, samples))
