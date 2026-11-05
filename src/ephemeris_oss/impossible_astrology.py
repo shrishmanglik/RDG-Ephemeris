@@ -35,8 +35,10 @@ import warnings
 
 import erfa
 
+from ._api import Engine
 from ._version import __version__
 from .adapter import CALC_RISE, EphemerisAdapter, VEDIC_NINE_GRAHAS
+from .compact_kernel import COMPACT_EARLY_START_JD, COMPACT_LATE_END_JD
 from .engine.earth_orientation import estimate_delta_t
 from .engine.phenomena import (
     TARAGRAHAS,
@@ -45,6 +47,16 @@ from .engine.phenomena import (
     find_combustion_windows,
     find_retrograde_stations,
 )
+
+_ORIG_BUILTIN_PLANET_APPARENT = _builtin_planet_apparent
+_CACHED_COMPACT_PROVIDER: Any = None
+
+
+def _get_cached_compact_provider() -> Any:
+    global _CACHED_COMPACT_PROVIDER
+    if _CACHED_COMPACT_PROVIDER is None:
+        _CACHED_COMPACT_PROVIDER = Engine.load(kernels="compact")._provider
+    return _CACHED_COMPACT_PROVIDER
 from .engine.receipt import canonical_hash
 from .jyotish.dasha import jd_to_iso_utc
 from .jyotish.nakshatra import normalize_degrees
@@ -185,6 +197,7 @@ class MultiCenturyPhenomenaReport:
     combustion_windows: tuple[Mapping[str, Any], ...]
     receipt: Mapping[str, Any]
     receipt_sha256: str
+    ephemeris_source: str = "compact-de440-numerical"
 
 
 @dataclass(frozen=True)
@@ -701,6 +714,67 @@ def scan_multi_century_rare_phenomena(
     if not normalized_bodies:
         normalized_bodies = TARAGRAHAS
 
+    is_monkeypatched = _builtin_planet_apparent is not _ORIG_BUILTIN_PLANET_APPARENT
+    compact_provider = None
+    if not is_monkeypatched:
+        try:
+            compact_provider = _get_cached_compact_provider()
+        except Exception:
+            compact_provider = None
+
+    used_numerical = False
+    used_analytical = False
+
+    def _epoch_source(jd_val: float) -> str:
+        t_val = float(jd_val)
+        if (
+            compact_provider is not None
+            and COMPACT_EARLY_START_JD <= t_val <= COMPACT_LATE_END_JD
+        ):
+            return "compact-de440-numerical"
+        return "analytical-keplerian-fallback"
+
+    def _planet_apparent_at(body_key: str, jd_val: float) -> dict[str, float]:
+        nonlocal used_numerical, used_analytical
+        key = body_key.strip().lower()
+        t_val = float(jd_val)
+        if (
+            compact_provider is not None
+            and COMPACT_EARLY_START_JD <= t_val <= COMPACT_LATE_END_JD
+        ):
+            used_numerical = True
+            positions = compact_provider.planet_positions_tt(jd_tt=t_val, bodies=(key,))["positions"]
+            entry = None
+            for k, v in positions.items():
+                if k.strip().lower() == key:
+                    entry = v
+                    break
+            if entry is not None:
+                dist_km: float | None = None
+                if "distance_km" in entry:
+                    dist_km = float(entry["distance_km"])
+                else:
+                    try:
+                        pos_vec, _ = compact_provider.geocentric_state_at_tdb(key, t_val)
+                        dist_km = float(math.hypot(pos_vec[0], pos_vec[1], pos_vec[2]))
+                    except Exception:
+                        dist_km = None
+                if dist_km is None:
+                    dist_km = float(_builtin_planet_apparent(key, t_val)["distance_km"])
+                return {
+                    "longitude_deg": float(entry["longitude_deg"]) % 360.0,
+                    "latitude_deg": float(entry.get("latitude_deg", 0.0)),
+                    "distance_km": dist_km,
+                }
+        used_analytical = True
+        return _builtin_planet_apparent(key, t_val)
+
+    def _hybrid_position_provider(jd_val: float, req_bodies: Sequence[str]) -> dict[str, dict[str, float]]:
+        return {
+            b.strip().lower(): _planet_apparent_at(b, float(jd_val))
+            for b in req_bodies
+        }
+
     # Scan across [start_jd_tt, end_jd_tt] for contiguous Graha Yuddha encounters per body pair
     span_days = float(end_jd_tt) - float(start_jd_tt)
     step_days = min(1.0, max(0.25, span_days / 365.0))
@@ -709,7 +783,7 @@ def scan_multi_century_rare_phenomena(
     t_cur = float(start_jd_tt)
     while t_cur <= float(end_jd_tt) + 1.0e-9:
         snap_positions = {
-            b: _builtin_planet_apparent(b, t_cur)
+            b: _planet_apparent_at(b, t_cur)
             for b in normalized_bodies
         }
         instant_wars = evaluate_graha_yuddha(
@@ -736,19 +810,52 @@ def scan_multi_century_rare_phenomena(
         best_t, best_w = min(samples, key=lambda item: item[1].longitude_separation_deg)
         body_a_key = pair[0].strip().lower()
         body_b_key = pair[1].strip().lower()
-        left = max(float(start_jd_tt), best_t - step_days)
-        right = min(float(end_jd_tt), best_t + step_days)
+        first_t = min(t for t, _ in samples)
+        last_t = max(t for t, _ in samples)
+        left = max(float(start_jd_tt), min(best_t - step_days, first_t - step_days))
+        right = min(float(end_jd_tt), max(best_t + step_days, last_t + step_days))
         if right <= left + 1.0e-9:
             return best_t, best_w
 
-        def _sep_at(jd: float) -> float:
-            pa = _builtin_planet_apparent(body_a_key, jd)
-            pb = _builtin_planet_apparent(body_b_key, jd)
-            diff = (float(pa["longitude_deg"]) - float(pb["longitude_deg"]) + 180.0) % 360.0 - 180.0
-            return abs(diff)
+        def _signed_diff_at(jd: float) -> float:
+            pa = _planet_apparent_at(body_a_key, jd)
+            pb = _planet_apparent_at(body_b_key, jd)
+            return (float(pa["longitude_deg"]) - float(pb["longitude_deg"]) + 180.0) % 360.0 - 180.0
 
+        def _sep_at(jd: float) -> float:
+            return abs(_signed_diff_at(jd))
+
+        candidates: list[tuple[float, float]] = [(best_t, _sep_at(best_t))]
+
+        # 1. Exact conjunction root via bisection if signed longitude difference changes sign
+        grid_pts = sorted({left, right, best_t, *(t for t, _ in samples)})
+        grid_vals = [(g, _signed_diff_at(g)) for g in grid_pts]
+        for idx in range(len(grid_vals) - 1):
+            g0, v0 = grid_vals[idx]
+            g1, v1 = grid_vals[idx + 1]
+            if v0 == 0.0:
+                candidates.append((g0, 0.0))
+            elif v1 == 0.0:
+                candidates.append((g1, 0.0))
+            elif (v0 < 0.0 < v1 or v1 < 0.0 < v0) and abs(v1 - v0) < 90.0:
+                lo_b, hi_b = g0, g1
+                lo_v = v0
+                for _ in range(48):
+                    mid_b = 0.5 * (lo_b + hi_b)
+                    if hi_b - lo_b <= 1.0e-11:
+                        break
+                    mid_v = _signed_diff_at(mid_b)
+                    if lo_v * mid_v <= 0.0:
+                        hi_b = mid_b
+                    else:
+                        lo_b, lo_v = mid_b, mid_v
+                root_jd = 0.5 * (lo_b + hi_b)
+                candidates.append((root_jd, _sep_at(root_jd)))
+
+        # 2. Golden Section Search on [max(left, best_t - step_days), min(right, best_t + step_days)]
         inv_phi = (math.sqrt(5.0) - 1.0) / 2.0
-        a, b = left, right
+        a = max(float(start_jd_tt), best_t - step_days)
+        b = min(float(end_jd_tt), best_t + step_days)
         c = b - inv_phi * (b - a)
         d = a + inv_phi * (b - a)
         fc = _sep_at(c)
@@ -765,16 +872,16 @@ def scan_multi_century_rare_phenomena(
                 d = a + inv_phi * (b - a)
                 fd = _sep_at(d)
         cand_jd = 0.5 * (a + b)
-        cand_sep = _sep_at(cand_jd)
-        best_sep = _sep_at(best_t)
-        refined_jd = cand_jd if cand_sep <= best_sep else best_t
+        candidates.append((cand_jd, _sep_at(cand_jd)))
+
+        refined_jd, min_sep = min(candidates, key=lambda item: item[1])
         refined_snap = {
-            body_a_key: _builtin_planet_apparent(body_a_key, refined_jd),
-            body_b_key: _builtin_planet_apparent(body_b_key, refined_jd),
+            body_a_key: _planet_apparent_at(body_a_key, refined_jd),
+            body_b_key: _planet_apparent_at(body_b_key, refined_jd),
         }
         refined_wars = evaluate_graha_yuddha(
             refined_snap,
-            max_longitude_separation_deg=max(float(max_war_separation_deg), cand_sep + 1.0e-3),
+            max_longitude_separation_deg=max(float(max_war_separation_deg), min_sep + 1.0e-3),
         )
         for rw in refined_wars:
             if (rw.body_a, rw.body_b) == pair:
@@ -801,6 +908,7 @@ def scan_multi_century_rare_phenomena(
                 "latitude_separation_deg": round(w.latitude_separation_deg, 6),
                 "northern_body": w.northern_body,
                 "brighter_body": w.brighter_body,
+                "ephemeris_source": _epoch_source(war_jd),
                 "receipt_sha256": w.receipt_sha256,
             }
         )
@@ -808,11 +916,13 @@ def scan_multi_century_rare_phenomena(
 
     stations_list: list[Mapping[str, Any]] = []
     combustion_list: list[Mapping[str, Any]] = []
+    provider_arg = None if is_monkeypatched else _hybrid_position_provider
     for body in normalized_bodies:
         st_events = find_retrograde_stations(
             body,
             float(start_jd_tt),
             float(end_jd_tt),
+            position_provider=provider_arg,
             ayanamsa=ayanamsa,
             compute_shadow_periods=False,
         )
@@ -826,6 +936,7 @@ def scan_multi_century_rare_phenomena(
                     "longitude_deg": round(st.longitude_deg, 6),
                     "sidereal_longitude_deg": round(st.sidereal_longitude_deg, 6),
                     "rasi": varga_sign(st.sidereal_longitude_deg, "D1").sign_name,
+                    "ephemeris_source": _epoch_source(st.jd_tt),
                     "receipt_sha256": st.receipt_sha256,
                 }
             )
@@ -833,6 +944,7 @@ def scan_multi_century_rare_phenomena(
             body,
             float(start_jd_tt),
             float(end_jd_tt),
+            position_provider=provider_arg,
         )
         for cb in cb_windows:
             combustion_list.append(
@@ -846,11 +958,19 @@ def scan_multi_century_rare_phenomena(
                     "min_elongation_deg": round(cb.min_separation_deg, 6),
                     "has_cazimi": cb.cazimi_occurred,
                     "duration_days": round(cb.duration_days, 4),
+                    "ephemeris_source": _epoch_source(cb.min_separation_jd_tt),
                     "receipt_sha256": cb.receipt_sha256,
                 }
             )
     stations_list.sort(key=lambda item: float(item["jd_tt"]))
     combustion_list.sort(key=lambda item: float(item["ingress_jd_tt"]))
+
+    if used_numerical and used_analytical:
+        ephemeris_source = "hybrid-compact-de440-and-analytical-fallback"
+    elif used_numerical:
+        ephemeris_source = "compact-de440-numerical"
+    else:
+        ephemeris_source = "analytical-keplerian-fallback"
 
     receipt = {
         "module": "ephemeris_oss.impossible_astrology.rare_phenomena",
@@ -858,6 +978,7 @@ def scan_multi_century_rare_phenomena(
         "start_jd_tt": round(float(start_jd_tt), 8),
         "end_jd_tt": round(float(end_jd_tt), 8),
         "ayanamsa": ayanamsa,
+        "ephemeris_source": ephemeris_source,
         "max_war_separation_deg": round(float(max_war_separation_deg), 6),
         "bodies": normalized_bodies,
         "graha_yuddha_count": len(war_dicts),
@@ -882,6 +1003,7 @@ def scan_multi_century_rare_phenomena(
         combustion_windows=tuple(combustion_list),
         receipt=receipt,
         receipt_sha256=canonical_hash(receipt),
+        ephemeris_source=ephemeris_source,
     )
 
 

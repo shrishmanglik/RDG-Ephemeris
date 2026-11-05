@@ -564,10 +564,12 @@ def test_round5_release_reconciliation_contracts(monkeypatch) -> None:  # type: 
     assert len(ctrl_h.horizon_events) == 3
     assert len(cand_h.horizon_events) == 3
 
-    # 6. Contiguous war deduplication and TT-to-UTC conversion
+    # 6. Contiguous war deduplication, numerical DE440 provider binding, and TT-to-UTC conversion
     war_rep = impossible_astrology.scan_multi_century_rare_phenomena(2461041.5, 2461081.5, bodies=("mercury", "venus"))
+    assert war_rep.ephemeris_source == "compact-de440-numerical"
     jan_events = [ev for ev in war_rep.graha_yuddha_events if 2461068.0 <= ev["jd_tt"] <= 2461072.0]
     assert len(jan_events) == 1
+    assert jan_events[0]["ephemeris_source"] == "compact-de440-numerical"
     tai = erfa.tttai(2451545.0, war_rep.start_jd_tt - 2451545.0)
     expected_utc = sum(erfa.taiutc(*tai))
     parsed_dt = datetime.fromisoformat(war_rep.start_iso_utc.replace("Z", "+00:00"))
