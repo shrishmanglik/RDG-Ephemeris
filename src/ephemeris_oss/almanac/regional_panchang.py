@@ -25,7 +25,7 @@ import math
 from typing import Any, Mapping
 
 from .._version import __version__
-from ..adapter import AnalyticalEphemerisProvider, EphemerisAdapter, FLG_SIDEREAL
+from ..adapter import AnalyticalEphemerisProvider, CALC_RISE, EphemerisAdapter, FLG_SIDEREAL
 from ..engine.eclipses import (
     LunarEclipse,
     SolarEclipse,
@@ -35,13 +35,16 @@ from ..engine.eclipses import (
     solar_eclipse_local_circumstances,
 )
 from ..engine.receipt import canonical_hash
-from ..jyotish.nakshatra import NAKSHATRA_NAMES, RASI_NAMES
+from ..jyotish.nakshatra import NAKSHATRA_NAMES, RASI_NAMES, nakshatra_position
 from ..jyotish.panchanga import (
     RITU_CATALOG,
     SAMVATSARA_NAMES,
     compute_ayana_and_ritu,
+    compute_karana,
     compute_panchanga,
     compute_samvatsara,
+    compute_tithi,
+    compute_yoga,
 )
 
 LUNAR_MASA_NAMES: tuple[str, ...] = (
@@ -196,13 +199,20 @@ class RegionalPanchangReport:
     tropical_ritu: str
     eclipse_window: EclipseWindowSummary
     receipt_sha256: str
+    sunrise_jd_ut: float | None = None
+    active_sunrise_jd_ut: float | None = None
+    anchoring_mode: str = "instantaneous"
+    instantaneous_panchanga: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        payload: dict[str, Any] = {
             "jd_ut": self.jd_ut,
             "ce_year": self.ce_year,
             "latitude_deg": self.latitude_deg,
             "longitude_deg": self.longitude_deg,
+            "anchoring_mode": self.anchoring_mode,
+            "sunrise_jd_ut": self.sunrise_jd_ut,
+            "active_sunrise_jd_ut": self.active_sunrise_jd_ut,
             "sun_sidereal_lon_deg": self.sun_sidereal_lon_deg,
             "moon_sidereal_lon_deg": self.moon_sidereal_lon_deg,
             "sun_tropical_lon_deg": self.sun_tropical_lon_deg,
@@ -255,6 +265,9 @@ class RegionalPanchangReport:
             },
             "receipt_sha256": self.receipt_sha256,
         }
+        if self.instantaneous_panchanga is not None:
+            payload["instantaneous_panchanga"] = self.instantaneous_panchanga
+        return payload
 
 
 def _find_amavasya_near(
@@ -436,6 +449,47 @@ def compute_eclipse_window_summary(
     )
 
 
+def _resolve_observer_daily_sunrise_jd(
+    jd_ut: float,
+    latitude_deg: float,
+    longitude_deg: float,
+    *,
+    adapter: EphemerisAdapter | None = None,
+) -> tuple[float | None, float | None]:
+    """Resolve ``(civil_sunrise_jd_ut, active_sunrise_jd_ut)`` for an observer.
+
+    - ``civil_sunrise_jd_ut`` is the local sunrise of the observer's current local mean solar day.
+    - If ``jd_ut >= civil_sunrise_jd_ut``, the active Vedic solar day (Savana day / Udaya Tithi)
+      is anchored at ``civil_sunrise_jd_ut``.
+    - If ``jd_ut < civil_sunrise_jd_ut`` (before today's local sunrise), the active Vedic solar
+      day is anchored at the preceding day's local sunrise.
+    Returns ``(None, None)`` if the Sun is circumpolar at the observer's latitude.
+    """
+    provider: Any = adapter if adapter is not None else AnalyticalEphemerisProvider()
+    body_name = "sun" if adapter is not None else "Sun"
+    local_solar_day_floor = math.floor(float(jd_ut) + float(longitude_deg) / 360.0 + 0.5) - 0.5
+    local_midnight_ut = local_solar_day_floor - (float(longitude_deg) / 360.0)
+    try:
+        _, (civil_sr_raw,) = provider.rise_trans(
+            local_midnight_ut,
+            body_name,
+            CALC_RISE,
+            (float(longitude_deg), float(latitude_deg), 0.0),
+        )
+        civil_sr = float(civil_sr_raw)
+        if float(jd_ut) >= civil_sr:
+            return civil_sr, civil_sr
+        _, (prev_sr_raw,) = provider.rise_trans(
+            local_midnight_ut - 1.0,
+            body_name,
+            CALC_RISE,
+            (float(longitude_deg), float(latitude_deg), 0.0),
+        )
+        return civil_sr, float(prev_sr_raw)
+    except Exception:
+        return None, None
+
+
 def compute_regional_panchang(
     jd_ut: float,
     latitude_deg: float = 28.6139,
@@ -443,8 +497,16 @@ def compute_regional_panchang(
     *,
     adapter: EphemerisAdapter | None = None,
     eclipse_window_days: float = 16.0,
+    anchor_to_sunrise: bool = False,
+    sunrise_jd_ut: float | None = None,
 ) -> RegionalPanchangReport:
-    """Compute a complete regional Indian almanac report with SHA-256 receipt."""
+    """Compute a complete regional Indian almanac report with SHA-256 receipt.
+
+    When ``anchor_to_sunrise=True``, resolves the observer's daily sunrise (accounting for
+    before-sunrise instants belonging to the preceding Vedic solar day) and evaluates the daily
+    five-limb Panchanga (Udaya Tithi, Nakshatra, Yoga, Karana, and sunrise-anchored Vara) at
+    that active sunrise while preserving a separate ``instantaneous_panchanga`` snapshot at ``jd_ut``.
+    """
     jd_val = float(jd_ut)
     lat = float(latitude_deg)
     lon = float(longitude_deg)
@@ -455,27 +517,71 @@ def compute_regional_panchang(
     if not math.isfinite(lon) or not -180.0 <= lon <= 180.0:
         raise ValueError("longitude_deg must be finite and within [-180, 180]")
 
-    ce_year, _m, _d, _h = EphemerisAdapter.revjul(jd_val)
-    if adapter is not None:
-        s_sid = adapter.calc_ut(jd_val, "sun", sidereal=True).longitude_deg
-        m_sid = adapter.calc_ut(jd_val, "moon", sidereal=True).longitude_deg
-        s_trop = adapter.calc_ut(jd_val, "sun", sidereal=False).longitude_deg
-    else:
-        analytical = AnalyticalEphemerisProvider()
-        s_res_sid, _ = analytical.calc_ut(jd_val, "Sun", flags=FLG_SIDEREAL)
-        m_res_sid, _ = analytical.calc_ut(jd_val, "Moon", flags=FLG_SIDEREAL)
-        s_res_trop, _ = analytical.calc_ut(jd_val, "Sun", flags=0)
-        s_sid = float(s_res_sid[0])
-        m_sid = float(m_res_sid[0])
-        s_trop = float(s_res_trop[0])
+    analytical = AnalyticalEphemerisProvider() if adapter is None else None
 
+    def _eval_sun_moon_at(target_jd: float) -> tuple[float, float, float]:
+        if adapter is not None:
+            return (
+                adapter.calc_ut(target_jd, "sun", sidereal=True).longitude_deg,
+                adapter.calc_ut(target_jd, "moon", sidereal=True).longitude_deg,
+                adapter.calc_ut(target_jd, "sun", sidereal=False).longitude_deg,
+            )
+        assert analytical is not None
+        s_res_sid, _ = analytical.calc_ut(target_jd, "Sun", flags=FLG_SIDEREAL)
+        m_res_sid, _ = analytical.calc_ut(target_jd, "Moon", flags=FLG_SIDEREAL)
+        s_res_trop, _ = analytical.calc_ut(target_jd, "Sun", flags=0)
+        return float(s_res_sid[0]), float(m_res_sid[0]), float(s_res_trop[0])
+
+    if sunrise_jd_ut is not None:
+        civil_sunrise_jd: float | None = float(sunrise_jd_ut)
+        active_sunrise_jd: float | None = civil_sunrise_jd if jd_val >= civil_sunrise_jd else (civil_sunrise_jd - 1.0)
+    else:
+        civil_sunrise_jd, active_sunrise_jd = _resolve_observer_daily_sunrise_jd(
+            jd_val,
+            lat,
+            lon,
+            adapter=adapter,
+        )
+
+    s_sid_inst, m_sid_inst, s_trop_inst = _eval_sun_moon_at(jd_val)
+    if anchor_to_sunrise and active_sunrise_jd is not None:
+        eval_jd = active_sunrise_jd
+        s_sid, m_sid, s_trop = _eval_sun_moon_at(eval_jd)
+        anchoring_mode = "sunrise"
+    else:
+        eval_jd = jd_val
+        s_sid, m_sid, s_trop = s_sid_inst, m_sid_inst, s_trop_inst
+        anchoring_mode = "instantaneous"
+
+    ce_year, _m, _d, _h = EphemerisAdapter.revjul(eval_jd)
     panch = compute_panchanga(
         sun_lon_deg=s_sid,
         moon_lon_deg=m_sid,
         jd_ut=jd_val,
+        sunrise_jd_ut=civil_sunrise_jd,
         ce_year=ce_year,
     )
-    lunar_month = compute_lunar_month_amanta_purnimanta(jd_val, adapter=adapter)
+
+    inst_tithi = compute_tithi(s_sid_inst, m_sid_inst)
+    inst_nak = nakshatra_position(m_sid_inst)
+    inst_yoga = compute_yoga(s_sid_inst, m_sid_inst)
+    inst_karana = compute_karana(s_sid_inst, m_sid_inst)
+    instantaneous_snapshot: dict[str, Any] = {
+        "jd_ut": jd_val,
+        "sun_sidereal_lon_deg": s_sid_inst,
+        "moon_sidereal_lon_deg": m_sid_inst,
+        "tithi_number": inst_tithi.number,
+        "tithi_name": inst_tithi.name,
+        "paksha": inst_tithi.paksha,
+        "nakshatra_number": inst_nak.number,
+        "nakshatra_name": inst_nak.name,
+        "yoga_number": inst_yoga.number,
+        "yoga_name": inst_yoga.name,
+        "karana_number": inst_karana.number,
+        "karana_name": inst_karana.name,
+    }
+
+    lunar_month = compute_lunar_month_amanta_purnimanta(eval_jd, adapter=adapter)
     solar_cal = compute_regional_solar_calendar(s_sid, ce_year)
     samvatsara = compute_samvatsara(solar_cal.shaka_samvat_year, calendar="shaka")
     sid_ayana, sid_ritu, _ = compute_ayana_and_ritu(s_sid)
@@ -487,7 +593,7 @@ def compute_regional_panchang(
         window_days=eclipse_window_days,
     )
 
-    receipt_payload = {
+    receipt_payload: dict[str, Any] = {
         "schema": "ephemeris-oss.almanac.regional-panchang.v1",
         "version": __version__,
         "jd_ut": round(jd_val, 8),
@@ -505,6 +611,10 @@ def compute_regional_panchang(
         "sidereal_ritu": sid_ritu,
         "has_eclipse_within_window": eclipse_win.has_eclipse_within_window,
     }
+    if anchor_to_sunrise:
+        receipt_payload["anchoring_mode"] = anchoring_mode
+        receipt_payload["sunrise_jd_ut"] = round(civil_sunrise_jd, 8) if civil_sunrise_jd is not None else None
+        receipt_payload["active_sunrise_jd_ut"] = round(active_sunrise_jd, 8) if active_sunrise_jd is not None else None
     receipt_sha256 = canonical_hash(receipt_payload)
 
     return RegionalPanchangReport(
@@ -535,4 +645,8 @@ def compute_regional_panchang(
         tropical_ritu=trop_ritu,
         eclipse_window=eclipse_win,
         receipt_sha256=receipt_sha256,
+        sunrise_jd_ut=civil_sunrise_jd,
+        active_sunrise_jd_ut=active_sunrise_jd,
+        anchoring_mode=anchoring_mode,
+        instantaneous_panchanga=instantaneous_snapshot,
     )

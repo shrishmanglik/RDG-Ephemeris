@@ -4,7 +4,7 @@
       "ceiling_arcsec": 0.05,
       "core_1800_2100_max_diff_arcsec": 0.018191,
       "epochs_evaluated": 552,
-      "evaluation_duration_ms": 4204.594,
+      "evaluation_duration_ms": 4341.868,
       "evaluation_mode": "LIVE_REPRODUCED_AGAINST_SHA256_PINNED_DE440_BSP",
       "reference_kernel_sha256": "a4ce9bf9b3282becc9f4b2ac3cebe03a2ae7599981aabd7265fd8482fff7c4b5",
       "samples_evaluated": 3864,
@@ -262,12 +262,13 @@
     "bayesian_birth_time_rectification": {
       "best_total_score": 84.5,
       "candidate_count": 61,
-      "latency_ms": 85.952,
+      "latency_ms": 90.727,
       "receipt_sha256": "fbe50ae2887fa49fb4aeb319f7e86ad7a5b1a29c83a1431c5e75b4b4c90613a9",
       "rectified_offset_seconds": -180.0,
       "varga_transitions_detected": 20
     },
     "classical_and_iae_anchors": {
+      "check_classification": "CONVENTION_REGRESSION_ONLY",
       "iae_1956_mean_computed_deg": 23.24556095,
       "iae_1956_mean_delta_arcsec": 0.000435,
       "iae_1956_mean_target_deg": 23.24556083,
@@ -277,12 +278,15 @@
       "iae_j2000_mean_computed_deg": 23.85709232,
       "iae_j2000_mean_delta_arcsec": 9e-05,
       "iae_j2000_mean_target_deg": 23.85709235,
+      "independent_external_verification": false,
       "kali_yuga_3102_bce_mean_moon_deg": 0.0,
       "kali_yuga_3102_bce_mean_sun_deg": 0.0,
+      "source_derivation_boundary": "Transformed 1956 mean (23 deg 14' 44.019\"), 1956 IAU-2006 true (23 deg 15' 00.796\"), and J2000.0 TT mean (23.85709235 deg) constants are derived from engine/conventions.py:97-126 and verified as CONVENTION_REGRESSION_ONLY; excluded from independent external IAE tie claims. Secondary ephemeris documentation (Appendix E) notes IAE mean/true ambiguity under IAU1976/Wahr1980 assumptions and identifies 23 deg 42' 37.0\" with 10 May 1989 rather than 1 January 1989.",
       "unverified_1989_01_01_tabular_candidate": {
         "candidate_target_deg": 23.71027778,
         "computed_1989_mean_deg": 23.70344793,
         "discrepancy_arcsec": 24.5875,
+        "note": "Secondary Appendix E documentation identifies 23 deg 42' 37.0\" with 10 May 1989 rather than 1 January 1989; held pending primary-book page fixture.",
         "status": "HELD_UNVERIFIED_PRIMARY_BOOK_PAGE"
       }
     },
@@ -294,7 +298,7 @@
     "rare_phenomena_scanner": {
       "combustion_window_count": 6,
       "graha_yuddha_count": 11,
-      "latency_ms": 234.725,
+      "latency_ms": 239.02,
       "receipt_sha256": "dc5e82c8bd1324aa1f4d77c2f10d7d3365071d38995f8f8401dfc2a0039ab781",
       "retrograde_station_count": 4
     },
@@ -307,16 +311,16 @@
     },
     "siddhanta_vs_de440_drift_analyzer": {
       "ahargana_days": 1872673.5,
-      "latency_ms": 72.008,
+      "latency_ms": 71.822,
       "max_abs_delta_deg": 176.036154,
       "mean_abs_delta_deg": 41.55173,
       "receipt_sha256": "cef6f9f7196ddf72eb6359c372cfa9b098af5d5b2d77d4c9cb112a536154c83d"
     },
     "subsecond_varga_cusp_solver": {
-      "latency_ms": 1614.718,
+      "latency_ms": 3715.774,
       "minimum_ascendant_cusp_margin_seconds": 15.8172,
       "most_sensitive_varga": "D45",
-      "receipt_sha256": "9f8d01e5c17365d1ec8a05098e9a004c1f37ea0456df13034f1f7721f9bbf141"
+      "receipt_sha256": "66304cdaa7c80ad2c0856f3bed2e5521dee03a9cf0f3eaea58ad79f0d502b37d"
     }
   },
   "license": "Apache-2.0",
@@ -324,7 +328,7 @@
     {
       "ascendant_deg": 321.60009,
       "ayanamsa_deg": 313.357426,
-      "complete_kundali_latency_ms": 23.163,
+      "complete_kundali_latency_ms": 23.565,
       "ephemeris_source": "vondrak2011-analytical",
       "epoch_label": "3102 BCE (Kali Yuga Epoch)",
       "jd_ut": 588465.5,
@@ -335,7 +339,7 @@
     {
       "ascendant_deg": 338.06747,
       "ayanamsa_deg": 2.962144,
-      "complete_kundali_latency_ms": 25.235,
+      "complete_kundali_latency_ms": 25.484,
       "ephemeris_source": "vondrak2011-analytical",
       "epoch_label": "499 CE (Aryabhata Epoch)",
       "jd_ut": 1903396.5,
@@ -346,7 +350,7 @@
     {
       "ascendant_deg": 236.890307,
       "ayanamsa_deg": 18.274548,
-      "complete_kundali_latency_ms": 35.16,
+      "complete_kundali_latency_ms": 37.871,
       "ephemeris_source": "de440-chebyshev",
       "epoch_label": "1600 CE (Early DE440 Chebyshev)",
       "jd_ut": 2305447.5,
@@ -357,7 +361,7 @@
     {
       "ascendant_deg": 232.155896,
       "ayanamsa_deg": 23.703448,
-      "complete_kundali_latency_ms": 34.003,
+      "complete_kundali_latency_ms": 36.42,
       "ephemeris_source": "de440-chebyshev",
       "epoch_label": "1989 CE (IAE Rashtriya Panchang)",
       "jd_ut": 2447527.5,
@@ -368,7 +372,7 @@
     {
       "ascendant_deg": 159.2751,
       "ayanamsa_deg": 24.224033,
-      "complete_kundali_latency_ms": 29.895,
+      "complete_kundali_latency_ms": 31.533,
       "ephemeris_source": "de440-chebyshev",
       "epoch_label": "2026 CE (Modern DE440 Chebyshev)",
       "jd_ut": 2461139.0,
@@ -379,7 +383,7 @@
     {
       "ascendant_deg": 227.557254,
       "ayanamsa_deg": 28.050424,
-      "complete_kundali_latency_ms": 35.063,
+      "complete_kundali_latency_ms": 36.562,
       "ephemeris_source": "de440-chebyshev",
       "epoch_label": "2300 CE (Future DE440 Chebyshev)",
       "jd_ut": 2561117.5,
@@ -390,7 +394,7 @@
     {
       "ascendant_deg": 218.225365,
       "ayanamsa_deg": 37.856338,
-      "complete_kundali_latency_ms": 24.44,
+      "complete_kundali_latency_ms": 25.84,
       "ephemeris_source": "vondrak2011-analytical",
       "epoch_label": "3000 CE (Far Future Vondrak-2011)",
       "jd_ut": 2816787.5,
@@ -401,6 +405,6 @@
   ],
   "package_name": "ephemeris-oss",
   "package_version": "0.2.0.dev1",
-  "receipt_sha256": "9bb28a04ac79eb499b6a1932f327c5ea1bdba4f68df5bd57f58c6a02d5dc2a73",
+  "receipt_sha256": "3bf40c55beddda5cf62802b2bef8e2b36303730ae06b38db1b473b04a2f3e54a",
   "schema": "rdg-ephemeris-sota-evaluation-v1"
 }

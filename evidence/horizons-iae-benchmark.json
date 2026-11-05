@@ -1,16 +1,15 @@
 {
-  "benchmark_timestamp_utc": "2026-11-05T04:45:10.837224+00:00",
+  "benchmark_timestamp_utc": "2026-11-05T05:22:22.759793+00:00",
   "status": "PASS",
-  "evaluation_mode": "LIVE_ENGINE_AGAINST_COMMITTED_HORIZONS_TRUTH_AND_EXTERNAL_IAE_CONSTANTS",
+  "evaluation_mode": "LIVE_ENGINE_AGAINST_COMMITTED_HORIZONS_TRUTH_PLUS_CONVENTION_REGRESSION",
   "standards_evaluated": [
-    "NASA JPL Horizons (DE441/DE440 Astrometric Ephemeris, 300 epochs x 7 physical bodies = 2,100 live evaluations)",
-    "Calendar Reform Committee Report (CSIR India 1955, p. 262) & Indian Astronomical Ephemeris (IAE 1989, p. 556: 1956-03-21 00:00 TT = 23 deg 15' 00.658\" true IAU1980 / 23 deg 14' 44.019\" mean)",
-    "Transported J2000.0 TT (JD 2451545.0) Mean Lahiri Reference (23.85709235 deg)"
+    "NASA JPL Horizons (DE441/DE440 Astrometric Ephemeris, 300 epochs x 7 physical bodies = 2,100 live evaluations; independent reference accuracy comparison)",
+    "Lahiri / Chitrapaksha 1956-03-21.0 TT and J2000.0 TT transformed ERFA/IAU-2006 constants (CONVENTION_REGRESSION_ONLY; derived from engine/conventions.py, excluded from independent external IAE tie claims)"
   ],
-  "governing_policy": "Ties reference accuracy within measured truth floor; never claims to beat",
+  "governing_policy": "Ties independent NASA JPL Horizons reference accuracy within measured truth floor; separates internal convention regression checks from external IAE verification",
   "nasa_jpl_horizons": {
     "evaluation_method": "Live Engine.load(kernels='extended').positions_tt(jd_tt) evaluated at all 300 manifest epochs",
-    "live_evaluation_duration_ms": 988.487,
+    "live_evaluation_duration_ms": 1029.561,
     "total_samples": 2100,
     "overall_median_separation_arcsec": 0.00023342938525766418,
     "overall_p95_separation_arcsec": 0.009849400426968061,
@@ -68,6 +67,9 @@
     "status": "PASS_TIED_WITH_HORIZONS"
   },
   "iae_lahiri_anchor": {
+    "check_classification": "CONVENTION_REGRESSION_ONLY",
+    "independent_external_verification": false,
+    "source_derivation_boundary": "The transformed 1956 mean (23 deg 14' 44.019\"), 1956 IAU-2006 true (23 deg 15' 00.796\"), and J2000.0 TT mean (23.85709235 deg) constants are derived from the 1956-03-21.0 TT defining anchor and ERFA IAU-2006 reductions in engine/conventions.py:97-126 without a retained primary-book IAE page readback. Secondary ephemeris documentation (Appendix E) reports ambiguity in IAE mean/true definitions under IAU1976/Wahr1980 assumptions and identifies 23 deg 42' 37.0\" with 10 May 1989 rather than 1 January 1989. Consequently, these checks are labelled CONVENTION_REGRESSION_ONLY and excluded from the public independent-accuracy tie claim.",
     "epoch_1956_jd_tt": 2435553.5,
     "csir_1955_iae_1989_p556_true_iau1980_deg": 23.250182777777777,
     "iae_1989_p556_mean_reference_deg": 23.245560833333336,
@@ -93,9 +95,9 @@
       "calculated_1989_mean_deg": 23.703447928469267,
       "discrepancy_arcsec": 24.58745751063418,
       "status": "HELD_UNVERIFIED_PRIMARY_BOOK_PAGE",
-      "note": "Preserved per Round 2 review: IAE 1989 p. 556 defines the 1956-03-21.0 TT anchor (23 deg 15' 00.658\" true IAU1980 / 23 deg 14' 44.019\" mean). The 1989-01-01 23 deg 42' 37\" string lacks a verified primary-book page readback and is explicitly HELD and excluded from certified agreement claims."
+      "note": "Preserved as HELD: secondary Appendix E documentation identifies 23 deg 42' 37.0\" with 10 May 1989 rather than 1 January 1989, and no direct primary-book IAE page readback is retained in this repository. Excluded from certified agreement claims."
     },
-    "status": "PASS_EXTERNAL_IAE_ANCHORS"
+    "status": "CONVENTION_REGRESSION_ONLY"
   },
-  "public_claim": "RDG Ephemeris reproduces NASA JPL DE440/Horizons and IAE 1989 p. 556 (1956-03-21.0 TT) within the measured truth floor; ties reference accuracy."
+  "public_claim": "RDG Ephemeris reproduces NASA JPL DE440/Horizons within the measured truth floor (median 0.000233\", max 0.036858\", ties reference accuracy); Lahiri 1956/J2000 transformed constants are verified as CONVENTION_REGRESSION_ONLY (excluded from independent external IAE tie claims pending primary-book page fixture)."
 }

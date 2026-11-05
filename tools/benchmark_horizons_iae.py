@@ -45,12 +45,16 @@ HORIZONS_MEDIAN_TOLERANCE_ARCSEC = 0.005
 HORIZONS_P95_TOLERANCE_ARCSEC = 0.025
 HORIZONS_MAX_TOLERANCE_ARCSEC = 0.050
 
-# 2. Report of the Calendar Reform Committee (CSIR India, 1955, p. 262) &
-#    Indian Astronomical Ephemeris (IAE 1989, p. 556) defining epoch 1956-03-21 00:00:00 TT (JD 2435553.5):
-#    - Published true Chitrapaksha ayanamsa (IAU 1980 nutation frame): 23 deg 15' 00.658"
-#    - Corresponding mean ayanamsa at 1956-03-21.0 TT (IAU 1980 nutation removed): 23 deg 14' 44.019"
-#    - Corresponding true ayanamsa at 1956-03-21.0 TT in IAU 2006/2000A nutation frame: 23 deg 15' 00.796"
-#    - Transported mean Lahiri ayanamsa at J2000.0 TT (JD 2451545.0): 23.85709235 deg
+# 2. Lahiri / Chitrapaksha Convention Regression Checks (1956-03-21 00:00:00 TT / JD 2435553.5 and J2000.0 TT):
+#    Per Round 3 independent review and secondary ephemeris documentation (Appendix E):
+#    - The CSIR 1955 (p. 262) / IAE 1989 (p. 556) defining anchor is 23 deg 15' 00.658" at 1956-03-21.0 TT.
+#    - The transformed mean (23 deg 14' 44.019"), modern IAU 2006/2000A true (23 deg 15' 00.796"), and
+#      transported J2000.0 TT mean (23.85709235 deg) values are derived through our internal ERFA IAU-2006
+#      reduction in engine/conventions.py. They are verified here as CONVENTION_REGRESSION_ONLY and excluded
+#      from independent external IAE reference-tie claims until a primary-book page fixture and independent
+#      derivation exist.
+#    - Secondary Appendix E documentation notes ambiguity in IAE mean/true definitions under IAU1976/Wahr1980 assumptions
+#      and identifies 23 deg 42' 37.0" with 10 May 1989 rather than 1 January 1989.
 IAE_LAHIRI_1956_TRUE_IAU1980_DEG = _dms(23, 15, 0.658)
 IAE_LAHIRI_1956_MEAN_DEG = _dms(23, 14, 44.019)
 IAE_LAHIRI_1956_TRUE_IAU2006_DEG = _dms(23, 15, 0.796)
@@ -61,8 +65,8 @@ IAE_1956_TRUE_IAU2006_TOLERANCE_ARCSEC = 0.002
 IAE_1956_CROSS_NUTATION_TOLERANCE_ARCSEC = 0.20
 IAE_J2000_MEAN_TOLERANCE_ARCSEC = 0.0005
 
-# Unverified candidate tabular value for 1989-01-01 00:00 UTC (JD 2447527.5) preserved as HELD evidence
-# per Round 2 independent review (lacks primary-book page readback; excluded from certified agreement):
+# Unverified candidate tabular value (23 deg 42' 37.0", which secondary Appendix E documentation associates with
+# 10 May 1989 rather than 1 January 1989) preserved as HELD evidence:
 UNVERIFIED_1989_01_01_CANDIDATE_DEG = _dms(23, 42, 37.0)
 
 
@@ -189,7 +193,7 @@ def run_benchmark(output_path: Path | None = None) -> dict[str, Any]:
     print(f"   {'OVERALL':<10} | {total_samples:<8} | {overall_median:<12.6f} | {overall_p95:<12.6f} | {overall_max:<12.6f}")
     print(f"   Horizons Gate: {horizons_status} (tolerances: median <= {HORIZONS_MEDIAN_TOLERANCE_ARCSEC}\", P95 <= {HORIZONS_P95_TOLERANCE_ARCSEC}\", max <= {HORIZONS_MAX_TOLERANCE_ARCSEC}\")")
 
-    # Part 2: Indian Astronomical Ephemeris (CSIR 1955 / IAE 1989 p. 556) External Published Anchors
+    # Part 2: Lahiri / Chitrapaksha 1956 & J2000 Convention Regression Checks (CONVENTION_REGRESSION_ONLY)
     t0 = time.perf_counter()
     calculated_1956_true = ayanamsa_degrees(LAHIRI_REFERENCE_TT_JD, "lahiri", true=True)
     calculated_1956_mean = ayanamsa_degrees(LAHIRI_REFERENCE_TT_JD, "lahiri", true=False)
@@ -210,42 +214,41 @@ def run_benchmark(output_path: Path | None = None) -> dict[str, Any]:
         and iae_j2000_mean_residual_arcsec <= IAE_J2000_MEAN_TOLERANCE_ARCSEC
     )
     iae_status = (
-        "PASS_EXTERNAL_IAE_ANCHORS"
+        "CONVENTION_REGRESSION_ONLY"
         if iae_pass
-        else "FAIL_IAE_ANCHOR_TOLERANCE_EXCEEDED"
+        else "FAIL_CONVENTION_REGRESSION_TOLERANCE_EXCEEDED"
     )
 
     overall_pass = horizons_pass and iae_pass
     overall_status = "PASS" if overall_pass else "FAIL"
 
-    print("\n2. Indian Astronomical Ephemeris (CSIR 1955 / IAE 1989 p. 556) Published External Anchors:")
-    print(f"   1956-03-21 00:00 TT (JD {LAHIRI_REFERENCE_TT_JD:.1f}) Mean Anchor:   {IAE_LAHIRI_1956_MEAN_DEG:.8f} deg (23 deg 14' 44.019\")")
+    print("\n2. Lahiri / Chitrapaksha Convention Regression Checks (CONVENTION_REGRESSION_ONLY):")
+    print(f"   1956-03-21 00:00 TT (JD {LAHIRI_REFERENCE_TT_JD:.1f}) Transformed Mean:    {IAE_LAHIRI_1956_MEAN_DEG:.8f} deg (23 deg 14' 44.019\")")
     print(f"   Engine Calculated 1956 Mean:                  {calculated_1956_mean:.8f} deg (residual {iae_1956_mean_residual_arcsec:.6f}\" <= {IAE_1956_MEAN_TOLERANCE_ARCSEC}\")")
-    print(f"   1956-03-21 00:00 TT True (IAU 2006/2000A):    {IAE_LAHIRI_1956_TRUE_IAU2006_DEG:.8f} deg (23 deg 15' 00.796\")")
+    print(f"   1956-03-21 00:00 TT Transformed True (IAU06): {IAE_LAHIRI_1956_TRUE_IAU2006_DEG:.8f} deg (23 deg 15' 00.796\")")
     print(f"   Engine Calculated 1956 True (IAU 2006/2000A): {calculated_1956_true:.8f} deg (residual {iae_1956_true_iau2006_residual_arcsec:.6f}\" <= {IAE_1956_TRUE_IAU2006_TOLERANCE_ARCSEC}\")")
-    print(f"   1956-03-21 00:00 TT True (IAU 1980 Nutation): {IAE_LAHIRI_1956_TRUE_IAU1980_DEG:.8f} deg (cross-nutation delta {iae_1956_cross_nutation_residual_arcsec:.6f}\" <= {IAE_1956_CROSS_NUTATION_TOLERANCE_ARCSEC}\")")
-    print(f"   J2000.0 TT (JD {J2000_TT_JD:.1f}) Mean Reference:      {IAE_LAHIRI_J2000_MEAN_DEG:.8f} deg")
+    print(f"   1956-03-21 00:00 TT Defining Anchor (IAU80):  {IAE_LAHIRI_1956_TRUE_IAU1980_DEG:.8f} deg (cross-nutation delta {iae_1956_cross_nutation_residual_arcsec:.6f}\" <= {IAE_1956_CROSS_NUTATION_TOLERANCE_ARCSEC}\")")
+    print(f"   J2000.0 TT (JD {J2000_TT_JD:.1f}) Transported Mean:      {IAE_LAHIRI_J2000_MEAN_DEG:.8f} deg")
     print(f"   Engine Calculated J2000.0 Mean:               {calculated_j2000_mean:.8f} deg (residual {iae_j2000_mean_residual_arcsec:.6f}\" <= {IAE_J2000_MEAN_TOLERANCE_ARCSEC}\", {iae_calc_ms:.2f} ms)")
-    print(f"   1989-01-01 00:00 UTC Unverified Candidate:    {UNVERIFIED_1989_01_01_CANDIDATE_DEG:.8f} deg vs Engine {calculated_1989_mean:.8f} deg (discrepancy {unverified_1989_discrepancy_arcsec:.4f}\" -> HELD_UNVERIFIED_PRIMARY_BOOK_PAGE)")
-    print(f"   IAE Gate: {iae_status}")
+    print(f"   1989 Candidate (10 May vs 01 Jan Uncertainty): {UNVERIFIED_1989_01_01_CANDIDATE_DEG:.8f} deg vs Engine 1989-01-01 {calculated_1989_mean:.8f} deg (discrepancy {unverified_1989_discrepancy_arcsec:.4f}\" -> HELD_UNVERIFIED_PRIMARY_BOOK_PAGE)")
+    print(f"   Convention Regression Gate: {iae_status}")
 
     public_claim = (
-        "RDG Ephemeris reproduces NASA JPL DE440/Horizons and IAE 1989 p. 556 (1956-03-21.0 TT) within the measured truth floor; ties reference accuracy."
+        "RDG Ephemeris reproduces NASA JPL DE440/Horizons within the measured truth floor (median 0.000233\", max 0.036858\", ties reference accuracy); Lahiri 1956/J2000 transformed constants are verified as CONVENTION_REGRESSION_ONLY (excluded from independent external IAE tie claims pending primary-book page fixture)."
         if overall_pass
-        else "FAILED: Reference tolerance exceeded; public agreement claim rejected."
+        else "FAILED: Reference or convention regression tolerance exceeded; public agreement claim rejected."
     )
 
     # Construct verifiable output
     result = {
         "benchmark_timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "status": overall_status,
-        "evaluation_mode": "LIVE_ENGINE_AGAINST_COMMITTED_HORIZONS_TRUTH_AND_EXTERNAL_IAE_CONSTANTS",
+        "evaluation_mode": "LIVE_ENGINE_AGAINST_COMMITTED_HORIZONS_TRUTH_PLUS_CONVENTION_REGRESSION",
         "standards_evaluated": [
-            "NASA JPL Horizons (DE441/DE440 Astrometric Ephemeris, 300 epochs x 7 physical bodies = 2,100 live evaluations)",
-            "Calendar Reform Committee Report (CSIR India 1955, p. 262) & Indian Astronomical Ephemeris (IAE 1989, p. 556: 1956-03-21 00:00 TT = 23 deg 15' 00.658\" true IAU1980 / 23 deg 14' 44.019\" mean)",
-            "Transported J2000.0 TT (JD 2451545.0) Mean Lahiri Reference (23.85709235 deg)",
+            "NASA JPL Horizons (DE441/DE440 Astrometric Ephemeris, 300 epochs x 7 physical bodies = 2,100 live evaluations; independent reference accuracy comparison)",
+            "Lahiri / Chitrapaksha 1956-03-21.0 TT and J2000.0 TT transformed ERFA/IAU-2006 constants (CONVENTION_REGRESSION_ONLY; derived from engine/conventions.py, excluded from independent external IAE tie claims)",
         ],
-        "governing_policy": "Ties reference accuracy within measured truth floor; never claims to beat",
+        "governing_policy": "Ties independent NASA JPL Horizons reference accuracy within measured truth floor; separates internal convention regression checks from external IAE verification",
         "nasa_jpl_horizons": {
             "evaluation_method": "Live Engine.load(kernels='extended').positions_tt(jd_tt) evaluated at all 300 manifest epochs",
             "live_evaluation_duration_ms": round(live_eval_ms, 3),
@@ -263,6 +266,17 @@ def run_benchmark(output_path: Path | None = None) -> dict[str, Any]:
             "status": horizons_status,
         },
         "iae_lahiri_anchor": {
+            "check_classification": "CONVENTION_REGRESSION_ONLY",
+            "independent_external_verification": False,
+            "source_derivation_boundary": (
+                "The transformed 1956 mean (23 deg 14' 44.019\"), 1956 IAU-2006 true (23 deg 15' 00.796\"), "
+                "and J2000.0 TT mean (23.85709235 deg) constants are derived from the 1956-03-21.0 TT defining "
+                "anchor and ERFA IAU-2006 reductions in engine/conventions.py:97-126 without a retained primary-book "
+                "IAE page readback. Secondary ephemeris documentation (Appendix E) "
+                "reports ambiguity in IAE mean/true definitions under IAU1976/Wahr1980 assumptions and identifies "
+                "23 deg 42' 37.0\" with 10 May 1989 rather than 1 January 1989. Consequently, these checks are "
+                "labelled CONVENTION_REGRESSION_ONLY and excluded from the public independent-accuracy tie claim."
+            ),
             "epoch_1956_jd_tt": LAHIRI_REFERENCE_TT_JD,
             "csir_1955_iae_1989_p556_true_iau1980_deg": IAE_LAHIRI_1956_TRUE_IAU1980_DEG,
             "iae_1989_p556_mean_reference_deg": IAE_LAHIRI_1956_MEAN_DEG,
@@ -289,10 +303,9 @@ def run_benchmark(output_path: Path | None = None) -> dict[str, Any]:
                 "discrepancy_arcsec": unverified_1989_discrepancy_arcsec,
                 "status": "HELD_UNVERIFIED_PRIMARY_BOOK_PAGE",
                 "note": (
-                    "Preserved per Round 2 review: IAE 1989 p. 556 defines the 1956-03-21.0 TT anchor "
-                    "(23 deg 15' 00.658\" true IAU1980 / 23 deg 14' 44.019\" mean). The 1989-01-01 "
-                    "23 deg 42' 37\" string lacks a verified primary-book page readback and is explicitly "
-                    "HELD and excluded from certified agreement claims."
+                    "Preserved as HELD: secondary Appendix E documentation identifies 23 deg 42' 37.0\" "
+                    "with 10 May 1989 rather than 1 January 1989, and no direct primary-book IAE page readback "
+                    "is retained in this repository. Excluded from certified agreement claims."
                 ),
             },
             "status": iae_status,
@@ -302,9 +315,9 @@ def run_benchmark(output_path: Path | None = None) -> dict[str, Any]:
 
     print("\n" + "=" * 80)
     print(f"BENCHMARK OUTCOME: {overall_status}")
-    print(f"Horizons Live Agreement: Overall Median {overall_median:.6f}\", P95 {overall_p95:.6f}\", Max {overall_max:.6f}\" ({horizons_status})")
-    print(f"IAE External Agreement:  1956 Mean Residual {iae_1956_mean_residual_arcsec:.6f}\", 1956 True (IAU2006) Residual {iae_1956_true_iau2006_residual_arcsec:.6f}\", J2000 Mean Residual {iae_j2000_mean_residual_arcsec:.6f}\" ({iae_status})")
-    print(f"Public Claim:            {public_claim}")
+    print(f"Horizons Live Agreement:      Overall Median {overall_median:.6f}\", P95 {overall_p95:.6f}\", Max {overall_max:.6f}\" ({horizons_status})")
+    print(f"Lahiri Convention Regression: 1956 Mean Residual {iae_1956_mean_residual_arcsec:.6f}\", 1956 True (IAU2006) Residual {iae_1956_true_iau2006_residual_arcsec:.6f}\", J2000 Mean Residual {iae_j2000_mean_residual_arcsec:.6f}\" ({iae_status})")
+    print(f"Public Claim:                 {public_claim}")
     print("=" * 80)
 
     if output_path:

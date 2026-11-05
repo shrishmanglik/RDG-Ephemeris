@@ -8,10 +8,11 @@ Evaluates RDG-Ephemeris (ephemeris-oss) across five verification dimensions:
 2. Independent NASA JPL Horizons DE441 Truth Corpus (1800 CE to 2100 CE):
    Summarizes the 2,100-row independent Horizons DE441 validation matrix across
    all seven physical Grahas plus Meeus Eq. 47.7 mean/true lunar nodes.
-3. Indian Astronomical Ephemeris (IAE 1989) & Classical Siddhanta Anchor:
-   Verifies the Chitrapaksha Lahiri ayanamsa against the Government of India
-   Rashtriya Panchang 1989-01-01 00:00 UTC reference (23 deg 42' 37") and
-   the 3102 BCE Kali Yuga epoch (JD 588465.5) mean-alignment invariant.
+3. Lahiri / Chitrapaksha Convention Regression & Classical Siddhanta Anchor:
+   Verifies the Chitrapaksha Lahiri ayanamsa against the 1956-03-21 00:00 TT
+   transformed mean/IAU-2006 true and J2000.0 TT transported mean constants
+   (CONVENTION_REGRESSION_ONLY) and the 3102 BCE Kali Yuga epoch (JD 588465.5)
+   mean-alignment invariant.
 4. Multi-Millennium Date Span & Runtime Throughput (3102 BCE to 3000 CE):
    Measures end-to-end execution across 3102 BCE (Kali Yuga), 499 CE (Aryabhata),
    1600 CE (Early DE440 Chebyshev), 2026 CE (Modern DE440 Chebyshev), 2300 CE
@@ -29,8 +30,13 @@ import json
 import math
 import os
 from pathlib import Path
+import sys
 import time
 from typing import Any
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT / "src") not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from ephemeris_oss import (
     Engine,
@@ -369,6 +375,15 @@ def evaluate_impossible_astrology_and_surfaces() -> dict[str, Any]:
             "positions_source": api_pos.get("ephemeris_source"),
         },
         "classical_and_iae_anchors": {
+            "check_classification": "CONVENTION_REGRESSION_ONLY",
+            "independent_external_verification": False,
+            "source_derivation_boundary": (
+                "Transformed 1956 mean (23 deg 14' 44.019\"), 1956 IAU-2006 true (23 deg 15' 00.796\"), "
+                "and J2000.0 TT mean (23.85709235 deg) constants are derived from engine/conventions.py:97-126 "
+                "and verified as CONVENTION_REGRESSION_ONLY; excluded from independent external IAE tie claims. "
+                "Secondary ephemeris documentation (Appendix E) notes IAE mean/true ambiguity under IAU1976/Wahr1980 "
+                "assumptions and identifies 23 deg 42' 37.0\" with 10 May 1989 rather than 1 January 1989."
+            ),
             "iae_1956_mean_computed_deg": round(lahiri_1956_mean_deg, 8),
             "iae_1956_mean_target_deg": round(iae_1956_mean_target_deg, 8),
             "iae_1956_mean_delta_arcsec": round(iae_1956_mean_delta_arcsec, 6),
@@ -383,6 +398,7 @@ def evaluate_impossible_astrology_and_surfaces() -> dict[str, Any]:
                 "candidate_target_deg": round(unverified_1989_candidate_deg, 8),
                 "discrepancy_arcsec": round(unverified_1989_delta_arcsec, 4),
                 "status": "HELD_UNVERIFIED_PRIMARY_BOOK_PAGE",
+                "note": "Secondary Appendix E documentation identifies 23 deg 42' 37.0\" with 10 May 1989 rather than 1 January 1989; held pending primary-book page fixture.",
             },
             "kali_yuga_3102_bce_mean_sun_deg": kali_means["sun"],
             "kali_yuga_3102_bce_mean_moon_deg": kali_means["moon"],

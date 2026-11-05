@@ -273,65 +273,41 @@ def _solve_varga_transition_seconds(
         return still_in, margin_t, d_t
 
     t_lo = 0.0
+    lon_lo = lon0
     margin_lo = min(deg_from_lower, deg_to_upper)
     t_hi: float | None = None
     margin_hi = 0.0
 
-    # Fast monotonic bracket probe when speed is well above station threshold
-    if abs(v_dir) >= max(0.25 * v_mean, 1.0e-8):
-        target_deg = deg_to_upper if v_dir > 0.0 else deg_from_lower
+    # Unified first-crossing-preserving adaptive bracketing from t_lo = 0.0
+    target_deg = deg_to_upper if v_dir >= 0.0 else deg_from_lower
+    if abs(v_dir) > 1.0e-9:
         t_est = target_deg / abs(v_dir)
-        if t_est > 1.0e-5:
-            t_a = 0.85 * t_est
-            in_a, margin_a, d_a = eval_at(t_a)
-            if in_a and (d_a * v_dir > 0.0):
-                t_lo = t_a
-                margin_lo = margin_a
-                for mult in (1.03, 1.15, 1.35, 1.65, 2.10):
-                    t_b = mult * t_est
-                    in_b, margin_b, d_b = eval_at(t_b)
-                    if not in_b and abs(d_b) < 120.0:
-                        t_hi = t_b
-                        margin_hi = margin_b
-                        break
-                    if in_b and (d_b * v_dir > 0.0):
-                        t_lo = t_b
-                        margin_lo = margin_b
-                    else:
-                        break
-
-    # General station-safe adaptive bracketing when near a retrograde station or nonlinear arc
-    if t_hi is None:
-        t_lo = 0.0
-        lon_lo = lon0
-        margin_lo = min(deg_from_lower, deg_to_upper)
-        if abs(v_dir) > 1.0e-9:
-            target_deg = deg_to_upper if v_dir > 0.0 else deg_from_lower
-            step = min(1.0, max(1.0e-4, 0.20 * min(target_deg, sector_span) / abs(v_dir)))
-        else:
-            step = 0.25
+        step = min(1.0, max(1.0e-4, 0.05 * min(target_deg, sector_span) / abs(v_dir)))
+        max_step = max(10.0, min(0.125 * max(t_est, 1.0), 0.20 * sector_span / max(abs(v_dir), v_mean, 1.0e-7)))
+    else:
+        step = 0.25
         max_step = max(60.0, 0.20 * sector_span / max(v_mean, 1.0e-7))
-        max_angle_step = max(0.25, min(0.45 * sector_span, 12.0))
+    max_angle_step = max(0.05, min(0.20 * sector_span, 4.0))
 
-        for _ in range(320):
-            t_probe = t_lo + step
-            lon_p = normalize_degrees(position_at_offset_sec(dir_sign * t_probe))
-            step_delta = abs((lon_p - lon_lo + 180.0) % 360.0 - 180.0)
-            if step_delta > max_angle_step and step > 1.0e-5:
-                step *= 0.5
-                continue
-            in_p, margin_p, _ = eval_at(t_probe)
-            if not in_p:
-                t_hi = t_probe
-                margin_hi = margin_p
-                break
-            t_lo = t_probe
-            lon_lo = lon_p
-            margin_lo = margin_p
-            if step_delta < 0.05 * max_angle_step:
-                step = min(max_step, step * 1.5)
-            else:
-                step = min(max_step, step * 1.2)
+    for _ in range(480):
+        t_probe = t_lo + step
+        lon_p = normalize_degrees(position_at_offset_sec(dir_sign * t_probe))
+        step_delta = abs((lon_p - lon_lo + 180.0) % 360.0 - 180.0)
+        if step_delta > max_angle_step and step > 1.0e-5:
+            step *= 0.5
+            continue
+        in_p, margin_p, _ = eval_at(t_probe)
+        if not in_p:
+            t_hi = t_probe
+            margin_hi = margin_p
+            break
+        t_lo = t_probe
+        lon_lo = lon_p
+        margin_lo = margin_p
+        if step_delta < 0.05 * max_angle_step:
+            step = min(max_step, step * 1.5)
+        else:
+            step = min(max_step, step * 1.2)
 
     if t_hi is None:
         raise RuntimeError(f"Failed to bracket {varga_key} transition for {body} at lon={lon0}")

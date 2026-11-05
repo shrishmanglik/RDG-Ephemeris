@@ -104,8 +104,8 @@ MCP_TOOLS: tuple[dict[str, Any], ...] = (
         "name": "compute_panchanga",
         "description": (
             "Compute sunrise-anchored regional Drik Panchanga: Tithi, Nakshatra, Yoga, Karana, "
-            "Vara, Rahu Kala, Yamaganda, Gulika Kala, Abhijit Muhurta, Amanta/Purnimanta lunar month, "
-            "and regional solar calendar."
+            "Vara, Amanta/Purnimanta lunar month, regional solar calendar, and a separate "
+            "instantaneous_panchanga snapshot (or request mode='instantaneous' explicitly)."
         ),
         "inputSchema": {
             "type": "object",
@@ -115,6 +115,16 @@ MCP_TOOLS: tuple[dict[str, Any], ...] = (
                 "latitude_deg": {"type": "number", "default": 28.6139},
                 "longitude_deg": {"type": "number", "default": 77.2090},
                 "ayanamsa": {"type": "string", "default": "lahiri"},
+                "mode": {
+                    "type": "string",
+                    "enum": ["sunrise", "instantaneous"],
+                    "default": "sunrise",
+                    "description": (
+                        "Default 'sunrise' evaluates daily Udaya Panchanga limbs at the observer's "
+                        "active local sunrise (and before-sunrise instants at the preceding Vedic day's "
+                        "sunrise); 'instantaneous' evaluates primary limbs at the exact supplied instant."
+                    ),
+                },
             },
         },
     },
@@ -275,11 +285,15 @@ def execute_mcp_tool(name: str, arguments: Mapping[str, Any] | None = None) -> d
         jd_ut = _resolve_jd_ut(args)
         lat = float(args.get("latitude_deg", 28.6139))
         lon = float(args.get("longitude_deg", 77.2090))
+        mode = str(args.get("mode", "sunrise")).strip().lower()
+        if mode not in {"sunrise", "instantaneous"}:
+            raise ValueError("mode must be 'sunrise' or 'instantaneous'")
         report = compute_regional_panchang(
             jd_ut,
             latitude_deg=lat,
             longitude_deg=lon,
             adapter=adapter,
+            anchor_to_sunrise=(mode == "sunrise"),
         )
         return _to_jsonable(report.to_dict())
 
@@ -379,10 +393,31 @@ def execute_mcp_tool(name: str, arguments: Mapping[str, Any] | None = None) -> d
     raise ValueError(f"Unknown MCP tool: {name!r}")
 
 
-def handle_jsonrpc_message(request: Mapping[str, Any]) -> dict[str, Any] | None:
+def handle_jsonrpc_message(request: Any) -> dict[str, Any] | None:
     """Process one MCP JSON-RPC 2.0 request and return a response dict (or None for notifications)."""
-    method = str(request.get("method", ""))
+    if not isinstance(request, Mapping):
+        return {
+            "jsonrpc": "2.0",
+            "id": None,
+            "error": {
+                "code": -32600,
+                "message": "Invalid Request: JSON-RPC message must be a JSON object.",
+            },
+        }
+
+    raw_method = request.get("method")
     req_id = request.get("id")
+    if not isinstance(raw_method, str) or not raw_method.strip():
+        return {
+            "jsonrpc": "2.0",
+            "id": req_id if isinstance(req_id, (str, int, float)) or req_id is None else None,
+            "error": {
+                "code": -32600,
+                "message": "Invalid Request: 'method' must be a non-empty string.",
+            },
+        }
+
+    method = raw_method
     params = request.get("params") or {}
 
     if method.startswith("notifications/") or req_id is None:

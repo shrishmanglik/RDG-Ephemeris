@@ -281,7 +281,9 @@ def test_benchmark_horizons_iae_positive_and_negative_controls() -> None:
     assert clean_report["nasa_jpl_horizons"]["total_samples"] == 2100
     assert clean_report["nasa_jpl_horizons"]["overall_max_separation_arcsec"] < 0.05
     assert clean_report["nasa_jpl_horizons"]["status"] == "PASS_TIED_WITH_HORIZONS"
-    assert clean_report["iae_lahiri_anchor"]["status"] == "PASS_EXTERNAL_IAE_ANCHORS"
+    assert clean_report["iae_lahiri_anchor"]["status"] == "CONVENTION_REGRESSION_ONLY"
+    assert clean_report["iae_lahiri_anchor"]["check_classification"] == "CONVENTION_REGRESSION_ONLY"
+    assert clean_report["iae_lahiri_anchor"]["independent_external_verification"] is False
     assert (
         clean_report["iae_lahiri_anchor"]["unverified_1989_01_01_tabular_candidate"]["status"]
         == "HELD_UNVERIFIED_PRIMARY_BOOK_PAGE"
@@ -293,6 +295,7 @@ def test_benchmark_horizons_iae_positive_and_negative_controls() -> None:
     bad_anchor_mod.ayanamsa_degrees = lambda *args, **kwargs: real_ayanamsa(*args, **kwargs) + 1.0
     bad_anchor_report = _run_quietly(bad_anchor_mod)
     assert bad_anchor_report["status"] == "FAIL"
+    assert bad_anchor_report["iae_lahiri_anchor"]["status"].startswith("FAIL")
     assert not bad_anchor_report["iae_lahiri_anchor"]["status"].startswith("PASS")
 
     # 3. Negative control: +1 deg planetary longitude perturbation cannot pass
@@ -325,3 +328,152 @@ def test_benchmark_horizons_iae_positive_and_negative_controls() -> None:
     bad_planet_report = _run_quietly(bad_planet_mod)
     assert bad_planet_report["status"] == "FAIL"
     assert not bad_planet_report["nasa_jpl_horizons"]["status"].startswith("PASS")
+
+
+def test_varga_transition_solver_preserves_first_crossing_and_linear_control() -> None:
+    """Verify _solve_varga_transition_seconds preserves the first crossing on a leave-and-return arc and matches linear control."""
+    import math
+    from ephemeris_oss.impossible_astrology import _solve_varga_transition_seconds
+
+    day_sec = 86400.0
+
+    def _solve(callback):  # type: ignore[no-untyped-def]
+        return (
+            _solve_varga_transition_seconds(
+                "Sun",
+                12.0,
+                0,
+                "D1",
+                12.0,
+                18.0,
+                30.0,
+                1.0 / day_sec,
+                1.0,
+                callback,
+            )
+            / day_sec
+        )
+
+    # 1. Linear clean control
+    assert abs(_solve(lambda seconds: 12.0 + seconds / day_sec) - 18.0) < 1.0e-5
+
+    # 2. Leave-and-return excursion before 0.85 * t_est preserves the first crossing (~4.09858 days)
+    def _excursion_longitude(seconds: float) -> float:
+        t = seconds / day_sec
+        return 12.0 + t + 25.0 * (math.sin(math.pi * t / 15.3) ** 2)
+
+    low, high = 4.0, 5.0
+    assert _excursion_longitude(low * day_sec) < 30.0 < _excursion_longitude(high * day_sec)
+    for _ in range(48):
+        mid = 0.5 * (low + high)
+        if _excursion_longitude(mid * day_sec) < 30.0:
+            low = mid
+        else:
+            high = mid
+    actual_first_days = 0.5 * (low + high)
+    predicted_days = _solve(_excursion_longitude)
+    assert abs(predicted_days - actual_first_days) * day_sec < 0.5
+
+
+def test_mcp_stdio_keeps_connection_alive_on_malformed_and_non_object_json() -> None:
+    """Verify serve_stdio recovers cleanly from malformed JSON (-32700) and non-object JSON [] / null (-32600)."""
+    import io
+    from ephemeris_oss import mcp_server
+
+    ping_line = '{"jsonrpc":"2.0","id":7,"method":"ping"}\n'
+
+    # 1. Malformed JSON clean control
+    out_malformed = io.StringIO()
+    assert mcp_server.serve_stdio(io.StringIO("{bad\n" + ping_line), out_malformed) == 0
+    replies_malformed = [json.loads(line) for line in out_malformed.getvalue().splitlines()]
+    assert replies_malformed[0]["error"]["code"] == -32700
+    assert replies_malformed[1]["id"] == 7
+
+    # 2. Syntactically valid non-object JSON ([] and null)
+    for invalid_msg in ("[]", "null"):
+        out_non_obj = io.StringIO()
+        assert mcp_server.serve_stdio(io.StringIO(invalid_msg + "\n" + ping_line), out_non_obj) == 0
+        replies = [json.loads(line) for line in out_non_obj.getvalue().splitlines()]
+        assert replies[0]["error"]["code"] == -32600
+        assert replies[1]["id"] == 7
+
+
+def test_mcp_daily_panchanga_anchors_to_local_sunrise_and_separates_instantaneous(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    """Verify MCP compute_panchanga resolves observer local sunrise, handles before-sunrise and daytime transitions, and keeps instantaneous separate."""
+    from ephemeris_oss import mcp_server
+    from ephemeris_oss.almanac import regional_panchang
+
+    # 1. Direct instrumentation verifying sunrise_jd_ut is passed to regional_panchang.compute_panchanga
+    captured: dict[str, object] = {}
+
+    class _CapturedCall(Exception):
+        pass
+
+    def _capture_call(**kwargs: object) -> None:
+        captured.update(kwargs)
+        raise _CapturedCall
+
+    with monkeypatch.context() as m:
+        m.setattr(regional_panchang, "compute_panchanga", _capture_call)
+        try:
+            mcp_server.execute_mcp_tool(
+                "compute_panchanga",
+                {"jd_ut": 2461139.0, "latitude_deg": 28.6139, "longitude_deg": 77.2090},
+            )
+        except _CapturedCall:
+            pass
+    assert captured.get("sunrise_jd_ut") is not None
+
+    # 2. End-to-end daytime transition and before-sunrise anchoring for Delhi (28.6139 N, 77.2090 E)
+    # Scan a day where Tithi transitions during daytime after local sunrise:
+    base_jd = 2461135.0
+    transition_day_sr: float | None = None
+    for day_idx in range(15):
+        probe_jd = base_jd + float(day_idx)
+        rep_morning = mcp_server.execute_mcp_tool(
+            "compute_panchanga",
+            {"jd_ut": probe_jd - 0.10, "latitude_deg": 28.6139, "longitude_deg": 77.2090},
+        )
+        sr_jd = float(rep_morning["sunrise_jd_ut"])
+        rep_after_sr = mcp_server.execute_mcp_tool(
+            "compute_panchanga",
+            {"jd_ut": sr_jd + 0.05, "latitude_deg": 28.6139, "longitude_deg": 77.2090},
+        )
+        rep_evening = mcp_server.execute_mcp_tool(
+            "compute_panchanga",
+            {"jd_ut": sr_jd + 0.45, "latitude_deg": 28.6139, "longitude_deg": 77.2090},
+        )
+        # In sunrise-anchored mode, two instants after sunrise on the same civil day share the same daily Tithi and Vara
+        assert rep_after_sr["anchoring_mode"] == "sunrise"
+        assert rep_evening["anchoring_mode"] == "sunrise"
+        assert rep_after_sr["active_sunrise_jd_ut"] == rep_evening["active_sunrise_jd_ut"] == sr_jd
+        assert rep_after_sr["tithi_number"] == rep_evening["tithi_number"]
+        assert rep_after_sr["vara_name"] == rep_evening["vara_name"]
+
+        # Before-sunrise instant (sr_jd - 0.05) anchors to the preceding Vedic day's sunrise and preceding weekday
+        rep_before_sr = mcp_server.execute_mcp_tool(
+            "compute_panchanga",
+            {"jd_ut": sr_jd - 0.05, "latitude_deg": 28.6139, "longitude_deg": 77.2090},
+        )
+        assert rep_before_sr["active_sunrise_jd_ut"] < sr_jd
+        assert rep_before_sr["vara_name"] != rep_after_sr["vara_name"]
+
+        if rep_after_sr["instantaneous_panchanga"]["tithi_number"] != rep_evening["instantaneous_panchanga"]["tithi_number"]:
+            transition_day_sr = sr_jd
+            # Even though the instantaneous Tithi transitioned during the day, the daily sunrise-anchored Tithi stayed invariant,
+            # while explicit mode="instantaneous" reports the new Tithi at sr_jd + 0.45
+            rep_inst_evening = mcp_server.execute_mcp_tool(
+                "compute_panchanga",
+                {
+                    "jd_ut": sr_jd + 0.45,
+                    "latitude_deg": 28.6139,
+                    "longitude_deg": 77.2090,
+                    "mode": "instantaneous",
+                },
+            )
+            assert rep_inst_evening["anchoring_mode"] == "instantaneous"
+            assert rep_inst_evening["tithi_number"] == rep_evening["instantaneous_panchanga"]["tithi_number"]
+            assert rep_inst_evening["tithi_number"] != rep_evening["tithi_number"]
+            break
+
+    assert transition_day_sr is not None
