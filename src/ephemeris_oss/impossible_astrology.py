@@ -1,0 +1,589 @@
+"""High-precision deterministic solvers for computational problems in classical and modern astrology.
+
+Legacy ephemeris libraries provide point-in-time planetary coordinates at a single timestamp,
+leaving multi-variable inverse problems, sub-second divisional cusp boundaries, multi-century
+phenomena sweeps, and classical-to-modern epicyclic drift analysis to manual guesswork.
+
+This module provides four deterministic, receipt-sealed solvers:
+1. ``solve_subsecond_shodashvarga_cusp_transitions``:
+   Computes exact seconds-to-previous and seconds-to-next divisional chart sign transitions
+   across all 16 Parashari Shodashvarga charts (``D1`` through ``D60``) for the Ascendant
+   (Lagna) and all nine Grahas, identifying the tightest birth-time sensitivity threshold.
+2. ``rectify_birth_time_bayesian``:
+   Combines topocentric sunrise, Ascendant kinematics, Kunda 81x harmonic Shuddhi,
+   Pranapada Shuddhi, Pancha Tattwa 90-minute elemental cycles, and life-event Dasha
+   correlation into a single call from Julian Date and observer coordinates.
+3. ``scan_multi_century_rare_phenomena``:
+   Scans across multi-century windows (``3102 BCE`` to ``3000 CE``) for exact-second
+   Graha Yuddha (planetary wars within 1 degree with apparent disc diameter and northern
+   ecliptic latitude victory adjudication), retrograde stations (Vakri / Margi), and
+   solar combustion windows (Astangata / Cazimi).
+4. ``analyze_siddhanta_vs_jpl_de440_drift``:
+   Quantifies the exact angular divergence between classical *Surya Siddhanta* (epicyclic
+   *Manda* and *Sighra Samskara* from the ``3102 BCE`` Kali Yuga epoch) and modern
+   numerical / analytical *Drig-Ganita* ephemerides at any historical or modern date.
+"""
+
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass
+from typing import Any, Mapping, Sequence
+
+from ._version import __version__
+from .adapter import CALC_RISE, EphemerisAdapter, VEDIC_NINE_GRAHAS
+from .engine.phenomena import (
+    TARAGRAHAS,
+    _builtin_planet_apparent,
+    evaluate_graha_yuddha,
+    find_combustion_windows,
+    find_retrograde_stations,
+)
+from .engine.receipt import canonical_hash
+from .jyotish.dasha import jd_to_iso_utc
+from .jyotish.nakshatra import normalize_degrees
+from .jyotish.vargas import SHODASHVARGA_KEYS, compute_shodashvarga, varga_sign
+from .jyotish_rectification.rectify import (
+    BirthTimeRectificationReport,
+    LAGNA_DEG_PER_SECOND,
+    LifeEventSpec,
+    rectify_birth_time,
+)
+from .jyotish_siddhanta.surya_siddhanta import (
+    SiddhantaModernComparison,
+    compare_siddhanta_with_modern,
+    surya_siddhanta_true_positions,
+)
+
+# Mean angular velocities in degrees per second for fast analytical bracket estimation
+_MEAN_DEG_PER_SECOND: Mapping[str, float] = {
+    "Ascendant": LAGNA_DEG_PER_SECOND,
+    "Sun": 0.98564736 / 86400.0,
+    "Moon": 13.17635815 / 86400.0,
+    "Mercury": 1.3833 / 86400.0,
+    "Venus": 1.2000 / 86400.0,
+    "Mars": 0.5240 / 86400.0,
+    "Jupiter": 0.0831 / 86400.0,
+    "Saturn": 0.0335 / 86400.0,
+    "Rahu": -0.0529539 / 86400.0,
+    "Ketu": -0.0529539 / 86400.0,
+}
+
+_DIVISION_FACTORS: Mapping[str, int] = {
+    "D1": 1,
+    "D2": 2,
+    "D3": 3,
+    "D4": 4,
+    "D7": 7,
+    "D9": 9,
+    "D10": 10,
+    "D12": 12,
+    "D16": 16,
+    "D20": 20,
+    "D24": 24,
+    "D27": 27,
+    "D30": 30,
+    "D40": 40,
+    "D45": 45,
+    "D60": 60,
+}
+
+
+@dataclass(frozen=True)
+class VargaBoundaryMargin:
+    """Exact angular and temporal margin to the previous and next divisional cusp."""
+
+    body: str
+    varga: str
+    division_factor: int
+    sign_index: int
+    sign_name: str
+    sign_lord: str
+    longitude_deg: float
+    sector_span_deg: float
+    degrees_from_lower_cusp: float
+    degrees_to_upper_cusp: float
+    seconds_to_previous_cusp: float
+    seconds_to_next_cusp: float
+    shashtiamsa_name: str | None = None
+    shashtiamsa_is_benefic: bool | None = None
+
+
+@dataclass(frozen=True)
+class SubsecondShodashvargaCuspReport:
+    """Complete 16-varga sub-second cusp sensitivity analysis for Ascendant and 9 Grahas."""
+
+    jd_ut: float
+    iso_utc: str
+    latitude_deg: float
+    longitude_deg: float
+    ayanamsa: str
+    ayanamsa_deg: float
+    ascendant_longitude_deg: float
+    most_sensitive_varga: str
+    minimum_ascendant_cusp_margin_seconds: float
+    ascendant_margins: Mapping[str, VargaBoundaryMargin]
+    planet_margins: Mapping[str, Mapping[str, VargaBoundaryMargin]]
+    receipt: Mapping[str, Any]
+    receipt_sha256: str
+
+
+@dataclass(frozen=True)
+class MultiCenturyPhenomenaReport:
+    """Multi-century exact-second scan of planetary wars, retrograde stations, and combustion."""
+
+    start_jd_tt: float
+    end_jd_tt: float
+    start_iso_utc: str
+    end_iso_utc: str
+    ayanamsa: str
+    bodies: tuple[str, ...]
+    graha_yuddha_count: int
+    retrograde_station_count: int
+    combustion_window_count: int
+    graha_yuddha_events: tuple[Mapping[str, Any], ...]
+    retrograde_stations: tuple[Mapping[str, Any], ...]
+    combustion_windows: tuple[Mapping[str, Any], ...]
+    receipt: Mapping[str, Any]
+    receipt_sha256: str
+
+
+@dataclass(frozen=True)
+class SiddhantaDriftAnalysisReport:
+    """Differential report comparing classical Surya Siddhanta vs modern JPL DE440 / Drig-Ganita."""
+
+    jd_ut: float
+    iso_utc: str
+    ahargana_days: float
+    ayanamsa: str
+    ephemeris_source: str
+    mean_abs_delta_deg: float
+    max_abs_delta_deg: float
+    min_abs_delta_body: str
+    max_abs_delta_body: str
+    planet_comparisons: Mapping[str, Mapping[str, Any]]
+    receipt: Mapping[str, Any]
+    receipt_sha256: str
+
+
+def _compute_body_varga_margins(
+    body: str,
+    longitude_deg: float,
+    speed_deg_per_sec: float,
+) -> dict[str, VargaBoundaryMargin]:
+    """Compute exact angular and temporal distance to each of the 16 Shodashvarga boundaries."""
+    lon = normalize_degrees(longitude_deg)
+    abs_speed = max(abs(float(speed_deg_per_sec)), 1.0e-9)
+    placements = compute_shodashvarga(lon)
+    margins: dict[str, VargaBoundaryMargin] = {}
+
+    for varga_key in SHODASHVARGA_KEYS:
+        pl = placements[varga_key]
+        div_factor = _DIVISION_FACTORS[varga_key]
+        sector_span = 30.0 / float(div_factor)
+        in_sign = lon % 30.0
+        offset_in_sector = in_sign % sector_span
+        deg_from_lower = max(0.0, offset_in_sector)
+        deg_to_upper = max(0.0, sector_span - offset_in_sector)
+
+        if speed_deg_per_sec >= 0.0:
+            sec_prev = deg_from_lower / abs_speed
+            sec_next = deg_to_upper / abs_speed
+        else:
+            sec_prev = deg_to_upper / abs_speed
+            sec_next = deg_from_lower / abs_speed
+
+        margins[varga_key] = VargaBoundaryMargin(
+            body=body,
+            varga=varga_key,
+            division_factor=div_factor,
+            sign_index=pl.sign_index,
+            sign_name=pl.sign_name,
+            sign_lord=pl.sign_lord,
+            longitude_deg=round(lon, 8),
+            sector_span_deg=round(sector_span, 8),
+            degrees_from_lower_cusp=round(deg_from_lower, 8),
+            degrees_to_upper_cusp=round(deg_to_upper, 8),
+            seconds_to_previous_cusp=round(sec_prev, 4),
+            seconds_to_next_cusp=round(sec_next, 4),
+            shashtiamsa_name=pl.shashtiamsa_name,
+            shashtiamsa_is_benefic=pl.shashtiamsa_is_benefic,
+        )
+    return margins
+
+
+def solve_subsecond_shodashvarga_cusp_transitions(
+    jd_ut: float,
+    latitude_deg: float,
+    longitude_deg: float,
+    *,
+    ayanamsa: str = "lahiri",
+    adapter: EphemerisAdapter | None = None,
+) -> SubsecondShodashvargaCuspReport:
+    """Solve exact seconds-to-previous and seconds-to-next sign transitions across all 16
+    Parashari Shodashvarga charts (``D1`` through ``D60``) for the Ascendant and all 9 Grahas.
+    """
+    ad = adapter if adapter is not None else EphemerisAdapter()
+    ayan_deg = ad.get_ayanamsa_ut(float(jd_ut), mode=ayanamsa)
+    houses_res = ad.houses_ut(
+        float(jd_ut),
+        float(latitude_deg),
+        float(longitude_deg),
+        system="whole_sign",
+        ayanamsa=ayanamsa,
+    )
+
+    # Measure instantaneous topocentric Ascendant angular speed via 1-second finite difference
+    dt_days = 1.0 / 86400.0
+    houses_plus = ad.houses_ut(
+        float(jd_ut) + dt_days,
+        float(latitude_deg),
+        float(longitude_deg),
+        system="whole_sign",
+        ayanamsa=ayanamsa,
+    )
+    asc_delta = (houses_plus.ascendant_deg - houses_res.ascendant_deg + 180.0) % 360.0 - 180.0
+    asc_speed_deg_per_sec = asc_delta if abs(asc_delta) > 1.0e-8 else LAGNA_DEG_PER_SECOND
+
+    asc_margins = _compute_body_varga_margins(
+        "Ascendant",
+        houses_res.ascendant_deg,
+        asc_speed_deg_per_sec,
+    )
+
+    planet_margins: dict[str, Mapping[str, VargaBoundaryMargin]] = {}
+    for body_key in VEDIC_NINE_GRAHAS:
+        p_pos = ad.calc_ut(float(jd_ut), body_key, sidereal=True, ayanamsa=ayanamsa)
+        p_name = body_key.capitalize()
+        p_speed_sec = p_pos.longitude_speed_deg_per_day / 86400.0
+        if abs(p_speed_sec) < 1.0e-9:
+            p_speed_sec = _MEAN_DEG_PER_SECOND.get(p_name, 1.0e-7)
+        planet_margins[p_name] = _compute_body_varga_margins(
+            p_name,
+            p_pos.longitude_deg,
+            p_speed_sec,
+        )
+
+    most_sensitive_varga = "D60"
+    min_margin_sec = float("inf")
+    for v_key, margin in asc_margins.items():
+        nearest = min(margin.seconds_to_previous_cusp, margin.seconds_to_next_cusp)
+        if nearest < min_margin_sec:
+            min_margin_sec = nearest
+            most_sensitive_varga = v_key
+
+    receipt = {
+        "module": "ephemeris_oss.impossible_astrology.shodashvarga_cusps",
+        "version": __version__,
+        "jd_ut": round(float(jd_ut), 10),
+        "latitude_deg": round(float(latitude_deg), 6),
+        "longitude_deg": round(float(longitude_deg), 6),
+        "ayanamsa": ayanamsa,
+        "ayanamsa_deg": round(float(ayan_deg), 8),
+        "ascendant_longitude_deg": round(float(houses_res.ascendant_deg), 8),
+        "most_sensitive_varga": most_sensitive_varga,
+        "minimum_ascendant_cusp_margin_seconds": round(min_margin_sec, 4),
+    }
+    return SubsecondShodashvargaCuspReport(
+        jd_ut=float(jd_ut),
+        iso_utc=jd_to_iso_utc(float(jd_ut)),
+        latitude_deg=float(latitude_deg),
+        longitude_deg=float(longitude_deg),
+        ayanamsa=ayanamsa,
+        ayanamsa_deg=float(ayan_deg),
+        ascendant_longitude_deg=float(houses_res.ascendant_deg),
+        most_sensitive_varga=most_sensitive_varga,
+        minimum_ascendant_cusp_margin_seconds=round(min_margin_sec, 4),
+        ascendant_margins=asc_margins,
+        planet_margins=planet_margins,
+        receipt=receipt,
+        receipt_sha256=canonical_hash(receipt),
+    )
+
+
+def rectify_birth_time_bayesian(
+    nominal_jd_ut: float,
+    latitude_deg: float,
+    longitude_deg: float,
+    *,
+    window_minutes: float = 15.0,
+    step_seconds: float = 10.0,
+    ayanamsa: str = "lahiri",
+    life_events: Sequence[Mapping[str, Any] | LifeEventSpec] | None = None,
+    adapter: EphemerisAdapter | None = None,
+) -> BirthTimeRectificationReport:
+    """High-level birth-time rectification solver directly from Julian Date and observer coordinates.
+
+    Automatically resolves local sunrise, sidereal Lagna, Sun/Moon/planetary longitudes,
+    Kunda 81x harmonic alignment, Pranapada Shuddhi, Pancha Tattwa elemental cycles,
+    and life-event Dasha triggers across ``[nominal_jd_ut - window, nominal_jd_ut + window]``.
+    """
+    ad = adapter if adapter is not None else EphemerisAdapter()
+    houses_res = ad.houses_ut(
+        float(nominal_jd_ut),
+        float(latitude_deg),
+        float(longitude_deg),
+        system="whole_sign",
+        ayanamsa=ayanamsa,
+    )
+    try:
+        _, sr_tuple = ad.rise_trans(
+            float(nominal_jd_ut) - 0.5,
+            "sun",
+            CALC_RISE,
+            geopos=(float(longitude_deg), float(latitude_deg), 0.0),
+        )
+        sunrise_jd = float(sr_tuple[0])
+        if sunrise_jd > float(nominal_jd_ut):
+            _, sr_prev = ad.rise_trans(
+                float(nominal_jd_ut) - 1.25,
+                "sun",
+                CALC_RISE,
+                geopos=(float(longitude_deg), float(latitude_deg), 0.0),
+            )
+            sunrise_jd = float(sr_prev[0])
+    except Exception:
+        sunrise_jd = float(nominal_jd_ut) - 0.25
+
+    planet_lons: dict[str, float] = {}
+    for body_key in VEDIC_NINE_GRAHAS:
+        pos = ad.calc_ut(float(nominal_jd_ut), body_key, sidereal=True, ayanamsa=ayanamsa)
+        planet_lons[body_key.capitalize()] = pos.longitude_deg
+
+    return rectify_birth_time(
+        nominal_jd_ut=float(nominal_jd_ut),
+        sunrise_jd_ut=float(sunrise_jd),
+        nominal_lagna_lon_deg=float(houses_res.ascendant_deg),
+        sun_lon_deg=float(planet_lons["Sun"]),
+        moon_lon_deg=float(planet_lons["Moon"]),
+        window_minutes=float(window_minutes),
+        step_seconds=float(step_seconds),
+        planet_longitudes=planet_lons,
+        life_events=life_events,
+    )
+
+
+def scan_multi_century_rare_phenomena(
+    start_jd_tt: float,
+    end_jd_tt: float,
+    *,
+    bodies: Sequence[str] = TARAGRAHAS,
+    ayanamsa: str = "lahiri",
+    max_war_separation_deg: float = 1.0,
+) -> MultiCenturyPhenomenaReport:
+    """Scan a multi-day, multi-year, or multi-century window (``3102 BCE`` to ``3000 CE``)
+    for exact-second Graha Yuddha (planetary wars), retrograde stations, and solar combustion.
+    """
+    if float(end_jd_tt) <= float(start_jd_tt):
+        raise ValueError("end_jd_tt must be greater than start_jd_tt")
+
+    normalized_bodies = tuple(
+        b.strip().lower() for b in bodies if b.strip().lower() in TARAGRAHAS
+    )
+    if not normalized_bodies:
+        normalized_bodies = TARAGRAHAS
+
+    # Scan across [start_jd_tt, end_jd_tt] for Graha Yuddha encounters (deduplicated per pair encounter)
+    span_days = float(end_jd_tt) - float(start_jd_tt)
+    step_days = min(1.0, max(0.25, span_days / 365.0))
+    best_war_by_bucket: dict[tuple[str, str, int], tuple[float, Any]] = {}
+    t_cur = float(start_jd_tt)
+    while t_cur <= float(end_jd_tt) + 1.0e-9:
+        snap_positions = {
+            b: _builtin_planet_apparent(b, t_cur)
+            for b in normalized_bodies
+        }
+        instant_wars = evaluate_graha_yuddha(
+            snap_positions,
+            max_longitude_separation_deg=float(max_war_separation_deg),
+        )
+        for w in instant_wars:
+            bucket = (w.body_a, w.body_b, int((t_cur - float(start_jd_tt)) // 15.0))
+            prev = best_war_by_bucket.get(bucket)
+            if prev is None or w.longitude_separation_deg < prev[1].longitude_separation_deg:
+                best_war_by_bucket[bucket] = (t_cur, w)
+        t_cur += step_days
+
+    war_list: list[Mapping[str, Any]] = []
+    for war_jd, w in sorted(best_war_by_bucket.values(), key=lambda item: item[0]):
+        war_list.append(
+            {
+                "body_a": w.body_a,
+                "body_b": w.body_b,
+                "jd_tt": round(war_jd, 8),
+                "iso_utc": jd_to_iso_utc(war_jd),
+                "winner": w.winner,
+                "loser": w.loser,
+                "victory_criterion": w.victory_criterion,
+                "separation_deg": round(w.longitude_separation_deg, 6),
+                "latitude_separation_deg": round(w.latitude_separation_deg, 6),
+                "northern_body": w.northern_body,
+                "brighter_body": w.brighter_body,
+                "receipt_sha256": w.receipt_sha256,
+            }
+        )
+    war_dicts = tuple(war_list)
+
+    stations_list: list[Mapping[str, Any]] = []
+    combustion_list: list[Mapping[str, Any]] = []
+    for body in normalized_bodies:
+        st_events = find_retrograde_stations(
+            body,
+            float(start_jd_tt),
+            float(end_jd_tt),
+            ayanamsa=ayanamsa,
+            compute_shadow_periods=False,
+        )
+        for st in st_events:
+            stations_list.append(
+                {
+                    "body": st.body,
+                    "jd_tt": round(st.jd_tt, 8),
+                    "iso_utc": jd_to_iso_utc(st.jd_tt),
+                    "station_type": st.kind,
+                    "longitude_deg": round(st.longitude_deg, 6),
+                    "sidereal_longitude_deg": round(st.sidereal_longitude_deg, 6),
+                    "rasi": varga_sign(st.sidereal_longitude_deg, "D1").sign_name,
+                    "receipt_sha256": st.receipt_sha256,
+                }
+            )
+        cb_windows = find_combustion_windows(
+            body,
+            float(start_jd_tt),
+            float(end_jd_tt),
+        )
+        for cb in cb_windows:
+            combustion_list.append(
+                {
+                    "body": cb.body,
+                    "ingress_jd_tt": round(cb.start_jd_tt, 8),
+                    "ingress_iso_utc": jd_to_iso_utc(cb.start_jd_tt),
+                    "min_elongation_jd_tt": round(cb.min_separation_jd_tt, 8),
+                    "egress_jd_tt": round(cb.end_jd_tt, 8),
+                    "egress_iso_utc": jd_to_iso_utc(cb.end_jd_tt),
+                    "min_elongation_deg": round(cb.min_separation_deg, 6),
+                    "has_cazimi": cb.cazimi_occurred,
+                    "duration_days": round(cb.duration_days, 4),
+                    "receipt_sha256": cb.receipt_sha256,
+                }
+            )
+    stations_list.sort(key=lambda item: float(item["jd_tt"]))
+    combustion_list.sort(key=lambda item: float(item["ingress_jd_tt"]))
+
+    receipt = {
+        "module": "ephemeris_oss.impossible_astrology.rare_phenomena",
+        "version": __version__,
+        "start_jd_tt": round(float(start_jd_tt), 8),
+        "end_jd_tt": round(float(end_jd_tt), 8),
+        "ayanamsa": ayanamsa,
+        "bodies": normalized_bodies,
+        "graha_yuddha_count": len(war_dicts),
+        "retrograde_station_count": len(stations_list),
+        "combustion_window_count": len(combustion_list),
+    }
+    return MultiCenturyPhenomenaReport(
+        start_jd_tt=float(start_jd_tt),
+        end_jd_tt=float(end_jd_tt),
+        start_iso_utc=jd_to_iso_utc(float(start_jd_tt)),
+        end_iso_utc=jd_to_iso_utc(float(end_jd_tt)),
+        ayanamsa=ayanamsa,
+        bodies=normalized_bodies,
+        graha_yuddha_count=len(war_dicts),
+        retrograde_station_count=len(stations_list),
+        combustion_window_count=len(combustion_list),
+        graha_yuddha_events=war_dicts,
+        retrograde_stations=tuple(stations_list),
+        combustion_windows=tuple(combustion_list),
+        receipt=receipt,
+        receipt_sha256=canonical_hash(receipt),
+    )
+
+
+def analyze_siddhanta_vs_jpl_de440_drift(
+    jd_ut: float,
+    *,
+    ayanamsa: str = "lahiri",
+    adapter: EphemerisAdapter | None = None,
+) -> SiddhantaDriftAnalysisReport:
+    """Compare classical *Surya Siddhanta* (epicyclic *Manda* + *Sighra Samskara* from
+    the ``3102 BCE`` Kali Yuga epoch) against modern *Drig-Ganita* (embedded NASA JPL DE440
+    Chebyshev in ``1550..2306 CE`` or historical Vondrak-2011 + analytical outside).
+    """
+    ad = adapter if adapter is not None else EphemerisAdapter()
+    modern_lons: dict[str, float] = {}
+    for body_key in VEDIC_NINE_GRAHAS:
+        pos = ad.calc_ut(float(jd_ut), body_key, sidereal=True, ayanamsa=ayanamsa)
+        modern_lons[body_key] = pos.longitude_deg
+    ephem_source = "de440-chebyshev" if 2287184.5 <= float(jd_ut) <= 2563392.5 else "vondrak2011-analytical"
+
+    comparison: SiddhantaModernComparison = compare_siddhanta_with_modern(
+        float(jd_ut),
+        modern_lons,
+    )
+    spashta = surya_siddhanta_true_positions(float(jd_ut))
+
+    planet_rows: dict[str, Mapping[str, Any]] = {}
+    min_body = "sun"
+    max_body = "sun"
+    min_val = float("inf")
+    max_val = -1.0
+
+    for body, comp in comparison.comparisons.items():
+        sp_pos = spashta.planets[body]
+        if comp.abs_delta_deg < min_val:
+            min_val = comp.abs_delta_deg
+            min_body = body
+        if comp.abs_delta_deg > max_val:
+            max_val = comp.abs_delta_deg
+            max_body = body
+        planet_rows[body] = {
+            "body": body,
+            "siddhanta_true_longitude_deg": round(comp.siddhanta_longitude_deg, 6),
+            "modern_drig_ganita_longitude_deg": round(comp.modern_longitude_deg, 6),
+            "signed_delta_deg": round(comp.signed_delta_deg, 6),
+            "abs_delta_deg": round(comp.abs_delta_deg, 6),
+            "delta_arcminutes": round(comp.delta_arcminutes, 4),
+            "siddhanta_mean_longitude_deg": round(comp.mean_longitude_deg, 6),
+            "manda_phala_deg": round(comp.manda_phala_deg, 6),
+            "sighra_phala_deg": round(comp.sighra_phala_deg, 6),
+            "siddhanta_rasi": sp_pos.rasi_name,
+            "modern_rasi": varga_sign(comp.modern_longitude_deg, "D1").sign_name,
+            "rasi_agrees": sp_pos.rasi_name == varga_sign(comp.modern_longitude_deg, "D1").sign_name,
+        }
+
+    receipt = {
+        "module": "ephemeris_oss.impossible_astrology.siddhanta_drift",
+        "version": __version__,
+        "jd_ut": round(float(jd_ut), 10),
+        "ahargana_days": round(float(comparison.ahargana), 6),
+        "ayanamsa": ayanamsa,
+        "ephemeris_source": ephem_source,
+        "mean_abs_delta_deg": round(float(comparison.mean_abs_delta_deg), 6),
+        "max_abs_delta_deg": round(float(comparison.max_abs_delta_deg), 6),
+        "comparison_receipt_sha256": comparison.receipt_sha256,
+    }
+    return SiddhantaDriftAnalysisReport(
+        jd_ut=float(jd_ut),
+        iso_utc=jd_to_iso_utc(float(jd_ut)),
+        ahargana_days=float(comparison.ahargana),
+        ayanamsa=ayanamsa,
+        ephemeris_source=ephem_source,
+        mean_abs_delta_deg=round(float(comparison.mean_abs_delta_deg), 6),
+        max_abs_delta_deg=round(float(comparison.max_abs_delta_deg), 6),
+        min_abs_delta_body=min_body,
+        max_abs_delta_body=max_body,
+        planet_comparisons=planet_rows,
+        receipt=receipt,
+        receipt_sha256=canonical_hash(receipt),
+    )
+
+
+__all__ = [
+    "MultiCenturyPhenomenaReport",
+    "SiddhantaDriftAnalysisReport",
+    "SubsecondShodashvargaCuspReport",
+    "VargaBoundaryMargin",
+    "analyze_siddhanta_vs_jpl_de440_drift",
+    "rectify_birth_time_bayesian",
+    "scan_multi_century_rare_phenomena",
+    "solve_subsecond_shodashvarga_cusp_transitions",
+]

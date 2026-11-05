@@ -388,7 +388,7 @@ class JplErfaAstronomyProvider(AstronomyProvider):
                 "tdb_policy": tdb_policy,
                 "mean_equinox": bool(mean_equinox),
             })
-        if artifact.identifier == "COMPACT-DE440":
+        if artifact.identifier.startswith("COMPACT-DE440"):
             result_payload["kernel_mode"] = "compact-chebyshev-de440"
         return result_payload
 
@@ -464,7 +464,7 @@ class JplErfaAstronomyProvider(AstronomyProvider):
             if cached is not None:
                 return artifact, cached[1]
             path = self._kernel_registry.verified_path_for_tdb_jd(tdb_jd)
-            if artifact.identifier == "COMPACT-DE440":
+            if artifact.identifier.startswith("COMPACT-DE440"):
                 from ..compact_kernel import CompactChebyshevKernel
 
                 kernel: Any = CompactChebyshevKernel.open(path)
@@ -1097,7 +1097,7 @@ class JplErfaAstronomyProvider(AstronomyProvider):
             earth_orientation_upper_mjd=(used_eop.upper_mjd if used_eop else None),
             kernel_mode=(
                 "compact-chebyshev-de440"
-                if selected_artifact.identifier == "COMPACT-DE440"
+                if selected_artifact.identifier.startswith("COMPACT-DE440")
                 else None
             ),
         )
@@ -1255,7 +1255,7 @@ class JplErfaAstronomyProvider(AstronomyProvider):
             earth_orientation_upper_mjd=eop.upper_mjd,
             kernel_mode=(
                 "compact-chebyshev-de440"
-                if artifact.identifier == "COMPACT-DE440"
+                if artifact.identifier.startswith("COMPACT-DE440")
                 else None
             ),
         )

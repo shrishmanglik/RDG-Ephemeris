@@ -29,6 +29,20 @@ COMPACT_START_JD = 2378432.5  # 1799-10-28 00:00 TDB
 COMPACT_SPAN_DAYS = 110080.0  # 860 * 128 days
 COMPACT_END_JD = COMPACT_START_JD + COMPACT_SPAN_DAYS  # 2101-03-20 00:00 TDB
 
+COMPACT_EARLY_WING_ID = "COMPACT-DE440-EARLY"
+COMPACT_EARLY_WING_PATH = Path(__file__).resolve().parent / "data" / "de440_wing_1550_1800.bin.zlib"
+COMPACT_EARLY_START_JD = 2287184.5  # 1549-12-21 00:00 TDB (exact DE440 start)
+COMPACT_EARLY_SPAN_DAYS = 91264.0   # 1426 * 64 days (overlaps COMPACT_START_JD by 16 days)
+COMPACT_EARLY_END_JD = COMPACT_EARLY_START_JD + COMPACT_EARLY_SPAN_DAYS  # 2378448.5
+COMPACT_EARLY_WING_SHA256 = "7e33d90e08f72a673c6b30bd8e752201ee19f791661aac380716258fd332b311"
+
+COMPACT_LATE_WING_ID = "COMPACT-DE440-LATE"
+COMPACT_LATE_WING_PATH = Path(__file__).resolve().parent / "data" / "de440_wing_2101_2306.bin.zlib"
+COMPACT_LATE_START_JD = 2488448.5   # overlaps COMPACT_END_JD by 64 days
+COMPACT_LATE_SPAN_DAYS = 74944.0    # 1171 * 64 days
+COMPACT_LATE_END_JD = COMPACT_LATE_START_JD + COMPACT_LATE_SPAN_DAYS  # 2563392.5 (2306-03-26 00:00 TDB)
+COMPACT_LATE_WING_SHA256 = "3f3836579dbd4f6d45ff967b5af1c5f6ff5d1d6df6297c469b0daaf84ac4f036"
+
 # Earth-Moon mass ratio in DE440: r_{3->399} = -r_{3->301} / DE440_EMRAT to < 1e-12 km.
 DE440_EMRAT = 81.30056822149722
 
@@ -193,11 +207,17 @@ class CompactChebyshevKernel:
             raise AstronomyDataUnavailable(f"compact kernel data file missing: {target_path}")
         raw_bytes = target_path.read_bytes()
         actual_sha256 = hashlib.sha256(raw_bytes).hexdigest()
-        if target_path.resolve() == COMPACT_KERNEL_PATH.resolve():
-            if COMPACT_KERNEL_SHA256 != "0" * 64 and actual_sha256.lower() != COMPACT_KERNEL_SHA256.lower():
-                raise AstronomyDataUnavailable(
-                    f"compact kernel SHA-256 mismatch: expected {COMPACT_KERNEL_SHA256}, got {actual_sha256}"
-                )
+        resolved_target = target_path.resolve()
+        pinned_hashes = {
+            COMPACT_KERNEL_PATH.resolve(): COMPACT_KERNEL_SHA256,
+            COMPACT_EARLY_WING_PATH.resolve(): COMPACT_EARLY_WING_SHA256,
+            COMPACT_LATE_WING_PATH.resolve(): COMPACT_LATE_WING_SHA256,
+        }
+        expected_sha = pinned_hashes.get(resolved_target)
+        if expected_sha and expected_sha != "0" * 64 and actual_sha256.lower() != expected_sha.lower():
+            raise AstronomyDataUnavailable(
+                f"compact kernel SHA-256 mismatch: expected {expected_sha}, got {actual_sha256}"
+            )
         cache_key = (str(target_path.resolve()), actual_sha256)
         with _CACHE_LOCK:
             cached = _DECODED_SEGMENTS_CACHE.get(cache_key)

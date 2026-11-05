@@ -1,0 +1,365 @@
+{
+  "de440_and_horizons_de441_accuracy_summary": {
+    "extended_wings_1550_2306_vs_full_de440": {
+      "core_1800_2100_max_diff_arcsec": 0.000717,
+      "samples_evaluated": 3864,
+      "span_ce": "1550-01-01 to 2305-12-31",
+      "wing_1550_1800_max_diff_arcsec": 0.021164,
+      "wing_2101_2306_max_diff_arcsec": 0.022786
+    },
+    "lunar_nodes": {
+      "antipode_residual_arcsec": "2.04636308e-10",
+      "legacy_mean_rahu_worst_arcsec": "3.68345354e-09",
+      "mean_rahu_max_arcsec": "3.27418093e-09",
+      "mean_rahu_median_arcsec": "4.09272616e-10",
+      "policy_version": "ephemeris-oss-lunar-nodes-1.1.0-meeus47.7",
+      "source_file": "docs/ACCURACY.md",
+      "true_rahu_typical_arcsec": "1.38436462e-06",
+      "true_rahu_worst_arcsec": "5.9393642e-06"
+    },
+    "physical_grahas": [
+      {
+        "de440_median_arcsec": "1.93862718e-05",
+        "de440_worst_arcsec": "0.000108337531",
+        "horizons_median_arcsec": "1.5601669e-06",
+        "horizons_p95_arcsec": "2.99024095e-06",
+        "horizons_worst_arcsec": "3.80815838e-06",
+        "id": "sun",
+        "naif_id": 10,
+        "source_file": "docs/ACCURACY.md",
+        "target_label": "Sun centre",
+        "worst_horizons_sample": "1976-02"
+      },
+      {
+        "de440_median_arcsec": "9.85119698e-05",
+        "de440_worst_arcsec": "0.000716859608",
+        "horizons_median_arcsec": "0.00243318773",
+        "horizons_p95_arcsec": "0.0172649702",
+        "horizons_worst_arcsec": "0.0253509189",
+        "id": "moon",
+        "naif_id": 301,
+        "source_file": "docs/ACCURACY.md",
+        "target_label": "Moon centre",
+        "worst_horizons_sample": "1801-01"
+      },
+      {
+        "de440_median_arcsec": "1.93394101e-05",
+        "de440_worst_arcsec": "0.000107906669",
+        "horizons_median_arcsec": "1.73181857e-06",
+        "horizons_p95_arcsec": "3.58725987e-06",
+        "horizons_worst_arcsec": "5.19406063e-06",
+        "id": "mercury",
+        "naif_id": 199,
+        "source_file": "docs/ACCURACY.md",
+        "target_label": "Mercury centre",
+        "worst_horizons_sample": "2059-08"
+      },
+      {
+        "de440_median_arcsec": "1.9265741e-05",
+        "de440_worst_arcsec": "0.00010745473",
+        "horizons_median_arcsec": "1.61171841e-06",
+        "horizons_p95_arcsec": "3.01558294e-06",
+        "horizons_worst_arcsec": "5.10202485e-06",
+        "id": "venus",
+        "naif_id": 299,
+        "source_file": "docs/ACCURACY.md",
+        "target_label": "Venus centre",
+        "worst_horizons_sample": "1911-09"
+      },
+      {
+        "de440_median_arcsec": "1.94618337e-05",
+        "de440_worst_arcsec": "0.000108352879",
+        "horizons_median_arcsec": "1.40373266e-06",
+        "horizons_p95_arcsec": "2.52963415e-06",
+        "horizons_worst_arcsec": "3.22078937e-06",
+        "id": "mars",
+        "naif_id": 4,
+        "source_file": "docs/ACCURACY.md",
+        "target_label": "Mars system barycentre",
+        "worst_horizons_sample": "1912-09"
+      },
+      {
+        "de440_median_arcsec": "1.936898e-05",
+        "de440_worst_arcsec": "0.000108498989",
+        "horizons_median_arcsec": "1.38976159e-06",
+        "horizons_p95_arcsec": "2.14319505e-06",
+        "horizons_worst_arcsec": "2.55158769e-06",
+        "id": "jupiter",
+        "naif_id": 5,
+        "source_file": "docs/ACCURACY.md",
+        "target_label": "Jupiter system barycentre",
+        "worst_horizons_sample": "1976-02"
+      },
+      {
+        "de440_median_arcsec": "1.95472182e-05",
+        "de440_worst_arcsec": "0.000108927907",
+        "horizons_median_arcsec": "1.39243358e-06",
+        "horizons_p95_arcsec": "2.16523355e-06",
+        "horizons_worst_arcsec": "2.71751497e-06",
+        "id": "saturn",
+        "naif_id": 6,
+        "source_file": "docs/ACCURACY.md",
+        "target_label": "Saturn system barycentre",
+        "worst_horizons_sample": "1922-10"
+      }
+    ],
+    "study_parameters": {
+      "de440_monthly_tt_samples_per_graha": 3612,
+      "horizons_samples_per_graha": 300,
+      "horizons_total_rows": 2100,
+      "interval_end_year": 2100,
+      "interval_start_year": 1800,
+      "max_ceiling_arcsec": 0.1,
+      "mean_node_ceiling_arcsec": 0.001,
+      "p95_ceiling_arcsec": 0.02,
+      "source_files": [
+        "docs/ACCURACY.md",
+        "README.md"
+      ],
+      "true_node_ceiling_arcsec": 0.1
+    }
+  },
+  "embedded_kernel_inventory": {
+    "combined_embedded_de440_chebyshev_span_jd": [
+      2287184.5,
+      2563392.5
+    ],
+    "combined_embedded_de440_chebyshev_span_years": "1550 CE to 2306 CE",
+    "compact_1800_2100": {
+      "end_jd": 2488512.5,
+      "expected_sha256": "ed25b159561a0471f6dbc79e54de9df938a1932175100c35a5a880344d9b9169",
+      "segment_count": 14,
+      "sha256": "ed25b159561a0471f6dbc79e54de9df938a1932175100c35a5a880344d9b9169",
+      "start_jd": 2378432.5,
+      "verified": true
+    },
+    "wing_1550_1800": {
+      "end_jd": 2378448.5,
+      "expected_sha256": "7e33d90e08f72a673c6b30bd8e752201ee19f791661aac380716258fd332b311",
+      "segment_count": 14,
+      "sha256": "7e33d90e08f72a673c6b30bd8e752201ee19f791661aac380716258fd332b311",
+      "start_jd": 2287184.5,
+      "verified": true
+    },
+    "wing_2101_2306": {
+      "end_jd": 2563392.5,
+      "expected_sha256": "3f3836579dbd4f6d45ff967b5af1c5f6ff5d1d6df6297c469b0daaf84ac4f036",
+      "segment_count": 14,
+      "sha256": "3f3836579dbd4f6d45ff967b5af1c5f6ff5d1d6df6297c469b0daaf84ac4f036",
+      "start_jd": 2488448.5,
+      "verified": true
+    }
+  },
+  "feature_comparison_matrix": [
+    {
+      "astropy_6_x": "BSD-3-Clause (permissive, astronomy only)",
+      "legacy_c_ephemeris_se_2_10": "GPL v2+ / AGPL v3 or paid commercial seat license required for proprietary SaaS",
+      "parameter": "Open-Source License & Commercial SaaS Freedom",
+      "rdg_ephemeris_oss": "Apache-2.0 (100% free for commercial SaaS, desktop apps, and proprietary products)",
+      "skyfield_1_55": "MIT (permissive, astronomy only)"
+    },
+    {
+      "astropy_6_x": "Built-in analytical approximation or external SPK download required",
+      "legacy_c_ephemeris_se_2_10": "Requires external .se1 or .bsp data files managed separately on disk",
+      "parameter": "Zero-Config Offline Embedded NASA JPL DE440 Span",
+      "rdg_ephemeris_oss": "1550 CE to 2306 CE embedded in wheel (~7.7 MB Chebyshev polynomials, 0 external downloads required)",
+      "skyfield_1_55": "Requires downloading external 114 MB de440.bsp file at runtime"
+    },
+    {
+      "astropy_6_x": "Requires external JPL SPK kernels for high precision across millennia",
+      "legacy_c_ephemeris_se_2_10": "Requires multi-file .se1 archive download across centuries",
+      "parameter": "Multi-Millennium Historical & Future Span",
+      "rdg_ephemeris_oss": "3102 BCE (Kali Yuga Epoch) to 3000 CE seamless offline fallback (IAU 2006 / Vondrak 2011 +/-200,000 yr precession) + optional DE441 (-13200 to +17191)",
+      "skyfield_1_55": "Requires 3.3 GB DE441 SPK download for dates outside 1550-2650 CE"
+    },
+    {
+      "astropy_6_x": "< 0.001 arcsec when external JPL SPK is loaded",
+      "legacy_c_ephemeris_se_2_10": "< ~0.001 arcsec when external DE431/DE441 files are configured",
+      "parameter": "Positional Fidelity vs NASA JPL DE440 (1800-2100 CE)",
+      "rdg_ephemeris_oss": "<= 0.000717 arcsec worst error (0.000019 arcsec median across 3,612 monthly TT epochs per planet)",
+      "skyfield_1_55": "< 0.0005 arcsec when full 114 MB DE440 SPK is loaded"
+    },
+    {
+      "astropy_6_x": "Requires external SPK kernel",
+      "legacy_c_ephemeris_se_2_10": "Depends on externally installed .se1 files",
+      "parameter": "Positional Fidelity vs NASA JPL DE440 (1550-2306 CE Extended Embedded Span)",
+      "rdg_ephemeris_oss": "<= 0.0228 arcsec worst error across 1550-2306 CE from embedded Chebyshev wings",
+      "skyfield_1_55": "Requires external 114 MB de440.bsp"
+    },
+    {
+      "astropy_6_x": "None",
+      "legacy_c_ephemeris_se_2_10": "None (returns mutable C arrays and status flags)",
+      "parameter": "Cryptographic Calculation Receipts (SHA-256)",
+      "rdg_ephemeris_oss": "Every calculation returns a deterministic SHA-256 receipt binding kernel hash, NAIF IDs, conventions, and output",
+      "skyfield_1_55": "None"
+    },
+    {
+      "astropy_6_x": "None",
+      "legacy_c_ephemeris_se_2_10": "None",
+      "parameter": "Built-in Model Context Protocol (MCP) Server for LLMs",
+      "rdg_ephemeris_oss": "Built-in (rdg-ephemeris-mcp / ephemeris-oss mcp) with 8 deterministic tools + AI hallucination auditor",
+      "skyfield_1_55": "None"
+    },
+    {
+      "astropy_6_x": "None (Python library only)",
+      "legacy_c_ephemeris_se_2_10": "None (C shared library only)",
+      "parameter": "Built-in HTTP REST JSON API & OpenAPI 3.1 Server",
+      "rdg_ephemeris_oss": "Built-in zero-dependency server (rdg-ephemeris-api / ephemeris-oss serve)",
+      "skyfield_1_55": "None (Python library only)"
+    },
+    {
+      "astropy_6_x": "None",
+      "legacy_c_ephemeris_se_2_10": "Coordinates, ayanamsa, houses, and basic phenomena only (zero Vargas, Yogas, Dashas, Shadbala, or Ashtakavarga)",
+      "parameter": "Native Vedic & Classical Jyotish Computation Stack",
+      "rdg_ephemeris_oss": "Complete: 23 Vargas (D1-D144), 337 Yogas, 6-fold Shadbala, Ashtakavarga, 8 Dasha systems, Jaimini, Nadi, Tajika, Muhurta, Drik Panchang, SVG rendering",
+      "skyfield_1_55": "None"
+    },
+    {
+      "astropy_6_x": "None",
+      "legacy_c_ephemeris_se_2_10": "None",
+      "parameter": "Inverse & Previously Unsolved Astrological Solvers",
+      "rdg_ephemeris_oss": "Built-in sub-second 16-Varga cusp transition solver, Kunda 81x / Pranapada / Tattwa Bayesian birth-time rectification, Graha Yuddha disc-diameter adjudicator, and Surya Siddhanta vs DE440 drift analyzer",
+      "skyfield_1_55": "None"
+    },
+    {
+      "astropy_6_x": "Python/C-extensions only",
+      "legacy_c_ephemeris_se_2_10": "C source requiring Emscripten port and AGPL/GPL compliance",
+      "parameter": "Rust Core & WebAssembly / Browser ES-Module SDK",
+      "rdg_ephemeris_oss": "Included (rust/ephemeris-core + web/ephemeris-browser.js with SPK Type 2/3 & Chebyshev Clenshaw evaluation)",
+      "skyfield_1_55": "Python only"
+    }
+  ],
+  "impossible_astrology_and_integration_surfaces": {
+    "bayesian_birth_time_rectification": {
+      "best_total_score": 84.5,
+      "candidate_count": 61,
+      "latency_ms": 104.557,
+      "receipt_sha256": "fbe50ae2887fa49fb4aeb319f7e86ad7a5b1a29c83a1431c5e75b4b4c90613a9",
+      "rectified_offset_seconds": -180.0,
+      "varga_transitions_detected": 20
+    },
+    "classical_and_iae_anchors": {
+      "iae_1989_delta_arcsec": 24.5875,
+      "iae_1989_lahiri_computed_deg": 23.70344793,
+      "iae_1989_target_deg": 23.71027778,
+      "kali_yuga_3102_bce_mean_moon_deg": 0.0,
+      "kali_yuga_3102_bce_mean_sun_deg": 0.0
+    },
+    "mcp_server_verification": {
+      "initialized": true,
+      "sample_call_succeeded": true,
+      "tool_count": 8
+    },
+    "rare_phenomena_scanner": {
+      "combustion_window_count": 6,
+      "graha_yuddha_count": 11,
+      "latency_ms": 322.899,
+      "receipt_sha256": "11600626e44962d4b0d4a149eea6575123c89fae4fb8c20a1f76cc2f7f7a9bbf",
+      "retrograde_station_count": 4
+    },
+    "rest_api_verification": {
+      "endpoint_count": 11,
+      "health_status": 200,
+      "openapi_version": "3.1.0",
+      "positions_source": "de440-chebyshev",
+      "positions_status": 200
+    },
+    "siddhanta_vs_de440_drift_analyzer": {
+      "ahargana_days": 1872673.5,
+      "latency_ms": 94.213,
+      "max_abs_delta_deg": 176.036154,
+      "mean_abs_delta_deg": 41.55173,
+      "receipt_sha256": "805939361cce132d6810e46190f76c5db8a3bbcdc8324830dc349416f6e1944f"
+    },
+    "subsecond_varga_cusp_solver": {
+      "latency_ms": 86.616,
+      "minimum_ascendant_cusp_margin_seconds": 15.8173,
+      "most_sensitive_varga": "D45",
+      "receipt_sha256": "500958133cf2cc35ec0fa456a798fb92a655b5d0bcabb1c978b957645ff566f3"
+    }
+  },
+  "license": "Apache-2.0",
+  "multi_millennium_epoch_verification": [
+    {
+      "ascendant_deg": 321.60009,
+      "ayanamsa_deg": 313.357426,
+      "complete_kundali_latency_ms": 30.393,
+      "ephemeris_source": "vondrak2011-analytical",
+      "epoch_label": "3102 BCE (Kali Yuga Epoch)",
+      "jd_ut": 588465.5,
+      "moon_sidereal_lon_deg": 7.815628,
+      "receipt_sha256": "f635bcb90c36193814d47ffaa64f35e2c93a361acc3c7617b0dd332b22761eea",
+      "sun_sidereal_lon_deg": 351.445972
+    },
+    {
+      "ascendant_deg": 338.06747,
+      "ayanamsa_deg": 2.962144,
+      "complete_kundali_latency_ms": 32.652,
+      "ephemeris_source": "vondrak2011-analytical",
+      "epoch_label": "499 CE (Aryabhata Epoch)",
+      "jd_ut": 1903396.5,
+      "moon_sidereal_lon_deg": 280.538528,
+      "receipt_sha256": "308b1ec238ced7986a1d0e304351e8556ca0692694a4b24076c6fa7095e7e5ca",
+      "sun_sidereal_lon_deg": 358.461379
+    },
+    {
+      "ascendant_deg": 236.890307,
+      "ayanamsa_deg": 18.274548,
+      "complete_kundali_latency_ms": 47.25,
+      "ephemeris_source": "de440-chebyshev",
+      "epoch_label": "1600 CE (Early DE440 Chebyshev)",
+      "jd_ut": 2305447.5,
+      "moon_sidereal_lon_deg": 86.510952,
+      "receipt_sha256": "4bf06c0c15e62eb329301a68331133329385ffd92b3b0a5baf8beaf87ba605ab",
+      "sun_sidereal_lon_deg": 261.706806
+    },
+    {
+      "ascendant_deg": 232.155896,
+      "ayanamsa_deg": 23.703448,
+      "complete_kundali_latency_ms": 42.772,
+      "ephemeris_source": "de440-chebyshev",
+      "epoch_label": "1989 CE (IAE Rashtriya Panchang)",
+      "jd_ut": 2447527.5,
+      "moon_sidereal_lon_deg": 175.478732,
+      "receipt_sha256": "a14445d2902eb1e4cc6fadd427694d67df3c995ae3735e14c118cc360913db2c",
+      "sun_sidereal_lon_deg": 256.844337
+    },
+    {
+      "ascendant_deg": 159.2751,
+      "ayanamsa_deg": 24.224033,
+      "complete_kundali_latency_ms": 38.654,
+      "ephemeris_source": "de440-chebyshev",
+      "epoch_label": "2026 CE (Modern DE440 Chebyshev)",
+      "jd_ut": 2461139.0,
+      "moon_sidereal_lon_deg": 245.738613,
+      "receipt_sha256": "73d7931b7226890bef35c3cb2b47f12267be83f7cf64073053eaf7f25e8c0ff6",
+      "sun_sidereal_lon_deg": 354.436415
+    },
+    {
+      "ascendant_deg": 227.557254,
+      "ayanamsa_deg": 28.050424,
+      "complete_kundali_latency_ms": 41.818,
+      "ephemeris_source": "de440-chebyshev",
+      "epoch_label": "2300 CE (Future DE440 Chebyshev)",
+      "jd_ut": 2561117.5,
+      "moon_sidereal_lon_deg": 357.164147,
+      "receipt_sha256": "a2020c1e7c0e911c189b60ee9538b530bf14b41b614ea8361f733896952cc6b9",
+      "sun_sidereal_lon_deg": 252.00254
+    },
+    {
+      "ascendant_deg": 218.225365,
+      "ayanamsa_deg": 37.856338,
+      "complete_kundali_latency_ms": 29.516,
+      "ephemeris_source": "vondrak2011-analytical",
+      "epoch_label": "3000 CE (Far Future Vondrak-2011)",
+      "jd_ut": 2816787.5,
+      "moon_sidereal_lon_deg": 276.815366,
+      "receipt_sha256": "de592cf1c54538faa67566da99bf8602c4cde461d749a676fc4e8ee50b576420",
+      "sun_sidereal_lon_deg": 242.365555
+    }
+  ],
+  "package_name": "ephemeris-oss",
+  "package_version": "0.2.0.dev1",
+  "receipt_sha256": "035415650b365f25f392465e64ce71e8771b0d201f98c9edf0b8419b1da0faeb",
+  "schema": "rdg-ephemeris-sota-evaluation-v1"
+}

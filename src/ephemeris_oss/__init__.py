@@ -17,8 +17,10 @@ from __future__ import annotations
 from . import (
     adapter,
     almanac,
+    api_server,
     compact_kernel,
     fact_sheet,
+    impossible_astrology,
     jyotish,
     jyotish_advanced,
     jyotish_jaimini,
@@ -26,6 +28,7 @@ from . import (
     jyotish_rectification,
     jyotish_siddhanta,
     jyotish_transit,
+    mcp_server,
     rust_bridge,
     visualization,
 )
@@ -52,6 +55,16 @@ from .almanac import (
 )
 from .engine import phenomena, uncertainty_envelope
 from .fact_sheet import AIFactSheet, HallucinationAudit, compile_ai_fact_sheet, verify_ai_interpretation
+from .impossible_astrology import (
+    MultiCenturyPhenomenaReport,
+    SiddhantaDriftAnalysisReport,
+    SubsecondShodashvargaCuspReport,
+    VargaBoundaryMargin,
+    analyze_siddhanta_vs_jpl_de440_drift,
+    rectify_birth_time_bayesian,
+    scan_multi_century_rare_phenomena,
+    solve_subsecond_shodashvarga_cusp_transitions,
+)
 from .jyotish import VedicChartAnalysis, compute_vedic_chart_analysis
 from .rust_bridge import evaluate_chebyshev_clenshaw_3d
 
@@ -67,16 +80,22 @@ __all__ = [
     "HallucinationAudit",
     "HouseSystemResult",
     "Houses",
+    "MultiCenturyPhenomenaReport",
     "NakshatraInfo",
     "PlanetCoordinateResult",
     "PlanetPosition",
     "RegionalPanchangReport",
     "Result",
+    "SiddhantaDriftAnalysisReport",
+    "SubsecondShodashvargaCuspReport",
     "Undefined",
+    "VargaBoundaryMargin",
     "VedicChartAnalysis",
     "__version__",
     "adapter",
     "almanac",
+    "analyze_siddhanta_vs_jpl_de440_drift",
+    "api_server",
     "compact_kernel",
     "compile_ai_fact_sheet",
     "compute_lunar_month_amanta_purnimanta",
@@ -85,6 +104,7 @@ __all__ = [
     "compute_vedic_chart_analysis",
     "evaluate_chebyshev_clenshaw_3d",
     "fact_sheet",
+    "impossible_astrology",
     "jyotish",
     "jyotish_advanced",
     "jyotish_jaimini",
@@ -92,11 +112,15 @@ __all__ = [
     "jyotish_rectification",
     "jyotish_siddhanta",
     "jyotish_transit",
+    "mcp_server",
     "nakshatra_from_longitude",
     "normalize_ephemeris_source",
     "phenomena",
+    "rectify_birth_time_bayesian",
     "rust_bridge",
+    "scan_multi_century_rare_phenomena",
     "sign_from_longitude",
+    "solve_subsecond_shodashvarga_cusp_transitions",
     "uncertainty_envelope",
     "verify_ai_interpretation",
     "visualization",
