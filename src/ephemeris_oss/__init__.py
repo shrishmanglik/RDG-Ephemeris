@@ -53,6 +53,7 @@ from .almanac import (
     compute_regional_panchang,
     compute_regional_solar_calendar,
 )
+from .api_server import build_openapi_spec, dispatch_api_request
 from .engine import phenomena, uncertainty_envelope
 from .fact_sheet import AIFactSheet, HallucinationAudit, compile_ai_fact_sheet, verify_ai_interpretation
 from .impossible_astrology import (
@@ -66,6 +67,7 @@ from .impossible_astrology import (
     solve_subsecond_shodashvarga_cusp_transitions,
 )
 from .jyotish import VedicChartAnalysis, compute_vedic_chart_analysis
+from .mcp_server import execute_mcp_tool
 from .rust_bridge import evaluate_chebyshev_clenshaw_3d
 
 __all__ = [
@@ -96,13 +98,16 @@ __all__ = [
     "almanac",
     "analyze_siddhanta_vs_jpl_de440_drift",
     "api_server",
+    "build_openapi_spec",
     "compact_kernel",
     "compile_ai_fact_sheet",
     "compute_lunar_month_amanta_purnimanta",
     "compute_regional_panchang",
     "compute_regional_solar_calendar",
     "compute_vedic_chart_analysis",
+    "dispatch_api_request",
     "evaluate_chebyshev_clenshaw_3d",
+    "execute_mcp_tool",
     "fact_sheet",
     "impossible_astrology",
     "jyotish",

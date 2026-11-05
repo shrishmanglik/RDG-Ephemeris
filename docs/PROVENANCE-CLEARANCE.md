@@ -61,5 +61,6 @@ Four automated release gates enforce clean-room integrity before any wheel or so
 | `numpy` | `>= 1.26` | BSD 3-Clause | Vectorized array arithmetic and rotation matrices |
 | `pyerfa` | `>= 2.0.1` | BSD 3-Clause | IAU 2006/2000A precession, nutation, Earth rotation, and time scales |
 | `jplephem` | `>= 2.21` | MIT | NASA JPL SPK DAF binary Chebyshev segment evaluation |
+| `tzdata` | `>= 2024.1` | Apache-2.0 | IANA time-zone database fallback on platforms without system zoneinfo |
 
-All three runtime dependencies use permissive open-source licenses (BSD 3-Clause and MIT) fully compatible with Apache-2.0 commercial and open-source distribution.
+All four runtime dependencies use permissive open-source licenses (BSD 3-Clause, MIT, and Apache-2.0) fully compatible with Apache-2.0 commercial and open-source distribution. See [`TRADEMARK-AND-COMMERCIAL-BOUNDARY.md`](TRADEMARK-AND-COMMERCIAL-BOUNDARY.md) for trademark reservation under Apache-2.0 Section 6 and [`ROADMAP-AND-LIMITATIONS.md`](ROADMAP-AND-LIMITATIONS.md) for explicit precision regimes and scope boundaries.

@@ -644,3 +644,56 @@ def test_round5_release_reconciliation_contracts(monkeypatch) -> None:  # type: 
     rep_short = impossible_astrology.scan_multi_century_rare_phenomena(start_w, start_w + 0.1, bodies=("mercury", "venus"))
     assert len(rep_short.graha_yuddha_events) == 1
     assert abs(rep_short.graha_yuddha_events[0]["jd_tt"] - (start_w + 0.1)) < 1.0e-5
+
+
+def test_true_node_in_calc_ut_kundali_mcp_openapi_and_legal_docs() -> None:
+    """Verify True (osculating) vs Mean Rahu/Ketu in calc_ut, kundali bundle, MCP tools, OpenAPI responses, and legal/limitations docs."""
+    from pathlib import Path
+    from ephemeris_oss import EphemerisAdapter, build_openapi_spec, execute_mcp_tool
+
+    adapter = EphemerisAdapter()
+    for jd_probe in (2461139.0, 588465.5):
+        mean_rahu = adapter.calc_ut(jd_probe, "rahu", sidereal=True)
+        true_rahu_flag = adapter.calc_ut(jd_probe, "rahu", sidereal=True, true_node=True)
+        true_rahu_alias = adapter.calc_ut(jd_probe, "true_node", sidereal=True)
+        true_ketu = adapter.calc_ut(jd_probe, "true_ketu", sidereal=True)
+
+        assert abs(true_rahu_flag.longitude_deg - true_rahu_alias.longitude_deg) < 1.0e-9
+        assert abs(true_rahu_flag.longitude_deg - mean_rahu.longitude_deg) > 1.0e-3
+        assert abs(((true_rahu_flag.longitude_deg + 180.0) % 360.0) - true_ketu.longitude_deg) < 1.0e-9
+
+    bundle_mean = adapter.compute_complete_kundali_bundle(2461139.0, 28.6139, 77.2090, include_svg=False)
+    bundle_true = adapter.compute_complete_kundali_bundle(
+        2461139.0, 28.6139, 77.2090, true_node=True, include_svg=False
+    )
+    assert bundle_mean.positions["rahu"].longitude_deg != bundle_true.positions["rahu"].longitude_deg
+    assert bundle_mean.bundle_receipt_sha256 != bundle_true.bundle_receipt_sha256
+
+    mcp_pos_true = execute_mcp_tool(
+        "compute_planetary_positions",
+        {"jd_ut": 2461139.0, "true_node": True},
+    )
+    assert mcp_pos_true["node_mode"] == "true"
+    assert abs(
+        mcp_pos_true["planets"]["rahu"]["longitude_deg"] - bundle_true.positions["rahu"].longitude_deg
+    ) < 1.0e-9
+
+    spec = build_openapi_spec()
+    for path_key, path_item in spec["paths"].items():
+        for method_key, op in path_item.items():
+            assert "responses" in op, f"{method_key.upper()} {path_key} missing responses"
+            assert "200" in op["responses"]
+            if method_key == "post":
+                assert "400" in op["responses"]
+                assert "413" in op["responses"]
+
+    repo_root = Path(__file__).resolve().parents[1]
+    for rel_doc in (
+        "NOTICE",
+        "docs/TRADEMARK-AND-COMMERCIAL-BOUNDARY.md",
+        "docs/JYOTISH-CAPABILITIES-AND-CONVENTIONS.md",
+        "docs/ROADMAP-AND-LIMITATIONS.md",
+        "docs/EXPERT-TESTER-COHORT-REPORT.md",
+    ):
+        assert (repo_root / rel_doc).is_file(), f"Missing {rel_doc}"
+
