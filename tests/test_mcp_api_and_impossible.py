@@ -494,4 +494,3 @@ def test_mcp_daily_panchanga_anchors_to_local_sunrise_and_separates_instantaneou
         assert obs_report["anchoring_mode"] == "sunrise", city
         assert obs_report["active_sunrise_jd_ut"] <= jd_req, city
         assert obs_report["vara_name"] == expected_weekday, (city, obs_report["vara_name"], expected_weekday)
-
