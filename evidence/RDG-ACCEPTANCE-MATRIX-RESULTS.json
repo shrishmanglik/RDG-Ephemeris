@@ -18,7 +18,7 @@
       "ashtottari_full_cycle_years": 107.99999999999983,
       "yogini_full_cycle_years": 35.999999999999524,
       "chara_dasha_signs": 12,
-      "duration_ms": 17.81180000398308
+      "duration_ms": 34.86779998638667
     }
   },
   {
@@ -37,7 +37,7 @@
         "Vara (0..6)"
       ],
       "error_count": 0,
-      "duration_ms": 10544.49410000234
+      "duration_ms": 21027.97239998472
     }
   },
   {
@@ -56,7 +56,7 @@
         "3. Singularity: RDG fails closed (AstronomyDataUnavailable) if orbital angular momentum degenerates rather than clamping or falling back silently.",
         "4. Antipode: RDG guarantees Ketu = (Rahu + 180) % 360 to machine epsilon in both mean and true modes."
       ],
-      "duration_ms": 193.01290001021698
+      "duration_ms": 324.71310000983067
     }
   },
   {
@@ -80,7 +80,7 @@
           "shadow_exit_jd": 2461374.7621763498
         }
       ],
-      "duration_ms": 430.2534000016749
+      "duration_ms": 780.7035000005271
     }
   },
   {
@@ -141,7 +141,7 @@
           "delta_t_seconds": 442.08
         }
       ],
-      "duration_ms": 195.3337000159081
+      "duration_ms": 347.6422000094317
     }
   },
   {
@@ -155,7 +155,7 @@
       "india_1950_ist_offset_seconds": 19800,
       "india_1950_ist_offset_hours": 5.5,
       "gregorian_1582_gap_rejected": true,
-      "duration_ms": 14.159999991534278
+      "duration_ms": 35.26259999489412
     }
   },
   {
@@ -169,21 +169,21 @@
       "december_solstice_outcome": "always_below",
       "placidus_undefined_reason": "Placidus cusp is undefined for this circumpolar geometry",
       "whole_sign_ascendant_deg": 185.58273868103268,
-      "duration_ms": 313.6374000168871
+      "duration_ms": 569.621200003894
     }
   },
   {
     "id": 8,
     "name": "Performance Against 200 ms Chart Target",
     "status": "PASS",
-    "details": "Warm chart median: 22.17 ms, P95: 23.23 ms (target: < 200 ms)",
+    "details": "Warm chart median: 42.44 ms, P95: 48.06 ms (target: < 200 ms)",
     "telemetry": {
-      "warm_chart_p50_ms": 22.167900009662844,
-      "warm_chart_p95_ms": 23.227040005440358,
-      "warm_chart_min_ms": 17.012700001941994,
-      "warm_chart_max_ms": 116.62840002099983,
+      "warm_chart_p50_ms": 42.438200005562976,
+      "warm_chart_p95_ms": 48.06074499792885,
+      "warm_chart_min_ms": 29.98940000543371,
+      "warm_chart_max_ms": 208.99449998978525,
       "target_ms": 200.0,
-      "duration_ms": 1268.3072999934666
+      "duration_ms": 2447.185199998785
     }
   },
   {
@@ -194,7 +194,7 @@
     "telemetry": {
       "missing_kernel_refused": true,
       "corrupt_kernel_sha_mismatch_refused": true,
-      "duration_ms": 3.72030001017265
+      "duration_ms": 14.3967000185512
     }
   },
   {
@@ -205,16 +205,18 @@
     "telemetry": {
       "charts_tested": 100,
       "mismatch_count": 0,
-      "duration_ms": 4093.574099999387
+      "duration_ms": 8179.20340001001
     }
   },
   {
     "id": 11,
-    "name": "Real Web/API Journey & Offline Network-Isolated Desktop Journey",
+    "name": "Socket-Patched Local Python Library Contract (Downstream Desktop/Web App Journeys: HELD/UNKNOWN)",
     "status": "PASS",
-    "details": "Executed complete customer journey with outbound network sockets hard-blocked: 9-graha natal bundle, 16 Varga charts (D1..D60), 5-limb Panchang, 36-point Gun Milan, 5-level Dasha, all four 2026 eclipses, and AI hallucination audit all passed offline",
+    "details": "Executed local Python library calculations with socket.create_connection patched: 9-graha natal bundle, 16 Varga charts (D1..D60), 5-limb Panchang, 36-point Gun Milan, 5-level Dasha, all four 2026 eclipses, and AI hallucination audit passed; installed desktop app and hosted web customer journeys remain HELD/UNKNOWN outside this standalone library repo",
     "telemetry": {
-      "network_egress_blocked": true,
+      "socket_create_connection_patched": true,
+      "downstream_installed_desktop_app_journey": "HELD_OUTSIDE_STANDALONE_LIBRARY_REPO",
+      "downstream_live_web_customer_journey": "HELD_OUTSIDE_STANDALONE_LIBRARY_REPO",
       "bundle_receipt_sha256": "2873fa9024a761210cca487ea1031e569a5594ee844a4b0a4cab0ce047af5b73",
       "shodashvarga_count": 16,
       "ashtakoota_total_points": 10.5,
@@ -227,23 +229,24 @@
         16
       ],
       "ai_fact_sheet_bytes": 2974,
-      "duration_ms": 2485.574699996505
+      "duration_ms": 5146.985600003973
     }
   },
   {
     "id": 12,
-    "name": "Web, Desktop and Mobile Cross-Runtime Mathematical Parity",
+    "name": "Cross-Runtime Library Parity (Python, Rust Clenshaw 3D, WASM & Node ES-Module; Downstream App UI: HELD/UNKNOWN)",
     "status": "PASS",
-    "details": "Python Engine (0.0007 arcsec JPL DE440 truth floor), Rust Clenshaw Chebyshev evaluator, WebAssembly binary (ephemeris-core.wasm), Browser JS SDK (16 Vargas, 337 Bindus, 120y Dasha), and Multi-Ephemeris Uncertainty Envelope all match within tolerance",
+    "details": "Python Engine (0.0007 arcsec JPL DE440 truth floor), Rust Clenshaw Chebyshev evaluator, WebAssembly binary (ephemeris-core.wasm), Node ES-Module SDK (16 Vargas, 337 Bindus, 120y Dasha), and Multi-Ephemeris Uncertainty Envelope all match within tolerance; downstream app UI parity remains HELD/UNKNOWN outside this library repo",
     "telemetry": {
       "de440_truth_floor_0_0007_arcsec_verified": true,
       "rust_clenshaw_3d_verified": true,
       "wasm_binary_verified": true,
       "browser_js_sdk_parity": true,
-      "browser_js_execution_ms": 0.794,
+      "browser_js_execution_ms": 1.727,
       "uncertainty_envelope_bodies": 9,
       "boundary_sensitivity_divisions": 6,
-      "duration_ms": 81.40009999624453
+      "downstream_app_ui_parity": "HELD_OUTSIDE_STANDALONE_LIBRARY_REPO",
+      "duration_ms": 213.91370001947507
     }
   }
 ]

@@ -26,8 +26,9 @@ This module provides four deterministic, receipt-sealed solvers:
 
 from __future__ import annotations
 
+from bisect import bisect_right
 from dataclasses import asdict, dataclass
-from typing import Any, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 from ._version import __version__
 from .adapter import CALC_RISE, EphemerisAdapter, VEDIC_NINE_GRAHAS
@@ -165,32 +166,292 @@ class SiddhantaDriftAnalysisReport:
     receipt_sha256: str
 
 
+def _build_varga_sign_cusps() -> dict[str, tuple[float, ...]]:
+    """Precompute the exact sorted list of true 360-degree sign-transition cusps for each Varga.
+
+    Handles unequal Parashari D30 (Trimsamsa) sector widths ([0, 5, 10, 18, 25, 30] in odd signs
+    and [0, 5, 12, 20, 25, 30] in even signs) as well as cross-sign same-lord/same-sign
+    continuations (such as D2 Hora, D10 Dasamsa, and D24 Chaturvimsamsa) so that every cusp
+    in the table is an actual ``varga_sign(...).sign_index`` transition boundary.
+    """
+    table: dict[str, tuple[float, ...]] = {}
+    eps = 1.0e-7
+    for varga_key in SHODASHVARGA_KEYS:
+        candidates: list[float] = []
+        if varga_key == "D30":
+            for rasi_idx in range(12):
+                base = rasi_idx * 30.0
+                offsets = (0.0, 5.0, 10.0, 18.0, 25.0) if (rasi_idx % 2 == 0) else (0.0, 5.0, 12.0, 20.0, 25.0)
+                for off in offsets:
+                    candidates.append(base + off)
+        else:
+            div_factor = _DIVISION_FACTORS[varga_key]
+            total_parts = 12 * div_factor
+            for k in range(total_parts):
+                candidates.append((k * 360.0) / float(total_parts))
+
+        true_cusps: list[float] = []
+        for c in sorted(candidates):
+            sign_before = varga_sign((c - eps) % 360.0, varga_key).sign_index
+            sign_after = varga_sign((c + eps) % 360.0, varga_key).sign_index
+            if sign_before != sign_after:
+                true_cusps.append(float(c))
+        table[varga_key] = tuple(true_cusps)
+    return table
+
+
+_VARGA_SIGN_CUSPS: Mapping[str, tuple[float, ...]] = _build_varga_sign_cusps()
+
+
+def _varga_sign_sector_bounds(
+    lon_deg: float,
+    varga_key: str,
+    current_sign: int,
+) -> tuple[float, float, float, float, float]:
+    """Return ``(c_low, c_high, deg_from_lower, deg_to_upper, sector_span)`` for ``lon_deg``."""
+    lon = normalize_degrees(lon_deg)
+    cusps = _VARGA_SIGN_CUSPS[varga_key]
+    n_cusps = len(cusps)
+    idx = bisect_right(cusps, lon) - 1
+    if idx < 0:
+        idx = n_cusps - 1
+
+    # Guard against floating-point boundary rounding when lon is within machine epsilon of a cusp
+    for offset in (0, -1, 1):
+        cand_idx = (idx + offset) % n_cusps
+        c_low = cusps[cand_idx]
+        c_high = cusps[(cand_idx + 1) % n_cusps]
+        span = (c_high - c_low) % 360.0
+        if span <= 0.0:
+            span = 360.0
+        mid = (c_low + 0.5 * span) % 360.0
+        if varga_sign(mid, varga_key).sign_index == current_sign:
+            deg_from_lower = (lon - c_low) % 360.0
+            if deg_from_lower > span and deg_from_lower > 360.0 - 1.0e-7:
+                deg_from_lower = 0.0
+            deg_from_lower = min(max(0.0, deg_from_lower), span)
+            deg_to_upper = max(0.0, span - deg_from_lower)
+            return c_low, c_high, deg_from_lower, deg_to_upper, span
+
+    c_low = cusps[idx]
+    c_high = cusps[(idx + 1) % n_cusps]
+    span = (c_high - c_low) % 360.0 or 360.0
+    deg_from_lower = min(max(0.0, (lon - c_low) % 360.0), span)
+    deg_to_upper = max(0.0, span - deg_from_lower)
+    return c_low, c_high, deg_from_lower, deg_to_upper, span
+
+
+def _solve_varga_transition_seconds(
+    body: str,
+    lon0: float,
+    current_sign: int,
+    varga_key: str,
+    deg_from_lower: float,
+    deg_to_upper: float,
+    sector_span: float,
+    speed_deg_per_sec: float,
+    dir_sign: float,
+    position_at_offset_sec: Callable[[float], float],
+) -> float:
+    """Bracket and refine the exact transition time ``t > 0`` along ``dt = dir_sign * t``
+    where ``varga_sign(position_at_offset_sec(dir_sign * t), varga_key).sign_index != current_sign``.
+    """
+    v_mean = abs(_MEAN_DEG_PER_SECOND.get(body, 1.0e-5))
+    v_dir = dir_sign * float(speed_deg_per_sec)
+
+    if deg_from_lower <= 1.0e-12 and v_dir < 0.0:
+        return 0.0
+    if deg_to_upper <= 1.0e-12 and v_dir > 0.0:
+        return 0.0
+
+    def eval_at(t_sec: float) -> tuple[bool, float, float]:
+        lon_t = normalize_degrees(position_at_offset_sec(dir_sign * t_sec))
+        d_t = (lon_t - lon0 + 180.0) % 360.0 - 180.0
+        margin_t = min(d_t + deg_from_lower, deg_to_upper - d_t)
+        sign_t = varga_sign(lon_t, varga_key).sign_index
+        still_in = (sign_t == current_sign) and (-deg_from_lower <= d_t < deg_to_upper)
+        return still_in, margin_t, d_t
+
+    t_lo = 0.0
+    margin_lo = min(deg_from_lower, deg_to_upper)
+    t_hi: float | None = None
+    margin_hi = 0.0
+
+    # Fast monotonic bracket probe when speed is well above station threshold
+    if abs(v_dir) >= max(0.25 * v_mean, 1.0e-8):
+        target_deg = deg_to_upper if v_dir > 0.0 else deg_from_lower
+        t_est = target_deg / abs(v_dir)
+        if t_est > 1.0e-5:
+            t_a = 0.85 * t_est
+            in_a, margin_a, d_a = eval_at(t_a)
+            if in_a and (d_a * v_dir > 0.0):
+                t_lo = t_a
+                margin_lo = margin_a
+                for mult in (1.03, 1.15, 1.35, 1.65, 2.10):
+                    t_b = mult * t_est
+                    in_b, margin_b, d_b = eval_at(t_b)
+                    if not in_b and abs(d_b) < 120.0:
+                        t_hi = t_b
+                        margin_hi = margin_b
+                        break
+                    if in_b and (d_b * v_dir > 0.0):
+                        t_lo = t_b
+                        margin_lo = margin_b
+                    else:
+                        break
+
+    # General station-safe adaptive bracketing when near a retrograde station or nonlinear arc
+    if t_hi is None:
+        t_lo = 0.0
+        lon_lo = lon0
+        margin_lo = min(deg_from_lower, deg_to_upper)
+        if abs(v_dir) > 1.0e-9:
+            target_deg = deg_to_upper if v_dir > 0.0 else deg_from_lower
+            step = min(1.0, max(1.0e-4, 0.20 * min(target_deg, sector_span) / abs(v_dir)))
+        else:
+            step = 0.25
+        max_step = max(60.0, 0.20 * sector_span / max(v_mean, 1.0e-7))
+        max_angle_step = max(0.25, min(0.45 * sector_span, 12.0))
+
+        for _ in range(320):
+            t_probe = t_lo + step
+            lon_p = normalize_degrees(position_at_offset_sec(dir_sign * t_probe))
+            step_delta = abs((lon_p - lon_lo + 180.0) % 360.0 - 180.0)
+            if step_delta > max_angle_step and step > 1.0e-5:
+                step *= 0.5
+                continue
+            in_p, margin_p, _ = eval_at(t_probe)
+            if not in_p:
+                t_hi = t_probe
+                margin_hi = margin_p
+                break
+            t_lo = t_probe
+            lon_lo = lon_p
+            margin_lo = margin_p
+            if step_delta < 0.05 * max_angle_step:
+                step = min(max_step, step * 1.5)
+            else:
+                step = min(max_step, step * 1.2)
+
+    if t_hi is None:
+        raise RuntimeError(f"Failed to bracket {varga_key} transition for {body} at lon={lon0}")
+
+    # Safeguarded Illinois secant + bisection refinement to sub-10-microsecond precision
+    f_lo = float(margin_lo)
+    f_hi = float(margin_hi)
+    last_side = 0
+    for it in range(56):
+        span = t_hi - t_lo
+        if span <= 1.0e-5:
+            break
+        denom = f_lo - f_hi
+        if (it % 6 != 5) and abs(denom) > 1.0e-15 and f_lo > 0.0 >= f_hi:
+            frac = f_lo / denom
+            pad = min(0.25 * 1.0e-5 / span, 0.05)
+            frac = min(max(frac, pad), 1.0 - pad)
+            t_mid = t_lo + frac * span
+        else:
+            t_mid = 0.5 * (t_lo + t_hi)
+
+        in_mid, margin_mid, _ = eval_at(t_mid)
+        if in_mid:
+            t_lo = t_mid
+            f_lo = float(margin_mid)
+            if last_side == -1:
+                f_hi *= 0.5
+            last_side = -1
+        else:
+            t_hi = t_mid
+            f_hi = float(margin_mid)
+            if last_side == 1:
+                f_lo *= 0.5
+            last_side = 1
+
+    return 0.5 * (t_lo + t_hi)
+
+
 def _compute_body_varga_margins(
     body: str,
     longitude_deg: float,
     speed_deg_per_sec: float,
+    *,
+    position_at_offset_sec: Callable[[float], float] | None = None,
 ) -> dict[str, VargaBoundaryMargin]:
     """Compute exact angular and temporal distance to each of the 16 Shodashvarga boundaries."""
     lon = normalize_degrees(longitude_deg)
-    abs_speed = max(abs(float(speed_deg_per_sec)), 1.0e-9)
+    spd = float(speed_deg_per_sec)
+    if position_at_offset_sec is None and spd == 0.0:
+        raise ValueError("speed_deg_per_sec must be non-zero when position_at_offset_sec is not provided")
+
+    pos_fn: Callable[[float], float] | None = None
+    solved_bounds_cache: dict[tuple[float, float, float], float] = {}
+    if position_at_offset_sec is not None:
+        pos_cache: dict[float, float] = {0.0: lon}
+
+        def _cached_pos(dt_sec: float) -> float:
+            key = round(float(dt_sec), 7)
+            val = pos_cache.get(key)
+            if val is None:
+                val = normalize_degrees(position_at_offset_sec(float(dt_sec)))
+                pos_cache[key] = val
+            return val
+
+        pos_fn = _cached_pos
+
     placements = compute_shodashvarga(lon)
     margins: dict[str, VargaBoundaryMargin] = {}
 
     for varga_key in SHODASHVARGA_KEYS:
         pl = placements[varga_key]
         div_factor = _DIVISION_FACTORS[varga_key]
-        sector_span = 30.0 / float(div_factor)
-        in_sign = lon % 30.0
-        offset_in_sector = in_sign % sector_span
-        deg_from_lower = max(0.0, offset_in_sector)
-        deg_to_upper = max(0.0, sector_span - offset_in_sector)
+        c_low, c_high, deg_from_lower, deg_to_upper, sector_span = _varga_sign_sector_bounds(
+            lon,
+            varga_key,
+            pl.sign_index,
+        )
 
-        if speed_deg_per_sec >= 0.0:
-            sec_prev = deg_from_lower / abs_speed
-            sec_next = deg_to_upper / abs_speed
+        if pos_fn is None:
+            abs_speed = abs(spd)
+            if spd > 0.0:
+                sec_prev = deg_from_lower / abs_speed
+                sec_next = deg_to_upper / abs_speed
+            else:
+                sec_prev = deg_to_upper / abs_speed
+                sec_next = deg_from_lower / abs_speed
         else:
-            sec_prev = deg_to_upper / abs_speed
-            sec_next = deg_from_lower / abs_speed
+            prev_cache_key = (round(c_low, 9), round(c_high, 9), -1.0)
+            sec_prev = solved_bounds_cache.get(prev_cache_key)
+            if sec_prev is None:
+                sec_prev = _solve_varga_transition_seconds(
+                    body,
+                    lon,
+                    pl.sign_index,
+                    varga_key,
+                    deg_from_lower,
+                    deg_to_upper,
+                    sector_span,
+                    spd,
+                    -1.0,
+                    pos_fn,
+                )
+                solved_bounds_cache[prev_cache_key] = sec_prev
+
+            next_cache_key = (round(c_low, 9), round(c_high, 9), 1.0)
+            sec_next = solved_bounds_cache.get(next_cache_key)
+            if sec_next is None:
+                sec_next = _solve_varga_transition_seconds(
+                    body,
+                    lon,
+                    pl.sign_index,
+                    varga_key,
+                    deg_from_lower,
+                    deg_to_upper,
+                    sector_span,
+                    spd,
+                    1.0,
+                    pos_fn,
+                )
+                solved_bounds_cache[next_cache_key] = sec_next
 
         margins[varga_key] = VargaBoundaryMargin(
             body=body,
@@ -223,11 +484,14 @@ def solve_subsecond_shodashvarga_cusp_transitions(
     Parashari Shodashvarga charts (``D1`` through ``D60``) for the Ascendant and all 9 Grahas.
     """
     ad = adapter if adapter is not None else EphemerisAdapter()
-    ayan_deg = ad.get_ayanamsa_ut(float(jd_ut), mode=ayanamsa)
+    base_jd = float(jd_ut)
+    lat = float(latitude_deg)
+    lon = float(longitude_deg)
+    ayan_deg = ad.get_ayanamsa_ut(base_jd, mode=ayanamsa)
     houses_res = ad.houses_ut(
-        float(jd_ut),
-        float(latitude_deg),
-        float(longitude_deg),
+        base_jd,
+        lat,
+        lon,
         system="whole_sign",
         ayanamsa=ayanamsa,
     )
@@ -235,32 +499,50 @@ def solve_subsecond_shodashvarga_cusp_transitions(
     # Measure instantaneous topocentric Ascendant angular speed via 1-second finite difference
     dt_days = 1.0 / 86400.0
     houses_plus = ad.houses_ut(
-        float(jd_ut) + dt_days,
-        float(latitude_deg),
-        float(longitude_deg),
+        base_jd + dt_days,
+        lat,
+        lon,
         system="whole_sign",
         ayanamsa=ayanamsa,
     )
     asc_delta = (houses_plus.ascendant_deg - houses_res.ascendant_deg + 180.0) % 360.0 - 180.0
-    asc_speed_deg_per_sec = asc_delta if abs(asc_delta) > 1.0e-8 else LAGNA_DEG_PER_SECOND
+    asc_speed_deg_per_sec = asc_delta
+
+    def _asc_at_offset(dt_sec: float) -> float:
+        return ad.houses_ut(
+            base_jd + float(dt_sec) / 86400.0,
+            lat,
+            lon,
+            system="whole_sign",
+            ayanamsa=ayanamsa,
+        ).ascendant_deg
 
     asc_margins = _compute_body_varga_margins(
         "Ascendant",
         houses_res.ascendant_deg,
         asc_speed_deg_per_sec,
+        position_at_offset_sec=_asc_at_offset,
     )
 
     planet_margins: dict[str, Mapping[str, VargaBoundaryMargin]] = {}
     for body_key in VEDIC_NINE_GRAHAS:
-        p_pos = ad.calc_ut(float(jd_ut), body_key, sidereal=True, ayanamsa=ayanamsa)
+        p_pos = ad.calc_ut(base_jd, body_key, sidereal=True, ayanamsa=ayanamsa)
         p_name = body_key.capitalize()
         p_speed_sec = p_pos.longitude_speed_deg_per_day / 86400.0
-        if abs(p_speed_sec) < 1.0e-9:
-            p_speed_sec = _MEAN_DEG_PER_SECOND.get(p_name, 1.0e-7)
+
+        def _planet_at_offset(dt_sec: float, _b: str = body_key) -> float:
+            return ad.calc_ut(
+                base_jd + float(dt_sec) / 86400.0,
+                _b,
+                sidereal=True,
+                ayanamsa=ayanamsa,
+            ).longitude_deg
+
         planet_margins[p_name] = _compute_body_varga_margins(
             p_name,
             p_pos.longitude_deg,
             p_speed_sec,
+            position_at_offset_sec=_planet_at_offset,
         )
 
     most_sensitive_varga = "D60"
@@ -274,20 +556,25 @@ def solve_subsecond_shodashvarga_cusp_transitions(
     receipt = {
         "module": "ephemeris_oss.impossible_astrology.shodashvarga_cusps",
         "version": __version__,
-        "jd_ut": round(float(jd_ut), 10),
-        "latitude_deg": round(float(latitude_deg), 6),
-        "longitude_deg": round(float(longitude_deg), 6),
+        "jd_ut": round(base_jd, 10),
+        "latitude_deg": round(lat, 6),
+        "longitude_deg": round(lon, 6),
         "ayanamsa": ayanamsa,
         "ayanamsa_deg": round(float(ayan_deg), 8),
         "ascendant_longitude_deg": round(float(houses_res.ascendant_deg), 8),
         "most_sensitive_varga": most_sensitive_varga,
         "minimum_ascendant_cusp_margin_seconds": round(min_margin_sec, 4),
+        "ascendant_margins": {k: asdict(v) for k, v in asc_margins.items()},
+        "planet_margins": {
+            p_name: {k: asdict(v) for k, v in v_map.items()}
+            for p_name, v_map in planet_margins.items()
+        },
     }
     return SubsecondShodashvargaCuspReport(
-        jd_ut=float(jd_ut),
-        iso_utc=jd_to_iso_utc(float(jd_ut)),
-        latitude_deg=float(latitude_deg),
-        longitude_deg=float(longitude_deg),
+        jd_ut=base_jd,
+        iso_utc=jd_to_iso_utc(base_jd),
+        latitude_deg=lat,
+        longitude_deg=lon,
         ayanamsa=ayanamsa,
         ayanamsa_deg=float(ayan_deg),
         ascendant_longitude_deg=float(houses_res.ascendant_deg),
@@ -475,10 +762,14 @@ def scan_multi_century_rare_phenomena(
         "start_jd_tt": round(float(start_jd_tt), 8),
         "end_jd_tt": round(float(end_jd_tt), 8),
         "ayanamsa": ayanamsa,
+        "max_war_separation_deg": round(float(max_war_separation_deg), 6),
         "bodies": normalized_bodies,
         "graha_yuddha_count": len(war_dicts),
         "retrograde_station_count": len(stations_list),
         "combustion_window_count": len(combustion_list),
+        "graha_yuddha_events": list(war_dicts),
+        "retrograde_stations": list(stations_list),
+        "combustion_windows": list(combustion_list),
     }
     return MultiCenturyPhenomenaReport(
         start_jd_tt=float(start_jd_tt),
@@ -559,6 +850,9 @@ def analyze_siddhanta_vs_jpl_de440_drift(
         "ephemeris_source": ephem_source,
         "mean_abs_delta_deg": round(float(comparison.mean_abs_delta_deg), 6),
         "max_abs_delta_deg": round(float(comparison.max_abs_delta_deg), 6),
+        "min_abs_delta_body": min_body,
+        "max_abs_delta_body": max_body,
+        "planet_comparisons": planet_rows,
         "comparison_receipt_sha256": comparison.receipt_sha256,
     }
     return SiddhantaDriftAnalysisReport(

@@ -17,17 +17,17 @@ A clean-room, Apache-2.0 open-source planetary ephemeris and classical Indian as
 
 ---
 
-## Multi-Ephemeris Capability & Evaluation Matrix
+## Multi-Ephemeris Capability & Licensing Matrix
 
-The table below compares `ephemeris-oss` against legacy copyleft C ephemeris distributions (`SE 2.10.03`), `Skyfield 1.55`, and `Astropy 6.x`. Full reproducible JSON evidence is stored in [`evidence/sota-ephemeris-evaluation-matrix.json`](evidence/sota-ephemeris-evaluation-matrix.json) and generated via `python tools/evaluate_sota_ephemerides.py`.
+The table below separates reproduced `ephemeris-oss` measurements from sourced capability and licensing attributes of legacy copyleft C ephemeris distributions (`SE 2.10.03`), `Skyfield 1.55`, and `Astropy 6.x`. Third-party engines are not executed inside this clean-room repository, so their numeric accuracy cells are marked `UNKNOWN` here. Full reproducible JSON evidence for `ephemeris-oss` is stored in [`evidence/sota-ephemeris-evaluation-matrix.json`](evidence/sota-ephemeris-evaluation-matrix.json) and generated via `python tools/evaluate_sota_ephemerides.py`.
 
 | Parameter | RDG-Ephemeris (`ephemeris-oss`) | Legacy C Ephemeris (`SE 2.10.03`) | `Skyfield 1.55` | `Astropy 6.x` |
 |---|---|---|---|---|
 | **Open-Source License** | **Apache-2.0** (free for commercial SaaS, apps, and research) | GPL v2+ / AGPL v3 or paid commercial license | MIT (astronomy only) | BSD-3-Clause (astronomy only) |
 | **Offline Embedded NASA JPL DE440 Span** | **`1550 CE` to `2306 CE`** bundled in wheel (~7.7 MB Chebyshev polynomials) | Requires external `.se1` or `.bsp` files on disk | Requires external 114 MB `de440.bsp` download | Built-in approximation or external SPK download |
 | **Multi-Millennium Historical Span** | **`3102 BCE` to `3000 CE`** offline (`Vondrak-2011` + analytical) + optional `DE441` (`-13200..+17191`) | Requires multi-file `.se1` archive across centuries | Requires 3.3 GB `DE441` SPK download outside `1550..2650` | Requires external SPK download |
-| **Fidelity vs Full NASA JPL DE440 (`1800..2100 CE`)** | **`<= 0.000717 arcsec` max** (`0.000019 arcsec` median across 3,612 monthly TT epochs/planet) | `~0.001 arcsec` when external DE431/DE441 files are configured | `< 0.0005 arcsec` when 114 MB `de440.bsp` is loaded | `< 0.001 arcsec` when external SPK is loaded |
-| **Fidelity vs Full NASA JPL DE440 (`1550..2306 CE`)** | **`<= 0.0228 arcsec` max** across 3,864 samples from embedded wings | Depends on external `.se1` files | Requires external 114 MB `de440.bsp` | Requires external SPK |
+| **Reproduced Fidelity vs Full NASA JPL DE440 (`1800..2100 CE`)** | **`<= 0.000717 arcsec` max** (`0.000019 arcsec` median across 3,612 monthly TT epochs/planet) | UNKNOWN (not executed in this clean-room repository; depends on external `.se1`/`.bsp` files) | UNKNOWN (not executed in this clean-room repository; depends on external 114 MB `de440.bsp`) | UNKNOWN (not executed in this clean-room repository; depends on external SPK) |
+| **Reproduced Fidelity vs Full NASA JPL DE440 (`1550..2306 CE`)** | **`<= 0.022786 arcsec` max** across 3,864 live body-epoch evaluations from embedded wings | UNKNOWN (not executed in this clean-room repository; depends on external `.se1` files) | UNKNOWN (not executed in this clean-room repository; requires external 114 MB `de440.bsp`) | UNKNOWN (not executed in this clean-room repository; requires external SPK) |
 | **Cryptographic Receipts (`SHA-256`)** | **Built-in on every result** (binds kernel SHA-256, NAIF IDs, conventions, and output) | None (mutable C arrays) | None | None |
 | **Built-in LLM MCP Server (`stdio`)** | **Built-in (`rdg-ephemeris-mcp`)** with 8 tools + AI hallucination auditor | None | None | None |
 | **Built-in HTTP REST API (`OpenAPI 3.1`)** | **Built-in (`rdg-ephemeris-api`)** zero-dependency JSON server | None | None | None |
@@ -67,8 +67,8 @@ Compute planetary positions, houses, and a complete chart bundle anywhere from `
 ```python
 from ephemeris_oss import Engine, EphemerisAdapter
 
-# 1. Explicit Terrestrial Time (TT) scientific interface with SHA-256 receipt
-with Engine.load(kernels="auto", eop=None) as engine:
+# 1. Explicit Terrestrial Time (TT) scientific interface with SHA-256 receipt (zero-config embedded 1550-2306 CE Chebyshev kernels)
+with Engine.load(kernels="extended", eop=None) as engine:
     result = engine.positions_tt(2451545.0, bodies=("sun", "moon", "mars", "jupiter", "saturn"))
     print("Moon Tropical Lon (deg):", result.value["moon"]["longitude_deg"])
     print("Receipt SHA-256:", result.receipt_sha256)
@@ -211,7 +211,9 @@ The repository includes an isomorphic Rust core (`rust/ephemeris-core`) and zero
 ```python
 from ephemeris_oss import Engine
 
-with Engine.load(kernels="auto", eop=None) as engine:
+# kernels="extended" loads the embedded 1550..2306 CE DE440 Chebyshev kernels offline;
+# use kernels="auto" when full de440.bsp has been provisioned via `ephemeris-oss kernels fetch --verify`.
+with Engine.load(kernels="extended", eop=None) as engine:
     result = engine.positions_tt(2451545.0, bodies=("sun", "moon"))
     print(result.value["moon"]["longitude_deg"])
     print(result.receipt_sha256)

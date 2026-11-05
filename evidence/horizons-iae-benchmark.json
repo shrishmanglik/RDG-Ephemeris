@@ -1,69 +1,77 @@
 {
-  "benchmark_timestamp_utc": "2026-11-05T01:24:02.756332+00:00",
+  "benchmark_timestamp_utc": "2026-11-05T04:24:18.333631+00:00",
+  "evaluation_mode": "LIVE_ENGINE_AGAINST_COMMITTED_HORIZONS_TRUTH_AND_EXTERNAL_IAE_CONSTANTS",
   "standards_evaluated": [
-    "NASA JPL Horizons (DE441/DE440 Astrometric Ephemeris)",
-    "Indian Astronomical Ephemeris (IAE 1989 p. 556)",
-    "Calendar Reform Committee Report (CSIR India 1955)"
+    "NASA JPL Horizons (DE441/DE440 Astrometric Ephemeris, 300 epochs x 7 physical bodies = 2,100 live evaluations)",
+    "Calendar Reform Committee Report (CSIR India 1955, p. 262: 1956-03-21 00:00 TT = 23 deg 15' 00.658\")",
+    "Indian Astronomical Ephemeris (IAE 1989 Rashtriya Panchang: 1989-01-01 00:00 UTC = 23 deg 42' 37\")"
   ],
   "governing_policy": "Ties reference accuracy within measured truth floor; never claims to beat",
   "nasa_jpl_horizons": {
+    "evaluation_method": "Live Engine.load(kernels='extended').positions_tt(jd_tt) evaluated at all 300 manifest epochs",
+    "live_evaluation_duration_ms": 1213.5,
     "total_samples": 2100,
-    "overall_median_separation_arcsec": 1.6848091272351003e-06,
-    "overall_p95_separation_arcsec": 0.004359263771694826,
-    "overall_max_separation_arcsec": 0.027234405030332295,
+    "overall_median_separation_arcsec": 0.00023342938525766418,
+    "overall_p95_separation_arcsec": 0.009849400426968061,
+    "overall_max_separation_arcsec": 0.03685845223700257,
+    "max_drift_from_committed_baseline_arcsec": 0.022339012584501407,
     "by_body": {
       "jupiter": {
         "samples": 300,
-        "median_arcsec": 1.419104709413553e-06,
-        "p95_arcsec": 2.165403934101023e-06,
-        "max_arcsec": 2.5612001420890003e-06
+        "median_arcsec": 9.792337954379261e-05,
+        "p95_arcsec": 0.0001989749232096156,
+        "max_arcsec": 0.00029416944262097004
       },
       "mars": {
         "samples": 300,
-        "median_arcsec": 1.4189498190208733e-06,
-        "p95_arcsec": 2.583482476800288e-06,
-        "max_arcsec": 3.2257053735513183e-06
+        "median_arcsec": 0.00022054496214755868,
+        "p95_arcsec": 0.0007382299074569529,
+        "max_arcsec": 0.0020418666998222226
       },
       "mercury": {
         "samples": 300,
-        "median_arcsec": 1.772821669537397e-06,
-        "p95_arcsec": 3.8079423241057116e-06,
-        "max_arcsec": 5.48261178516964e-06
+        "median_arcsec": 0.000377467071707506,
+        "p95_arcsec": 0.0008939986474906619,
+        "max_arcsec": 0.0015703346013191115
       },
       "moon": {
         "samples": 300,
-        "median_arcsec": 0.0025157602440750515,
-        "p95_arcsec": 0.018034697650153687,
-        "max_arcsec": 0.027234405030332295
+        "median_arcsec": 0.007804191244456277,
+        "p95_arcsec": 0.022030844145150313,
+        "max_arcsec": 0.03685845223700257
       },
       "saturn": {
         "samples": 300,
-        "median_arcsec": 1.4266851970400077e-06,
-        "p95_arcsec": 2.212877021998424e-06,
-        "max_arcsec": 2.7512780141380625e-06
+        "median_arcsec": 9.080221221471984e-05,
+        "p95_arcsec": 0.0001884987356466966,
+        "max_arcsec": 0.0002702237370204218
       },
       "sun": {
         "samples": 300,
-        "median_arcsec": 1.5913178835556653e-06,
-        "p95_arcsec": 3.116483401417157e-06,
-        "max_arcsec": 3.8737720277943606e-06
+        "median_arcsec": 0.0002682141848563434,
+        "p95_arcsec": 0.0005424530216629302,
+        "max_arcsec": 0.0007560214425064118
       },
       "venus": {
         "samples": 300,
-        "median_arcsec": 1.6497055544001344e-06,
-        "p95_arcsec": 3.1459239129374378e-06,
-        "max_arcsec": 5.114936676643342e-06
+        "median_arcsec": 0.0003325355848277556,
+        "p95_arcsec": 0.0013137837740688088,
+        "max_arcsec": 0.002558140689157858
       }
     },
     "status": "PASS_TIED_WITH_HORIZONS"
   },
   "iae_lahiri_anchor": {
-    "epoch_jd_tt": 2435553.5,
-    "iae_defined_true_deg": 23.250182777777777,
-    "calculated_true_deg": 23.25022149131667,
-    "true_residual_arcsec": 0.1393687400110366,
-    "mean_residual_arcsec": 0.0,
-    "status": "PASS_EXACT_IAE_ANCHOR"
+    "epoch_1956_jd_tt": 2435553.5,
+    "csir_1955_published_true_deg": 23.250182777777777,
+    "calculated_1956_true_deg": 23.25022149131667,
+    "calculated_1956_mean_deg": 23.245560954138135,
+    "true_frame_nutation_model_residual_arcsec": 0.1393687400110366,
+    "epoch_1989_jd_utc": 2447527.5,
+    "iae_1989_published_tabular_deg": 23.710277777777776,
+    "calculated_1989_mean_deg": 23.703447928469267,
+    "iae_1989_tabular_residual_arcsec": 24.58745751063418,
+    "status": "PASS_EXTERNAL_IAE_ANCHORS"
   },
   "public_claim": "RDG Ephemeris reproduces NASA JPL DE440/Horizons and IAE within the measured truth floor; ties reference accuracy."
 }

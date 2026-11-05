@@ -1,9 +1,9 @@
 # Clean-Room Provenance, License, and Dependency Clearance
 
-**Package:** `ephemeris-oss` (RDG Ephemeris Engine)  
-**Version:** `0.1.0`  
-**License:** Apache License, Version 2.0 (`Apache-2.0`)  
-**Status:** Verified Clean-Room Implementation (12/12 Acceptance Domains PASS)
+**Package:** `ephemeris-oss` (RDG Ephemeris Engine)
+**Version:** `0.1.0`
+**License:** Apache License, Version 2.0 (`Apache-2.0`)
+**Status:** Verified Clean-Room Implementation (12/12 Standalone Library Contract Checks PASS; Downstream App Journeys HELD/UNKNOWN)
 
 ---
 

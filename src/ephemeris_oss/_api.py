@@ -153,7 +153,7 @@ class Engine:
                 chosen = {str(key): Path(value) for key, value in kernels.items()}
             else:
                 raise EphemerisError(
-                    "kernels must be 'auto', 'compact', or a mapping of kernel id to path"
+                    "kernels must be 'auto', 'compact', 'extended', or a mapping of kernel id to path"
                 )
             artifacts = {}
             for identifier, path in chosen.items():

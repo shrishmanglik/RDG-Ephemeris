@@ -586,15 +586,18 @@ def run_acceptance_matrix(kernel_path: Path | None = None) -> list[AcceptanceRow
     rows.append(
         AcceptanceRow(
             id=11,
-            name="Real Web/API Journey & Offline Network-Isolated Desktop Journey",
+            name="Socket-Patched Local Python Library Contract (Downstream Desktop/Web App Journeys: HELD/UNKNOWN)",
             status="PASS" if journey_pass else "FAIL",
             details=(
-                "Executed complete customer journey with outbound network sockets hard-blocked: "
+                "Executed local Python library calculations with socket.create_connection patched: "
                 "9-graha natal bundle, 16 Varga charts (D1..D60), 5-limb Panchang, 36-point Gun Milan, "
-                "5-level Dasha, all four 2026 eclipses, and AI hallucination audit all passed offline"
+                "5-level Dasha, all four 2026 eclipses, and AI hallucination audit passed; "
+                "installed desktop app and hosted web customer journeys remain HELD/UNKNOWN outside this standalone library repo"
             ),
             telemetry={
-                "network_egress_blocked": network_trap_verified,
+                "socket_create_connection_patched": network_trap_verified,
+                "downstream_installed_desktop_app_journey": "HELD_OUTSIDE_STANDALONE_LIBRARY_REPO",
+                "downstream_live_web_customer_journey": "HELD_OUTSIDE_STANDALONE_LIBRARY_REPO",
                 "bundle_receipt_sha256": bundle.receipt_sha256,
                 "shodashvarga_count": len(shodashvarga_sun),
                 "ashtakoota_total_points": match_report.total_effective_points,
@@ -685,12 +688,12 @@ def run_acceptance_matrix(kernel_path: Path | None = None) -> list[AcceptanceRow
     rows.append(
         AcceptanceRow(
             id=12,
-            name="Web, Desktop and Mobile Cross-Runtime Mathematical Parity",
+            name="Cross-Runtime Library Parity (Python, Rust Clenshaw 3D, WASM & Node ES-Module; Downstream App UI: HELD/UNKNOWN)",
             status="PASS" if parity_pass else "FAIL",
             details=(
                 "Python Engine (0.0007 arcsec JPL DE440 truth floor), Rust Clenshaw Chebyshev evaluator, "
-                "WebAssembly binary (ephemeris-core.wasm), Browser JS SDK (16 Vargas, 337 Bindus, 120y Dasha), "
-                "and Multi-Ephemeris Uncertainty Envelope all match within tolerance"
+                "WebAssembly binary (ephemeris-core.wasm), Node ES-Module SDK (16 Vargas, 337 Bindus, 120y Dasha), "
+                "and Multi-Ephemeris Uncertainty Envelope all match within tolerance; downstream app UI parity remains HELD/UNKNOWN outside this library repo"
             ),
             telemetry={
                 "de440_truth_floor_0_0007_arcsec_verified": de440_truth_floor_verified,
@@ -700,6 +703,7 @@ def run_acceptance_matrix(kernel_path: Path | None = None) -> list[AcceptanceRow
                 "browser_js_execution_ms": browser_median_ms,
                 "uncertainty_envelope_bodies": len(pos_envelopes),
                 "boundary_sensitivity_divisions": len(boundary_env.boundaries),
+                "downstream_app_ui_parity": "HELD_OUTSIDE_STANDALONE_LIBRARY_REPO",
                 "duration_ms": (time.perf_counter() - t0) * 1000.0,
             },
         )
@@ -721,10 +725,8 @@ def main() -> None:
 
     output_path = _ROOT / "evidence" / "RDG-ACCEPTANCE-MATRIX-RESULTS.json"
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(
-        json.dumps([asdict(r) for r in rows], indent=2),
-        encoding="utf-8",
-    )
+    with output_path.open("w", encoding="utf-8", newline="\n") as fh:
+        fh.write(json.dumps([asdict(r) for r in rows], indent=2) + "\n")
     print(f"\nDetailed telemetry written to: {output_path}")
     failed = [r for r in rows if r.status != "PASS"]
     if failed:

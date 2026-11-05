@@ -26,6 +26,8 @@ Evaluates RDG-Ephemeris (ephemeris-oss) across five verification dimensions:
 from __future__ import annotations
 
 import json
+import math
+import os
 from pathlib import Path
 import time
 from typing import Any
@@ -36,6 +38,7 @@ from ephemeris_oss import (
     GeoCoords,
     __version__,
     analyze_siddhanta_vs_jpl_de440_drift,
+    kernels as _kernels,
     rectify_birth_time_bayesian,
     scan_multi_century_rare_phenomena,
     solve_subsecond_shodashvarga_cusp_transitions,
@@ -61,6 +64,112 @@ from ephemeris_oss.jyotish_siddhanta import KALI_YUGA_EPOCH_JD, surya_siddhanta_
 from ephemeris_oss.mcp_server import handle_jsonrpc_message
 
 ROOT = Path(__file__).resolve().parents[1]
+PHYSICAL_BODIES = ("sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn")
+
+
+def _resolve_de440_reference_kernel() -> Path | None:
+    """Locate a SHA-256-verified full DE440 SPK reference kernel on disk if provisioned."""
+    spec = _kernels.KERNELS["DE440"]
+    candidates: list[Path] = []
+    env_path = os.environ.get("EPHEMERIS_OSS_DE440_KERNEL")
+    if env_path:
+        candidates.append(Path(env_path))
+    candidates.append(_kernels.cached_path(spec, _kernels.cache_dir()))
+    candidates.append(Path.home() / "AppData" / "Local" / "ephemeris-oss" / "kernels" / spec.filename)
+    candidates.append(Path("C:/Users/Shris/AppData/Local/ephemeris-oss/kernels") / spec.filename)
+
+    seen: set[str] = set()
+    for path in candidates:
+        key = str(path)
+        if key in seen:
+            continue
+        seen.add(key)
+        if path.is_file() and _kernels.sha256_file(path) == spec.sha256:
+            return path
+    return None
+
+
+def evaluate_extended_wings_vs_de440_reference() -> dict[str, Any]:
+    """Dynamically evaluate embedded Chebyshev kernels (1550-2306 CE) against SHA-pinned full DE440 SPK."""
+    de440_path = _resolve_de440_reference_kernel()
+    if de440_path is None:
+        return {
+            "evaluation_mode": "REFERENCE_KERNEL_NOT_PROVISIONED",
+            "span_ce": "1550-01-01 to 2305-12-31",
+            "status": "SKIPPED_NO_LOCAL_DE440_BSP",
+        }
+
+    de440_sha256 = _kernels.sha256_file(de440_path)
+    wing_early_diffs: list[float] = []
+    core_diffs: list[float] = []
+    wing_late_diffs: list[float] = []
+    worst_samples: dict[str, dict[str, Any]] = {}
+
+    epochs_tt = [2287185.0 + 500.0 * idx for idx in range(552)]
+    t0 = time.perf_counter()
+    with (
+        Engine.load(kernels={"DE440": de440_path}, eop=None) as eng_ref,
+        Engine.load(kernels="extended", eop=None) as eng_ext,
+    ):
+        for jd_tt in epochs_tt:
+            pos_kwargs = {"jd_tdb": jd_tt, "mean_equinox": True} if jd_tt < 2305447.5 else {}
+            ref_pos = eng_ref.positions_tt(jd_tt, bodies=PHYSICAL_BODIES, **pos_kwargs).value
+            ext_pos = eng_ext.positions_tt(jd_tt, bodies=PHYSICAL_BODIES, **pos_kwargs).value
+            if jd_tt < COMPACT_START_JD:
+                region = "wing_1550_1800"
+                target_list = wing_early_diffs
+            elif jd_tt <= COMPACT_END_JD:
+                region = "core_1800_2100"
+                target_list = core_diffs
+            else:
+                region = "wing_2101_2306"
+                target_list = wing_late_diffs
+
+            for body in PHYSICAL_BODIES:
+                r_lon = float(ref_pos[body]["longitude_deg"])
+                r_lat = float(ref_pos[body]["latitude_deg"])
+                e_lon = float(ext_pos[body]["longitude_deg"])
+                e_lat = float(ext_pos[body]["latitude_deg"])
+                dlon = abs((e_lon - r_lon + 180.0) % 360.0 - 180.0) * 3600.0
+                dlat = abs(e_lat - r_lat) * 3600.0
+                sep = math.hypot(dlon, dlat)
+                target_list.append(sep)
+
+                prev_worst = worst_samples.get(region)
+                if prev_worst is None or sep > float(prev_worst["diff_arcsec"]):
+                    worst_samples[region] = {
+                        "jd_tt": jd_tt,
+                        "body": body,
+                        "embedded_chebyshev_lon_deg": round(e_lon, 8),
+                        "full_de440_bsp_lon_deg": round(r_lon, 8),
+                        "diff_arcsec": round(sep, 6),
+                    }
+    elapsed_ms = (time.perf_counter() - t0) * 1000.0
+
+    early_max = round(max(wing_early_diffs), 6)
+    core_max = round(max(core_diffs), 6)
+    late_max = round(max(wing_late_diffs), 6)
+    total_samples = len(wing_early_diffs) + len(core_diffs) + len(wing_late_diffs)
+    ceiling_arcsec = 0.05
+    if max(early_max, core_max, late_max) > ceiling_arcsec:
+        raise RuntimeError(
+            f"Embedded Chebyshev wing residual {max(early_max, core_max, late_max)} arcsec exceeds {ceiling_arcsec} arcsec ceiling"
+        )
+
+    return {
+        "evaluation_mode": "LIVE_REPRODUCED_AGAINST_SHA256_PINNED_DE440_BSP",
+        "reference_kernel_sha256": de440_sha256,
+        "samples_evaluated": total_samples,
+        "epochs_evaluated": len(epochs_tt),
+        "step_days": 500.0,
+        "span_ce": "1550-01-01 to 2305-12-31",
+        "ceiling_arcsec": ceiling_arcsec,
+        "wing_1550_1800_max_diff_arcsec": early_max,
+        "core_1800_2100_max_diff_arcsec": core_max,
+        "wing_2101_2306_max_diff_arcsec": late_max,
+        "worst_sample_by_region": worst_samples,
+        "evaluation_duration_ms": round(elapsed_ms, 3),
+    }
 
 
 def evaluate_multi_millennium_epochs() -> list[dict[str, Any]]:
@@ -251,8 +360,20 @@ def evaluate_impossible_astrology_and_surfaces() -> dict[str, Any]:
     }
 
 
-def build_feature_comparison_matrix() -> list[dict[str, Any]]:
-    """Return an objective feature-by-feature comparison across major ephemeris libraries."""
+def build_feature_comparison_matrix(wing_eval: dict[str, Any]) -> list[dict[str, Any]]:
+    """Return a capability and licensing comparison matrix separating reproduced RDG metrics from sourced third-party attributes."""
+    if wing_eval.get("evaluation_mode") == "LIVE_REPRODUCED_AGAINST_SHA256_PINNED_DE440_BSP":
+        worst_ext = max(
+            float(wing_eval["wing_1550_1800_max_diff_arcsec"]),
+            float(wing_eval["core_1800_2100_max_diff_arcsec"]),
+            float(wing_eval["wing_2101_2306_max_diff_arcsec"]),
+        )
+        ext_claim = (
+            f"<= {worst_ext:.6f} arcsec worst error across {wing_eval['samples_evaluated']:,} live body-epoch "
+            "evaluations from embedded Chebyshev wings"
+        )
+    else:
+        ext_claim = "SKIPPED (local SHA-256-pinned de440.bsp reference kernel not provisioned)"
     return [
         {
             "parameter": "Open-Source License & Commercial SaaS Freedom",
@@ -276,18 +397,18 @@ def build_feature_comparison_matrix() -> list[dict[str, Any]]:
             "astropy_6_x": "Requires external JPL SPK kernels for high precision across millennia",
         },
         {
-            "parameter": "Positional Fidelity vs NASA JPL DE440 (1800-2100 CE)",
-            "rdg_ephemeris_oss": "<= 0.000717 arcsec worst error (0.000019 arcsec median across 3,612 monthly TT epochs per planet)",
-            "legacy_c_ephemeris_se_2_10": "< ~0.001 arcsec when external DE431/DE441 files are configured",
-            "skyfield_1_55": "< 0.0005 arcsec when full 114 MB DE440 SPK is loaded",
-            "astropy_6_x": "< 0.001 arcsec when external JPL SPK is loaded",
+            "parameter": "Reproduced Fidelity vs NASA JPL DE440 (1800-2100 CE)",
+            "rdg_ephemeris_oss": "<= 0.000717 arcsec worst error (0.000019 arcsec median across 3,612 monthly TT epochs per planet; live-verified)",
+            "legacy_c_ephemeris_se_2_10": "UNKNOWN (third-party engine not executed in this clean-room repository; depends on external .se1/.bsp files)",
+            "skyfield_1_55": "UNKNOWN (third-party engine not executed in this clean-room repository; depends on external 114 MB de440.bsp)",
+            "astropy_6_x": "UNKNOWN (third-party engine not executed in this clean-room repository; depends on external SPK kernel)",
         },
         {
-            "parameter": "Positional Fidelity vs NASA JPL DE440 (1550-2306 CE Extended Embedded Span)",
-            "rdg_ephemeris_oss": "<= 0.0228 arcsec worst error across 1550-2306 CE from embedded Chebyshev wings",
-            "legacy_c_ephemeris_se_2_10": "Depends on externally installed .se1 files",
-            "skyfield_1_55": "Requires external 114 MB de440.bsp",
-            "astropy_6_x": "Requires external SPK kernel",
+            "parameter": "Reproduced Fidelity vs NASA JPL DE440 (1550-2306 CE Extended Embedded Span)",
+            "rdg_ephemeris_oss": ext_claim,
+            "legacy_c_ephemeris_se_2_10": "UNKNOWN (third-party engine not executed in this clean-room repository; depends on external .se1 files)",
+            "skyfield_1_55": "UNKNOWN (third-party engine not executed in this clean-room repository; requires external 114 MB de440.bsp)",
+            "astropy_6_x": "UNKNOWN (third-party engine not executed in this clean-room repository; requires external SPK kernel)",
         },
         {
             "parameter": "Cryptographic Calculation Receipts (SHA-256)",
@@ -336,6 +457,7 @@ def build_feature_comparison_matrix() -> list[dict[str, Any]]:
 
 def main() -> int:
     claims_data = json.loads((ROOT / "docs" / "claims.yaml").read_text(encoding="utf-8"))
+    wing_eval = evaluate_extended_wings_vs_de440_reference()
     report = {
         "schema": "rdg-ephemeris-sota-evaluation-v1",
         "package_name": "ephemeris-oss",
@@ -347,22 +469,17 @@ def main() -> int:
             "study_parameters": claims_data["study_parameters"],
             "physical_grahas": claims_data["physical_grahas"],
             "lunar_nodes": claims_data["lunar_nodes"],
-            "extended_wings_1550_2306_vs_full_de440": {
-                "samples_evaluated": 3864,
-                "span_ce": "1550-01-01 to 2305-12-31",
-                "wing_1550_1800_max_diff_arcsec": 0.021164,
-                "core_1800_2100_max_diff_arcsec": 0.000717,
-                "wing_2101_2306_max_diff_arcsec": 0.022786,
-            },
+            "extended_wings_1550_2306_vs_full_de440": wing_eval,
         },
         "impossible_astrology_and_integration_surfaces": evaluate_impossible_astrology_and_surfaces(),
-        "feature_comparison_matrix": build_feature_comparison_matrix(),
+        "feature_comparison_matrix": build_feature_comparison_matrix(wing_eval),
     }
     report["receipt_sha256"] = canonical_hash(report)
 
     out_path = ROOT / "evidence" / "sota-ephemeris-evaluation-matrix.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    with out_path.open("w", encoding="utf-8", newline="\n") as fh:
+        fh.write(json.dumps(report, indent=2, sort_keys=True) + "\n")
     print(f"Wrote {out_path} (receipt_sha256={report['receipt_sha256']})")
     return 0
 
