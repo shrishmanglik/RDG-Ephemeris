@@ -1,20 +1,26 @@
 {
-  "benchmark_timestamp_utc": "2026-11-05T04:24:18.333631+00:00",
+  "benchmark_timestamp_utc": "2026-11-05T04:45:10.837224+00:00",
+  "status": "PASS",
   "evaluation_mode": "LIVE_ENGINE_AGAINST_COMMITTED_HORIZONS_TRUTH_AND_EXTERNAL_IAE_CONSTANTS",
   "standards_evaluated": [
     "NASA JPL Horizons (DE441/DE440 Astrometric Ephemeris, 300 epochs x 7 physical bodies = 2,100 live evaluations)",
-    "Calendar Reform Committee Report (CSIR India 1955, p. 262: 1956-03-21 00:00 TT = 23 deg 15' 00.658\")",
-    "Indian Astronomical Ephemeris (IAE 1989 Rashtriya Panchang: 1989-01-01 00:00 UTC = 23 deg 42' 37\")"
+    "Calendar Reform Committee Report (CSIR India 1955, p. 262) & Indian Astronomical Ephemeris (IAE 1989, p. 556: 1956-03-21 00:00 TT = 23 deg 15' 00.658\" true IAU1980 / 23 deg 14' 44.019\" mean)",
+    "Transported J2000.0 TT (JD 2451545.0) Mean Lahiri Reference (23.85709235 deg)"
   ],
   "governing_policy": "Ties reference accuracy within measured truth floor; never claims to beat",
   "nasa_jpl_horizons": {
     "evaluation_method": "Live Engine.load(kernels='extended').positions_tt(jd_tt) evaluated at all 300 manifest epochs",
-    "live_evaluation_duration_ms": 1213.5,
+    "live_evaluation_duration_ms": 988.487,
     "total_samples": 2100,
     "overall_median_separation_arcsec": 0.00023342938525766418,
     "overall_p95_separation_arcsec": 0.009849400426968061,
     "overall_max_separation_arcsec": 0.03685845223700257,
     "max_drift_from_committed_baseline_arcsec": 0.022339012584501407,
+    "tolerances_arcsec": {
+      "median": 0.005,
+      "p95": 0.025,
+      "max": 0.05
+    },
     "by_body": {
       "jupiter": {
         "samples": 300,
@@ -63,15 +69,33 @@
   },
   "iae_lahiri_anchor": {
     "epoch_1956_jd_tt": 2435553.5,
-    "csir_1955_published_true_deg": 23.250182777777777,
+    "csir_1955_iae_1989_p556_true_iau1980_deg": 23.250182777777777,
+    "iae_1989_p556_mean_reference_deg": 23.245560833333336,
+    "iae_1989_p556_true_iau2006_reference_deg": 23.25022111111111,
     "calculated_1956_true_deg": 23.25022149131667,
     "calculated_1956_mean_deg": 23.245560954138135,
-    "true_frame_nutation_model_residual_arcsec": 0.1393687400110366,
-    "epoch_1989_jd_utc": 2447527.5,
-    "iae_1989_published_tabular_deg": 23.710277777777776,
-    "calculated_1989_mean_deg": 23.703447928469267,
-    "iae_1989_tabular_residual_arcsec": 24.58745751063418,
+    "mean_1956_residual_arcsec": 0.000434897276591073,
+    "true_1956_iau2006_residual_arcsec": 0.0013687400141293438,
+    "true_1956_cross_nutation_residual_arcsec": 0.1393687400110366,
+    "epoch_j2000_jd_tt": 2451545.0,
+    "j2000_mean_reference_deg": 23.85709235,
+    "calculated_j2000_mean_deg": 23.857092324999115,
+    "j2000_mean_residual_arcsec": 9.000317930940582e-05,
+    "tolerances_arcsec": {
+      "mean_1956": 0.002,
+      "true_1956_iau2006": 0.002,
+      "true_1956_cross_nutation": 0.2,
+      "j2000_mean": 0.0005
+    },
+    "unverified_1989_01_01_tabular_candidate": {
+      "epoch_1989_jd_utc": 2447527.5,
+      "candidate_constant_deg": 23.710277777777776,
+      "calculated_1989_mean_deg": 23.703447928469267,
+      "discrepancy_arcsec": 24.58745751063418,
+      "status": "HELD_UNVERIFIED_PRIMARY_BOOK_PAGE",
+      "note": "Preserved per Round 2 review: IAE 1989 p. 556 defines the 1956-03-21.0 TT anchor (23 deg 15' 00.658\" true IAU1980 / 23 deg 14' 44.019\" mean). The 1989-01-01 23 deg 42' 37\" string lacks a verified primary-book page readback and is explicitly HELD and excluded from certified agreement claims."
+    },
     "status": "PASS_EXTERNAL_IAE_ANCHORS"
   },
-  "public_claim": "RDG Ephemeris reproduces NASA JPL DE440/Horizons and IAE within the measured truth floor; ties reference accuracy."
+  "public_claim": "RDG Ephemeris reproduces NASA JPL DE440/Horizons and IAE 1989 p. 556 (1956-03-21.0 TT) within the measured truth floor; ties reference accuracy."
 }

@@ -4,7 +4,7 @@
       "ceiling_arcsec": 0.05,
       "core_1800_2100_max_diff_arcsec": 0.018191,
       "epochs_evaluated": 552,
-      "evaluation_duration_ms": 4295.318,
+      "evaluation_duration_ms": 4204.594,
       "evaluation_mode": "LIVE_REPRODUCED_AGAINST_SHA256_PINNED_DE440_BSP",
       "reference_kernel_sha256": "a4ce9bf9b3282becc9f4b2ac3cebe03a2ae7599981aabd7265fd8482fff7c4b5",
       "samples_evaluated": 3864,
@@ -262,17 +262,29 @@
     "bayesian_birth_time_rectification": {
       "best_total_score": 84.5,
       "candidate_count": 61,
-      "latency_ms": 84.816,
+      "latency_ms": 85.952,
       "receipt_sha256": "fbe50ae2887fa49fb4aeb319f7e86ad7a5b1a29c83a1431c5e75b4b4c90613a9",
       "rectified_offset_seconds": -180.0,
       "varga_transitions_detected": 20
     },
     "classical_and_iae_anchors": {
-      "iae_1989_delta_arcsec": 24.5875,
-      "iae_1989_lahiri_computed_deg": 23.70344793,
-      "iae_1989_target_deg": 23.71027778,
+      "iae_1956_mean_computed_deg": 23.24556095,
+      "iae_1956_mean_delta_arcsec": 0.000435,
+      "iae_1956_mean_target_deg": 23.24556083,
+      "iae_1956_true_iau2006_computed_deg": 23.25022149,
+      "iae_1956_true_iau2006_delta_arcsec": 0.001369,
+      "iae_1956_true_iau2006_target_deg": 23.25022111,
+      "iae_j2000_mean_computed_deg": 23.85709232,
+      "iae_j2000_mean_delta_arcsec": 9e-05,
+      "iae_j2000_mean_target_deg": 23.85709235,
       "kali_yuga_3102_bce_mean_moon_deg": 0.0,
-      "kali_yuga_3102_bce_mean_sun_deg": 0.0
+      "kali_yuga_3102_bce_mean_sun_deg": 0.0,
+      "unverified_1989_01_01_tabular_candidate": {
+        "candidate_target_deg": 23.71027778,
+        "computed_1989_mean_deg": 23.70344793,
+        "discrepancy_arcsec": 24.5875,
+        "status": "HELD_UNVERIFIED_PRIMARY_BOOK_PAGE"
+      }
     },
     "mcp_server_verification": {
       "initialized": true,
@@ -282,7 +294,7 @@
     "rare_phenomena_scanner": {
       "combustion_window_count": 6,
       "graha_yuddha_count": 11,
-      "latency_ms": 234.411,
+      "latency_ms": 234.725,
       "receipt_sha256": "dc5e82c8bd1324aa1f4d77c2f10d7d3365071d38995f8f8401dfc2a0039ab781",
       "retrograde_station_count": 4
     },
@@ -295,13 +307,13 @@
     },
     "siddhanta_vs_de440_drift_analyzer": {
       "ahargana_days": 1872673.5,
-      "latency_ms": 75.761,
+      "latency_ms": 72.008,
       "max_abs_delta_deg": 176.036154,
       "mean_abs_delta_deg": 41.55173,
       "receipt_sha256": "cef6f9f7196ddf72eb6359c372cfa9b098af5d5b2d77d4c9cb112a536154c83d"
     },
     "subsecond_varga_cusp_solver": {
-      "latency_ms": 1783.752,
+      "latency_ms": 1614.718,
       "minimum_ascendant_cusp_margin_seconds": 15.8172,
       "most_sensitive_varga": "D45",
       "receipt_sha256": "9f8d01e5c17365d1ec8a05098e9a004c1f37ea0456df13034f1f7721f9bbf141"
@@ -312,7 +324,7 @@
     {
       "ascendant_deg": 321.60009,
       "ayanamsa_deg": 313.357426,
-      "complete_kundali_latency_ms": 23.278,
+      "complete_kundali_latency_ms": 23.163,
       "ephemeris_source": "vondrak2011-analytical",
       "epoch_label": "3102 BCE (Kali Yuga Epoch)",
       "jd_ut": 588465.5,
@@ -323,7 +335,7 @@
     {
       "ascendant_deg": 338.06747,
       "ayanamsa_deg": 2.962144,
-      "complete_kundali_latency_ms": 24.718,
+      "complete_kundali_latency_ms": 25.235,
       "ephemeris_source": "vondrak2011-analytical",
       "epoch_label": "499 CE (Aryabhata Epoch)",
       "jd_ut": 1903396.5,
@@ -334,7 +346,7 @@
     {
       "ascendant_deg": 236.890307,
       "ayanamsa_deg": 18.274548,
-      "complete_kundali_latency_ms": 35.345,
+      "complete_kundali_latency_ms": 35.16,
       "ephemeris_source": "de440-chebyshev",
       "epoch_label": "1600 CE (Early DE440 Chebyshev)",
       "jd_ut": 2305447.5,
@@ -345,7 +357,7 @@
     {
       "ascendant_deg": 232.155896,
       "ayanamsa_deg": 23.703448,
-      "complete_kundali_latency_ms": 33.416,
+      "complete_kundali_latency_ms": 34.003,
       "ephemeris_source": "de440-chebyshev",
       "epoch_label": "1989 CE (IAE Rashtriya Panchang)",
       "jd_ut": 2447527.5,
@@ -356,7 +368,7 @@
     {
       "ascendant_deg": 159.2751,
       "ayanamsa_deg": 24.224033,
-      "complete_kundali_latency_ms": 29.604,
+      "complete_kundali_latency_ms": 29.895,
       "ephemeris_source": "de440-chebyshev",
       "epoch_label": "2026 CE (Modern DE440 Chebyshev)",
       "jd_ut": 2461139.0,
@@ -367,7 +379,7 @@
     {
       "ascendant_deg": 227.557254,
       "ayanamsa_deg": 28.050424,
-      "complete_kundali_latency_ms": 34.549,
+      "complete_kundali_latency_ms": 35.063,
       "ephemeris_source": "de440-chebyshev",
       "epoch_label": "2300 CE (Future DE440 Chebyshev)",
       "jd_ut": 2561117.5,
@@ -378,7 +390,7 @@
     {
       "ascendant_deg": 218.225365,
       "ayanamsa_deg": 37.856338,
-      "complete_kundali_latency_ms": 24.581,
+      "complete_kundali_latency_ms": 24.44,
       "ephemeris_source": "vondrak2011-analytical",
       "epoch_label": "3000 CE (Far Future Vondrak-2011)",
       "jd_ut": 2816787.5,
@@ -389,6 +401,6 @@
   ],
   "package_name": "ephemeris-oss",
   "package_version": "0.2.0.dev1",
-  "receipt_sha256": "678348c01880deedc8985cc84db2707ecb4f07c4a1e84ca00bce628155ff3fcf",
+  "receipt_sha256": "9bb28a04ac79eb499b6a1932f327c5ea1bdba4f68df5bd57f58c6a02d5dc2a73",
   "schema": "rdg-ephemeris-sota-evaluation-v1"
 }

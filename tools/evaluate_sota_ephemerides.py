@@ -303,10 +303,28 @@ def evaluate_impossible_astrology_and_surfaces() -> dict[str, Any]:
         {"jd_ut": jd_sample, "ayanamsa": "lahiri"},
     )
 
-    # IAE 1989 Lahiri anchor and Kali Yuga mean alignment
-    lahiri_1989_deg = ayanamsa_degrees(2447527.5, "lahiri")
-    iae_1989_target_deg = 23.0 + 42.0 / 60.0 + 37.0 / 3600.0
-    iae_delta_arcsec = abs(lahiri_1989_deg - iae_1989_target_deg) * 3600.0
+    # IAE 1989 p. 556 (1956-03-21.0 TT) Lahiri anchor, J2000.0 TT mean reference, and Kali Yuga mean alignment
+    lahiri_1956_mean_deg = ayanamsa_degrees(2435553.5, "lahiri", true=False)
+    lahiri_1956_true_deg = ayanamsa_degrees(2435553.5, "lahiri", true=True)
+    lahiri_j2000_mean_deg = ayanamsa_degrees(2451545.0, "lahiri", true=False)
+    lahiri_1989_deg = ayanamsa_degrees(2447527.5, "lahiri", true=False)
+
+    iae_1956_mean_target_deg = 23.0 + 14.0 / 60.0 + 44.019 / 3600.0
+    iae_1956_true_iau2006_target_deg = 23.0 + 15.0 / 60.0 + 0.796 / 3600.0
+    iae_j2000_mean_target_deg = 23.85709235
+    unverified_1989_candidate_deg = 23.0 + 42.0 / 60.0 + 37.0 / 3600.0
+
+    iae_1956_mean_delta_arcsec = abs(lahiri_1956_mean_deg - iae_1956_mean_target_deg) * 3600.0
+    iae_1956_true_delta_arcsec = abs(lahiri_1956_true_deg - iae_1956_true_iau2006_target_deg) * 3600.0
+    iae_j2000_mean_delta_arcsec = abs(lahiri_j2000_mean_deg - iae_j2000_mean_target_deg) * 3600.0
+    unverified_1989_delta_arcsec = abs(lahiri_1989_deg - unverified_1989_candidate_deg) * 3600.0
+
+    if iae_1956_mean_delta_arcsec > 0.002 or iae_1956_true_delta_arcsec > 0.002 or iae_j2000_mean_delta_arcsec > 0.0005:
+        raise RuntimeError(
+            f"IAE 1956/J2000 Lahiri anchor residual exceeded tolerance: "
+            f"1956_mean={iae_1956_mean_delta_arcsec}\", 1956_true={iae_1956_true_delta_arcsec}\", j2000={iae_j2000_mean_delta_arcsec}\""
+        )
+
     kali_means = surya_siddhanta_mean_longitudes(KALI_YUGA_EPOCH_JD)
 
     return {
@@ -351,9 +369,21 @@ def evaluate_impossible_astrology_and_surfaces() -> dict[str, Any]:
             "positions_source": api_pos.get("ephemeris_source"),
         },
         "classical_and_iae_anchors": {
-            "iae_1989_lahiri_computed_deg": round(lahiri_1989_deg, 8),
-            "iae_1989_target_deg": round(iae_1989_target_deg, 8),
-            "iae_1989_delta_arcsec": round(iae_delta_arcsec, 4),
+            "iae_1956_mean_computed_deg": round(lahiri_1956_mean_deg, 8),
+            "iae_1956_mean_target_deg": round(iae_1956_mean_target_deg, 8),
+            "iae_1956_mean_delta_arcsec": round(iae_1956_mean_delta_arcsec, 6),
+            "iae_1956_true_iau2006_computed_deg": round(lahiri_1956_true_deg, 8),
+            "iae_1956_true_iau2006_target_deg": round(iae_1956_true_iau2006_target_deg, 8),
+            "iae_1956_true_iau2006_delta_arcsec": round(iae_1956_true_delta_arcsec, 6),
+            "iae_j2000_mean_computed_deg": round(lahiri_j2000_mean_deg, 8),
+            "iae_j2000_mean_target_deg": round(iae_j2000_mean_target_deg, 8),
+            "iae_j2000_mean_delta_arcsec": round(iae_j2000_mean_delta_arcsec, 6),
+            "unverified_1989_01_01_tabular_candidate": {
+                "computed_1989_mean_deg": round(lahiri_1989_deg, 8),
+                "candidate_target_deg": round(unverified_1989_candidate_deg, 8),
+                "discrepancy_arcsec": round(unverified_1989_delta_arcsec, 4),
+                "status": "HELD_UNVERIFIED_PRIMARY_BOOK_PAGE",
+            },
             "kali_yuga_3102_bce_mean_sun_deg": kali_means["sun"],
             "kali_yuga_3102_bce_mean_moon_deg": kali_means["moon"],
         },

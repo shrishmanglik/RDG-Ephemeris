@@ -253,3 +253,75 @@ def test_d30_unequal_boundaries_and_subsecond_varga_transitions_and_receipt_bind
         != changed_report.planet_margins["Sun"]["D1"].longitude_deg
     )
     assert cusp_report.receipt_sha256 != changed_report.receipt_sha256
+
+
+def test_benchmark_horizons_iae_positive_and_negative_controls() -> None:
+    """Verify live Horizons/IAE benchmark passes clean engine and rejects 1-degree planetary or anchor perturbations."""
+    import contextlib
+    import importlib.util
+    import io
+
+    bench_path = Path(__file__).resolve().parent.parent / "tools" / "benchmark_horizons_iae.py"
+
+    def _load_bench():  # type: ignore[no-untyped-def]
+        spec = importlib.util.spec_from_file_location("benchmark_horizons_iae_probe", bench_path)
+        assert spec is not None and spec.loader is not None
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+
+    def _run_quietly(mod):  # type: ignore[no-untyped-def]
+        with contextlib.redirect_stdout(io.StringIO()):
+            return mod.run_benchmark()
+
+    # 1. Clean positive control
+    clean_mod = _load_bench()
+    clean_report = _run_quietly(clean_mod)
+    assert clean_report["status"] == "PASS"
+    assert clean_report["nasa_jpl_horizons"]["total_samples"] == 2100
+    assert clean_report["nasa_jpl_horizons"]["overall_max_separation_arcsec"] < 0.05
+    assert clean_report["nasa_jpl_horizons"]["status"] == "PASS_TIED_WITH_HORIZONS"
+    assert clean_report["iae_lahiri_anchor"]["status"] == "PASS_EXTERNAL_IAE_ANCHORS"
+    assert (
+        clean_report["iae_lahiri_anchor"]["unverified_1989_01_01_tabular_candidate"]["status"]
+        == "HELD_UNVERIFIED_PRIMARY_BOOK_PAGE"
+    )
+
+    # 2. Negative control: +1 deg anchor perturbation cannot pass
+    bad_anchor_mod = _load_bench()
+    real_ayanamsa = bad_anchor_mod.ayanamsa_degrees
+    bad_anchor_mod.ayanamsa_degrees = lambda *args, **kwargs: real_ayanamsa(*args, **kwargs) + 1.0
+    bad_anchor_report = _run_quietly(bad_anchor_mod)
+    assert bad_anchor_report["status"] == "FAIL"
+    assert not bad_anchor_report["iae_lahiri_anchor"]["status"].startswith("PASS")
+
+    # 3. Negative control: +1 deg planetary longitude perturbation cannot pass
+    bad_planet_mod = _load_bench()
+    real_engine = bad_planet_mod.Engine
+
+    class IncorrectEngine:
+        @classmethod
+        def load(cls, **kwargs):  # type: ignore[no-untyped-def]
+            return cls(real_engine.load(**kwargs))
+
+        def __init__(self, eng):  # type: ignore[no-untyped-def]
+            self.engine = eng
+
+        def __enter__(self):  # type: ignore[no-untyped-def]
+            return self
+
+        def __exit__(self, *args):  # type: ignore[no-untyped-def]
+            self.engine.close()
+
+        def positions_tt(self, *args, **kwargs):  # type: ignore[no-untyped-def]
+            res = self.engine.positions_tt(*args, **kwargs)
+            changed = {
+                body: {**pos, "longitude_deg": (pos["longitude_deg"] + 1.0) % 360.0}
+                for body, pos in res.value.items()
+            }
+            return replace(res, value=changed)
+
+    bad_planet_mod.Engine = IncorrectEngine
+    bad_planet_report = _run_quietly(bad_planet_mod)
+    assert bad_planet_report["status"] == "FAIL"
+    assert not bad_planet_report["nasa_jpl_horizons"]["status"].startswith("PASS")
