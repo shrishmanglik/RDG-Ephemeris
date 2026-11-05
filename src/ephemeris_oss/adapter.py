@@ -936,21 +936,36 @@ class EphemerisAdapter:
                 vel = frame @ np.asarray(state.velocity_km_per_day, dtype=np.float64)
                 tropical_node = osculating_lunar_node_longitude_degrees(pos, vel)
                 step_d = 0.001
-                state_minus = provider.geocentric_state_at_tdb(
-                    body="moon", tdb=(tdb[0], tdb[1] - step_d), kernel_year=year
-                )
-                state_plus = provider.geocentric_state_at_tdb(
-                    body="moon", tdb=(tdb[0], tdb[1] + step_d), kernel_year=year
-                )
-                node_minus = osculating_lunar_node_longitude_degrees(
-                    frame @ np.asarray(state_minus.position_km, dtype=np.float64),
-                    frame @ np.asarray(state_minus.velocity_km_per_day, dtype=np.float64),
-                )
-                node_plus = osculating_lunar_node_longitude_degrees(
-                    frame @ np.asarray(state_plus.position_km, dtype=np.float64),
-                    frame @ np.asarray(state_plus.velocity_km_per_day, dtype=np.float64),
-                )
-                speed_deg = ((node_plus - node_minus + 180.0) % 360.0 - 180.0) / (2.0 * step_d)
+                node_minus: float | None = None
+                node_plus: float | None = None
+                try:
+                    state_minus = provider.geocentric_state_at_tdb(
+                        body="moon", tdb=(tdb[0], tdb[1] - step_d), kernel_year=year
+                    )
+                    node_minus = osculating_lunar_node_longitude_degrees(
+                        frame @ np.asarray(state_minus.position_km, dtype=np.float64),
+                        frame @ np.asarray(state_minus.velocity_km_per_day, dtype=np.float64),
+                    )
+                except AstronomyDataUnavailable:
+                    node_minus = None
+                try:
+                    state_plus = provider.geocentric_state_at_tdb(
+                        body="moon", tdb=(tdb[0], tdb[1] + step_d), kernel_year=year
+                    )
+                    node_plus = osculating_lunar_node_longitude_degrees(
+                        frame @ np.asarray(state_plus.position_km, dtype=np.float64),
+                        frame @ np.asarray(state_plus.velocity_km_per_day, dtype=np.float64),
+                    )
+                except AstronomyDataUnavailable:
+                    node_plus = None
+                if node_minus is not None and node_plus is not None:
+                    speed_deg = ((node_plus - node_minus + 180.0) % 360.0 - 180.0) / (2.0 * step_d)
+                elif node_plus is not None:
+                    speed_deg = ((node_plus - tropical_node + 180.0) % 360.0 - 180.0) / step_d
+                elif node_minus is not None:
+                    speed_deg = ((tropical_node - node_minus + 180.0) % 360.0 - 180.0) / step_d
+                else:
+                    speed_deg = -0.05295376
                 dist_au = float(np.linalg.norm(pos) / AU_KM)
                 is_retro = bool(speed_deg < 0.0)
             else:

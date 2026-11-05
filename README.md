@@ -6,7 +6,7 @@ An independently built, permissively licensed (`Apache-2.0`) planetary ephemeris
 - **Scientific Limitations, Precision Regimes & Honest Roadmap:** [`docs/ROADMAP-AND-LIMITATIONS.md`](docs/ROADMAP-AND-LIMITATIONS.md)
 - **Trademark Reservation (`RDG™` / `Raj Dulari Gupta™`) & Commercial Boundary:** [`docs/TRADEMARK-AND-COMMERCIAL-BOUNDARY.md`](docs/TRADEMARK-AND-COMMERCIAL-BOUNDARY.md)
 - **Clean-Room Provenance & Dependency Clearance:** [`docs/PROVENANCE-CLEARANCE.md`](docs/PROVENANCE-CLEARANCE.md)
-- **Multi-Discipline Expert Tester Cohort Report:** [`docs/EXPERT-TESTER-COHORT-REPORT.md`](docs/EXPERT-TESTER-COHORT-REPORT.md)
+- **Internal AI Role-Based Domain Analysis Report:** [`docs/EXPERT-TESTER-COHORT-REPORT.md`](docs/EXPERT-TESTER-COHORT-REPORT.md)
 
 ---
 

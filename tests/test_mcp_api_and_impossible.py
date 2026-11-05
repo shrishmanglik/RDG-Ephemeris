@@ -647,7 +647,9 @@ def test_round5_release_reconciliation_contracts(monkeypatch) -> None:  # type: 
 
 
 def test_true_node_in_calc_ut_kundali_mcp_openapi_and_legal_docs() -> None:
-    """Verify True (osculating) vs Mean Rahu/Ketu in calc_ut, kundali bundle, MCP tools, OpenAPI responses, and legal/limitations docs."""
+    """Verify True (osculating) vs Mean Rahu/Ketu in calc_ut (including 1550/2306 TDB endpoints), kundali bundle, MCP tools, OpenAPI responses, and legal/limitations docs."""
+    import erfa
+    import math
     from pathlib import Path
     from ephemeris_oss import EphemerisAdapter, build_openapi_spec, execute_mcp_tool
 
@@ -661,6 +663,29 @@ def test_true_node_in_calc_ut_kundali_mcp_openapi_and_legal_docs() -> None:
         assert abs(true_rahu_flag.longitude_deg - true_rahu_alias.longitude_deg) < 1.0e-9
         assert abs(true_rahu_flag.longitude_deg - mean_rahu.longitude_deg) > 1.0e-3
         assert abs(((true_rahu_flag.longitude_deg + 180.0) % 360.0) - true_ketu.longitude_deg) < 1.0e-9
+
+    # Verify true_node within 0.0005 days of both embedded TDB endpoints (2287184.5005 and 2563392.4995)
+    def _tdb_for_ut(jd_ut_val: float) -> float:
+        tt_val = adapter._jd_ut_to_jd_tt(jd_ut_val)
+        pair = (2451545.0, tt_val - 2451545.0)
+        off = float(erfa.dtdb(*pair, 0.0, 0.0, 0.0, 0.0))
+        return float(sum(erfa.tttdb(*pair, off)))
+
+    for target_tdb in (2287184.5005, 2563392.4995):
+        lo, hi = target_tdb - 1.0, target_tdb + 1.0
+        for _ in range(38):
+            mid = 0.5 * (lo + hi)
+            if _tdb_for_ut(mid) < target_tdb:
+                lo = mid
+            else:
+                hi = mid
+        jd_ut_edge = 0.5 * (lo + hi)
+        adapter._engine._provider._kernel_registry.artifact_for_tdb_jd(_tdb_for_ut(jd_ut_edge))
+        edge_true = adapter.calc_ut(jd_ut_edge, "rahu", sidereal=True, true_node=True)
+        edge_ketu = adapter.calc_ut(jd_ut_edge, "true_ketu", sidereal=True)
+        assert math.isfinite(edge_true.longitude_deg)
+        assert math.isfinite(edge_true.longitude_speed_deg_per_day)
+        assert abs(((edge_true.longitude_deg + 180.0) % 360.0) - edge_ketu.longitude_deg) < 1.0e-9
 
     bundle_mean = adapter.compute_complete_kundali_bundle(2461139.0, 28.6139, 77.2090, include_svg=False)
     bundle_true = adapter.compute_complete_kundali_bundle(
@@ -696,4 +721,12 @@ def test_true_node_in_calc_ut_kundali_mcp_openapi_and_legal_docs() -> None:
         "docs/EXPERT-TESTER-COHORT-REPORT.md",
     ):
         assert (repo_root / rel_doc).is_file(), f"Missing {rel_doc}"
+
+    roadmap_txt = (repo_root / "docs/ROADMAP-AND-LIMITATIONS.md").read_text(encoding="utf-8")
+    assert "<= 0.018191 arcsec" in roadmap_txt
+    assert "UNVERIFIED against a primary ancient numerical ephemeris" in roadmap_txt
+
+    cohort_txt = (repo_root / "docs/EXPERT-TESTER-COHORT-REPORT.md").read_text(encoding="utf-8")
+    assert "Internal AI Role Analysis, Not an External Human Expert Cohort" in cohort_txt
+    assert "4dc841fe-b60e-4d5c-9c09-fda77e6deb80" in cohort_txt
 
