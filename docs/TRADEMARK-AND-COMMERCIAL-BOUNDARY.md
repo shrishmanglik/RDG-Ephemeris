@@ -38,7 +38,7 @@ Under **Section 6 of the Apache License, Version 2.0** (*Trademarks*):
 The following names, marks, and brand identifiers are proprietary trademarks and trade names of **The Million Dollar AI Studio Ltd.** and are **expressly reserved**:
 - **RDG™** and **Raj Dulari Gupta™** (in the context of astronomical/astrological software, ephemeris engines, and calculation services)
 - **RDG-Ephemeris™**
-- **Vedic Astro Studio™**
+- **Jyotish Studio™**
 - **Jyotish Gurukul™**
 - **The AGI Studio™**
 - **The Million Dollar AI Studio Ltd.™**
@@ -50,7 +50,7 @@ You may make truthful, factual statements describing that your software uses or 
 
 ### Prohibited Trademark Uses Without Written Permission
 Without a separate written trademark license from **The Million Dollar AI Studio Ltd.**, you may **not**:
-- Brand, name, or market a third-party application, SaaS product, or commercial API service as an official **"RDG"**, **"Raj Dulari Gupta"**, **"Vedic Astro Studio"**, **"Jyotish Gurukul"**, or **"The AGI Studio"** product or service.
+- Brand, name, or market a third-party application, SaaS product, or commercial API service as an official **"RDG"**, **"Raj Dulari Gupta"**, **"Jyotish Studio"**, **"Jyotish Gurukul"**, or **"The AGI Studio"** product or service.
 - Use the reserved trademarks in your company name, product title, domain name, or app-store listing in a manner that implies endorsement, sponsorship, or official affiliation.
 
 ---
@@ -62,6 +62,6 @@ Our business model separates trusted open-source community infrastructure from o
 | Surface | License & Ownership | What It Includes |
 |---|---|---|
 | **1. Core Ephemeris & Jyotish Calculation Engine (`ephemeris-oss`)** | **Open Source (`Apache-2.0`)** | Planetary positions (`1550–2306 CE` embedded DE440 Chebyshev tables; `3102 BCE–3000 CE` extended span), IAU 2006/2000A & Vondrák-2011 reductions, 21 Ayanamshas, 8 House systems, Mean & True Lunar Nodes, 23 Vargas (`D1..D144`), 8 Dashas, Shadbala, Ashtakavarga, 86 Classical & Tajika Yogas, Regional Drik Panchanga, Birth-Time Rectification, Python SDK, CLI, stdio MCP Server, self-hosted HTTP REST server, and Rust/WASM core. |
-| **2. Proprietary Flagship Products (`Vedic Astro Studio™` & `Jyotish Gurukul™`)** | **Proprietary (`All Rights Reserved`, The Million Dollar AI Studio Ltd.)** | Complete consumer and professional practitioner applications (web and offline desktop editions), interactive consultation workspaces, client almirah and case management, guided astrologer training and certification simulators, and visual design systems. |
+| **2. Proprietary Flagship Products (`Jyotish Studio™` & `Jyotish Gurukul™`)** | **Proprietary (`All Rights Reserved`, The Million Dollar AI Studio Ltd.)** | Complete consumer and professional practitioner applications (web and offline desktop editions), interactive consultation workspaces, client almirah and case management, guided astrologer training and certification simulators, and visual design systems. |
 | **3. Proprietary Fine-Tuned Domain AI Models & Interpretation Pipelines** | **Proprietary (`All Rights Reserved`, The Million Dollar AI Studio Ltd.)** | Custom-trained and quantized astrological reasoning models, curated consultation corpora, and multi-stage interpretation synthesis workflows. |
 | **4. Managed Cloud APIs, Commercial Support & Custom Integrations** | **Proprietary Commercial Services (`The AGI Studio™`)** | Hosted high-availability API endpoints, enterprise SLA support, custom domain integrations, and turnkey consulting software built by The AGI Studio. |

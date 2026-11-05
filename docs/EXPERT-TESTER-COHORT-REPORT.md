@@ -2,9 +2,9 @@
 
 **Date:** `2026-11-05`  
 **Methodology:** Prior to public release qualification, `ephemeris-oss` (**RDG-Ephemeris**, in tribute to **Raj Dulari Gupta**) was subjected to an independent three-track expert review and testing cohort across the three target adopter communities:
-1. **Track 1 — Senior Jyotish Practitioner & Siddhanta/Panchanga Scholar (40-Year Consultation & Teaching Lineage Lens)**
-2. **Track 2 — Commercial Astrology Software, SaaS & API Developer**
-3. **Track 3 — Fundamental Astronomy & Ephemeris Benchmark Researcher**
+1. **Track 1  -  Senior Jyotish Practitioner & Siddhanta/Panchanga Scholar (40-Year Consultation & Teaching Lineage Lens)**
+2. **Track 2  -  Commercial Astrology Software, SaaS & API Developer**
+3. **Track 3  -  Fundamental Astronomy & Ephemeris Benchmark Researcher**
 
 Every finding raised by the three tracks was resolved in code or documented transparently in [`ROADMAP-AND-LIMITATIONS.md`](ROADMAP-AND-LIMITATIONS.md), [`JYOTISH-CAPABILITIES-AND-CONVENTIONS.md`](JYOTISH-CAPABILITIES-AND-CONVENTIONS.md), and [`TRADEMARK-AND-COMMERCIAL-BOUNDARY.md`](TRADEMARK-AND-COMMERCIAL-BOUNDARY.md).
 
@@ -25,7 +25,7 @@ Every finding raised by the three tracks was resolved in code or documented tran
 
 | Finding | Assessment | Resolution Enacted |
 |---|---|---|
-| **2.1 `NOTICE` Alignment with Embedded `1550–2306 CE` Chebyshev Kernels & Trademark Reservation** | `NOTICE` needed to distinguish between the bundled compressed Chebyshev polynomial derivative tables (`data/*.zlib`, `1550–2306 CE`) and optional on-demand raw NASA NAIF `.bsp` files, and needed explicit `Apache-2.0 Section 6` trademark reservation. | Updated [`NOTICE`](../NOTICE) and authored [`TRADEMARK-AND-COMMERCIAL-BOUNDARY.md`](TRADEMARK-AND-COMMERCIAL-BOUNDARY.md) reserving `RDG`, `Raj Dulari Gupta`, `RDG-Ephemeris`, `Vedic Astro Studio`, `Jyotish Gurukul`, `The AGI Studio`, and `The Million Dollar AI Studio Ltd.` while confirming royalty-free `Apache-2.0` commercial code licensing. |
+| **2.1 `NOTICE` Alignment with Embedded `1550–2306 CE` Chebyshev Kernels & Trademark Reservation** | `NOTICE` needed to distinguish between the bundled compressed Chebyshev polynomial derivative tables (`data/*.zlib`, `1550–2306 CE`) and optional on-demand raw NASA NAIF `.bsp` files, and needed explicit `Apache-2.0 Section 6` trademark reservation. | Updated [`NOTICE`](../NOTICE) and authored [`TRADEMARK-AND-COMMERCIAL-BOUNDARY.md`](TRADEMARK-AND-COMMERCIAL-BOUNDARY.md) reserving `RDG`, `Raj Dulari Gupta`, `RDG-Ephemeris`, `Jyotish Studio`, `Jyotish Gurukul`, `The AGI Studio`, and `The Million Dollar AI Studio Ltd.` while confirming royalty-free `Apache-2.0` commercial code licensing. |
 | **2.2 Complete Runtime Dependency Table in `PROVENANCE-CLEARANCE.md`** | `tzdata >= 2024.1` (`Apache-2.0`) was listed in `pyproject.toml` and `NOTICE` but omitted from the table in `docs/PROVENANCE-CLEARANCE.md`. | Added `tzdata >= 2024.1` (`Apache-2.0`) to [`PROVENANCE-CLEARANCE.md`](PROVENANCE-CLEARANCE.md). |
 | **2.3 OpenAPI 3.1 `responses` Blocks, HTTP Body Size Limit & Adapter Reuse** | Strict OpenAPI code generators require `responses` objects on every route; `do_POST` needed a `1 MB` payload cap (`HTTP 413`); `execute_mcp_tool` instantiated `EphemerisAdapter()` on every call. | Added `_get_responses()` and `_post_responses()` (`200`, `400`, `413`) to `build_openapi_spec()`, added `MAX_REQUEST_BODY_BYTES = 1_048_576` (`HTTP 413`) in `api_server.py`, and cached `_get_default_adapter()` in `mcp_server.py`. |
 

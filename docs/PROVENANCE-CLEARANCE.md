@@ -9,7 +9,7 @@
 
 ## 1. Executive Summary
 
-`ephemeris-oss` is a clean-room astronomical and Vedic astrological calculation engine built from first principles directly on public-domain planetary ephemerides and open-standard astronomical reduction routines:
+`ephemeris-oss` is a clean-room astronomical and classical Jyotish and sidereal calculation engine built from first principles directly on public-domain planetary ephemerides and open-standard astronomical reduction routines:
 - **Zero Copyleft Contamination:** All restrictive copyleft third-party ephemeris libraries, C extensions, and binary data tables have been excluded from the runtime, test suite, and build pipeline.
 - **Zero Legacy Symbol Leakage:** All legacy compatibility shims and third-party function signatures have been eliminated in favor of our native first-principles API (`Engine`, `EphemerisAdapter`, `JplErfaAstronomyProvider`).
 - **Zero Internal Estate Identifier Leakage:** Verified by `tools/check_internal_ids.py` across `src/`, `tests/`, `docs/`, `tools/`, and `web/`.
