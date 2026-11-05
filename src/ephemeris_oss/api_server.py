@@ -43,6 +43,30 @@ def build_openapi_spec(server_url: str = "http://127.0.0.1:8765") -> dict[str, A
             },
         }
 
+    def _get_responses() -> dict[str, Any]:
+        return {
+            "200": {
+                "description": "JSON response payload",
+                "content": {"application/json": {"schema": {"type": "object"}}},
+            }
+        }
+
+    def _post_responses() -> dict[str, Any]:
+        return {
+            "200": {
+                "description": "Deterministic calculation result with SHA-256 receipt",
+                "content": {"application/json": {"schema": {"type": "object"}}},
+            },
+            "400": {
+                "description": "Invalid input parameters or malformed JSON request",
+                "content": {"application/json": {"schema": {"type": "object"}}},
+            },
+            "413": {
+                "description": "Request body exceeds maximum allowed size (1 MB)",
+                "content": {"application/json": {"schema": {"type": "object"}}},
+            },
+        }
+
     return {
         "openapi": "3.1.0",
         "info": {
@@ -64,18 +88,21 @@ def build_openapi_spec(server_url: str = "http://127.0.0.1:8765") -> dict[str, A
                 "get": {
                     "summary": "Health and coverage status check",
                     "operationId": "getHealth",
+                    "responses": _get_responses(),
                 }
             },
             "/openapi.json": {
                 "get": {
                     "summary": "OpenAPI 3.1 specification",
                     "operationId": "getOpenApiSpec",
+                    "responses": _get_responses(),
                 }
             },
             "/v1/tools": {
                 "get": {
                     "summary": "List all available calculation tools and JSON schemas",
                     "operationId": "listTools",
+                    "responses": _get_responses(),
                 }
             },
             "/v1/positions": {
@@ -83,6 +110,7 @@ def build_openapi_spec(server_url: str = "http://127.0.0.1:8765") -> dict[str, A
                     "summary": "Compute planetary positions (3102 BCE to 3000 CE)",
                     "operationId": "computePlanetaryPositions",
                     "requestBody": _request_body("compute_planetary_positions"),
+                    "responses": _post_responses(),
                 }
             },
             "/v1/kundali": {
@@ -90,6 +118,7 @@ def build_openapi_spec(server_url: str = "http://127.0.0.1:8765") -> dict[str, A
                     "summary": "Compute complete Vedic Kundali (D1-D60, Dashas, Shadbala, Ashtakavarga, Yogas)",
                     "operationId": "computeCompleteKundali",
                     "requestBody": _request_body("compute_complete_kundali"),
+                    "responses": _post_responses(),
                 }
             },
             "/v1/panchanga": {
@@ -97,6 +126,7 @@ def build_openapi_spec(server_url: str = "http://127.0.0.1:8765") -> dict[str, A
                     "summary": "Compute regional sunrise-anchored Drik Panchanga",
                     "operationId": "computePanchanga",
                     "requestBody": _request_body("compute_panchanga"),
+                    "responses": _post_responses(),
                 }
             },
             "/v1/rectify": {
@@ -104,6 +134,7 @@ def build_openapi_spec(server_url: str = "http://127.0.0.1:8765") -> dict[str, A
                     "summary": "Solve sub-second D1-D60 varga cusp margins and Kunda/Pranapada/Tattwa birth-time rectification",
                     "operationId": "rectifyBirthTime",
                     "requestBody": _request_body("rectify_birth_time_and_varga_cusps"),
+                    "responses": _post_responses(),
                 }
             },
             "/v1/phenomena": {
@@ -111,6 +142,7 @@ def build_openapi_spec(server_url: str = "http://127.0.0.1:8765") -> dict[str, A
                     "summary": "Scan multi-century Graha Yuddha (planetary wars), retrograde stations, and combustion",
                     "operationId": "scanPhenomena",
                     "requestBody": _request_body("scan_planetary_wars_and_stations"),
+                    "responses": _post_responses(),
                 }
             },
             "/v1/siddhanta-diff": {
@@ -118,6 +150,7 @@ def build_openapi_spec(server_url: str = "http://127.0.0.1:8765") -> dict[str, A
                     "summary": "Compare classical Surya Siddhanta epicyclic positions against modern NASA JPL DE440",
                     "operationId": "compareSiddhanta",
                     "requestBody": _request_body("compare_surya_siddhanta_vs_de440"),
+                    "responses": _post_responses(),
                 }
             },
             "/v1/fact-sheet": {
@@ -125,6 +158,7 @@ def build_openapi_spec(server_url: str = "http://127.0.0.1:8765") -> dict[str, A
                     "summary": "Compile compact (<3 KB) SHA-256-sealed AI astrological fact sheet",
                     "operationId": "compileFactSheet",
                     "requestBody": _request_body("compile_verified_ai_fact_sheet"),
+                    "responses": _post_responses(),
                 }
             },
             "/v1/verify-text": {
@@ -132,6 +166,7 @@ def build_openapi_spec(server_url: str = "http://127.0.0.1:8765") -> dict[str, A
                     "summary": "Audit AI-generated astrological text for hallucinated placements",
                     "operationId": "verifyText",
                     "requestBody": _request_body("verify_ai_astrology_text"),
+                    "responses": _post_responses(),
                 }
             },
         },
@@ -189,6 +224,9 @@ def dispatch_api_request(
     return 405, {"error": f"Method not allowed: {upper_method}"}
 
 
+MAX_REQUEST_BODY_BYTES = 1_048_576
+
+
 class EphemerisAPIHandler(BaseHTTPRequestHandler):
     """Thread-safe HTTP handler serving the RDG-Ephemeris REST API with CORS headers."""
 
@@ -211,7 +249,20 @@ class EphemerisAPIHandler(BaseHTTPRequestHandler):
         self._send_json(status, payload)
 
     def do_POST(self) -> None:  # noqa: N802
-        length = int(self.headers.get("Content-Length", "0") or "0")
+        try:
+            length = int(self.headers.get("Content-Length", "0") or "0")
+        except ValueError:
+            self._send_json(400, {"error": "Invalid Content-Length header"})
+            return
+        if length < 0:
+            self._send_json(400, {"error": "Negative Content-Length header"})
+            return
+        if length > MAX_REQUEST_BODY_BYTES:
+            self._send_json(
+                413,
+                {"error": f"Request body exceeds {MAX_REQUEST_BODY_BYTES} byte limit"},
+            )
+            return
         raw_body = self.rfile.read(length) if length > 0 else b"{}"
         try:
             parsed = json.loads(raw_body.decode("utf-8")) if raw_body else {}

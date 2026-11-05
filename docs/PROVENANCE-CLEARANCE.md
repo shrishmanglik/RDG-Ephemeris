@@ -9,7 +9,7 @@
 
 ## 1. Executive Summary
 
-`ephemeris-oss` is a clean-room astronomical and Vedic astrological calculation engine built from first principles directly on public-domain planetary ephemerides and open-standard astronomical reduction routines:
+`ephemeris-oss` is a clean-room astronomical and classical Jyotish and sidereal calculation engine built from first principles directly on public-domain planetary ephemerides and open-standard astronomical reduction routines:
 - **Zero Copyleft Contamination:** All restrictive copyleft third-party ephemeris libraries, C extensions, and binary data tables have been excluded from the runtime, test suite, and build pipeline.
 - **Zero Legacy Symbol Leakage:** All legacy compatibility shims and third-party function signatures have been eliminated in favor of our native first-principles API (`Engine`, `EphemerisAdapter`, `JplErfaAstronomyProvider`).
 - **Zero Internal Estate Identifier Leakage:** Verified by `tools/check_internal_ids.py` across `src/`, `tests/`, `docs/`, `tools/`, and `web/`.
@@ -61,5 +61,6 @@ Four automated release gates enforce clean-room integrity before any wheel or so
 | `numpy` | `>= 1.26` | BSD 3-Clause | Vectorized array arithmetic and rotation matrices |
 | `pyerfa` | `>= 2.0.1` | BSD 3-Clause | IAU 2006/2000A precession, nutation, Earth rotation, and time scales |
 | `jplephem` | `>= 2.21` | MIT | NASA JPL SPK DAF binary Chebyshev segment evaluation |
+| `tzdata` | `>= 2024.1` | Apache-2.0 | IANA time-zone database fallback on platforms without system zoneinfo |
 
-All three runtime dependencies use permissive open-source licenses (BSD 3-Clause and MIT) fully compatible with Apache-2.0 commercial and open-source distribution.
+All four runtime dependencies use permissive open-source licenses (BSD 3-Clause, MIT, and Apache-2.0) fully compatible with Apache-2.0 commercial and open-source distribution. See [`TRADEMARK-AND-COMMERCIAL-BOUNDARY.md`](TRADEMARK-AND-COMMERCIAL-BOUNDARY.md) for trademark reservation under Apache-2.0 Section 6 and [`ROADMAP-AND-LIMITATIONS.md`](ROADMAP-AND-LIMITATIONS.md) for explicit precision regimes and scope boundaries.

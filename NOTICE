@@ -1,8 +1,25 @@
-ephemeris-oss
+ephemeris-oss (RDG-Ephemeris)
 Copyright 2026 The Million Dollar AI Studio Ltd.
-Built by The AGI Studio (theagistudio.com).
+Built by The AGI Studio (theagistudio.com) in tribute to Raj Dulari Gupta (RDG),
+with domain guidance from 40 years of traditional Jyotish practice.
 
 Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Trademark reservation (Apache-2.0 Section 6)
+--------------------------------------------
+
+The Apache License, Version 2.0 grants copyright and patent permissions for the
+source code and bundled derivative tables in this distribution. Under Section 6
+of the Apache License, Version 2.0, it does NOT grant permission to use the
+trade names, trademarks, service marks, or product names of the Licensor,
+except as required for reasonable and customary use in describing the origin of
+the Work and reproducing the content of this NOTICE file.
+
+"RDG", "Raj Dulari Gupta", "RDG-Ephemeris", "Jyotish Studio",
+"Jyotish Gurukul", "The AGI Studio", and "The Million Dollar AI Studio Ltd."
+are trademarks and trade names of The Million Dollar AI Studio Ltd.
+See docs/TRADEMARK-AND-COMMERCIAL-BOUNDARY.md for permitted attribution and the
+boundary between this open-source core and proprietary commercial offerings.
 
 Third-party software
 --------------------
@@ -36,11 +53,15 @@ rust/ephemeris-core/THIRD_PARTY_NOTICES.md and must accompany redistribution
 of those builds. Neither those builds nor this package are endorsed by the
 IAU SOFA Board.
 
-Ephemeris kernels
------------------
+Ephemeris kernels and embedded Chebyshev tables
+-----------------------------------------------
 
-JPL planetary ephemerides are downloaded from NASA NAIF at run time and are not
-redistributed in this package. Their use does not imply endorsement of this
-package by NASA, JPL or NAIF.
+This package bundles compressed Chebyshev polynomial derivative tables
+(src/ephemeris_oss/data/*.zlib, covering 1550 CE through 2306 CE) fitted by
+The Million Dollar AI Studio Ltd. from NASA Jet Propulsion Laboratory
+Development Ephemeris DE440 (Park et al. 2021, AJ 161:105). Full raw NASA NAIF
+SPK planetary ephemeris files (de440.bsp, de441.bsp) are not redistributed in
+the wheel and may be downloaded on demand from NASA NAIF at run time. Their use
+does not imply endorsement of this package by NASA, JPL, Caltech or NAIF.
 
 US Naval Observatory data used only in the separate accuracy study are public-domain government data; the study and bulk kernels are not bundled in the wheel.

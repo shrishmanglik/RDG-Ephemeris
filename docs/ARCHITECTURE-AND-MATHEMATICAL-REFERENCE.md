@@ -92,7 +92,7 @@ $$\text{Nakshatra} = \left\lfloor \frac{\lambda_{\text{Moon}}}{40^\circ / 3} \ri
 In the 120-year Vimshottari system with cycle weights $W = (7, 20, 6, 10, 7, 18, 16, 19, 17)$ for `(Ketu, Venus, Sun, Moon, Mars, Rahu, Jupiter, Saturn, Mercury)`:
 - Remaining balance of the birth Mahadasha is $Y_{\text{rem}} = W_{n \bmod 9} \times \left(1 - \frac{\lambda_{\text{Moon}} \bmod (40^\circ/3)}{40^\circ/3}\right)$.
 - Each sub-period at depth $k \in \{1,\dots,5\}$ (*Mahadasha*, *Antardasha*, *Pratyantardasha*, *Sookshma*, *Prana*) scales proportionally by $W_j / 120$.
-- Also implements 36-year *Yogini*, 108-year *Ashtottari*, and *Kalachakra* Dashas.
+- Also implements 36-year *Yogini*, 108-year *Ashtottari*, *Jaimini Chara*, *Sthira*, *Shoola*, *Mandooka*, and Tajika *Mudda* Dashas (8 Dasha systems total, with configurable `365.2425` solar vs `360.0` *Savana* year length; *Kalachakra Dasha* is tracked on the roadmap in [`ROADMAP-AND-LIMITATIONS.md`](ROADMAP-AND-LIMITATIONS.md)).
 
 ### 4.5 Six-Fold Shadbala (`shadbala.py`) & Ashtakavarga Conservation (`ashtakavarga.py`)
 - **Shadbala:** Sums *Sthana Bala* (*Uchcha*, *Saptavargaja*, *Ojhayugmarasyamsa*, *Kendradi*, *Drekkana*), *Dig Bala*, *Kala Bala* (*Natonnata*, *Paksha*, *Tribhaga*, *Varsha-Masa-Dina-Hora*, *Ayana*, *Yuddha*), *Cheshta Bala*, *Naisargika Bala*, and *Drik Bala* in Virupas ($60\text{ Virupas} = 1\text{ Rupa}$).

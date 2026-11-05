@@ -148,9 +148,12 @@ BODY_NAME_ALIASES: Mapping[str, str] = {
     "rahu": "rahu",
     "mean_node": "rahu",
     "true_node": "rahu",
+    "true_rahu": "rahu",
+    "osculating_node": "rahu",
     "north_node": "rahu",
     "10": "rahu",
     "ketu": "ketu",
+    "true_ketu": "ketu",
     "south_node": "ketu",
     "11": "ketu",
 }
@@ -890,9 +893,18 @@ class EphemerisAdapter:
         *,
         sidereal: bool = True,
         ayanamsa: str = "lahiri",
+        true_node: bool = False,
     ) -> PlanetCoordinateResult:
         """Compute apparent geocentric coordinates, speed, retrograde flag, and receipt for ``body``."""
         jd_val = self._coerce_jd_ut(jd_ut)
+        raw_body_str = (
+            str(body).strip().lower().replace(" ", "_")
+            if not (isinstance(body, int) and not isinstance(body, bool))
+            else ""
+        )
+        use_true_node = bool(true_node) or (
+            raw_body_str in {"true_node", "osculating_node", "true_rahu", "true_ketu"}
+        )
         body_key = _resolve_body_name(body)
         jd_tt = self._jd_ut_to_jd_tt(jd_val)
         tt = (J2000_JD, jd_tt - J2000_JD)
@@ -913,20 +925,64 @@ class EphemerisAdapter:
                 sidereal=sidereal,
                 ayanamsa=ayanamsa,
                 ayan_deg=ayan_deg,
+                true_node=use_true_node,
             )
 
         if body_key in ("rahu", "ketu"):
-            try:
-                tropical_node = mean_lunar_node_longitude_degrees(jd_tt)
-            except AstronomyDataUnavailable:
-                t_cent = (jd_tt - J2000_JD) / 36525.0
-                tropical_node = normalize_degrees(
-                    125.0445479
-                    - 1934.1362891 * t_cent
-                    + 0.0020754 * t_cent * t_cent
-                    + (t_cent ** 3) / 467441.0
-                    - (t_cent ** 4) / 60616000.0
-                )
+            if use_true_node:
+                frame = np.asarray(mean_ecliptic_matrix(jd_tt), dtype=np.float64)
+                state = provider.geocentric_state_at_tdb(body="moon", tdb=tdb, kernel_year=year)
+                pos = frame @ np.asarray(state.position_km, dtype=np.float64)
+                vel = frame @ np.asarray(state.velocity_km_per_day, dtype=np.float64)
+                tropical_node = osculating_lunar_node_longitude_degrees(pos, vel)
+                step_d = 0.001
+                node_minus: float | None = None
+                node_plus: float | None = None
+                try:
+                    state_minus = provider.geocentric_state_at_tdb(
+                        body="moon", tdb=(tdb[0], tdb[1] - step_d), kernel_year=year
+                    )
+                    node_minus = osculating_lunar_node_longitude_degrees(
+                        frame @ np.asarray(state_minus.position_km, dtype=np.float64),
+                        frame @ np.asarray(state_minus.velocity_km_per_day, dtype=np.float64),
+                    )
+                except AstronomyDataUnavailable:
+                    node_minus = None
+                try:
+                    state_plus = provider.geocentric_state_at_tdb(
+                        body="moon", tdb=(tdb[0], tdb[1] + step_d), kernel_year=year
+                    )
+                    node_plus = osculating_lunar_node_longitude_degrees(
+                        frame @ np.asarray(state_plus.position_km, dtype=np.float64),
+                        frame @ np.asarray(state_plus.velocity_km_per_day, dtype=np.float64),
+                    )
+                except AstronomyDataUnavailable:
+                    node_plus = None
+                if node_minus is not None and node_plus is not None:
+                    speed_deg = ((node_plus - node_minus + 180.0) % 360.0 - 180.0) / (2.0 * step_d)
+                elif node_plus is not None:
+                    speed_deg = ((node_plus - tropical_node + 180.0) % 360.0 - 180.0) / step_d
+                elif node_minus is not None:
+                    speed_deg = ((tropical_node - node_minus + 180.0) % 360.0 - 180.0) / step_d
+                else:
+                    speed_deg = -0.05295376
+                dist_au = float(np.linalg.norm(pos) / AU_KM)
+                is_retro = bool(speed_deg < 0.0)
+            else:
+                try:
+                    tropical_node = mean_lunar_node_longitude_degrees(jd_tt)
+                except AstronomyDataUnavailable:
+                    t_cent = (jd_tt - J2000_JD) / 36525.0
+                    tropical_node = normalize_degrees(
+                        125.0445479
+                        - 1934.1362891 * t_cent
+                        + 0.0020754 * t_cent * t_cent
+                        + (t_cent ** 3) / 467441.0
+                        - (t_cent ** 4) / 60616000.0
+                    )
+                dist_au = 0.00256955529
+                speed_deg = -0.05295376
+                is_retro = True
             if body_key == "ketu":
                 tropical_node = (tropical_node + 180.0) % 360.0
             lon_deg = (
@@ -935,9 +991,6 @@ class EphemerisAdapter:
                 else normalize_degrees(tropical_node)
             )
             lat_deg = 0.0
-            dist_au = 0.00256955529
-            speed_deg = -0.05295376
-            is_retro = True
         else:
             earth_state = provider.barycentric_state_at_tdb(
                 body="earth", tdb=tdb, kernel_year=year
@@ -1029,6 +1082,7 @@ class EphemerisAdapter:
         sidereal: bool,
         ayanamsa: str,
         ayan_deg: float,
+        true_node: bool = False,
     ) -> PlanetCoordinateResult:
         """Long-term Vondrak-2011 + Keplerian/Meeus/ELP historical analytical evaluator (3102 BCE to 3000 CE)."""
 
@@ -1042,7 +1096,7 @@ class EphemerisAdapter:
                     + (t_cent ** 3) / 467441.0
                     - (t_cent ** 4) / 60616000.0
                 )
-                if body_key == "true_node":
+                if body_key == "true_node" or true_node:
                     d = 297.8501921 + 445267.1114034 * t_cent
                     m = 357.5291092 + 35999.0502909 * t_cent
                     mp = 134.9633964 + 477198.8675055 * t_cent
@@ -1114,7 +1168,7 @@ class EphemerisAdapter:
         speed_deg = ((trop_after - trop_before + 180.0) % 360.0 - 180.0) / (2.0 * step)
         lat_speed = (lat_after - lat_before) / (2.0 * step)
         dist_speed = (dist_after - dist_before) / (2.0 * step)
-        if body_key in ("rahu", "ketu"):
+        if body_key in ("rahu", "ketu") and not true_node:
             speed_deg = -0.05295376
             is_retro = True
         elif body_key in ("sun", "moon"):
@@ -1271,6 +1325,7 @@ class EphemerisAdapter:
         longitude_deg: float,
         *,
         ayanamsa: str = "lahiri",
+        true_node: bool = False,
         include_svg: bool = True,
         svg_theme: str = "obsidian",
     ) -> CompleteKundaliBundle:
@@ -1287,7 +1342,13 @@ class EphemerisAdapter:
         retro_map: dict[str, bool] = {}
 
         for body in VEDIC_NINE_GRAHAS:
-            coord = self.calc_ut(jd_ut, body, sidereal=True, ayanamsa=ayanamsa)
+            coord = self.calc_ut(
+                jd_ut,
+                body,
+                sidereal=True,
+                ayanamsa=ayanamsa,
+                true_node=bool(true_node),
+            )
             positions[body] = coord
             lon_map[body] = coord.longitude_deg
             cap_lon_map[body.capitalize()] = coord.longitude_deg

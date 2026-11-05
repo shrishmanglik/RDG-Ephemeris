@@ -79,6 +79,7 @@ MCP_TOOLS: tuple[dict[str, Any], ...] = (
                 "jd_ut": {"type": "number", "description": "Julian Date (UT). Covers 3102 BCE (JD 588465.5) to 3000 CE."},
                 "iso_utc": {"type": "string", "description": "ISO-8601 UTC timestamp (e.g. '2026-10-06T12:00:00Z')."},
                 "ayanamsa": {"type": "string", "default": "lahiri", "description": "Sidereal ayanamsa mode (lahiri, raman, kp, true_chitrapaksha, yukteshwar, fagan_bradley)."},
+                "true_node": {"type": "boolean", "default": False, "description": "Use True (osculating) Rahu/Ketu instead of Mean Rahu/Ketu."},
             },
         },
     },
@@ -97,6 +98,7 @@ MCP_TOOLS: tuple[dict[str, Any], ...] = (
                 "latitude_deg": {"type": "number", "default": 28.6139, "description": "Observer geographic latitude in degrees."},
                 "longitude_deg": {"type": "number", "default": 77.2090, "description": "Observer geographic longitude in degrees."},
                 "ayanamsa": {"type": "string", "default": "lahiri"},
+                "true_node": {"type": "boolean", "default": False, "description": "Use True (osculating) Rahu/Ketu instead of Mean Rahu/Ketu."},
             },
         },
     },
@@ -224,17 +226,34 @@ MCP_TOOLS: tuple[dict[str, Any], ...] = (
 )
 
 
+_DEFAULT_ADAPTER: EphemerisAdapter | None = None
+
+
+def _get_default_adapter() -> EphemerisAdapter:
+    global _DEFAULT_ADAPTER
+    if _DEFAULT_ADAPTER is None:
+        _DEFAULT_ADAPTER = EphemerisAdapter()
+    return _DEFAULT_ADAPTER
+
+
 def execute_mcp_tool(name: str, arguments: Mapping[str, Any] | None = None) -> dict[str, Any]:
     """Execute one named MCP tool and return a JSON-serializable dictionary payload."""
     args = dict(arguments or {})
-    adapter = EphemerisAdapter()
+    adapter = _get_default_adapter()
 
     if name == "compute_planetary_positions":
         jd_ut = _resolve_jd_ut(args)
         ayanamsa = str(args.get("ayanamsa", "lahiri"))
+        use_true_node = bool(args.get("true_node", False))
         ayan_deg = adapter.get_ayanamsa_ut(jd_ut, mode=ayanamsa)
         planets = {
-            body: adapter.calc_ut(jd_ut, body, sidereal=True, ayanamsa=ayanamsa)
+            body: adapter.calc_ut(
+                jd_ut,
+                body,
+                sidereal=True,
+                ayanamsa=ayanamsa,
+                true_node=use_true_node,
+            )
             for body in VEDIC_NINE_GRAHAS
         }
         ephem_source = "de440-chebyshev" if 2287184.5 <= jd_ut <= 2563392.5 else "vondrak2011-analytical"
@@ -244,6 +263,7 @@ def execute_mcp_tool(name: str, arguments: Mapping[str, Any] | None = None) -> d
                 "iso_utc": jd_to_iso_utc(jd_ut),
                 "ayanamsa_mode": ayanamsa,
                 "ayanamsa_deg": ayan_deg,
+                "node_mode": "true" if use_true_node else "mean",
                 "ephemeris_source": ephem_source,
                 "planets": planets,
             }
@@ -254,11 +274,13 @@ def execute_mcp_tool(name: str, arguments: Mapping[str, Any] | None = None) -> d
         lat = float(args.get("latitude_deg", 28.6139))
         lon = float(args.get("longitude_deg", 77.2090))
         ayanamsa = str(args.get("ayanamsa", "lahiri"))
+        use_true_node = bool(args.get("true_node", False))
         bundle = adapter.compute_complete_kundali_bundle(
             jd_ut,
             lat,
             lon,
             ayanamsa=ayanamsa,
+            true_node=use_true_node,
             include_svg=False,
         )
         ephem_source = "de440-chebyshev" if 2287184.5 <= jd_ut <= 2563392.5 else "vondrak2011-analytical"
@@ -269,6 +291,7 @@ def execute_mcp_tool(name: str, arguments: Mapping[str, Any] | None = None) -> d
                 "ephemeris_source": ephem_source,
                 "ayanamsa_mode": bundle.ayanamsa_system,
                 "ayanamsa_deg": bundle.ayanamsa_deg,
+                "node_mode": "true" if use_true_node else "mean",
                 "ascendant_deg": bundle.houses.ascendant_deg,
                 "mc_deg": bundle.houses.mc_deg,
                 "planets": bundle.positions,

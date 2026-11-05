@@ -1,18 +1,26 @@
 # RDG-Ephemeris (`ephemeris-oss`)
 
-A clean-room, Apache-2.0 open-source planetary ephemeris and classical Indian astronomy (Jyotish) engine derived from NASA JPL DE440/DE441 Chebyshev polynomials, IAU 2006/2000A precession-nutation, Vondrak-2011 long-term precession, and primary astronomical treatises. Every calculation carries explicit conventions and a deterministic SHA-256 cryptographic receipt.
+An independently built, permissively licensed (`Apache-2.0`) planetary ephemeris and classical Indian astronomy (Jyotish) engine designed for real Jyotish applications with **40 years of lived traditional Jyotish practice** (in tribute to **Raj Dulari Gupta  -  RDG**) and modern clean-room software engineering. Derived directly from NASA JPL DE440/DE441 Chebyshev polynomials, IAU 2006/2000A precession-nutation, Vondrák-2011 long-term precession, and primary astronomical and Jyotish treatises, every calculation carries explicit conventions, transparent accuracy and limitation disclosures, and a deterministic SHA-256 cryptographic receipt.
+
+- **Jyotish Capabilities & Lineage Conventions:** [`docs/JYOTISH-CAPABILITIES-AND-CONVENTIONS.md`](docs/JYOTISH-CAPABILITIES-AND-CONVENTIONS.md)
+- **Scientific Limitations, Precision Regimes & Honest Roadmap:** [`docs/ROADMAP-AND-LIMITATIONS.md`](docs/ROADMAP-AND-LIMITATIONS.md)
+- **Trademark Reservation (`RDG™` / `Raj Dulari Gupta™`) & Commercial Boundary:** [`docs/TRADEMARK-AND-COMMERCIAL-BOUNDARY.md`](docs/TRADEMARK-AND-COMMERCIAL-BOUNDARY.md)
+- **Clean-Room Provenance & Dependency Clearance:** [`docs/PROVENANCE-CLEARANCE.md`](docs/PROVENANCE-CLEARANCE.md)
+- **Internal AI Role-Based Domain Analysis Report:** [`docs/EXPERT-TESTER-COHORT-REPORT.md`](docs/EXPERT-TESTER-COHORT-REPORT.md)
 
 ---
 
 ## Why RDG-Ephemeris Exists
 
-1. **100% Free for Commercial, Indie, and Research Use (`Apache-2.0`)**:
-   Legacy C ephemeris libraries are dual-licensed under GPL/AGPL and require paid commercial seat licenses for proprietary SaaS, mobile apps, or desktop products. `ephemeris-oss` is published under the permissive **Apache-2.0** license with automated clean-room provenance verification.
-2. **Zero-Config Embedded NASA JPL DE440 Chebyshev Span (`1550 CE` to `2306 CE`) + Multi-Millennium Coverage (`3102 BCE` to `3000 CE`)**:
-   Ships with three SHA-256-pinned embedded Chebyshev polynomial kernels (`de440_wing_1550_1800.bin.zlib`, `de440_compact.bin.zlib`, and `de440_wing_2101_2306.bin.zlib`, ~7.7 MB total) covering `1550 CE` through `2306 CE` completely offline with zero external downloads required. Outside `1550..2306 CE`, `EphemerisAdapter` seamlessly transitions to IAU 2006 / Vondrak-2011 (`+/-200,000` year validity) plus Meeus/VSOP analytical providers across human history from the `3102 BCE` Kali Yuga epoch (`JD 588465.5`) through `2300 CE` and `3000 CE` (or optional NASA JPL DE441 SPK kernels covering `-13200` to `+17191`).
-3. **Universal Integration Surfaces (Python SDK, CLI, LLM MCP Server, HTTP REST API, Rust & WebAssembly)**:
+1. **Permissive Commercial & API Freedom (`Apache-2.0`) With Explicit Trademark & Open-Core Boundaries**:
+   Legacy C ephemeris distributions are dual-licensed under copyleft (`GPL v2+ / AGPL v3`) or commercial developer contracts that impose specific conditions on proprietary SaaS, mobile apps, and commercial API businesses. `ephemeris-oss` is published under the permissive **Apache-2.0** license with automated clean-room provenance verification, allowing developers and researchers to build commercial software and APIs without copyleft source-disclosure obligations while **The Million Dollar AI Studio Ltd.** retains copyright in its code, reserves the **`RDG™` (`Raj Dulari Gupta™`)** and **`Jyotish Studio™`** trademarks (`Apache-2.0 Section 6`), and offers proprietary applications, hosted managed APIs, and commercial support on top.
+2. **Designed for Complete Jyotish Applications, Not Just Planetary Longitudes**:
+   Covers explicit time scales (`UTC`, `UT1`, `TT`, `TDB`), 21 named Ayanamsha realizations (with primary citations and historical ambiguity disclosures), 8 house systems (with explicit polar/circumpolar handling), both Mean (Meeus Eq. 47.7) and True/Osculating ($\mathbf{k} \times (\mathbf{r} \times \mathbf{v})$) Lunar Nodes (`Rahu`/`Ketu`), 23 Divisional Vargas (`D1..D144`), 8 Dasha systems (`365.2425` solar and `360.0` *Savana* year options), 6-fold *Shadbala*, conserved 337-bindu *Ashtakavarga*, 86 classical *Parashari* and *Tajika* Yogas, Jaimini Sutras, and sunrise-anchored regional *Drik Panchanga*.
+3. **Zero-Config Embedded NASA JPL DE440 Chebyshev Span (`1550 CE` to `2306 CE`) + Multi-Millennium Coverage (`3102 BCE` to `3000 CE`)**:
+   Ships with three SHA-256-pinned embedded Chebyshev polynomial kernels (`de440_wing_1550_1800.bin.zlib`, `de440_compact.bin.zlib`, and `de440_wing_2101_2306.bin.zlib`, ~6.68 MB compressed) covering `1550 CE` through `2306 CE` completely offline with zero external downloads required. Outside `1550..2306 CE`, `EphemerisAdapter` transitions to Vondrák-2011 long-term precession (`+/-200,000` year validity) plus analytical series across `3102 BCE` (`JD 588465.5`) through `3000 CE` (or optional NASA JPL DE441 SPK kernels covering `-13200` to `+17191`; see [`docs/ROADMAP-AND-LIMITATIONS.md`](docs/ROADMAP-AND-LIMITATIONS.md) for the exact precision envelope of each regime).
+4. **Universal Integration Surfaces (Python SDK, CLI, LLM MCP Server, HTTP REST API, Rust & WebAssembly)**:
    Call it directly from Python, run it from the terminal, connect it to Claude Desktop / Cursor / AI agents via the built-in **Model Context Protocol (MCP)** server (`rdg-ephemeris-mcp`), serve it as an **OpenAPI 3.1 HTTP REST microservice** (`rdg-ephemeris-api`), or embed the **Rust / WebAssembly / Browser ES-Module SDK** (`rust/ephemeris-core` and `web/ephemeris-browser.js`).
-4. **Solves Computational Problems Legacy Point-Coordinate Ephemerides Leave Unsolved**:
+5. **Solves Computational Problems Legacy Point-Coordinate Ephemerides Leave Unsolved**:
    Includes deterministic solvers for sub-second 16-Varga (`D1..D60`) cusp transition sensitivity, multi-criterion Bayesian birth-time rectification (*Kunda* 81x harmonic, *Pranapada Shuddhi*, *Pancha Tattwa* 90-minute elemental cycles, and life-event Dasha triggers), multi-century *Graha Yuddha* (planetary war) disc-diameter adjudication, classical *Surya Siddhanta* vs modern *Drig-Ganita* epicyclic drift analysis, and LLM hallucination auditing.
 
 ---
@@ -31,7 +39,7 @@ The table below separates reproduced `ephemeris-oss` measurements from sourced c
 | **Cryptographic Receipts (`SHA-256`)** | **Built-in on every result** (binds kernel SHA-256, NAIF IDs, conventions, and output) | None (mutable C arrays) | None | None |
 | **Built-in LLM MCP Server (`stdio`)** | **Built-in (`rdg-ephemeris-mcp`)** with 8 tools + AI hallucination auditor | None | None | None |
 | **Built-in HTTP REST API (`OpenAPI 3.1`)** | **Built-in (`rdg-ephemeris-api`)** zero-dependency JSON server | None | None | None |
-| **Classical Jyotish & Almanac Stack** | **23 Vargas (`D1..D144`), 337 Yogas, Shadbala, Ashtakavarga, 8 Dashas, Jaimini, Nadi, Tajika, Drik Panchang, SVG** | Coordinates, ayanamsa, houses, and basic phenomena only | None | None |
+| **Classical Jyotish & Almanac Stack** | **23 Vargas (`D1..D144`), 86 Classical & Tajika Yogas, Shadbala, 337-Bindu Ashtakavarga, 8 Dashas, Jaimini, Nadi, Tajika, Drik Panchang, SVG** | Coordinates, ayanamsa, houses, and basic phenomena only | None | None |
 | **Inverse & Rectification Solvers** | **Sub-second Varga cusp solver, Kunda 81x / Pranapada / Tattwa rectification, Siddhanta drift analyzer** | None | None | None |
 | **Rust & Browser WebAssembly SDK** | **Included** (`rust/ephemeris-core` + `web/ephemeris-browser.js`) | C source requiring Emscripten port and AGPL compliance | Python only | Python/C only |
 
@@ -86,6 +94,7 @@ for label, jd_ut in [
         latitude_deg=28.6139,
         longitude_deg=77.2090,
         ayanamsa="lahiri",
+        true_node=False,  # Set true_node=True for True/Osculating Rahu & Ketu (default is Mean Node, Meeus Eq. 47.7)
         include_svg=False,
     )
     print(label, "Sun Sidereal:", round(bundle.positions["sun"].longitude_deg, 4), "Receipt:", bundle.bundle_receipt_sha256[:16])
@@ -241,7 +250,7 @@ The existing `positions(datetime, ...)` interface accepts UTC only in its declar
 
 The original node rows remain as legacy evidence. The mean-node policy now matches Meeus equation 47.7; its new Decimal reference replay and exact source binding sit beside the unchanged legacy records in the accuracy study.
 
-The corrected sample set passes the stated 0.02 arcsecond P95 and 0.1 arcsecond maximum position limits. Across the extended embedded Chebyshev wings (`1550..2306 CE`, 3,864 live body-epoch evaluations), worst positional difference against full 114 MB `de440.bsp` is `0.018191 arcsec` (`0.007410 arcsec` in `1550..1800 CE`, `0.018191 arcsec` in `1800..2100 CE`, and `0.007091 arcsec` in `2101..2306 CE`). This is sampled component validation, not a claim of perfect physical prediction, full production readiness, continuous coverage proof or superiority to another engine. The package includes the Horizons-compatible opaque-solar-photosphere convention established by the preserved occulted-Mercury diagnostic.
+The corrected sample set passes the stated 0.02 arcsecond P95 and 0.1 arcsecond maximum position limits. Across the extended embedded Chebyshev wings (`1550..2306 CE`, 3,864 live body-epoch evaluations), worst positional difference against full 114 MB `de440.bsp` is `0.018191 arcsec` (`0.007410 arcsec` in `1550..1800 CE`, `0.018191 arcsec` in `1800..2100 CE`, and `0.007091 arcsec` in `2101..2306 CE`, using `mean_equinox=True` with explicit `jd_tdb` prior to `1600 CE` where IAU 2000A nutation is bounded). Note that [`docs/ACCURACY.md`](docs/ACCURACY.md) reports full `de440.bsp` vs Horizons `DE441` (`Moon worst 0.0253509189 arcsec`), whereas [`evidence/horizons-iae-benchmark.json`](evidence/horizons-iae-benchmark.json) reports live embedded Chebyshev vs Horizons `DE441` (`Moon worst 0.036858 arcsec`, `0.000233 arcsec` median, `0.009849 arcsec` P95 across 2,100 rows). Outside `1550..2306 CE`, unless an external NASA JPL `de441.bsp` SPK file is provisioned, `EphemerisAdapter` uses Vondrák-2011 precession with an analytical planetary/lunar fallback (see [`docs/ROADMAP-AND-LIMITATIONS.md`](docs/ROADMAP-AND-LIMITATIONS.md) for the three precision regimes, Mars/Jupiter/Saturn `NAIF 4/5/6` system-barycentre offsets, and deep-antiquity $\Delta T$ uncertainty). This is sampled component validation, not a claim of perfect physical prediction, full production readiness, continuous coverage proof or superiority to another engine. The package includes the Horizons-compatible opaque-solar-photosphere convention established by the preserved occulted-Mercury diagnostic.
 
 ---
 
@@ -270,7 +279,9 @@ Both A/A controls qualified within the declared 0.9 to 1.1 ratio band. The [raw 
 
 The wheel carries engine code, embedded Chebyshev DE440 data (`1550..2306 CE`), and licence notices. It excludes bulk raw `.bsp` kernels, local databases, and environment files. The build gate tests clean wheels and planted prohibited files before accepting a wheel. The source tree is scanned for copyleft-source markers and internal identifiers.
 
-- **License**: [`LICENSE`](LICENSE) contains Apache-2.0; [`NOTICE`](NOTICE) identifies The Million Dollar AI Studio Ltd. and third-party dependencies. NASA/JPL data use and separately installed libraries do not imply endorsement of this package by those organisations.
+- **License & Copyright**: [`LICENSE`](LICENSE) contains Apache-2.0; [`NOTICE`](NOTICE) identifies **The Million Dollar AI Studio Ltd.** (which retains copyright in its original code) and third-party dependencies. NASA/JPL data use and separately installed libraries do not imply endorsement of this package by those organisations.
+- **Trademarks & Commercial Boundary (`RDG™` / `Raj Dulari Gupta™`)**: Under Apache-2.0 Section 6, the trademarks **`RDG™`**, **`Raj Dulari Gupta™`**, **`RDG-Ephemeris™`**, **`Jyotish Studio™`**, **`Jyotish Gurukul™`**, and **`The AGI Studio™`** are reserved by **The Million Dollar AI Studio Ltd.** See [`docs/TRADEMARK-AND-COMMERCIAL-BOUNDARY.md`](docs/TRADEMARK-AND-COMMERCIAL-BOUNDARY.md) for permitted attribution and the boundary between this free open-source core and our proprietary applications, managed cloud APIs, and commercial support.
+- **Limitations, Precision Regimes & Honest Roadmap**: See [`docs/ROADMAP-AND-LIMITATIONS.md`](docs/ROADMAP-AND-LIMITATIONS.md) and [`docs/JYOTISH-CAPABILITIES-AND-CONVENTIONS.md`](docs/JYOTISH-CAPABILITIES-AND-CONVENTIONS.md).
 - **Contributing & Clean-Room Protocol**: See [`CONTRIBUTING.md`](CONTRIBUTING.md) for Developer Certificate of Origin (`git commit -s`), clean-room primary-source citation rules, and verification gates.
 - **Code of Conduct**: [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) adopts Contributor Covenant v2.1.
 - **Security Policy**: [`SECURITY.md`](SECURITY.md) covers SHA-256 kernel verification and private vulnerability reporting.
