@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""One-command reproducible benchmark against NASA JPL Horizons and IAE (never against Swiss).
+"""One-command reproducible benchmark against NASA JPL Horizons and IAE reference tables.
 
-Fulfills CEO Order Workstream E:
+Evaluates our RDG Ephemeris engine against independent public astronomical standards:
 - Scores our RDG engine against committed NASA JPL Horizons apparent vectors and the Indian Astronomical
   Ephemeris (IAE 1989 p. 556) Lahiri anchor.
 - Adheres strictly to Claim-Integrity rule C7: states that RDG ties reference accuracy within the measured truth floor;

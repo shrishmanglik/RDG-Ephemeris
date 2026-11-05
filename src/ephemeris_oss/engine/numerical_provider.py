@@ -9,7 +9,8 @@ from __future__ import annotations
 
 import math
 import threading
-from collections import deque
+from collections import OrderedDict, deque
+from copy import deepcopy
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, timedelta, timezone
 from functools import lru_cache
@@ -293,6 +294,7 @@ class JplErfaAstronomyProvider(AstronomyProvider):
         self._earth_orientation_resolver = earth_orientation_resolver
         self._lock = threading.RLock()
         self._open_kernels: dict[str, tuple[SPK, _SpkGraph]] = {}
+        self._rise_set_cache: OrderedDict[tuple[Any, ...], dict[str, Any]] = OrderedDict()
         if time_scale_valid_from_utc < date(1550, 1, 1):
             raise ValueError("time-scale policy cannot claim UTC coverage before 1550")
         if time_scale_valid_through_utc < time_scale_valid_from_utc:
@@ -307,6 +309,7 @@ class JplErfaAstronomyProvider(AstronomyProvider):
             for kernel, _graph in self._open_kernels.values():
                 kernel.close()
             self._open_kernels.clear()
+            self._rise_set_cache.clear()
 
     def planet_positions_tt(
         self,
@@ -589,8 +592,11 @@ class JplErfaAstronomyProvider(AstronomyProvider):
                 )
         artifact = self._kernel_registry.artifact_for_tdb_jd(times.tdb_jd)
         sun_func = precomputed_sun_func or state_at("sun")
+        target_func = precomputed_target_func or (
+            sun_func if body.strip().lower() == "sun" else state_at(body)
+        )
         result = apparent_place(
-            target_state_at_tdb=precomputed_target_func or state_at(body),
+            target_state_at_tdb=target_func,
             sun_state_at_tdb=sun_func,
             observer_barycentric_state=observer_state,
             reception_tdb_jd=times.tdb_jd,
@@ -1326,7 +1332,7 @@ class JplErfaAstronomyProvider(AstronomyProvider):
         flags = {flag.strip().lower() for flag in event_settings.correction_flags}
         apply_deflection = "apparent" in flags or "solar_deflection" in flags
         apply_aberration = "apparent" in flags or "aberration" in flags
-        apparent, _eop = self._apparent_state(
+        apparent, eop = self._apparent_state(
             body=body,
             instant_utc=instant,
             observer=observer,
@@ -1335,7 +1341,10 @@ class JplErfaAstronomyProvider(AstronomyProvider):
             apply_aberration=apply_aberration,
         )
         vector = apparent.apparent_vector_km
-        itrs = self._icrf_to_frame_matrix("ITRS", instant, times) @ np.asarray(vector, dtype=np.float64)
+        # The topocentric solve already resolved these exact Earth-orientation
+        # values; a second lookup must not repeat the same dataset work.
+        ut1 = erfa.utcut1(*times.utc, eop.dut1_seconds)
+        itrs = self._itrs_matrix(times.tt, ut1, eop) @ np.asarray(vector, dtype=np.float64)
         longitude = math.radians(observer.longitude_deg)
         latitude = math.radians(observer.latitude_deg)
         x, y, z = (float(value) for value in itrs)
@@ -1375,19 +1384,67 @@ class JplErfaAstronomyProvider(AstronomyProvider):
         settings: CalculationSettings,
         atmosphere: OpticalAtmosphere | None = None,
         policy: SolverPolicy | None = None,
+        start_jd_utc: float | None = None,
     ) -> Mapping[str, Any]:
         if event.strip().lower() not in {"rise", "set", "transit", "all"}:
             raise AstronomyDataUnavailable(f"unsupported rise/set event: {event!r}")
         start = datetime.combine(civil_date, datetime.min.time(), tzinfo=timezone.utc)
-        end = start + timedelta(days=1)
         start_jd = self.julian_day(instant_utc=start)
-        end_jd = self.julian_day(instant_utc=end)
+        if start_jd_utc is not None:
+            if not math.isfinite(start_jd_utc):
+                raise ValueError("start_jd_utc must be finite")
+            start_jd = float(start_jd_utc)
+            start = self._utc_at_jd(start_jd)
+            if not isinstance(start, datetime) or start.date() != civil_date:
+                raise ValueError("start_jd_utc must fall on the same UTC civil date")
+        end_jd = start_jd + 1.0
+        end = self._utc_at_jd(end_jd)
         use_standard_refraction = "refraction_standard" in {
             flag.strip().lower() for flag in settings.correction_flags
         }
         if use_standard_refraction and atmosphere is None:
             atmosphere = OpticalAtmosphere(1013.25, 15.0, 0.5, 0.55)
+        solver_policy = policy or SolverPolicy(
+            sample_count=19,
+            subdivision_depth=0,
+            time_tolerance_days=1e-7,
+            max_iterations=40,
+        )
         body_key = body.strip().lower().replace(" ", "_")
+        refine_transit = event.strip().lower() in {"all", "transit"}
+        times = self.utc_time_scales(start)
+        artifact = self._kernel_registry.artifact_for_tdb_jd(times.tdb_jd)
+        eop_receipts = None if self._earth_orientation_resolver is None else tuple(
+            self._resolve_eop(instant) for instant in (start, self._utc_at_jd(start_jd + 0.5), end)
+        )
+        cache_key = (
+            civil_date,
+            start_jd,
+            end_jd,
+            observer,
+            body_key,
+            settings,
+            atmosphere,
+            solver_policy,
+            refine_transit,
+            self.identity,
+            artifact.identifier,
+            artifact.sha256,
+            self._kernel_registry.generation,
+            eop_receipts,
+            self._earth_orientation_version,
+            self._leap_seconds_version,
+            self._time_scale_version,
+            self._tdb_minus_tt_version,
+            self._ayanamsa_data_version,
+            id(self._earth_orientation_resolver),
+            getattr(self._earth_orientation_resolver, "source_sha256", None),
+        )
+        with self._lock:
+            cached = self._rise_set_cache.get(cache_key)
+            if cached is not None:
+                self._rise_set_cache.move_to_end(cache_key)
+                return self._select_horizon_events(cached, event)
         upper_limb_radius_km = {
             "sun": SUN_RADIUS_KM,
             "moon": MOON_RADIUS_KM,
@@ -1401,9 +1458,9 @@ class JplErfaAstronomyProvider(AstronomyProvider):
         _alt_cache: dict[float, float] = {}
 
         def altitude(jd: float) -> float:
-            cached = _alt_cache.get(jd)
-            if cached is not None:
-                return cached
+            cached_alt = _alt_cache.get(jd)
+            if cached_alt is not None:
+                return cached_alt
             val = self._apparent_altitude(
                 jd_utc=jd,
                 observer=observer,
@@ -1415,31 +1472,30 @@ class JplErfaAstronomyProvider(AstronomyProvider):
             _alt_cache[jd] = val
             return val
 
-        solver_policy = policy or SolverPolicy(sample_count=49)
-
-        result = solve_rise_set_transit(altitude, start_jd, end_jd, policy=solver_policy)
-        selected = event.strip().lower()
+        result = solve_rise_set_transit(
+            altitude,
+            start_jd,
+            end_jd,
+            policy=solver_policy,
+            refine_transit=refine_transit,
+        )
         horizon_events = [
             {
                 **asdict(item),
                 "instant_utc": self._utc_at_jd(item.jd).isoformat(),
             }
             for item in result.horizon_events
-            if selected in {"all", item.kind}
         ]
-        return {
+        payload = {
             "outcome": result.outcome,
             "events": horizon_events,
-            "transit": (
-                None
-                if selected not in {"all", "transit"}
-                else {
-                    "jd": result.transit_jd,
-                    "instant_utc": self._utc_at_jd(result.transit_jd).isoformat(),
-                    "altitude_deg": result.transit_altitude_deg,
-                }
-            ),
+            "transit": {
+                "jd": result.transit_jd,
+                "instant_utc": self._utc_at_jd(result.transit_jd).isoformat(),
+                "altitude_deg": result.transit_altitude_deg,
+            },
             "civil_date_basis": "UTC",
+            "search_interval_jd_utc": [start_jd, end_jd],
             "horizon_definition": horizon_definition,
             "semidiameter_model": (
                 None
@@ -1452,6 +1508,21 @@ class JplErfaAstronomyProvider(AstronomyProvider):
             "atmosphere": None if atmosphere is None else asdict(atmosphere),
             "provenance": result.provenance.as_dict(),
         }
+        with self._lock:
+            self._rise_set_cache[cache_key] = payload
+            self._rise_set_cache.move_to_end(cache_key)
+            while len(self._rise_set_cache) > 512:
+                self._rise_set_cache.popitem(last=False)
+        return self._select_horizon_events(payload, event)
+
+    @staticmethod
+    def _select_horizon_events(payload: Mapping[str, Any], event: str) -> dict[str, Any]:
+        selected = event.strip().lower()
+        result = deepcopy(payload)
+        result["events"] = [item for item in result["events"] if selected in {"all", item["kind"]}]
+        if selected not in {"all", "transit"}:
+            result["transit"] = None
+        return result
 
     def _longitude_at_utc_jd(
         self,

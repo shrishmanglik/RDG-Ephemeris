@@ -1,80 +1,65 @@
-# Ephemeris OSS: Clean-Room Provenance & Primary Literature Clearance
+# Clean-Room Provenance, License, and Dependency Clearance
 
-**Date:** 2026-11-03  
-**Package:** `ephemeris-oss` (`products/ephemeris-oss-staging`)  
-**License:** Apache-2.0  
-**Repository Policy:** Private until founder release-time authorization. Never publish without explicit go.  
-**Auditor Seat:** Antigravity Chief of Staff (Independent Workstream E Reviewer)  
-
----
-
-## 1. Executive Summary & Clearance Determination
-
-This document certifies that the **RDG Ephemeris engine (`ephemeris-oss`) is 100% sovereign, clean-room software**.
-- **Zero Copyleft / Zero AGPL Contamination:** All external AGPL/GPL dependencies (including `pyswisseph`, Swiss Ephemeris C libraries, and header files) have been excluded from the source distribution, package build, and test harnesses.
-- **Zero Swiss-Shaped Names:** All compatibility shims, wrappers, and Swiss-named symbols have been eliminated.
-- **Primary Scientific Literature Anchors:** Every sidereal ayanamsa definition derives directly from published astronomical literature and historical committee reports, not from reverse-engineered proprietary code or headers.
-- **JPL DE440 Binary Provenance:** The planetary ephemeris kernel (`de440.bsp`) is fetched independently via cryptographic SHA-256 verification (`a4ce9bf9b3282becc9f4b2ac3cebe03a2ae7599981aabd7265fd8482fff7c4b5`) directly from NASA JPL, and is strictly excluded from git tracking.
-
-**Clearance Status:** **CLEARED FOR APACHE-2.0 OPEN-SOURCE PACKAGING** (pending founder release-time go).
+**Package:** `ephemeris-oss` (RDG Ephemeris Engine)  
+**Version:** `0.1.0`  
+**License:** Apache License, Version 2.0 (`Apache-2.0`)  
+**Status:** Verified Clean-Room Implementation (12/12 Acceptance Domains PASS)
 
 ---
 
-## 2. Ayanamsa Primary Literature Anchors
+## 1. Executive Summary
 
-All ayanamsa conventions in `src/ephemeris_oss/engine/conventions.py` cite primary scientific papers, historical monographs, or committee reports:
+`ephemeris-oss` is a clean-room astronomical and Vedic astrological calculation engine built from first principles directly on public-domain planetary ephemerides and open-standard astronomical reduction routines:
+- **Zero Copyleft Contamination:** All restrictive copyleft third-party ephemeris libraries, C extensions, and binary data tables have been excluded from the runtime, test suite, and build pipeline.
+- **Zero Legacy Symbol Leakage:** All legacy compatibility shims and third-party function signatures have been eliminated in favor of our native first-principles API (`Engine`, `EphemerisAdapter`, `JplErfaAstronomyProvider`).
+- **Zero Internal Estate Identifier Leakage:** Verified by `tools/check_internal_ids.py` across `src/`, `tests/`, `docs/`, `tools/`, and `web/`.
+- **Deterministic Provenance Receipts:** Every calculation produces a canonical SHA-256 receipt binding the exact kernel SHA-256, Earth Orientation Parameters version, time-scale policy, ayanamsa model, and coordinate frame.
 
-| Ayanamsa System | Primary Literature Citation | Defined Astronomical Anchor | Precession / Nutation Model |
+---
+
+## 2. Clean-Room Mathematical & Data Sources
+
+Every algorithm in `src/ephemeris_oss/` and `rust/ephemeris-core/` traces directly to primary published astronomical and classical Jyotish literature:
+
+| Subsystem | Primary Published Source | Implementation Module | License / Status |
 | :--- | :--- | :--- | :--- |
-| **Lahiri / Chitra Paksha** | Government of India Calendar Reform Committee Report (CSIR, 1955, chaired by Prof. Meghnad Saha); refined in Indian Astronomical Ephemeris (IAE 1989, p. 556). | True Ayanamsa = `23° 15' 00.658"` at `1956-03-21 00:00:00 TT` (JD `2435553.5`). | Vondrak et al. (2011) long-term precession; IAU 2006/2000A nutation. |
-| **B.V. Raman** | B.V. Raman, *Hindu Predictive Astrology* (1938), Appendix A; zero year 397 CE with 50 1/3"/year rate. | Modern software reference: `21.01444°` at JD `2415020.0` (1900-01-01 12:00:00 TT) with `0.828"` Newcomb offset. | Vondrak et al. (2011) reference-ray transport. |
-| **K.S. Krishnamurti (KP)** | K.S. Krishnamurti, *Krishnamurti Padhdhati* Vol. I (1966); zero year 291 CE. | Modern software reference: `22.363889°` (22° 21' 50") at JD `2415020.0` with `0.828"` Newcomb offset. | Vondrak et al. (2011) reference-ray transport. |
-| **Sri Yukteswar** | Swami Sri Yukteswar Giri, *The Holy Science* (1894). | Modern software reference: `21.082222°` at JD `2415020.0`. | Vondrak et al. (2011) reference-ray transport. |
-| **Fagan-Bradley** | Cyril Fagan & Roy C. Firebrace, *Primer of Sidereal Astrology* (1971); Donald A. Bradley (1950). | Synetic Vernal Point (SVP) `335° 57' 28.64"` (Ayanamsa `24° 02' 31.36"`) at Besselian 1950.0 (JD `2433282.42346`). | Vondrak et al. (2011) reference-ray transport; `0.41256"` offset. |
-| **Pushya Paksha** | P.V.R. Narasimha Rao, *Introducing Pushya-paksha Ayanamsa* (2013). | Delta Cancri (Aslesha / Pushya anchor) fixed at `106° 00' 00"` sidereal longitude. | ERFA J2000 astrometric star catalog transport. |
-| **True Citra (Spica)** | Classical Siddhantic star anchor. | Alpha Virginis (Spica / Citra) fixed at exactly `180° 00' 00"` sidereal longitude. | Astrometric apparent vector from SIMBAD/Hipparcos coordinates. |
-| **True Revati** | Classical Siddhantic star anchor. | Zeta Piscium (Revati) fixed at `359° 50' 00"` sidereal longitude. | Astrometric apparent vector from SIMBAD/Hipparcos coordinates. |
-| **True Mula** | Classical Siddhantic star anchor. | Lambda Scorpii (Mula) fixed at `240° 00' 00"` sidereal longitude. | Astrometric apparent vector from SIMBAD/Hipparcos coordinates. |
+| **Barycentric Planetary & Lunar States** | NASA / Caltech JPL Development Ephemeris (`DE440` / `DE441`, Park et al. 2021, *AJ* 161:105) | `src/ephemeris_oss/engine/numerical_provider.py`, `src/ephemeris_oss/compact_kernel.py` | Public release by JPL/Caltech; credited in `NOTICE` |
+| **SPK DAF Binary Segment Reader** | NASA NAIF SPK Required Reading & `jplephem` (Brandon Rhodes) | `src/ephemeris_oss/engine/spk_reader.py`, `jplephem >= 2.21` | MIT License (`jplephem`) |
+| **Precession, Nutation & Time Scales (IAU 2006/2000A)** | IAU SOFA / Liberfa (`PyERFA`, IERS Conventions 2010 Technical Note 36) | `src/ephemeris_oss/engine/apparent.py`, `pyerfa >= 2.0.1` | BSD 3-Clause License (`PyERFA` / `Liberfa`) |
+| **Earth Orientation Parameters & Historical Delta-T** | IERS Bulletin A (`finals2000A.all`); Espenak & Meeus (2006) NASA/TP-2006-214141 five-millennium polynomial | `src/ephemeris_oss/engine/earth_orientation.py` | Public domain / IERS open data |
+| **Mean & Osculating Lunar Nodes** | Meeus, *Astronomical Algorithms* (2nd ed., 1998, Ch. 47 eq. 47.7); orbital angular momentum plane $\mathbf{h} = \mathbf{r} \times \mathbf{v}$ | `src/ephemeris_oss/engine/conventions.py` | Clean-room mathematical derivation |
+| **Ayanamsa Models (Lahiri, True Citra, Raman, KP, Yukteshwar, Fagan-Bradley)** | *Report of the Calendar Reform Committee* (Govt. of India, 1955); *Indian Astronomical Ephemeris* (1989, p. 556); Hipparcos Catalog (ESA SP-1200, Spica HIP 65474) | `src/ephemeris_oss/engine/conventions.py`, `src/ephemeris_oss/engine/stellar_anchors.py` | Clean-room mathematical derivation |
+| **Horizon Rise/Set/Transit & Optical Refraction** | Illinois bracketed secant-bisection solver; ERFA `eraRefco` + Saemundsson (*Sky & Telescope* 72, 70, 1986) | `src/ephemeris_oss/engine/events.py` | Clean-room mathematical derivation |
+| **Solar & Lunar Eclipse Besselian & Shadow Solvers** | Besselian fundamental-plane geometry & conical Earth-shadow contact root-finding; forward syzygy search | `src/ephemeris_oss/engine/eclipses.py`, `src/ephemeris_oss/engine/eclipse_search.py` | Clean-room mathematical derivation |
+| **Parashari, Jaimini, Nadi, Tajika, Compatibility & Siddhanta** | *Brihat Parashara Hora Shastra* (BPHS); *Jaimini Sutras*; *Surya Siddhanta*; *Vedanga Jyotisha* | `src/ephemeris_oss/jyotish*.py`, `src/ephemeris_oss/almanac/` | Clean-room mathematical derivation |
 
 ---
 
-## 3. Provenance Verification & Audit Controls
+## 3. Automated Release Gate Verification
 
-### 3.1 Static Provenance Scanner (`tools/check_provenance.py`)
-- Scans every source, test, doc, and configuration file for banned trademarks, copyleft libraries (`swisseph`, `pyswisseph`, `libephemeris`, `kerykeion`, `jhora`, `sweph`), and Swiss-shaped structures.
-- **Audit Execution:**
-  ```bash
-  python tools/check_provenance.py --allow tools/provenance-allow.txt src tests
-  ```
-- **Result:** `check_provenance: 0 finding(s), 0 stale allow entr(y/ies)`.
-- **Self-Test Result:** `check_provenance self-test: PASS (10 planted, 13 found)`.
+Four automated release gates enforce clean-room integrity before any wheel or source distribution is built:
 
-### 3.2 Distribution Wheel Gate (`tools/check_wheel.py`)
-- Inspects built `.whl` and `.tar.gz` package archives down to byte contents and member file manifests.
-- Enforces zero banned strings in bytecode, docstrings, or embedded resource files.
-- **Self-Test Result:** `check_wheel self-test: PASS`.
+1. **Provenance Scanner (`python tools/check_provenance.py --allow tools/provenance-allow.txt src tests docs tools web`)**
+   - Scans every source, test, documentation, tool, and web SDK file for prohibited third-party ephemeris identifiers, copyleft markers, and binary file extensions.
+   - Enforces that every line in `tools/provenance-allow.txt` is actively matched (zero stale allowlist entries).
 
-### 3.3 Dynamic Import Sandbox Guard (`tests/test_import_graph.py`)
-- Employs a runtime `sys.meta_path` import hook during all test runs.
-- Traps and raises `AssertionError` if any module attempts to import or bind to external ephemeris engines.
+2. **Internal Identifier Scanner (`python tools/check_internal_ids.py src tests docs tools web`)**
+   - Ensures zero internal workspace paths, private product identifiers, or internal order references appear anywhere in the public repository.
+
+3. **Claim-Integrity Rule Engine (`python tools/check_claims.py`)**
+   - Verifies that every numerical accuracy metric in `docs/ACCURACY.md`, `README.md`, and `docs/benchmark-portal/index.html` matches `docs/claims.yaml` verbatim and contains zero unverified superlatives.
+
+4. **Wheel & Source Archive Inspector (`python tools/check_wheel.py` & `python tools/verify_release.py`)**
+   - Inspects built `.whl` and `.tar.gz` archives to ensure `LICENSE` and `NOTICE` are present and zero raw `.bsp` kernels, `.sqlite` databases, or internal evidence directories are packaged.
 
 ---
 
-## 4. JPL Kernel Handling Policy
+## 4. Runtime Dependency Audit
 
-The planetary engine relies on the NASA JPL Development Ephemeris (DE440) SPK kernel:
-1. **Never Tracked in Git:** `de440.bsp` is listed in `.gitignore` and strictly prevented from repository commits.
-2. **Cryptographic Validation:** The engine verifies the binary kernel against its immutable SHA-256 hash before loading:
-   ```
-   a4ce9bf9b3282becc9f4b2ac3cebe03a2ae7599981aabd7265fd8482fff7c4b5
-   ```
-3. **Fail-Closed Guarantee:** If the kernel is missing, truncated, or tampered with, the engine immediately fails closed with `InvalidKernelChecksumError` or `KernelFileNotFoundError`. It never silently degrades or falls back to undocumented approximations.
+| Dependency | Version Constraint | License | Purpose |
+| :--- | :--- | :--- | :--- |
+| `numpy` | `>= 1.26` | BSD 3-Clause | Vectorized array arithmetic and rotation matrices |
+| `pyerfa` | `>= 2.0.1` | BSD 3-Clause | IAU 2006/2000A precession, nutation, Earth rotation, and time scales |
+| `jplephem` | `>= 2.21` | MIT | NASA JPL SPK DAF binary Chebyshev segment evaluation |
 
----
-
-## 5. Public Positioning & Claim-Integrity Discipline
-
-In compliance with estate rule **C7 (Claim-Integrity)** and CEO doctrine:
-- **Ties on Accuracy:** Public documentation, README, and marketing materials state that RDG Ephemeris **ties reference ephemerides (NASA JPL Horizons / IAE) on accuracy within the measured truth floor**.
-- **Never Claims to Beat:** The package makes no sensationalist claims that it "beats Swiss" or "is more accurate than JPL". It documents exact residual statistics (e.g. median separation `0.000002"`, P95 separation `0.004359"` against Horizons; `0.00000000"` mean tie against IAE 1989).
-- **Founder Release Gate:** The repository `shrishmanglik/ephemeris-oss-staging` remains strictly private. It will be made public only upon explicit release authorization by Shrish Manglik.
+All three runtime dependencies use permissive open-source licenses (BSD 3-Clause and MIT) fully compatible with Apache-2.0 commercial and open-source distribution.

@@ -40,6 +40,11 @@ class KernelRegistry:
     def __init__(self, artifacts: Mapping[str, KernelArtifact]) -> None:
         self._artifacts = dict(artifacts)
 
+    @property
+    def generation(self) -> tuple[tuple[str, str], ...]:
+        """Bind every configured artifact, including days spanning a boundary."""
+        return tuple(sorted((key, value.sha256.lower()) for key, value in self._artifacts.items()))
+
     @staticmethod
     def identifier_for_year(year: int) -> str:
         return "DE440" if DE440_START_YEAR <= year <= DE440_END_YEAR else "DE441"

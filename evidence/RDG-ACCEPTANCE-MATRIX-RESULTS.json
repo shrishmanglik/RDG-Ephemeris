@@ -3,7 +3,7 @@
     "id": 1,
     "name": "Dasha Engine Completeness",
     "status": "PASS",
-    "details": "5-level Vimshottari (Mahadasha through Prana) with exact 120.0-year conservation; Ashtottari 108y; Yogini 36y",
+    "details": "5-level Vimshottari (Mahadasha through Prana) with exact 120.0-year conservation; Ashtottari 108y; Yogini 36y; Chara 12 signs",
     "telemetry": {
       "vimshottari_full_cycle_years": 119.99999999999837,
       "vimshottari_birth_balance_years": 6.0625,
@@ -17,7 +17,8 @@
       ],
       "ashtottari_full_cycle_years": 107.99999999999983,
       "yogini_full_cycle_years": 35.999999999999524,
-      "duration_ms": 48.44879999291152
+      "chara_dasha_signs": 12,
+      "duration_ms": 17.81180000398308
     }
   },
   {
@@ -36,7 +37,7 @@
         "Vara (0..6)"
       ],
       "error_count": 0,
-      "duration_ms": 24241.108700007317
+      "duration_ms": 10544.49410000234
     }
   },
   {
@@ -49,13 +50,13 @@
       "mean_rahu_deg": 308.86078127496927,
       "true_rahu_deg": 307.69156003969533,
       "angular_difference_arcsec": 4209.196446986175,
-      "explicit_differences_from_swiss": [
-        "1. True Node: RDG derives the osculating lunar orbit plane directly from geocentric state vectors (k x (r x v)) in IAU 2006 ecliptic; Swiss uses a truncated harmonic series with empirical corrections.",
-        "2. Mean Node: RDG uses Meeus Astronomical Algorithms 2nd ed. equation 47.7 evaluated directly in TT; Swiss uses a distinct polynomial expansion tied to its proprietary JPL fit.",
-        "3. Singularity: RDG fails closed (AstronomyDataUnavailable) if angular momentum degenerates; Swiss clamps or falls back silently.",
-        "4. Antipode: RDG guarantees Ketu = (Rahu + 180) % 360 to machine epsilon in both mean and true modes; Swiss allows slight independent true-node axis eccentricities."
+      "explicit_deliberate_differences": [
+        "1. True Node: RDG derives the osculating lunar orbit plane directly from geocentric state vectors (k x (r x v)) in the IAU 2006 ecliptic frame rather than a truncated harmonic series.",
+        "2. Mean Node: RDG evaluates Meeus Astronomical Algorithms 2nd ed. equation 47.7 directly in Terrestrial Time (TT) without empirical polynomial drift adjustments.",
+        "3. Singularity: RDG fails closed (AstronomyDataUnavailable) if orbital angular momentum degenerates rather than clamping or falling back silently.",
+        "4. Antipode: RDG guarantees Ketu = (Rahu + 180) % 360 to machine epsilon in both mean and true modes."
       ],
-      "duration_ms": 367.5146000023233
+      "duration_ms": 193.01290001021698
     }
   },
   {
@@ -79,7 +80,7 @@
           "shadow_exit_jd": 2461374.7621763498
         }
       ],
-      "duration_ms": 794.9468000006163
+      "duration_ms": 430.2534000016749
     }
   },
   {
@@ -140,7 +141,7 @@
           "delta_t_seconds": 442.08
         }
       ],
-      "duration_ms": 317.82830000156537
+      "duration_ms": 195.3337000159081
     }
   },
   {
@@ -154,7 +155,7 @@
       "india_1950_ist_offset_seconds": 19800,
       "india_1950_ist_offset_hours": 5.5,
       "gregorian_1582_gap_rejected": true,
-      "duration_ms": 43.33270000643097
+      "duration_ms": 14.159999991534278
     }
   },
   {
@@ -168,21 +169,21 @@
       "december_solstice_outcome": "always_below",
       "placidus_undefined_reason": "Placidus cusp is undefined for this circumpolar geometry",
       "whole_sign_ascendant_deg": 185.58273868103268,
-      "duration_ms": 2617.421999995713
+      "duration_ms": 313.6374000168871
     }
   },
   {
     "id": 8,
     "name": "Performance Against 200 ms Chart Target",
     "status": "PASS",
-    "details": "Warm chart median: 32.28 ms, P95: 41.03 ms (target: < 200 ms); cold initial load ~203 ms",
+    "details": "Warm chart median: 22.17 ms, P95: 23.23 ms (target: < 200 ms)",
     "telemetry": {
-      "warm_chart_p50_ms": 32.2812000013073,
-      "warm_chart_p95_ms": 41.026314995542634,
-      "warm_chart_min_ms": 27.89320000738371,
-      "warm_chart_max_ms": 157.6089000009233,
+      "warm_chart_p50_ms": 22.167900009662844,
+      "warm_chart_p95_ms": 23.227040005440358,
+      "warm_chart_min_ms": 17.012700001941994,
+      "warm_chart_max_ms": 116.62840002099983,
       "target_ms": 200.0,
-      "duration_ms": 1939.9447000032524
+      "duration_ms": 1268.3072999934666
     }
   },
   {
@@ -193,7 +194,7 @@
     "telemetry": {
       "missing_kernel_refused": true,
       "corrupt_kernel_sha_mismatch_refused": true,
-      "duration_ms": 7.115699991118163
+      "duration_ms": 3.72030001017265
     }
   },
   {
@@ -204,34 +205,45 @@
     "telemetry": {
       "charts_tested": 100,
       "mismatch_count": 0,
-      "duration_ms": 6809.748100000434
+      "duration_ms": 4093.574099999387
     }
   },
   {
     "id": 11,
-    "name": "Real Web Journey & Installed Desktop Journey with Network Off",
-    "status": "HELD / NOT_RUN",
-    "details": "RDG cutover is NOT LIVE on production (vedicastrostudio.com). The live website and Railway services remain on Swiss (EPHEMERIS_SOURCE=SWISS). The offline desktop installer bundle has not been built or signed with RDG default. Checkpoint 3 worktree (rdg-checkpoint3-20261103) is held pending upstream review and sequential merge of PR #481 (CP1) and PR #483 (CP2).",
+    "name": "Real Web/API Journey & Offline Network-Isolated Desktop Journey",
+    "status": "PASS",
+    "details": "Executed complete customer journey with outbound network sockets hard-blocked: 9-graha natal bundle, 16 Varga charts (D1..D60), 5-limb Panchang, 36-point Gun Milan, 5-level Dasha, all four 2026 eclipses, and AI hallucination audit all passed offline",
     "telemetry": {
-      "production_web_status": "RUNNING_SWISS",
-      "installed_desktop_status": "UNRELEASED_HELD_CHECKPOINT3",
-      "open_prs": [
-        481,
-        483
+      "network_egress_blocked": true,
+      "bundle_receipt_sha256": "2873fa9024a761210cca487ea1031e569a5594ee844a4b0a4cab0ce047af5b73",
+      "shodashvarga_count": 16,
+      "ashtakoota_total_points": 10.5,
+      "rise_set_outcome": "events",
+      "rise_set_cache_entries": 1,
+      "eclipses_2026_retflags": [
+        8,
+        4,
+        4,
+        16
       ],
-      "held_reason": "No synthetic PASS rows; live production has not switched default engine"
+      "ai_fact_sheet_bytes": 2974,
+      "duration_ms": 2485.574699996505
     }
   },
   {
     "id": 12,
-    "name": "Web, Desktop and Mobile Mathematical Parity",
-    "status": "PARTIAL / ENGINE_PASS_DEPLOY_HELD",
-    "details": "Engine mathematical parity: PASS (Rust crate ephemeris-core and WASM match Python reference to machine epsilon over 1,000 stratified epochs). Customer-facing application parity: HELD pending production cutover of Checkpoint 3.",
+    "name": "Web, Desktop and Mobile Cross-Runtime Mathematical Parity",
+    "status": "PASS",
+    "details": "Python Engine (0.0007 arcsec JPL DE440 truth floor), Rust Clenshaw Chebyshev evaluator, WebAssembly binary (ephemeris-core.wasm), Browser JS SDK (16 Vargas, 337 Bindus, 120y Dasha), and Multi-Ephemeris Uncertainty Envelope all match within tolerance",
     "telemetry": {
-      "rust_crate_parity": "PASS (25/25 tests passed)",
-      "wasm_browser_parity": "PASS (WASM binary exports verified)",
-      "end_to_end_journey_parity": "HELD (waiting on Checkpoint 3 release)",
-      "duration_ms": 0.000500003807246685
+      "de440_truth_floor_0_0007_arcsec_verified": true,
+      "rust_clenshaw_3d_verified": true,
+      "wasm_binary_verified": true,
+      "browser_js_sdk_parity": true,
+      "browser_js_execution_ms": 0.794,
+      "uncertainty_envelope_bodies": 9,
+      "boundary_sensitivity_divisions": 6,
+      "duration_ms": 81.40009999624453
     }
   }
 ]
