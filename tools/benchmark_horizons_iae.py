@@ -149,7 +149,7 @@ def run_benchmark(output_path: Path | None = None) -> dict[str, Any]:
 
     body_summary: dict[str, dict[str, float]] = {}
     print(f"\n1. Live Engine vs NASA JPL Horizons Residuals (1800-2100 Corpus, evaluated in {live_eval_ms:.1f} ms):")
-    print(f"   {'Body':<10} | {'Samples':<8} | {'Median (\")':<12} | {'P95 (\")':<12} | {'Max (\")':<12}")
+    print('   Body       | Samples  | Median (")   | P95 (")      | Max (")     ')
     print("   " + "-" * 62)
 
     for body, res_list in sorted(body_residuals.items()):
