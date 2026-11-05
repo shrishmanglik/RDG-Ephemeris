@@ -189,3 +189,16 @@ def test_browser_ephemeris_engine_parity_and_sub_2ms_execution() -> None:
     assert abs(payload["ayanamsasJ2000"]["raman"] - ayanamsa_degrees(2451545.0, "raman")) < 1e-6
     assert abs(payload["ayanamsasJ2000"]["krishnamurti"] - ayanamsa_degrees(2451545.0, "kp")) < 1e-6
     assert abs(payload["meanNodeJ2000"] - mean_lunar_node_longitude_degrees(2451545.0)) < 1e-9
+
+
+def test_clean_room_compatibility_adapter_and_provenance_allowlist() -> None:
+    allow = check_provenance.load_allow(REPO_ROOT / "tools" / "provenance-allow.txt")
+    findings, stale = check_provenance.scan(REPO_ROOT / "src", allow)
+    assert findings == [], f"Unexpected src provenance findings: {findings}"
+    assert stale == [], f"Unexpected stale allowlist entries: {stale}"
+
+
+def test_claims_manifest_contains_all_seven_physical_grahas() -> None:
+    manifest = check_claims.load_claims_manifest(REPO_ROOT / "docs" / "claims.yaml")
+    graha_labels = [row["target_label"] for row in manifest["physical_grahas"]]
+    assert len(graha_labels) == 7

@@ -322,14 +322,32 @@ def _evaluate_sun_moon(
         res = source.positions_tt(jd_tt, ("sun", "moon"))
         raw_positions = res.value if hasattr(res, "value") else res
         provider_label = "engine.positions_tt"
+    elif hasattr(source, "planet_positions_tt") and callable(source.planet_positions_tt):
+        engine_obj = source
+        res = source.planet_positions_tt(jd_tt=jd_tt, bodies=("sun", "moon"))
+        raw_positions = res.get("positions", res) if isinstance(res, Mapping) else res
+        provider_label = "provider.planet_positions_tt"
     elif callable(source):
         engine_obj = getattr(source, "__self__", None)
+        if engine_obj is None:
+            for cell in getattr(source, "__closure__", None) or ():
+                try:
+                    contents = cell.cell_contents
+                except ValueError:
+                    continue
+                if hasattr(contents, "geocentric_state_at_tdb") or hasattr(contents, "_provider"):
+                    engine_obj = contents
+                    break
         res = source(jd_tt, ("sun", "moon"))
         raw_positions = res.value if hasattr(res, "value") else res
         if engine_obj is not None and hasattr(engine_obj, "positions_tt"):
             provider_label = "engine.positions_tt"
     else:
         raise ValueError("engine or position_provider must be an Engine instance, a callable, or None")
+
+    prov_obj = getattr(engine_obj, "_provider", None) if engine_obj is not None else None
+    if prov_obj is None and engine_obj is not None and hasattr(engine_obj, "geocentric_state_at_tdb"):
+        prov_obj = engine_obj
 
     def _extract(body_key: str, fallback: dict[str, float]) -> dict[str, float]:
         entry: Mapping[str, Any] | None = None
@@ -344,14 +362,13 @@ def _evaluate_sun_moon(
         dist = entry.get("distance_km")
         if dist is not None:
             dist_km = float(dist)
-        elif engine_obj is not None and hasattr(engine_obj, "_provider"):
+        elif prov_obj is not None and hasattr(prov_obj, "geocentric_state_at_tdb"):
             try:
-                prov = engine_obj._provider
                 tt = (J2000_TT_JD, jd_tt - J2000_TT_JD)
                 year = int(erfa.jd2cal(*tt)[0])
                 offset = float(erfa.dtdb(*tt, 0.0, 0.0, 0.0, 0.0))
                 tdb = tuple(float(v) for v in erfa.tttdb(*tt, offset))
-                state = prov.geocentric_state_at_tdb(body=body_key, tdb=tdb, kernel_year=year)
+                state = prov_obj.geocentric_state_at_tdb(body=body_key, tdb=tdb, kernel_year=year)
                 px, py, pz = state.position_km
                 dist_km = math.sqrt(px * px + py * py + pz * pz)
             except Exception:

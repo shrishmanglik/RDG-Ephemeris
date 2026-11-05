@@ -617,17 +617,96 @@ def run_acceptance_matrix(kernel_path: Path | None = None) -> list[AcceptanceRow
 
     # 12. CROSS-RUNTIME (PYTHON, RUST SIMD, WEBASSEMBLY/BROWSER JS) & CAPABILITY PARITY
     t0 = time.perf_counter()
-    # 12a. Rust Clenshaw Chebyshev evaluator parity
+    # 12a. Rust Clenshaw Chebyshev evaluator parity (exercise compiled native Rust cdylib against Python reference)
     coeffs_x = [85.0, -12500.0, 2500000.0, 149597870.7]
     coeffs_y = [-42.0, 9200.0, 148000000.0, 0.0]
     coeffs_z = [-18.0, 3900.0, 64000000.0, 0.0]
+    coeffs_mat = np.asarray([coeffs_x, coeffs_y, coeffs_z], dtype=np.float64)
+    jd_tdb_eval = 2451550.0
+    start_jd_eval = 2451545.0
+    intlen_eval = 16.0
     pos_km, vel_km_day = evaluate_chebyshev_clenshaw_3d(
-        np.asarray([coeffs_x, coeffs_y, coeffs_z], dtype=np.float64),
-        jd_tdb=2451550.0,
-        start_jd=2451545.0,
-        intlen_days=16.0,
+        coeffs_mat,
+        jd_tdb=jd_tdb_eval,
+        start_jd=start_jd_eval,
+        intlen_days=intlen_eval,
     )
-    rust_clenshaw_ok = len(pos_km) == 3 and len(vel_km_day) == 3 and all(math.isfinite(float(v)) for v in pos_km)
+    import ctypes as _ctypes
+
+    rust_dir = _ROOT / "rust" / "ephemeris-core"
+    lib_candidates = ("ephemeris_core.dll", "libephemeris_core.so", "libephemeris_core.dylib")
+    native_lib_path: Path | None = None
+    for profile in ("release", "debug"):
+        for lib_name in lib_candidates:
+            cand = rust_dir / "target" / profile / lib_name
+            if cand.is_file():
+                native_lib_path = cand
+                break
+        if native_lib_path is not None:
+            break
+    if native_lib_path is None and shutil.which("cargo") is not None:
+        subprocess.run(
+            ["cargo", "build", "--release", "--manifest-path", str(rust_dir / "Cargo.toml")],
+            cwd=str(_ROOT),
+            check=False,
+            capture_output=True,
+        )
+        for profile in ("release", "debug"):
+            for lib_name in lib_candidates:
+                cand = rust_dir / "target" / profile / lib_name
+                if cand.is_file():
+                    native_lib_path = cand
+                    break
+            if native_lib_path is not None:
+                break
+
+    native_rust_executed = False
+    native_pos_err_km = float("inf")
+    native_vel_err_km_day = float("inf")
+    if native_lib_path is not None:
+        try:
+            native_cdll = _ctypes.CDLL(str(native_lib_path.resolve(strict=True)))
+            eval_1d_fn = native_cdll.eoss_eval_chebyshev_1d
+            eval_1d_fn.argtypes = [
+                _ctypes.POINTER(_ctypes.c_double),
+                _ctypes.c_size_t,
+                _ctypes.c_double,
+                _ctypes.c_double,
+                _ctypes.POINTER(_ctypes.c_double),
+            ]
+            eval_1d_fn.restype = _ctypes.c_double
+            tau_eval = 2.0 * (jd_tdb_eval - start_jd_eval) / intlen_eval - 1.0
+            native_pos = np.zeros(3, dtype=np.float64)
+            native_vel = np.zeros(3, dtype=np.float64)
+            for axis_idx in range(3):
+                row_vals = coeffs_mat[axis_idx]
+                deg = int(row_vals.shape[0])
+                c_arr = (_ctypes.c_double * deg)(*[float(v) for v in row_vals])
+                vel_out = _ctypes.c_double(0.0)
+                p_val = eval_1d_fn(c_arr, deg, float(tau_eval), float(intlen_eval), _ctypes.byref(vel_out))
+                native_pos[axis_idx] = float(p_val)
+                native_vel[axis_idx] = float(vel_out.value)
+            native_rust_executed = True
+            if (
+                len(pos_km) == 3
+                and len(vel_km_day) == 3
+                and all(math.isfinite(float(v)) for v in pos_km)
+                and all(math.isfinite(float(v)) for v in vel_km_day)
+                and all(math.isfinite(float(v)) for v in native_pos)
+                and all(math.isfinite(float(v)) for v in native_vel)
+            ):
+                native_pos_err_km = float(np.max(np.abs(np.asarray(pos_km, dtype=np.float64) - native_pos)))
+                native_vel_err_km_day = float(np.max(np.abs(np.asarray(vel_km_day, dtype=np.float64) - native_vel)))
+        except Exception:
+            native_rust_executed = False
+
+    rust_clenshaw_ok = (
+        native_rust_executed
+        and math.isfinite(native_pos_err_km)
+        and math.isfinite(native_vel_err_km_day)
+        and native_pos_err_km < 1.0e-9
+        and native_vel_err_km_day < 1.0e-9
+    )
 
     # 12b. WebAssembly binary header + C-ABI exports + Browser JS SDK parity
     wasm_path = _ROOT / "rust" / "ephemeris-core" / "wasm" / "ephemeris_core.wasm"
@@ -698,6 +777,9 @@ def run_acceptance_matrix(kernel_path: Path | None = None) -> list[AcceptanceRow
             telemetry={
                 "de440_truth_floor_0_0007_arcsec_verified": de440_truth_floor_verified,
                 "rust_clenshaw_3d_verified": rust_clenshaw_ok,
+                "native_rust_library_executed": native_rust_executed,
+                "native_rust_max_pos_residual_km": native_pos_err_km if math.isfinite(native_pos_err_km) else None,
+                "native_rust_max_vel_residual_km_day": native_vel_err_km_day if math.isfinite(native_vel_err_km_day) else None,
                 "wasm_binary_verified": wasm_binary_ok,
                 "browser_js_sdk_parity": browser_js_ok,
                 "browser_js_execution_ms": browser_median_ms,

@@ -202,6 +202,7 @@ class RegionalPanchangReport:
     sunrise_jd_ut: float | None = None
     active_sunrise_jd_ut: float | None = None
     anchoring_mode: str = "instantaneous"
+    ayanamsa_mode: str = "lahiri"
     instantaneous_panchanga: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
@@ -210,6 +211,7 @@ class RegionalPanchangReport:
             "ce_year": self.ce_year,
             "latitude_deg": self.latitude_deg,
             "longitude_deg": self.longitude_deg,
+            "ayanamsa_mode": self.ayanamsa_mode,
             "anchoring_mode": self.anchoring_mode,
             "sunrise_jd_ut": self.sunrise_jd_ut,
             "active_sunrise_jd_ut": self.active_sunrise_jd_ut,
@@ -288,14 +290,18 @@ def compute_lunar_month_amanta_purnimanta(
     jd_ut: float,
     *,
     adapter: EphemerisAdapter | None = None,
+    ayanamsa: str = "lahiri",
 ) -> LunarMonthInfo:
     """Compute Amanta and Purnimanta lunar month names and Adhika Masa status at ``jd_ut``."""
+    ayanamsa_mode = str(ayanamsa or "lahiri").strip().lower()
     analytical = AnalyticalEphemerisProvider()
+    if adapter is None:
+        analytical.set_ayanamsa(ayanamsa_mode)
 
     def _sun_moon(jd: float) -> tuple[float, float, float, float]:
         if adapter is not None:
-            s_p = adapter.calc_ut(jd, "sun", sidereal=True)
-            m_p = adapter.calc_ut(jd, "moon", sidereal=True)
+            s_p = adapter.calc_ut(jd, "sun", sidereal=True, ayanamsa=ayanamsa_mode)
+            m_p = adapter.calc_ut(jd, "moon", sidereal=True, ayanamsa=ayanamsa_mode)
             return (
                 s_p.longitude_deg,
                 m_p.longitude_deg,
@@ -496,6 +502,7 @@ def compute_regional_panchang(
     longitude_deg: float = 77.2090,
     *,
     adapter: EphemerisAdapter | None = None,
+    ayanamsa: str = "lahiri",
     eclipse_window_days: float = 16.0,
     anchor_to_sunrise: bool = False,
     sunrise_jd_ut: float | None = None,
@@ -517,13 +524,16 @@ def compute_regional_panchang(
     if not math.isfinite(lon) or not -180.0 <= lon <= 180.0:
         raise ValueError("longitude_deg must be finite and within [-180, 180]")
 
+    ayanamsa_mode = str(ayanamsa or "lahiri").strip().lower()
     analytical = AnalyticalEphemerisProvider() if adapter is None else None
+    if analytical is not None:
+        analytical.set_ayanamsa(ayanamsa_mode)
 
     def _eval_sun_moon_at(target_jd: float) -> tuple[float, float, float]:
         if adapter is not None:
             return (
-                adapter.calc_ut(target_jd, "sun", sidereal=True).longitude_deg,
-                adapter.calc_ut(target_jd, "moon", sidereal=True).longitude_deg,
+                adapter.calc_ut(target_jd, "sun", sidereal=True, ayanamsa=ayanamsa_mode).longitude_deg,
+                adapter.calc_ut(target_jd, "moon", sidereal=True, ayanamsa=ayanamsa_mode).longitude_deg,
                 adapter.calc_ut(target_jd, "sun", sidereal=False).longitude_deg,
             )
         assert analytical is not None
@@ -593,7 +603,7 @@ def compute_regional_panchang(
         "karana_name": inst_karana.name,
     }
 
-    lunar_month = compute_lunar_month_amanta_purnimanta(eval_jd, adapter=adapter)
+    lunar_month = compute_lunar_month_amanta_purnimanta(eval_jd, adapter=adapter, ayanamsa=ayanamsa_mode)
     solar_cal = compute_regional_solar_calendar(s_sid, ce_year)
     samvatsara = compute_samvatsara(solar_cal.shaka_samvat_year, calendar="shaka")
     sid_ayana, sid_ritu, _ = compute_ayana_and_ritu(s_sid)
@@ -623,6 +633,8 @@ def compute_regional_panchang(
         "sidereal_ritu": sid_ritu,
         "has_eclipse_within_window": eclipse_win.has_eclipse_within_window,
     }
+    if ayanamsa_mode != "lahiri":
+        receipt_payload["ayanamsa_mode"] = ayanamsa_mode
     if anchor_to_sunrise:
         receipt_payload["anchoring_mode"] = anchoring_mode
         receipt_payload["sunrise_jd_ut"] = round(civil_sunrise_jd, 8) if civil_sunrise_jd is not None else None
@@ -660,5 +672,6 @@ def compute_regional_panchang(
         sunrise_jd_ut=civil_sunrise_jd,
         active_sunrise_jd_ut=active_sunrise_jd,
         anchoring_mode=anchoring_mode,
+        ayanamsa_mode=ayanamsa_mode,
         instantaneous_panchanga=instantaneous_snapshot,
     )

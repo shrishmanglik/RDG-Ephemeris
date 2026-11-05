@@ -30,8 +30,34 @@ def global_eclipse(
         raise AstronomyDataUnavailable("global eclipse kind must be solar or lunar")
 
     engine = engine_or_provider if hasattr(engine_or_provider, "positions_tt") else None
+
+    def _adapted_provider_positions(jd: float, bodies: Any) -> dict[str, dict[str, float]]:
+        raw = engine_or_provider.planet_positions_tt(jd_tt=jd, bodies=bodies)["positions"]
+        enriched: dict[str, dict[str, float]] = {}
+        for k, v in raw.items():
+            entry = dict(v)
+            if "distance_km" not in entry and hasattr(engine_or_provider, "geocentric_state_at_tdb"):
+                try:
+                    import erfa as _erfa
+                    body_key = str(k).strip().lower()
+                    tt = (2451545.0, float(jd) - 2451545.0)
+                    year = int(_erfa.jd2cal(*tt)[0])
+                    offset = float(_erfa.dtdb(*tt, 0.0, 0.0, 0.0, 0.0))
+                    tdb = tuple(float(val) for val in _erfa.tttdb(*tt, offset))
+                    state = engine_or_provider.geocentric_state_at_tdb(
+                        body=body_key,
+                        tdb=tdb,
+                        kernel_year=year,
+                    )
+                    px, py, pz = state.position_km
+                    entry["distance_km"] = math.sqrt(px * px + py * py + pz * pz)
+                except Exception:
+                    pass
+            enriched[k] = entry
+        return enriched
+
     position_provider = (
-        (lambda jd, bodies: engine_or_provider.planet_positions_tt(jd_tt=jd, bodies=bodies)["positions"])
+        _adapted_provider_positions
         if engine is None and hasattr(engine_or_provider, "planet_positions_tt")
         else None
     )

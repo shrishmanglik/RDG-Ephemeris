@@ -494,3 +494,124 @@ def test_mcp_daily_panchanga_anchors_to_local_sunrise_and_separates_instantaneou
         assert obs_report["anchoring_mode"] == "sunrise", city
         assert obs_report["active_sunrise_jd_ut"] <= jd_req, city
         assert obs_report["vara_name"] == expected_weekday, (city, obs_report["vara_name"], expected_weekday)
+
+
+def test_round5_release_reconciliation_contracts(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    """Verify all Round 5 release contracts: console --dump-tools, complete Kundali vargas/dashas,
+    Panchanga ayanamsa forwarding, provider eclipse distances, short horizon passage recovery,
+    contiguous war deduplication, TT-to-UTC conversion, war minimum refinement, and direction-reversal step ceiling.
+    """
+    import math
+    import subprocess
+    import sys
+    from datetime import datetime
+    import erfa
+    from ephemeris_oss import Engine, impossible_astrology, mcp_server
+    from ephemeris_oss.engine.eclipses import _evaluate_sun_moon
+    from ephemeris_oss.engine.events import SolverPolicy, solve_rise_set_transit
+
+    # 1. Console entry point --dump-tools
+    console = subprocess.run(
+        [sys.executable, "-c", "from ephemeris_oss.mcp_server import main; raise SystemExit(main())", "--dump-tools"],
+        input="",
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    assert len(json.loads(console.stdout)["tools"]) == 8
+
+    # 2. Complete Kundali exposes divisional charts and Dasha timelines
+    kundali = mcp_server.execute_mcp_tool("compute_complete_kundali", {"jd_ut": 2461139.0})
+    assert {
+        "planet_vargas",
+        "lagna_vargas",
+        "vimshottari_dasha",
+        "ashtottari_dasha",
+        "yogini_dasha",
+        "chara_dasha",
+    } <= set(kundali.keys())
+
+    # 3. Panchanga honors advertised ayanamsa
+    p_lahiri = mcp_server.execute_mcp_tool("compute_panchanga", {"jd_ut": 2461139.0, "mode": "instantaneous", "ayanamsa": "lahiri"})
+    p_raman = mcp_server.execute_mcp_tool("compute_panchanga", {"jd_ut": 2461139.0, "mode": "instantaneous", "ayanamsa": "raman"})
+    assert abs(p_lahiri["sun_sidereal_lon_deg"] - p_raman["sun_sidereal_lon_deg"]) > 1.0
+    assert p_lahiri["receipt_sha256"] != p_raman["receipt_sha256"]
+
+    # 4. Provider eclipse adapter retains numerical distances
+    with Engine.load(kernels="compact") as engine:
+        numerical = _evaluate_sun_moon(2461139.0, engine=engine)
+        provider = engine._provider
+        callback = lambda epoch, bodies: provider.planet_positions_tt(jd_tt=epoch, bodies=bodies)["positions"]
+        adapted = _evaluate_sun_moon(2461139.0, position_provider=callback)
+    for idx in (0, 1):
+        assert abs(adapted[idx]["distance_km"] - numerical[idx]["distance_km"]) < 0.001
+
+    # 5. Reduced horizon policy keeps short passage after existing crossing
+    lat_r = math.radians(70.0)
+    dec_r = math.radians(19.999)
+
+    def _alt(t: float) -> float:
+        ha = math.pi + 2.0 * math.pi * (t - 0.0003) / 0.99726957
+        return math.degrees(math.asin(math.sin(lat_r) * math.sin(dec_r) + math.cos(lat_r) * math.cos(dec_r) * math.cos(ha)))
+
+    ctrl_h = solve_rise_set_transit(_alt, 0.0, 1.0)
+    cand_h = solve_rise_set_transit(
+        _alt,
+        0.0,
+        1.0,
+        policy=SolverPolicy(sample_count=19, subdivision_depth=0, time_tolerance_days=1e-7, max_iterations=40),
+    )
+    assert len(ctrl_h.horizon_events) == 3
+    assert len(cand_h.horizon_events) == 3
+
+    # 6. Contiguous war deduplication and TT-to-UTC conversion
+    war_rep = impossible_astrology.scan_multi_century_rare_phenomena(2461041.5, 2461081.5, bodies=("mercury", "venus"))
+    jan_events = [ev for ev in war_rep.graha_yuddha_events if 2461068.0 <= ev["jd_tt"] <= 2461072.0]
+    assert len(jan_events) == 1
+    tai = erfa.tttai(2451545.0, war_rep.start_jd_tt - 2451545.0)
+    expected_utc = sum(erfa.taiutc(*tai))
+    parsed_dt = datetime.fromisoformat(war_rep.start_iso_utc.replace("Z", "+00:00"))
+    actual_utc = EphemerisAdapter.julday(
+        parsed_dt.year,
+        parsed_dt.month,
+        parsed_dt.day,
+        parsed_dt.hour + parsed_dt.minute / 60.0 + (parsed_dt.second + parsed_dt.microsecond / 1e6) / 3600.0,
+    )
+    assert abs(actual_utc - expected_utc) * 86400.0 < 0.01
+
+    # 7. Direction-reversal near cusp updates step ceiling and converges
+    def _rev_lon(offset_sec: float) -> float:
+        t_days = offset_sec / 86400.0
+        return (29.9999 + 0.001 * t_days - 0.01 * t_days * t_days) % 360.0
+
+    t_exit = impossible_astrology._solve_varga_transition_seconds(
+        body="Jupiter",
+        varga_key="D1",
+        lon0=29.9999,
+        current_sign=0,
+        deg_from_lower=29.9999,
+        deg_to_upper=0.0001,
+        sector_span=30.0,
+        speed_deg_per_sec=0.001 / 86400.0,
+        dir_sign=1.0,
+        position_at_offset_sec=_rev_lon,
+    )
+    expected_days = (0.001 + math.sqrt(0.001 * 0.001 + 4.0 * 0.01 * 29.9999)) / (2.0 * 0.01)
+    assert abs(t_exit - expected_days * 86400.0) < 0.05
+
+    # 8. War minimum refinement between sample epochs
+    start_w = 2451545.0
+    center_w = start_w + 1.37
+
+    def _mock_pos(body: str, jd: float) -> dict[str, float]:
+        return {
+            "longitude_deg": 30.0 + ((jd - center_w) ** 2 if body == "venus" else 0.0),
+            "latitude_deg": 0.1 if body == "venus" else 0.0,
+        }
+
+    monkeypatch.setattr(impossible_astrology, "_builtin_planet_apparent", _mock_pos)
+    monkeypatch.setattr(impossible_astrology, "find_retrograde_stations", lambda *a, **kw: ())
+    monkeypatch.setattr(impossible_astrology, "find_combustion_windows", lambda *a, **kw: ())
+    rep_w = impossible_astrology.scan_multi_century_rare_phenomena(start_w, start_w + 3.0, bodies=("mercury", "venus"))
+    assert len(rep_w.graha_yuddha_events) == 1
+    assert abs(rep_w.graha_yuddha_events[0]["jd_tt"] - center_w) * 86400.0 < 0.5

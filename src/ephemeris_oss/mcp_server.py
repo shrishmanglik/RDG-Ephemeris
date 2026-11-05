@@ -272,10 +272,17 @@ def execute_mcp_tool(name: str, arguments: Mapping[str, Any] | None = None) -> d
                 "ascendant_deg": bundle.houses.ascendant_deg,
                 "mc_deg": bundle.houses.mc_deg,
                 "planets": bundle.positions,
+                "planet_vargas": bundle.vedic_analysis.planet_vargas,
+                "lagna_vargas": bundle.vedic_analysis.lagna_vargas,
                 "panchanga": bundle.vedic_analysis.panchanga,
-                "yogas": bundle.vedic_analysis.yogas,
+                "vimshottari_dasha": bundle.vedic_analysis.vimshottari_dasha,
+                "ashtottari_dasha": bundle.vedic_analysis.ashtottari_dasha,
+                "yogini_dasha": bundle.vedic_analysis.yogini_dasha,
+                "chara_dasha": bundle.vedic_analysis.chara_dasha,
+                "yogas": bundle.classical_yogas,
                 "shadbala": bundle.vedic_analysis.shadbala,
-                "ashtakavarga_sarva": bundle.vedic_analysis.ashtakavarga.sarvashtakavarga_totals,
+                "ashtakavarga_sarva": bundle.vedic_analysis.ashtakavarga.sarvashtakavarga_7,
+                "ashtakavarga_sarva_total": bundle.vedic_analysis.ashtakavarga.sarvashtakavarga_7_total,
                 "ai_fact_sheet": bundle.ai_fact_sheet,
                 "receipt_sha256": bundle.bundle_receipt_sha256,
             }
@@ -285,6 +292,7 @@ def execute_mcp_tool(name: str, arguments: Mapping[str, Any] | None = None) -> d
         jd_ut = _resolve_jd_ut(args)
         lat = float(args.get("latitude_deg", 28.6139))
         lon = float(args.get("longitude_deg", 77.2090))
+        ayanamsa = str(args.get("ayanamsa", "lahiri")).strip() or "lahiri"
         mode = str(args.get("mode", "sunrise")).strip().lower()
         if mode not in {"sunrise", "instantaneous"}:
             raise ValueError("mode must be 'sunrise' or 'instantaneous'")
@@ -293,6 +301,7 @@ def execute_mcp_tool(name: str, arguments: Mapping[str, Any] | None = None) -> d
             latitude_deg=lat,
             longitude_deg=lon,
             adapter=adapter,
+            ayanamsa=ayanamsa,
             anchor_to_sunrise=(mode == "sunrise"),
         )
         return _to_jsonable(report.to_dict())
@@ -528,7 +537,8 @@ def serve_stdio(stdin: TextIO = sys.stdin, stdout: TextIO = sys.stdout) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     """CLI entry point for ``rdg-ephemeris-mcp``."""
-    if argv and ("--dump-tools" in argv):
+    effective_argv = sys.argv[1:] if argv is None else list(argv)
+    if "--dump-tools" in effective_argv:
         print(json.dumps({"tools": list(MCP_TOOLS)}, indent=2, sort_keys=True))
         return 0
     return serve_stdio()

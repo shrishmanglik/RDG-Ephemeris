@@ -18,7 +18,7 @@
       "ashtottari_full_cycle_years": 107.99999999999983,
       "yogini_full_cycle_years": 35.999999999999524,
       "chara_dasha_signs": 12,
-      "duration_ms": 19.42840000265278
+      "duration_ms": 17.68020002054982
     }
   },
   {
@@ -37,7 +37,7 @@
         "Vara (0..6)"
       ],
       "error_count": 0,
-      "duration_ms": 8764.06610000413
+      "duration_ms": 10625.460599985672
     }
   },
   {
@@ -56,7 +56,7 @@
         "3. Singularity: RDG fails closed (AstronomyDataUnavailable) if orbital angular momentum degenerates rather than clamping or falling back silently.",
         "4. Antipode: RDG guarantees Ketu = (Rahu + 180) % 360 to machine epsilon in both mean and true modes."
       ],
-      "duration_ms": 172.31850000098348
+      "duration_ms": 179.43089999607764
     }
   },
   {
@@ -80,7 +80,7 @@
           "shadow_exit_jd": 2461374.7621763498
         }
       ],
-      "duration_ms": 339.4294999889098
+      "duration_ms": 357.5377000088338
     }
   },
   {
@@ -141,7 +141,7 @@
           "delta_t_seconds": 442.08
         }
       ],
-      "duration_ms": 191.7521000141278
+      "duration_ms": 190.92059999820776
     }
   },
   {
@@ -155,7 +155,7 @@
       "india_1950_ist_offset_seconds": 19800,
       "india_1950_ist_offset_hours": 5.5,
       "gregorian_1582_gap_rejected": true,
-      "duration_ms": 13.57879998977296
+      "duration_ms": 13.297700003022328
     }
   },
   {
@@ -169,21 +169,21 @@
       "december_solstice_outcome": "always_below",
       "placidus_undefined_reason": "Placidus cusp is undefined for this circumpolar geometry",
       "whole_sign_ascendant_deg": 185.58273868103268,
-      "duration_ms": 285.4234999977052
+      "duration_ms": 289.808700006688
     }
   },
   {
     "id": 8,
     "name": "Performance Against 200 ms Chart Target",
     "status": "PASS",
-    "details": "Warm chart median: 15.48 ms, P95: 17.86 ms (target: < 200 ms)",
+    "details": "Warm chart median: 15.78 ms, P95: 17.87 ms (target: < 200 ms)",
     "telemetry": {
-      "warm_chart_p50_ms": 15.479199995752424,
-      "warm_chart_p95_ms": 17.86334001662908,
-      "warm_chart_min_ms": 14.702799991937354,
-      "warm_chart_max_ms": 111.50040000211447,
+      "warm_chart_p50_ms": 15.778100001625717,
+      "warm_chart_p95_ms": 17.87039999762783,
+      "warm_chart_min_ms": 15.134999994188547,
+      "warm_chart_max_ms": 102.65570000046864,
       "target_ms": 200.0,
-      "duration_ms": 976.427200017497
+      "duration_ms": 981.8963999859989
     }
   },
   {
@@ -194,7 +194,7 @@
     "telemetry": {
       "missing_kernel_refused": true,
       "corrupt_kernel_sha_mismatch_refused": true,
-      "duration_ms": 3.7415999977383763
+      "duration_ms": 3.759000013815239
     }
   },
   {
@@ -205,7 +205,7 @@
     "telemetry": {
       "charts_tested": 100,
       "mismatch_count": 0,
-      "duration_ms": 3323.1511999911163
+      "duration_ms": 3382.976900000358
     }
   },
   {
@@ -229,7 +229,7 @@
         16
       ],
       "ai_fact_sheet_bytes": 2974,
-      "duration_ms": 1947.0964999927673
+      "duration_ms": 2864.4708000065293
     }
   },
   {
@@ -240,13 +240,16 @@
     "telemetry": {
       "de440_truth_floor_0_0007_arcsec_verified": true,
       "rust_clenshaw_3d_verified": true,
+      "native_rust_library_executed": true,
+      "native_rust_max_pos_residual_km": 0.0,
+      "native_rust_max_vel_residual_km_day": 0.0,
       "wasm_binary_verified": true,
       "browser_js_sdk_parity": true,
-      "browser_js_execution_ms": 0.925,
+      "browser_js_execution_ms": 0.922,
       "uncertainty_envelope_bodies": 9,
       "boundary_sensitivity_divisions": 6,
       "downstream_app_ui_parity": "HELD_OUTSIDE_STANDALONE_LIBRARY_REPO",
-      "duration_ms": 107.32570002437569
+      "duration_ms": 80.8580000011716
     }
   }
 ]

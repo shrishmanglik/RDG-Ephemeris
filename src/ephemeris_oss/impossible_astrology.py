@@ -28,10 +28,16 @@ from __future__ import annotations
 
 from bisect import bisect_right
 from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta, timezone
+import math
 from typing import Any, Callable, Mapping, Sequence
+import warnings
+
+import erfa
 
 from ._version import __version__
 from .adapter import CALC_RISE, EphemerisAdapter, VEDIC_NINE_GRAHAS
+from .engine.earth_orientation import estimate_delta_t
 from .engine.phenomena import (
     TARAGRAHAS,
     _builtin_planet_apparent,
@@ -54,6 +60,39 @@ from .jyotish_siddhanta.surya_siddhanta import (
     compare_siddhanta_with_modern,
     surya_siddhanta_true_positions,
 )
+
+
+def _jd_tt_to_iso_utc(jd_tt: float) -> str:
+    """Convert a Terrestrial Time (TT) Julian Date to an ISO-8601 UTC timestamp string."""
+    jd_val = float(jd_tt)
+    y_tt, m_tt, d_tt, _fd_tt = erfa.jd2cal(2451545.0, jd_val - 2451545.0)
+    if 1960 <= int(y_tt) <= 2100:
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                tai1, tai2 = erfa.tttai(2451545.0, jd_val - 2451545.0)
+                utc1, utc2 = erfa.taiutc(tai1, tai2)
+            jd_utc = float(utc1 + utc2)
+        except Exception:
+            dec_year = float(y_tt) + (float(m_tt) - 0.5) / 12.0 + (float(d_tt) - 1.0) / 365.2425
+            dt_sec = float(estimate_delta_t(min(max(dec_year, -1999.0), 3000.0)).seconds)
+            jd_utc = jd_val - dt_sec / 86400.0
+    else:
+        dec_year = float(y_tt) + (float(m_tt) - 0.5) / 12.0 + (float(d_tt) - 1.0) / 365.2425
+        if -1999.0 <= dec_year <= 3000.0:
+            dt_sec = float(estimate_delta_t(dec_year).seconds)
+        else:
+            u_cent = (dec_year - 1820.0) / 100.0
+            dt_sec = float(-20.0 + 32.0 * u_cent * u_cent)
+        jd_utc = jd_val - dt_sec / 86400.0
+
+    y, m, d, fd = erfa.jd2cal(2451545.0, jd_utc - 2451545.0)
+    yi, mi, di = int(y), int(m), int(d)
+    if 1 <= yi <= 9998:
+        base = datetime(yi, mi, di, tzinfo=timezone.utc)
+        dt = base + timedelta(days=float(fd))
+        return dt.isoformat(timespec="microseconds").replace("+00:00", "Z")
+    return jd_to_iso_utc(jd_utc)
 
 # Mean angular velocities in degrees per second for fast analytical bracket estimation
 _MEAN_DEG_PER_SECOND: Mapping[str, float] = {
@@ -292,15 +331,32 @@ def _solve_varga_transition_seconds(
     for _ in range(480):
         t_probe = t_lo + step
         lon_p = normalize_degrees(position_at_offset_sec(dir_sign * t_probe))
-        step_delta = abs((lon_p - lon_lo + 180.0) % 360.0 - 180.0)
+        signed_step_delta = (lon_p - lon_lo + 180.0) % 360.0 - 180.0
+        step_delta = abs(signed_step_delta)
         if step_delta > max_angle_step and step > 1.0e-5:
             step *= 0.5
             continue
-        in_p, margin_p, _ = eval_at(t_probe)
+        in_p, margin_p, d_p = eval_at(t_probe)
         if not in_p:
             t_hi = t_probe
             margin_hi = margin_p
             break
+        v_inst = step_delta / max(step, 1.0e-9)
+        if signed_step_delta > 1.0e-12:
+            rem_deg = max(0.0, deg_to_upper - d_p)
+        elif signed_step_delta < -1.0e-12:
+            rem_deg = max(0.0, deg_from_lower + d_p)
+        else:
+            rem_deg = max(0.0, margin_p)
+        t_rem_est = rem_deg / max(v_inst, 1.0e-12)
+        dyn_max_step = max(
+            10.0,
+            min(
+                0.20 * max(t_rem_est, 1.0),
+                0.20 * sector_span / max(v_inst, v_mean, 1.0e-7),
+            ),
+        )
+        max_step = max(max_step, dyn_max_step)
         t_lo = t_probe
         lon_lo = lon_p
         margin_lo = margin_p
@@ -645,10 +701,11 @@ def scan_multi_century_rare_phenomena(
     if not normalized_bodies:
         normalized_bodies = TARAGRAHAS
 
-    # Scan across [start_jd_tt, end_jd_tt] for Graha Yuddha encounters (deduplicated per pair encounter)
+    # Scan across [start_jd_tt, end_jd_tt] for contiguous Graha Yuddha encounters per body pair
     span_days = float(end_jd_tt) - float(start_jd_tt)
     step_days = min(1.0, max(0.25, span_days / 365.0))
-    best_war_by_bucket: dict[tuple[str, str, int], tuple[float, Any]] = {}
+    active_encounters: dict[tuple[str, str], list[tuple[float, Any]]] = {}
+    completed_encounters: list[tuple[tuple[str, str], list[tuple[float, Any]]]] = []
     t_cur = float(start_jd_tt)
     while t_cur <= float(end_jd_tt) + 1.0e-9:
         snap_positions = {
@@ -659,21 +716,84 @@ def scan_multi_century_rare_phenomena(
             snap_positions,
             max_longitude_separation_deg=float(max_war_separation_deg),
         )
+        present_pairs: set[tuple[str, str]] = set()
         for w in instant_wars:
-            bucket = (w.body_a, w.body_b, int((t_cur - float(start_jd_tt)) // 15.0))
-            prev = best_war_by_bucket.get(bucket)
-            if prev is None or w.longitude_separation_deg < prev[1].longitude_separation_deg:
-                best_war_by_bucket[bucket] = (t_cur, w)
+            pair = (w.body_a, w.body_b)
+            present_pairs.add(pair)
+            active_encounters.setdefault(pair, []).append((t_cur, w))
+        for pair in list(active_encounters.keys()):
+            if pair not in present_pairs:
+                completed_encounters.append((pair, active_encounters.pop(pair)))
         t_cur += step_days
 
+    for pair, samples in list(active_encounters.items()):
+        completed_encounters.append((pair, samples))
+
+    def _refine_war_encounter_minimum(
+        pair: tuple[str, str],
+        samples: list[tuple[float, Any]],
+    ) -> tuple[float, Any]:
+        best_t, best_w = min(samples, key=lambda item: item[1].longitude_separation_deg)
+        body_a_key = pair[0].strip().lower()
+        body_b_key = pair[1].strip().lower()
+        left = max(float(start_jd_tt), best_t - step_days)
+        right = min(float(end_jd_tt), best_t + step_days)
+        if right <= left + 1.0e-9:
+            return best_t, best_w
+
+        def _sep_at(jd: float) -> float:
+            pa = _builtin_planet_apparent(body_a_key, jd)
+            pb = _builtin_planet_apparent(body_b_key, jd)
+            diff = (float(pa["longitude_deg"]) - float(pb["longitude_deg"]) + 180.0) % 360.0 - 180.0
+            return abs(diff)
+
+        inv_phi = (math.sqrt(5.0) - 1.0) / 2.0
+        a, b = left, right
+        c = b - inv_phi * (b - a)
+        d = a + inv_phi * (b - a)
+        fc = _sep_at(c)
+        fd = _sep_at(d)
+        for _ in range(52):
+            if b - a <= 1.0e-8:
+                break
+            if fc <= fd:
+                b, d, fd = d, c, fc
+                c = b - inv_phi * (b - a)
+                fc = _sep_at(c)
+            else:
+                a, c, fc = c, d, fd
+                d = a + inv_phi * (b - a)
+                fd = _sep_at(d)
+        cand_jd = 0.5 * (a + b)
+        cand_sep = _sep_at(cand_jd)
+        best_sep = _sep_at(best_t)
+        refined_jd = cand_jd if cand_sep <= best_sep else best_t
+        refined_snap = {
+            body_a_key: _builtin_planet_apparent(body_a_key, refined_jd),
+            body_b_key: _builtin_planet_apparent(body_b_key, refined_jd),
+        }
+        refined_wars = evaluate_graha_yuddha(
+            refined_snap,
+            max_longitude_separation_deg=max(float(max_war_separation_deg), cand_sep + 1.0e-3),
+        )
+        for rw in refined_wars:
+            if (rw.body_a, rw.body_b) == pair:
+                return refined_jd, rw
+        return refined_jd, best_w
+
+    refined_encounters = [
+        _refine_war_encounter_minimum(pair, samples)
+        for pair, samples in completed_encounters
+    ]
+
     war_list: list[Mapping[str, Any]] = []
-    for war_jd, w in sorted(best_war_by_bucket.values(), key=lambda item: item[0]):
+    for war_jd, w in sorted(refined_encounters, key=lambda item: item[0]):
         war_list.append(
             {
                 "body_a": w.body_a,
                 "body_b": w.body_b,
                 "jd_tt": round(war_jd, 8),
-                "iso_utc": jd_to_iso_utc(war_jd),
+                "iso_utc": _jd_tt_to_iso_utc(war_jd),
                 "winner": w.winner,
                 "loser": w.loser,
                 "victory_criterion": w.victory_criterion,
@@ -701,7 +821,7 @@ def scan_multi_century_rare_phenomena(
                 {
                     "body": st.body,
                     "jd_tt": round(st.jd_tt, 8),
-                    "iso_utc": jd_to_iso_utc(st.jd_tt),
+                    "iso_utc": _jd_tt_to_iso_utc(st.jd_tt),
                     "station_type": st.kind,
                     "longitude_deg": round(st.longitude_deg, 6),
                     "sidereal_longitude_deg": round(st.sidereal_longitude_deg, 6),
@@ -719,10 +839,10 @@ def scan_multi_century_rare_phenomena(
                 {
                     "body": cb.body,
                     "ingress_jd_tt": round(cb.start_jd_tt, 8),
-                    "ingress_iso_utc": jd_to_iso_utc(cb.start_jd_tt),
+                    "ingress_iso_utc": _jd_tt_to_iso_utc(cb.start_jd_tt),
                     "min_elongation_jd_tt": round(cb.min_separation_jd_tt, 8),
                     "egress_jd_tt": round(cb.end_jd_tt, 8),
-                    "egress_iso_utc": jd_to_iso_utc(cb.end_jd_tt),
+                    "egress_iso_utc": _jd_tt_to_iso_utc(cb.end_jd_tt),
                     "min_elongation_deg": round(cb.min_separation_deg, 6),
                     "has_cazimi": cb.cazimi_occurred,
                     "duration_days": round(cb.duration_days, 4),
@@ -750,8 +870,8 @@ def scan_multi_century_rare_phenomena(
     return MultiCenturyPhenomenaReport(
         start_jd_tt=float(start_jd_tt),
         end_jd_tt=float(end_jd_tt),
-        start_iso_utc=jd_to_iso_utc(float(start_jd_tt)),
-        end_iso_utc=jd_to_iso_utc(float(end_jd_tt)),
+        start_iso_utc=_jd_tt_to_iso_utc(float(start_jd_tt)),
+        end_iso_utc=_jd_tt_to_iso_utc(float(end_jd_tt)),
         ayanamsa=ayanamsa,
         bodies=normalized_bodies,
         graha_yuddha_count=len(war_dicts),

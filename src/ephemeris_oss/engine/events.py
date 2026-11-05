@@ -875,18 +875,31 @@ def solve_rise_set_transit(
                 seen_times.add(key)
                 roots.append(ScalarRoot(t2, f2, 0, (t1, t2)))
 
-    # A short polar day/night can fit between coarse samples. Refine the
-    # sampled extrema before deciding that an uncrossed grid means no event.
-    if not brackets and not roots:
-        for maximize in (True, False):
-            index = (max if maximize else min)(range(len(sampled)), key=sampled.__getitem__)
-            left = max(0, index - 1)
-            right = min(len(times) - 1, index + 1)
+    # A short polar day/night or brief horizon dip/passage can fit between coarse samples
+    # even when another interval already contains a crossing. Inspect sampled local extrema
+    # whose adjacent intervals do not already have a sign change.
+    n_samples = len(sampled)
+    for k in range(n_samples):
+        val_k = sampled[k]
+        if abs(val_k) <= policy.value_tolerance:
+            continue
+        is_local_min = (k == 0 or val_k <= sampled[k - 1]) and (k == n_samples - 1 or val_k <= sampled[k + 1])
+        is_local_max = (k == 0 or val_k >= sampled[k - 1]) and (k == n_samples - 1 or val_k >= sampled[k + 1])
+        check_modes: list[bool] = []
+        if val_k > 0.0 and is_local_min:
+            check_modes.append(False)
+        if val_k < 0.0 and is_local_max:
+            check_modes.append(True)
+        for maximize in check_modes:
+            left = max(0, k - 1)
+            right = min(n_samples - 1, k + 1)
+            if left == right:
+                continue
             extreme_jd, extreme_value = _golden_extremum(
                 horizon_function, times[left], times[right], policy, maximize=maximize,
             )
             for edge in (left, right):
-                if sampled[edge] * extreme_value < 0:
+                if sampled[edge] * extreme_value < 0.0 and abs(extreme_value) > policy.value_tolerance:
                     pairs = sorted(((times[edge], sampled[edge]), (extreme_jd, extreme_value)))
                     brackets.append(ScalarBracket(pairs[0][0], pairs[1][0], pairs[0][1], pairs[1][1]))
 
