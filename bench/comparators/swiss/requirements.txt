@@ -1,2 +1,0 @@
-pyswisseph==2.10.3.2
-pyerfa==2.0.1.5

@@ -178,9 +178,16 @@ class CharaKarakaEntry:
 def jd_to_iso_utc(jd_ut: float) -> str:
     """Convert a Julian Day number to an ISO-8601 UTC timestamp string (`YYYY-MM-DDTHH:MM:SSZ`)."""
     y, m, d, fd = erfa.jd2cal(float(jd_ut), 0.0)
-    base = datetime(int(y), int(m), int(d), tzinfo=timezone.utc)
-    dt = base + timedelta(days=float(fd))
-    return dt.isoformat(timespec="seconds").replace("+00:00", "Z")
+    yi, mi, di = int(y), int(m), int(d)
+    if 1 <= yi <= 9998:
+        base = datetime(yi, mi, di, tzinfo=timezone.utc)
+        dt = base + timedelta(days=float(fd))
+        return dt.isoformat(timespec="seconds").replace("+00:00", "Z")
+    total_sec = int(round(max(0.0, min(86399.0, float(fd) * 86400.0))))
+    hh, rem = divmod(total_sec, 3600)
+    mm, ss = divmod(rem, 60)
+    sign = "-" if yi < 0 else ""
+    return f"{sign}{abs(yi):04d}-{mi:02d}-{di:02d}T{hh:02d}:{mm:02d}:{ss:02d}Z"
 
 
 def _subdivide_proportional(

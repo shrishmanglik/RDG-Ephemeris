@@ -684,7 +684,7 @@ def refracted_altitude_degrees(geometric_altitude_deg: float, model: RefractionM
     through sunrise/sunset (altitude < 15 deg), the altitude dependence of
     Saemundsson (Sky and Telescope 72, 70, 1986) is scaled to a horizon
     refraction of 0.55988864426 deg (33.593') at 1013.25 hPa and 15 deg C.
-    That horizon value is a Swiss-compatible convention (a Tier C definition):
+    That horizon value is an empirical almanac convention:
     no publication derives it; it sits 0.41' below the USNO 34' convention
     (aa.usno.navy.mil/faq/RST_defs) and is kept because it reproduces widely
     used rise and set times.
@@ -802,6 +802,36 @@ def _sampled_extremum(
     return refined_jd, refined_value
 
 
+def _refine_horizon_root(
+    function: ScalarCallback, bracket: ScalarBracket, policy: SolverPolicy,
+) -> ScalarRoot:
+    """Illinois refinement keeps the horizon bracket without repeated bisection."""
+    left, right = bracket.start_jd, bracket.end_jd
+    f_left, f_right = bracket.start_value, bracket.end_value
+    if f_left * f_right >= 0:
+        raise EventSolverError("horizon bracket does not contain a sign change")
+    weight_left, weight_right = f_left, f_right
+    retained = ""
+    for iteration in range(1, policy.max_iterations + 1):
+        candidate = left + (right - left) * (-weight_left) / (weight_right - weight_left)
+        if not left < candidate < right:
+            candidate = (left + right) / 2
+        value = _finite(function(candidate), "horizon")
+        if abs(value) <= policy.value_tolerance or right - left <= policy.time_tolerance_days:
+            jd, residual = min(((left, f_left), (candidate, value), (right, f_right)),
+                               key=lambda item: abs(item[1]))
+            return ScalarRoot(jd, residual, iteration, (bracket.start_jd, bracket.end_jd))
+        if f_left * value < 0:
+            right, f_right, weight_right = candidate, value, value
+            weight_left = weight_left / 2 if retained == "left" else f_left
+            retained = "left"
+        else:
+            left, f_left, weight_left = candidate, value, value
+            weight_right = weight_right / 2 if retained == "right" else f_right
+            retained = "right"
+    raise EventSolverError("horizon root refinement exceeded max_iterations")
+
+
 def solve_rise_set_transit(
     apparent_altitude_at_jd: ScalarCallback,
     start_jd: float,
@@ -809,6 +839,7 @@ def solve_rise_set_transit(
     *,
     horizon_altitude_deg: float = 0.0,
     policy: SolverPolicy = SolverPolicy(sample_count=145),
+    refine_transit: bool = True,
 ) -> RiseSetTransitResult:
     """Solve apparent horizon crossings and the highest transit in an interval."""
 
@@ -844,9 +875,37 @@ def solve_rise_set_transit(
                 seen_times.add(key)
                 roots.append(ScalarRoot(t2, f2, 0, (t1, t2)))
 
+    # A short polar day/night or brief horizon dip/passage can fit between coarse samples
+    # even when another interval already contains a crossing. Inspect sampled local extrema
+    # whose adjacent intervals do not already have a sign change.
+    n_samples = len(sampled)
+    for k in range(n_samples):
+        val_k = sampled[k]
+        if abs(val_k) <= policy.value_tolerance:
+            continue
+        is_local_min = (k == 0 or val_k <= sampled[k - 1]) and (k == n_samples - 1 or val_k <= sampled[k + 1])
+        is_local_max = (k == 0 or val_k >= sampled[k - 1]) and (k == n_samples - 1 or val_k >= sampled[k + 1])
+        check_modes: list[bool] = []
+        if val_k > 0.0 and is_local_min:
+            check_modes.append(False)
+        if val_k < 0.0 and is_local_max:
+            check_modes.append(True)
+        for maximize in check_modes:
+            left = max(0, k - 1)
+            right = min(n_samples - 1, k + 1)
+            if left == right:
+                continue
+            extreme_jd, extreme_value = _golden_extremum(
+                horizon_function, times[left], times[right], policy, maximize=maximize,
+            )
+            for edge in (left, right):
+                if sampled[edge] * extreme_value < 0.0 and abs(extreme_value) > policy.value_tolerance:
+                    pairs = sorted(((times[edge], sampled[edge]), (extreme_jd, extreme_value)))
+                    brackets.append(ScalarBracket(pairs[0][0], pairs[1][0], pairs[0][1], pairs[1][1]))
+
     # Refine any brackets found
     for bracket in brackets:
-        root = refine_scalar_root(horizon_function, bracket, policy=policy)
+        root = _refine_horizon_root(horizon_function, bracket, policy)
         key = round(root.jd / policy.time_tolerance_days)
         if key not in seen_times:
             seen_times.add(key)
@@ -911,7 +970,7 @@ def solve_rise_set_transit(
 
     # 2. Upper transit localized from the sampled altitudes
     best_index = max(range(len(altitudes)), key=altitudes.__getitem__)
-    if best_index == 0 or best_index == len(times) - 1:
+    if not refine_transit or best_index == 0 or best_index == len(times) - 1:
         transit_jd = times[best_index]
         transit_altitude = altitudes[best_index]
     else:
@@ -945,7 +1004,7 @@ def solve_rise_set_transit(
         outcome = "no_event"
 
     provenance = EventProvenance.create(
-        "sample-bracket-bisection-plus-golden-transit",
+        "sample-bracket-illinois-plus-golden-transit" if refine_transit else "sample-bracket-illinois-horizon",
         policy,
         altitude_kind="topocentric_apparent",
         horizon_altitude_deg=horizon,

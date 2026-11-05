@@ -1,0 +1,255 @@
+[
+  {
+    "id": 1,
+    "name": "Dasha Engine Completeness",
+    "status": "PASS",
+    "details": "5-level Vimshottari (Mahadasha through Prana) with exact 120.0-year conservation; Ashtottari 108y; Yogini 36y; Chara 12 signs",
+    "telemetry": {
+      "vimshottari_full_cycle_years": 119.99999999999837,
+      "vimshottari_birth_balance_years": 6.0625,
+      "vimshottari_levels_resolved": 5,
+      "levels_chain": [
+        "Moon",
+        "Venus",
+        "Saturn",
+        "Saturn",
+        "Rahu"
+      ],
+      "ashtottari_full_cycle_years": 107.99999999999983,
+      "yogini_full_cycle_years": 35.999999999999524,
+      "chara_dasha_signs": 12,
+      "duration_ms": 17.68020002054982
+    }
+  },
+  {
+    "id": 2,
+    "name": "All Five Panchang Limbs Across Long Date Range (1900-2100)",
+    "status": "PASS",
+    "details": "Evaluated 204 sample dates spanning 1900-2100; zero discontinuities",
+    "telemetry": {
+      "samples_evaluated": 204,
+      "years_span": "1900-2100",
+      "panchang_limbs_tested": [
+        "Tithi (1..30)",
+        "Nakshatra (1..27)",
+        "Yoga (1..27)",
+        "Karana (1..60)",
+        "Vara (0..6)"
+      ],
+      "error_count": 0,
+      "duration_ms": 10625.460599985672
+    }
+  },
+  {
+    "id": 3,
+    "name": "True and Mean Nodes with Explicit Deliberate Differences",
+    "status": "PASS",
+    "details": "Mean node (Meeus 47.7) and true node (osculating angular momentum plane) rigorously separated",
+    "telemetry": {
+      "instant_utc": "2026-06-21T12:00:00Z",
+      "mean_rahu_deg": 308.86078127496927,
+      "true_rahu_deg": 307.69156003969533,
+      "angular_difference_arcsec": 4209.196446986175,
+      "explicit_deliberate_differences": [
+        "1. True Node: RDG derives the osculating lunar orbit plane directly from geocentric state vectors (k x (r x v)) in the IAU 2006 ecliptic frame rather than a truncated harmonic series.",
+        "2. Mean Node: RDG evaluates Meeus Astronomical Algorithms 2nd ed. equation 47.7 directly in Terrestrial Time (TT) without empirical polynomial drift adjustments.",
+        "3. Singularity: RDG fails closed (AstronomyDataUnavailable) if orbital angular momentum degenerates rather than clamping or falling back silently.",
+        "4. Antipode: RDG guarantees Ketu = (Rahu + 180) % 360 to machine epsilon in both mean and true modes."
+      ],
+      "duration_ms": 179.43089999607764
+    }
+  },
+  {
+    "id": 4,
+    "name": "Retrograde Station and Shadow Period Solver",
+    "status": "PASS",
+    "details": "Discovered 1 Mercury station(s) solving d(lambda)/dt = 0 with acceleration classification",
+    "telemetry": {
+      "body": "Mercury",
+      "search_window_jd": [
+        2461280.0,
+        2461350.0
+      ],
+      "stations_found": [
+        {
+          "kind": "station_retrograde",
+          "jd_tt": 2461337.8012904227,
+          "longitude_deg": 230.97898796855281,
+          "acceleration": -0.1323127521857259,
+          "shadow_entry_jd": 2461317.8823093623,
+          "shadow_exit_jd": 2461374.7621763498
+        }
+      ],
+      "duration_ms": 357.5377000088338
+    }
+  },
+  {
+    "id": 5,
+    "name": "Planetary Calculations Years 2040 to 2200",
+    "status": "PASS",
+    "details": "positions_tt validated continuously 2040-2200 on DE440 + Espenak-Meeus; UTC datetime > 2026 fails closed by policy",
+    "telemetry": {
+      "samples_count": 6,
+      "utc_policy_refused_future_leap_seconds": true,
+      "samples": [
+        {
+          "year": 2040,
+          "jd_tt": 2466327.0009808936,
+          "sun_lon_tt": 90.72464614369592,
+          "moon_lon_tt": 225.22574015655522,
+          "lahiri_ayanamsa_deg": 24.422475927426166,
+          "delta_t_seconds": 84.74920000000002
+        },
+        {
+          "year": 2060,
+          "jd_tt": 2473632.0013156016,
+          "sun_lon_tt": 90.88447895980215,
+          "moon_lon_tt": 2.67344830786534,
+          "lahiri_ayanamsa_deg": 24.701915526491725,
+          "delta_t_seconds": 113.668
+        },
+        {
+          "year": 2080,
+          "jd_tt": 2480937.00181625,
+          "sun_lon_tt": 91.05155398759027,
+          "moon_lon_tt": 143.35494040788478,
+          "lahiri_ayanamsa_deg": 24.98137969944339,
+          "delta_t_seconds": 156.92400000000004
+        },
+        {
+          "year": 2100,
+          "jd_tt": 2488241.0023465278,
+          "sun_lon_tt": 90.25713517032169,
+          "moon_lon_tt": 262.81821494795383,
+          "lahiri_ayanamsa_deg": 25.26083017879538,
+          "delta_t_seconds": 202.73999999999998
+        },
+        {
+          "year": 2150,
+          "jd_tt": 2506503.003801852,
+          "sun_lon_tt": 90.17982182677389,
+          "moon_lon_tt": 41.092283730565846,
+          "lahiri_ayanamsa_deg": 25.95964036623779,
+          "delta_t_seconds": 328.47999999999996
+        },
+        {
+          "year": 2200,
+          "jd_tt": 2524765.0051166667,
+          "sun_lon_tt": 90.1086790193244,
+          "moon_lon_tt": 188.49433901214243,
+          "lahiri_ayanamsa_deg": 26.658604055832857,
+          "delta_t_seconds": 442.08
+        }
+      ],
+      "duration_ms": 190.92059999820776
+    }
+  },
+  {
+    "id": 6,
+    "name": "Historical Time Zones & India War Time (1942-1945)",
+    "status": "PASS",
+    "details": "Verified India War Time (+6:30), peacetime IST (+5:30), and 1582 Gregorian gap rejection",
+    "telemetry": {
+      "india_1943_war_time_offset_seconds": 23400,
+      "india_1943_war_time_offset_hours": 6.5,
+      "india_1950_ist_offset_seconds": 19800,
+      "india_1950_ist_offset_hours": 5.5,
+      "gregorian_1582_gap_rejected": true,
+      "duration_ms": 13.297700003022328
+    }
+  },
+  {
+    "id": 7,
+    "name": "Polar Latitudes Where Sun Never Rises or Sets",
+    "status": "PASS",
+    "details": "Always-above midnight sun, always-below polar night; Placidus fails closed Undefined, Whole Sign succeeds",
+    "telemetry": {
+      "latitude_svalbard": 78.22,
+      "june_solstice_outcome": "always_above",
+      "december_solstice_outcome": "always_below",
+      "placidus_undefined_reason": "Placidus cusp is undefined for this circumpolar geometry",
+      "whole_sign_ascendant_deg": 185.58273868103268,
+      "duration_ms": 289.808700006688
+    }
+  },
+  {
+    "id": 8,
+    "name": "Performance Against 200 ms Chart Target",
+    "status": "PASS",
+    "details": "Warm chart median: 15.78 ms, P95: 17.87 ms (target: < 200 ms)",
+    "telemetry": {
+      "warm_chart_p50_ms": 15.778100001625717,
+      "warm_chart_p95_ms": 17.87039999762783,
+      "warm_chart_min_ms": 15.134999994188547,
+      "warm_chart_max_ms": 102.65570000046864,
+      "target_ms": 200.0,
+      "duration_ms": 981.8963999859989
+    }
+  },
+  {
+    "id": 9,
+    "name": "Fail-Closed Startup with Missing or Bad Kernel",
+    "status": "PASS",
+    "details": "Engine.load fails closed with EphemerisError on nonexistent file and SHA-256 hash mismatch",
+    "telemetry": {
+      "missing_kernel_refused": true,
+      "corrupt_kernel_sha_mismatch_refused": true,
+      "duration_ms": 3.759000013815239
+    }
+  },
+  {
+    "id": 10,
+    "name": "Saved-Chart Identity Replay (100-Chart Corpus)",
+    "status": "PASS",
+    "details": "100/100 canonical golden charts replayed with 100% receipt SHA-256 and ayanamsa identity",
+    "telemetry": {
+      "charts_tested": 100,
+      "mismatch_count": 0,
+      "duration_ms": 3382.976900000358
+    }
+  },
+  {
+    "id": 11,
+    "name": "Socket-Patched Local Python Library Contract (Downstream Desktop/Web App Journeys: HELD/UNKNOWN)",
+    "status": "PASS",
+    "details": "Executed local Python library calculations with socket.create_connection patched: 9-graha natal bundle, 16 Varga charts (D1..D60), 5-limb Panchang, 36-point Gun Milan, 5-level Dasha, all four 2026 eclipses, and AI hallucination audit passed; installed desktop app and hosted web customer journeys remain HELD/UNKNOWN outside this standalone library repo",
+    "telemetry": {
+      "socket_create_connection_patched": true,
+      "downstream_installed_desktop_app_journey": "HELD_OUTSIDE_STANDALONE_LIBRARY_REPO",
+      "downstream_live_web_customer_journey": "HELD_OUTSIDE_STANDALONE_LIBRARY_REPO",
+      "bundle_receipt_sha256": "2873fa9024a761210cca487ea1031e569a5594ee844a4b0a4cab0ce047af5b73",
+      "shodashvarga_count": 16,
+      "ashtakoota_total_points": 10.5,
+      "rise_set_outcome": "events",
+      "rise_set_cache_entries": 1,
+      "eclipses_2026_retflags": [
+        8,
+        4,
+        4,
+        16
+      ],
+      "ai_fact_sheet_bytes": 2974,
+      "duration_ms": 2864.4708000065293
+    }
+  },
+  {
+    "id": 12,
+    "name": "Cross-Runtime Library Parity (Python, Rust Clenshaw 3D, WASM & Node ES-Module; Downstream App UI: HELD/UNKNOWN)",
+    "status": "PASS",
+    "details": "Python Engine (0.0007 arcsec JPL DE440 truth floor), Rust Clenshaw Chebyshev evaluator, WebAssembly binary (ephemeris-core.wasm), Node ES-Module SDK (16 Vargas, 337 Bindus, 120y Dasha), and Multi-Ephemeris Uncertainty Envelope all match within tolerance; downstream app UI parity remains HELD/UNKNOWN outside this library repo",
+    "telemetry": {
+      "de440_truth_floor_0_0007_arcsec_verified": true,
+      "rust_clenshaw_3d_verified": true,
+      "native_rust_library_executed": true,
+      "native_rust_max_pos_residual_km": 0.0,
+      "native_rust_max_vel_residual_km_day": 0.0,
+      "wasm_binary_verified": true,
+      "browser_js_sdk_parity": true,
+      "browser_js_execution_ms": 0.922,
+      "uncertainty_envelope_bodies": 9,
+      "boundary_sensitivity_divisions": 6,
+      "downstream_app_ui_parity": "HELD_OUTSIDE_STANDALONE_LIBRARY_REPO",
+      "duration_ms": 80.8580000011716
+    }
+  }
+]

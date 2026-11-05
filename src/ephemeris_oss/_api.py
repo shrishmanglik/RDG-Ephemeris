@@ -99,11 +99,17 @@ class Engine:
         """
 
         directory = _kernels.cache_dir(cache_dir)
-        if kernels == "compact":
+        if isinstance(kernels, str) and kernels in {"compact", "extended", "compact-extended"}:
             from .compact_kernel import (
+                COMPACT_EARLY_WING_ID,
+                COMPACT_EARLY_WING_PATH,
+                COMPACT_EARLY_WING_SHA256,
                 COMPACT_KERNEL_ID,
                 COMPACT_KERNEL_PATH,
                 COMPACT_KERNEL_SHA256,
+                COMPACT_LATE_WING_ID,
+                COMPACT_LATE_WING_PATH,
+                COMPACT_LATE_WING_SHA256,
             )
 
             if not COMPACT_KERNEL_PATH.is_file():
@@ -119,6 +125,19 @@ class Engine:
                     COMPACT_KERNEL_ID, COMPACT_KERNEL_PATH, actual
                 )
             }
+            if kernels in {"extended", "compact-extended"}:
+                for wing_id, wing_path, wing_sha in (
+                    (COMPACT_EARLY_WING_ID, COMPACT_EARLY_WING_PATH, COMPACT_EARLY_WING_SHA256),
+                    (COMPACT_LATE_WING_ID, COMPACT_LATE_WING_PATH, COMPACT_LATE_WING_SHA256),
+                ):
+                    if wing_path.is_file():
+                        actual_wing = _kernels.sha256_file(wing_path)
+                        if actual_wing != wing_sha:
+                            raise EphemerisError(
+                                f"{wing_id}: SHA-256 mismatch for {wing_path}: "
+                                f"expected {wing_sha}, got {actual_wing}"
+                            )
+                        artifacts[wing_id] = KernelArtifact(wing_id, wing_path, actual_wing)
         else:
             if kernels == "auto":
                 chosen = {
@@ -134,7 +153,7 @@ class Engine:
                 chosen = {str(key): Path(value) for key, value in kernels.items()}
             else:
                 raise EphemerisError(
-                    "kernels must be 'auto', 'compact', or a mapping of kernel id to path"
+                    "kernels must be 'auto', 'compact', 'extended', or a mapping of kernel id to path"
                 )
             artifacts = {}
             for identifier, path in chosen.items():

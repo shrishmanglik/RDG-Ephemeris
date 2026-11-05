@@ -20,6 +20,7 @@ import numpy as np
 
 from ._api import EarthOrientation, Engine, EphemerisError
 from ._version import __version__
+from .engine.contracts import AstronomyDataUnavailable
 from .engine.conventions import (
     ascendant_midheaven_from_sidereal,
     ayanamsa_degrees,
@@ -436,7 +437,9 @@ class EphemerisAdapter:
     ) -> None:
         if isinstance(kernels, Path):
             kernel_arg: str | Mapping[str, str | Path] = {"DE440": kernels}
-        elif isinstance(kernels, str) and kernels not in {"compact", "auto"}:
+        elif isinstance(kernels, str) and kernels == "compact":
+            kernel_arg = "extended"
+        elif isinstance(kernels, str) and kernels not in {"compact", "extended", "compact-extended", "auto"}:
             candidate = Path(kernels)
             if candidate.suffix.lower() == ".bsp" or candidate.is_file():
                 kernel_arg = {"DE440": candidate}
@@ -585,19 +588,20 @@ class EphemerisAdapter:
 
     def _jd_ut_to_jd_tt(self, jd_ut: float) -> float:
         year, month, day, hour_ut = self.revjul(jd_ut)
-        try:
-            civil = date(year, month, day)
-        except ValueError:
-            civil = date(2000, 1, 1)
-        if date(1960, 1, 1) <= civil <= date(2026, 12, 31):
+        if 1960 <= year <= 2026:
             try:
-                tai_minus_utc = float(erfa.dat(year, month, day, hour_ut / 24.0))
-                return float(jd_ut) + (tai_minus_utc + 32.184) / SECONDS_PER_DAY
+                civil = date(year, month, day)
+                if date(1960, 1, 1) <= civil <= date(2026, 12, 31):
+                    tai_minus_utc = float(erfa.dat(year, month, day, hour_ut / 24.0))
+                    return float(jd_ut) + (tai_minus_utc + 32.184) / SECONDS_PER_DAY
             except (ValueError, erfa.ErfaError, erfa.ErfaWarning):
                 pass
         decimal_year = float(year) + (float(month) - 0.5) / 12.0 + (float(day) - 1.0) / 365.2425
-        clamped_year = min(max(decimal_year, -1999.0), 3000.0)
-        delta_t_seconds = float(estimate_delta_t(clamped_year).seconds)
+        if -1999.0 <= decimal_year <= 3000.0:
+            delta_t_seconds = float(estimate_delta_t(decimal_year).seconds)
+        else:
+            u_cent = (decimal_year - 1820.0) / 100.0
+            delta_t_seconds = float(-20.0 + 32.0 * u_cent * u_cent)
         return float(jd_ut) + delta_t_seconds / SECONDS_PER_DAY
 
     def get_ayanamsa_ut(self, jd_ut: float, mode: str = "lahiri") -> float:
@@ -898,11 +902,31 @@ class EphemerisAdapter:
         times = TimeScaleState(utc=(J2000_JD, jd_val - J2000_JD), tt=tt, tdb=tdb)
 
         provider = self._engine._provider
-        artifact = provider._kernel_registry.artifact_for_tdb_jd(times.tdb_jd)
         ayan_deg = self.get_ayanamsa_ut(jd_val, mode=ayanamsa) if sidereal else 0.0
+        try:
+            artifact = provider._kernel_registry.artifact_for_tdb_jd(times.tdb_jd)
+        except AstronomyDataUnavailable:
+            return self._calc_ut_historical_analytical(
+                jd_val=jd_val,
+                jd_tt=jd_tt,
+                body_key=body_key,
+                sidereal=sidereal,
+                ayanamsa=ayanamsa,
+                ayan_deg=ayan_deg,
+            )
 
         if body_key in ("rahu", "ketu"):
-            tropical_node = mean_lunar_node_longitude_degrees(jd_tt)
+            try:
+                tropical_node = mean_lunar_node_longitude_degrees(jd_tt)
+            except AstronomyDataUnavailable:
+                t_cent = (jd_tt - J2000_JD) / 36525.0
+                tropical_node = normalize_degrees(
+                    125.0445479
+                    - 1934.1362891 * t_cent
+                    + 0.0020754 * t_cent * t_cent
+                    + (t_cent ** 3) / 467441.0
+                    - (t_cent ** 4) / 60616000.0
+                )
             if body_key == "ketu":
                 tropical_node = (tropical_node + 180.0) % 360.0
             lon_deg = (
@@ -991,6 +1015,139 @@ class EphemerisAdapter:
             latitude_deg=float(lat_deg),
             distance_au=float(dist_au),
             longitude_speed_deg_per_day=float(speed_deg),
+            is_retrograde=is_retro,
+            receipt_sha256=canonical_hash(receipt_payload),
+            body=body_key,
+        )
+
+    def _calc_ut_historical_analytical(
+        self,
+        *,
+        jd_val: float,
+        jd_tt: float,
+        body_key: str,
+        sidereal: bool,
+        ayanamsa: str,
+        ayan_deg: float,
+    ) -> PlanetCoordinateResult:
+        """Long-term Vondrak-2011 + Keplerian/Meeus/ELP historical analytical evaluator (3102 BCE to 3000 CE)."""
+
+        def _eval_tropical(j_tt: float) -> tuple[float, float, float]:
+            t_cent = (j_tt - J2000_JD) / 36525.0
+            if body_key in ("rahu", "ketu", "true_node"):
+                node = (
+                    125.0445479
+                    - 1934.1362891 * t_cent
+                    + 0.0020754 * t_cent * t_cent
+                    + (t_cent ** 3) / 467441.0
+                    - (t_cent ** 4) / 60616000.0
+                )
+                if body_key == "true_node":
+                    d = 297.8501921 + 445267.1114034 * t_cent
+                    m = 357.5291092 + 35999.0502909 * t_cent
+                    mp = 134.9633964 + 477198.8675055 * t_cent
+                    f = 93.2720950 + 483202.0175233 * t_cent
+                    node += (
+                        -1.4979 * math.sin(2.0 * (d - f) * _ANALYTICAL_DEG)
+                        - 0.1500 * math.sin(m * _ANALYTICAL_DEG)
+                        - 0.1226 * math.sin(2.0 * d * _ANALYTICAL_DEG)
+                        + 0.1176 * math.sin(2.0 * f * _ANALYTICAL_DEG)
+                        - 0.0801 * math.sin(2.0 * (mp - f) * _ANALYTICAL_DEG)
+                    )
+                if body_key == "ketu":
+                    node += 180.0
+                return normalize_degrees(node), 0.0, 0.00256955529
+            if body_key == "moon":
+                lp = 218.3164477 + 481267.88123421 * t_cent
+                d = 297.8501921 + 445267.1114034 * t_cent
+                m = 357.5291092 + 35999.0502909 * t_cent
+                mp = 134.9633964 + 477198.8675055 * t_cent
+                f = 93.2720950 + 483202.0175233 * t_cent
+                lam = (
+                    lp
+                    + 6.288774 * math.sin(mp * _ANALYTICAL_DEG)
+                    + 1.274027 * math.sin((2.0 * d - mp) * _ANALYTICAL_DEG)
+                    + 0.658314 * math.sin(2.0 * d * _ANALYTICAL_DEG)
+                    + 0.213618 * math.sin(2.0 * mp * _ANALYTICAL_DEG)
+                    - 0.185116 * math.sin(m * _ANALYTICAL_DEG)
+                    - 0.114332 * math.sin(2.0 * f * _ANALYTICAL_DEG)
+                    + 0.058793 * math.sin((2.0 * d - 2.0 * mp) * _ANALYTICAL_DEG)
+                    + 0.057066 * math.sin((2.0 * d - m - mp) * _ANALYTICAL_DEG)
+                    + 0.053322 * math.sin((2.0 * d + mp) * _ANALYTICAL_DEG)
+                    + 0.045758 * math.sin((2.0 * d - m) * _ANALYTICAL_DEG)
+                )
+                beta = (
+                    5.128122 * math.sin(f * _ANALYTICAL_DEG)
+                    + 0.280602 * math.sin((mp + f) * _ANALYTICAL_DEG)
+                    + 0.277693 * math.sin((mp - f) * _ANALYTICAL_DEG)
+                    + 0.173237 * math.sin((2.0 * d - f) * _ANALYTICAL_DEG)
+                )
+                r_km = (
+                    385000.56
+                    - 20905.355 * math.cos(mp * _ANALYTICAL_DEG)
+                    - 3699.111 * math.cos((2.0 * d - mp) * _ANALYTICAL_DEG)
+                    - 2955.968 * math.cos(2.0 * d * _ANALYTICAL_DEG)
+                    - 569.925 * math.cos(2.0 * mp * _ANALYTICAL_DEG)
+                )
+                return normalize_degrees(lam), float(beta), float(r_km / AU_KM)
+
+            ex, ey, ez = _analytical_heliocentric_xyz("Earth", t_cent)
+            if body_key == "sun":
+                gx, gy, gz = -ex, -ey, -ez
+            else:
+                cap_name = body_key.capitalize()
+                if cap_name not in _ANALYTICAL_ELEMENTS:
+                    raise EphemerisError(f"unsupported historical analytical body {body_key!r}")
+                px, py, pz = _analytical_heliocentric_xyz(cap_name, t_cent)
+                gx, gy, gz = px - ex, py - ey, pz - ez
+            dist_au = math.sqrt(gx * gx + gy * gy + gz * gz)
+            lam_j2000 = math.degrees(math.atan2(gy, gx)) % 360.0
+            lat_deg = math.degrees(math.asin(max(-1.0, min(1.0, gz / max(dist_au, 1e-12)))))
+            # Precess J2000 ecliptic longitude to tropical ecliptic of date via Vondrak-2011 Lahiri differential
+            precession_shift = self.get_ayanamsa_ut(jd_val, mode="lahiri") - _ANALYTICAL_AYANAMSA_J2000
+            return normalize_degrees(lam_j2000 + precession_shift), float(lat_deg), float(dist_au)
+
+        trop_lon, lat_deg, dist_au = _eval_tropical(jd_tt)
+        step = 0.05
+        trop_before, lat_before, dist_before = _eval_tropical(jd_tt - step)
+        trop_after, lat_after, dist_after = _eval_tropical(jd_tt + step)
+        speed_deg = ((trop_after - trop_before + 180.0) % 360.0 - 180.0) / (2.0 * step)
+        lat_speed = (lat_after - lat_before) / (2.0 * step)
+        dist_speed = (dist_after - dist_before) / (2.0 * step)
+        if body_key in ("rahu", "ketu"):
+            speed_deg = -0.05295376
+            is_retro = True
+        elif body_key in ("sun", "moon"):
+            is_retro = False
+        else:
+            is_retro = bool(speed_deg < 0.0)
+        lon_deg = (trop_lon - ayan_deg) % 360.0 if sidereal else normalize_degrees(trop_lon)
+        hist_kernel_id = "HISTORICAL-ANALYTICAL-VONDRAK2011"
+        hist_sha = canonical_hash({"provider": hist_kernel_id, "version": __version__})
+        receipt_payload = {
+            "schema": "ephemeris-oss.adapter.calc_ut.v1",
+            "version": __version__,
+            "jd_ut": round(jd_val, 9),
+            "jd_tt": round(jd_tt, 9),
+            "body": body_key,
+            "sidereal": bool(sidereal),
+            "ayanamsa": str(ayanamsa).lower() if sidereal else None,
+            "ayanamsa_deg": round(ayan_deg, 9) if sidereal else 0.0,
+            "kernel_identifier": hist_kernel_id,
+            "kernel_sha256": hist_sha,
+            "longitude_deg": round(lon_deg, 9),
+            "latitude_deg": round(lat_deg, 9),
+            "distance_au": round(dist_au, 9),
+            "longitude_speed_deg_per_day": round(speed_deg, 9),
+            "is_retrograde": is_retro,
+        }
+        return PlanetCoordinateResult(
+            longitude_deg=float(lon_deg),
+            latitude_deg=float(lat_deg),
+            distance_au=float(dist_au),
+            longitude_speed_deg_per_day=float(speed_deg),
+            latitude_speed_deg_per_day=float(lat_speed),
+            distance_speed_au_per_day=float(dist_speed),
             is_retrograde=is_retro,
             receipt_sha256=canonical_hash(receipt_payload),
             body=body_key,

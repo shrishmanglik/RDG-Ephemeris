@@ -1,0 +1,103 @@
+{
+  "benchmark_timestamp_utc": "2026-11-05T05:22:22.759793+00:00",
+  "status": "PASS",
+  "evaluation_mode": "LIVE_ENGINE_AGAINST_COMMITTED_HORIZONS_TRUTH_PLUS_CONVENTION_REGRESSION",
+  "standards_evaluated": [
+    "NASA JPL Horizons (DE441/DE440 Astrometric Ephemeris, 300 epochs x 7 physical bodies = 2,100 live evaluations; independent reference accuracy comparison)",
+    "Lahiri / Chitrapaksha 1956-03-21.0 TT and J2000.0 TT transformed ERFA/IAU-2006 constants (CONVENTION_REGRESSION_ONLY; derived from engine/conventions.py, excluded from independent external IAE tie claims)"
+  ],
+  "governing_policy": "Ties independent NASA JPL Horizons reference accuracy within measured truth floor; separates internal convention regression checks from external IAE verification",
+  "nasa_jpl_horizons": {
+    "evaluation_method": "Live Engine.load(kernels='extended').positions_tt(jd_tt) evaluated at all 300 manifest epochs",
+    "live_evaluation_duration_ms": 1029.561,
+    "total_samples": 2100,
+    "overall_median_separation_arcsec": 0.00023342938525766418,
+    "overall_p95_separation_arcsec": 0.009849400426968061,
+    "overall_max_separation_arcsec": 0.03685845223700257,
+    "max_drift_from_committed_baseline_arcsec": 0.022339012584501407,
+    "tolerances_arcsec": {
+      "median": 0.005,
+      "p95": 0.025,
+      "max": 0.05
+    },
+    "by_body": {
+      "jupiter": {
+        "samples": 300,
+        "median_arcsec": 9.792337954379261e-05,
+        "p95_arcsec": 0.0001989749232096156,
+        "max_arcsec": 0.00029416944262097004
+      },
+      "mars": {
+        "samples": 300,
+        "median_arcsec": 0.00022054496214755868,
+        "p95_arcsec": 0.0007382299074569529,
+        "max_arcsec": 0.0020418666998222226
+      },
+      "mercury": {
+        "samples": 300,
+        "median_arcsec": 0.000377467071707506,
+        "p95_arcsec": 0.0008939986474906619,
+        "max_arcsec": 0.0015703346013191115
+      },
+      "moon": {
+        "samples": 300,
+        "median_arcsec": 0.007804191244456277,
+        "p95_arcsec": 0.022030844145150313,
+        "max_arcsec": 0.03685845223700257
+      },
+      "saturn": {
+        "samples": 300,
+        "median_arcsec": 9.080221221471984e-05,
+        "p95_arcsec": 0.0001884987356466966,
+        "max_arcsec": 0.0002702237370204218
+      },
+      "sun": {
+        "samples": 300,
+        "median_arcsec": 0.0002682141848563434,
+        "p95_arcsec": 0.0005424530216629302,
+        "max_arcsec": 0.0007560214425064118
+      },
+      "venus": {
+        "samples": 300,
+        "median_arcsec": 0.0003325355848277556,
+        "p95_arcsec": 0.0013137837740688088,
+        "max_arcsec": 0.002558140689157858
+      }
+    },
+    "status": "PASS_TIED_WITH_HORIZONS"
+  },
+  "iae_lahiri_anchor": {
+    "check_classification": "CONVENTION_REGRESSION_ONLY",
+    "independent_external_verification": false,
+    "source_derivation_boundary": "The transformed 1956 mean (23 deg 14' 44.019\"), 1956 IAU-2006 true (23 deg 15' 00.796\"), and J2000.0 TT mean (23.85709235 deg) constants are derived from the 1956-03-21.0 TT defining anchor and ERFA IAU-2006 reductions in engine/conventions.py:97-126 without a retained primary-book IAE page readback. Secondary ephemeris documentation (Appendix E) reports ambiguity in IAE mean/true definitions under IAU1976/Wahr1980 assumptions and identifies 23 deg 42' 37.0\" with 10 May 1989 rather than 1 January 1989. Consequently, these checks are labelled CONVENTION_REGRESSION_ONLY and excluded from the public independent-accuracy tie claim.",
+    "epoch_1956_jd_tt": 2435553.5,
+    "csir_1955_iae_1989_p556_true_iau1980_deg": 23.250182777777777,
+    "iae_1989_p556_mean_reference_deg": 23.245560833333336,
+    "iae_1989_p556_true_iau2006_reference_deg": 23.25022111111111,
+    "calculated_1956_true_deg": 23.25022149131667,
+    "calculated_1956_mean_deg": 23.245560954138135,
+    "mean_1956_residual_arcsec": 0.000434897276591073,
+    "true_1956_iau2006_residual_arcsec": 0.0013687400141293438,
+    "true_1956_cross_nutation_residual_arcsec": 0.1393687400110366,
+    "epoch_j2000_jd_tt": 2451545.0,
+    "j2000_mean_reference_deg": 23.85709235,
+    "calculated_j2000_mean_deg": 23.857092324999115,
+    "j2000_mean_residual_arcsec": 9.000317930940582e-05,
+    "tolerances_arcsec": {
+      "mean_1956": 0.002,
+      "true_1956_iau2006": 0.002,
+      "true_1956_cross_nutation": 0.2,
+      "j2000_mean": 0.0005
+    },
+    "unverified_1989_01_01_tabular_candidate": {
+      "epoch_1989_jd_utc": 2447527.5,
+      "candidate_constant_deg": 23.710277777777776,
+      "calculated_1989_mean_deg": 23.703447928469267,
+      "discrepancy_arcsec": 24.58745751063418,
+      "status": "HELD_UNVERIFIED_PRIMARY_BOOK_PAGE",
+      "note": "Preserved as HELD: secondary Appendix E documentation identifies 23 deg 42' 37.0\" with 10 May 1989 rather than 1 January 1989, and no direct primary-book IAE page readback is retained in this repository. Excluded from certified agreement claims."
+    },
+    "status": "CONVENTION_REGRESSION_ONLY"
+  },
+  "public_claim": "RDG Ephemeris reproduces NASA JPL DE440/Horizons within the measured truth floor (median 0.000233\", max 0.036858\", ties reference accuracy); Lahiri 1956/J2000 transformed constants are verified as CONVENTION_REGRESSION_ONLY (excluded from independent external IAE tie claims pending primary-book page fixture)."
+}

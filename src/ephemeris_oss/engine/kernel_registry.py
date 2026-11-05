@@ -20,6 +20,14 @@ COMPACT_DE440_START_YEAR = 1800
 COMPACT_DE440_END_YEAR = 2100
 COMPACT_DE440_START_JD = 2378432.5
 COMPACT_DE440_END_JD = 2488512.5
+COMPACT_DE440_EARLY = "COMPACT-DE440-EARLY"
+COMPACT_DE440_EARLY_START_YEAR = 1550
+COMPACT_DE440_EARLY_END_YEAR = 1799
+COMPACT_DE440_EARLY_START_JD = 2287184.5
+COMPACT_DE440_LATE = "COMPACT-DE440-LATE"
+COMPACT_DE440_LATE_START_YEAR = 2101
+COMPACT_DE440_LATE_END_YEAR = 2305
+COMPACT_DE440_LATE_END_JD = 2563392.5
 DE441_PART_2_START_JD = 2440400.5
 DE441_PART_1 = "DE441-PART1"
 DE441_PART_2 = "DE441-PART2"
@@ -40,6 +48,11 @@ class KernelRegistry:
     def __init__(self, artifacts: Mapping[str, KernelArtifact]) -> None:
         self._artifacts = dict(artifacts)
 
+    @property
+    def generation(self) -> tuple[tuple[str, str], ...]:
+        """Bind every configured artifact, including days spanning a boundary."""
+        return tuple(sorted((key, value.sha256.lower()) for key, value in self._artifacts.items()))
+
     @staticmethod
     def identifier_for_year(year: int) -> str:
         return "DE440" if DE440_START_YEAR <= year <= DE440_END_YEAR else "DE441"
@@ -50,6 +63,10 @@ class KernelRegistry:
         if artifact is None and identifier == "DE440":
             if COMPACT_DE440_START_YEAR <= year <= COMPACT_DE440_END_YEAR:
                 artifact = self._artifacts.get(COMPACT_DE440)
+            elif COMPACT_DE440_EARLY_START_YEAR <= year <= COMPACT_DE440_EARLY_END_YEAR:
+                artifact = self._artifacts.get(COMPACT_DE440_EARLY)
+            elif COMPACT_DE440_LATE_START_YEAR <= year <= COMPACT_DE440_LATE_END_YEAR:
+                artifact = self._artifacts.get(COMPACT_DE440_LATE)
         if artifact is None and identifier == "DE441":
             split_identifier = DE441_PART_1 if year < DE440_START_YEAR else DE441_PART_2
             artifact = self._artifacts.get(split_identifier)
@@ -67,6 +84,10 @@ class KernelRegistry:
         if artifact is None and identifier == "DE440":
             if COMPACT_DE440_START_JD <= tdb_jd <= COMPACT_DE440_END_JD:
                 artifact = self._artifacts.get(COMPACT_DE440)
+            elif COMPACT_DE440_EARLY_START_JD <= tdb_jd < COMPACT_DE440_START_JD:
+                artifact = self._artifacts.get(COMPACT_DE440_EARLY)
+            elif COMPACT_DE440_END_JD < tdb_jd <= COMPACT_DE440_LATE_END_JD:
+                artifact = self._artifacts.get(COMPACT_DE440_LATE)
         if artifact is None and identifier == "DE441":
             split_identifier = (
                 DE441_PART_1 if tdb_jd < DE441_PART_2_START_JD else DE441_PART_2

@@ -167,8 +167,9 @@ def test_rise_set_and_transit_solver_finds_crossings_and_upper_transit() -> None
     result = solve_rise_set_transit(altitude, 0.0, 1.0, policy=FAST_POLICY)
 
     assert result.outcome == "events"
-    assert [(event.kind, event.jd) for event in result.horizon_events] == pytest.approx(
-        [("rise", 0.25), ("set", 0.75)], abs=2e-8
+    assert [event.kind for event in result.horizon_events] == ["rise", "set"]
+    assert [event.jd for event in result.horizon_events] == pytest.approx(
+        [0.25, 0.75], abs=2e-8
     )
     assert result.transit_jd == pytest.approx(0.5, abs=2e-8)
     assert result.transit_altitude_deg == pytest.approx(30.0, abs=1e-8)

@@ -408,6 +408,22 @@ def main(argv: list[str] | None = None) -> int:
     tb.add_argument("--step-days", type=float, default=1.0)
     tb.add_argument("--format", choices=("markdown", "csv", "json"), default="markdown")
 
+    mc = commands.add_parser("mcp", help="start built-in Model Context Protocol (MCP) JSON-RPC 2.0 server over stdio")
+    mc.add_argument("--dump-tools", action="store_true", help="print MCP tool schemas as JSON and exit")
+
+    sv_api = commands.add_parser("serve", help="start built-in HTTP REST JSON API server with OpenAPI 3.1")
+    sv_api.add_argument("--host", default="127.0.0.1", help="bind host (default: 127.0.0.1)")
+    sv_api.add_argument("--port", type=int, default=8765, help="bind port (default: 8765)")
+    sv_api.add_argument("--dump-openapi", action="store_true", help="print OpenAPI 3.1 JSON and exit")
+
+    imp = commands.add_parser("impossible", help="run sub-second varga cusp, Bayesian birth rectification, and Siddhanta drift solvers")
+    imp.add_argument("--at", required=True, help="ISO 8601 instant with offset")
+    imp.add_argument("--lat", type=float, default=28.6139)
+    imp.add_argument("--lon", type=float, default=77.2090)
+    imp.add_argument("--ayanamsa", default="lahiri")
+    imp.add_argument("--window-minutes", type=float, default=15.0)
+    imp.add_argument("--step-seconds", type=float, default=15.0)
+
     b = commands.add_parser("bench", help="measure public TT body batching")
     b.add_argument("--kernel", help="explicit DE440 file; otherwise use the verified package cache")
     b.add_argument("--samples", type=int, choices=range(2, 257), default=32)
@@ -432,6 +448,60 @@ def main(argv: list[str] | None = None) -> int:
             return _siddhanta(args)
         if args.command == "table":
             return _table(args)
+        if args.command == "mcp":
+            from .mcp_server import main as mcp_main
+
+            return mcp_main(["--dump-tools"] if args.dump_tools else [])
+        if args.command == "serve":
+            from .api_server import main as api_main
+
+            api_argv = ["--host", str(args.host), "--port", str(args.port)]
+            if args.dump_openapi:
+                api_argv.append("--dump-openapi")
+            return api_main(api_argv)
+        if args.command == "impossible":
+            from .impossible_astrology import (
+                analyze_siddhanta_vs_jpl_de440_drift,
+                rectify_birth_time_bayesian,
+                solve_subsecond_shodashvarga_cusp_transitions,
+            )
+
+            t = _instant(args.at)
+            jd_ut = _datetime_to_jd(t)
+            cusps = solve_subsecond_shodashvarga_cusp_transitions(
+                jd_ut,
+                args.lat,
+                args.lon,
+                ayanamsa=args.ayanamsa,
+            )
+            rect = rectify_birth_time_bayesian(
+                jd_ut,
+                args.lat,
+                args.lon,
+                window_minutes=args.window_minutes,
+                step_seconds=args.step_seconds,
+                ayanamsa=args.ayanamsa,
+            )
+            drift = analyze_siddhanta_vs_jpl_de440_drift(jd_ut, ayanamsa=args.ayanamsa)
+            payload = {
+                "at": t.isoformat(),
+                "jd_ut": jd_ut,
+                "most_sensitive_varga": cusps.most_sensitive_varga,
+                "minimum_ascendant_cusp_margin_seconds": cusps.minimum_ascendant_cusp_margin_seconds,
+                "rectified_jd_ut": rect.rectified_jd_ut,
+                "rectified_offset_seconds": rect.offset_seconds,
+                "best_rectification_score": rect.best_candidate.total_score,
+                "siddhanta_mean_abs_delta_deg": drift.mean_abs_delta_deg,
+                "siddhanta_max_abs_delta_deg": drift.max_abs_delta_deg,
+                "receipts": {
+                    "cusps_sha256": cusps.receipt_sha256,
+                    "rectification_sha256": rect.receipt_sha256,
+                    "siddhanta_drift_sha256": drift.receipt_sha256,
+                },
+            }
+            json.dump(_jsonable(payload), sys.stdout, indent=2, sort_keys=True, default=str)
+            print()
+            return 0
         from .researcher_benchmark import measure
 
         configured = {"DE440": Path(args.kernel)} if args.kernel else "auto"

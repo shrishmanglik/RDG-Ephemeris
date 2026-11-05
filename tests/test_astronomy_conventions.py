@@ -304,4 +304,4 @@ def test_r3_modern_realizations_do_not_claim_original_author_fidelity(key):
     assert definition.original_author_ambiguity
     assert "Vondrak2011" in definition.precession_model
     assert "aacf962d" not in definition.source_reference
-    assert "Swiss-compatible realisation" in definition.source_reference
+    assert "Standard software realisation" in definition.source_reference
