@@ -133,7 +133,7 @@ def test_impossible_astrology_solvers_end_to_end() -> None:
 
 
 def test_mcp_jsonrpc_server_and_all_tools() -> None:
-    assert len(MCP_TOOLS) == 9
+    assert len(MCP_TOOLS) == 20
     init_resp = handle_jsonrpc_message(
         {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2024-11-05"}}
     )
@@ -142,7 +142,7 @@ def test_mcp_jsonrpc_server_and_all_tools() -> None:
 
     list_resp = handle_jsonrpc_message({"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}})
     assert list_resp is not None
-    assert len(list_resp["result"]["tools"]) == 9
+    assert len(list_resp["result"]["tools"]) == 20
 
     call_resp = handle_jsonrpc_message(
         {
@@ -572,7 +572,7 @@ def test_round5_release_reconciliation_contracts(monkeypatch) -> None:  # type: 
         capture_output=True,
         check=True,
     )
-    assert len(json.loads(console.stdout)["tools"]) == 9
+    assert len(json.loads(console.stdout)["tools"]) == 20
 
     # 2. Complete Kundali exposes divisional charts and Dasha timelines
     kundali = mcp_server.execute_mcp_tool("compute_complete_kundali", {"jd_ut": 2461139.0})
