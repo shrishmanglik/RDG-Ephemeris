@@ -187,6 +187,7 @@ class SubsecondShodashvargaCuspReport:
     planet_margins: Mapping[str, Mapping[str, VargaBoundaryMargin]]
     receipt: Mapping[str, Any]
     receipt_sha256: str
+    true_node: bool = False
 
 
 @dataclass(frozen=True)
@@ -533,6 +534,7 @@ def solve_subsecond_shodashvarga_cusp_transitions(
     longitude_deg: float,
     *,
     ayanamsa: str = "lahiri",
+    true_node: bool = False,
     adapter: EphemerisAdapter | None = None,
 ) -> SubsecondShodashvargaCuspReport:
     """Solve exact seconds-to-previous and seconds-to-next sign transitions across all 16
@@ -542,6 +544,7 @@ def solve_subsecond_shodashvarga_cusp_transitions(
     base_jd = float(jd_ut)
     lat = float(latitude_deg)
     lon = float(longitude_deg)
+    use_true_node = bool(true_node)
     ayan_deg = ad.get_ayanamsa_ut(base_jd, mode=ayanamsa)
     houses_res = ad.houses_ut(
         base_jd,
@@ -581,7 +584,13 @@ def solve_subsecond_shodashvarga_cusp_transitions(
 
     planet_margins: dict[str, Mapping[str, VargaBoundaryMargin]] = {}
     for body_key in VEDIC_NINE_GRAHAS:
-        p_pos = ad.calc_ut(base_jd, body_key, sidereal=True, ayanamsa=ayanamsa)
+        p_pos = ad.calc_ut(
+            base_jd,
+            body_key,
+            sidereal=True,
+            ayanamsa=ayanamsa,
+            true_node=use_true_node,
+        )
         p_name = body_key.capitalize()
         p_speed_sec = p_pos.longitude_speed_deg_per_day / 86400.0
 
@@ -591,6 +600,7 @@ def solve_subsecond_shodashvarga_cusp_transitions(
                 _b,
                 sidereal=True,
                 ayanamsa=ayanamsa,
+                true_node=use_true_node,
             ).longitude_deg
 
         planet_margins[p_name] = _compute_body_varga_margins(
@@ -616,6 +626,7 @@ def solve_subsecond_shodashvarga_cusp_transitions(
         "longitude_deg": round(lon, 6),
         "ayanamsa": ayanamsa,
         "ayanamsa_deg": round(float(ayan_deg), 8),
+        "true_node": use_true_node,
         "ascendant_longitude_deg": round(float(houses_res.ascendant_deg), 8),
         "most_sensitive_varga": most_sensitive_varga,
         "minimum_ascendant_cusp_margin_seconds": round(min_margin_sec, 4),
@@ -639,6 +650,7 @@ def solve_subsecond_shodashvarga_cusp_transitions(
         planet_margins=planet_margins,
         receipt=receipt,
         receipt_sha256=canonical_hash(receipt),
+        true_node=use_true_node,
     )
 
 
@@ -650,6 +662,7 @@ def rectify_birth_time_bayesian(
     window_minutes: float = 15.0,
     step_seconds: float = 10.0,
     ayanamsa: str = "lahiri",
+    true_node: bool = False,
     life_events: Sequence[Mapping[str, Any] | LifeEventSpec] | None = None,
     adapter: EphemerisAdapter | None = None,
 ) -> BirthTimeRectificationReport:
@@ -688,7 +701,13 @@ def rectify_birth_time_bayesian(
 
     planet_lons: dict[str, float] = {}
     for body_key in VEDIC_NINE_GRAHAS:
-        pos = ad.calc_ut(float(nominal_jd_ut), body_key, sidereal=True, ayanamsa=ayanamsa)
+        pos = ad.calc_ut(
+            float(nominal_jd_ut),
+            body_key,
+            sidereal=True,
+            ayanamsa=ayanamsa,
+            true_node=bool(true_node),
+        )
         planet_lons[body_key.capitalize()] = pos.longitude_deg
 
     return rectify_birth_time(
@@ -1243,6 +1262,7 @@ def compute_personalized_astro_fingerprint(
         lat,
         lon,
         ayanamsa=ayanamsa,
+        true_node=bool(true_node),
         adapter=ad,
     )
     houses_res = ad.houses_ut(base_jd, lat, lon, system="whole_sign", ayanamsa=ayanamsa)

@@ -21,7 +21,7 @@
       2300,
       3000
     ],
-    "elapsed_ms": 1152.953,
+    "elapsed_ms": 1079.496,
     "epochs_tested": 459,
     "failures": 0,
     "graha_evaluations": 4131,
@@ -35,7 +35,7 @@
     "core_1800_2100_max_diff_arcsec": 0.026041,
     "core_1800_2100_median_diff_arcsec": 0.000227,
     "epochs_evaluated": 9074,
-    "evaluation_duration_ms": 63397.58,
+    "evaluation_duration_ms": 66080.675,
     "evaluation_mode": "LIVE_REPRODUCED_AGAINST_SHA256_PINNED_DE440_BSP",
     "failures": 0,
     "months_evaluated": 9074,
@@ -191,6 +191,6 @@
   },
   "package_name": "ephemeris-oss",
   "package_version": "0.2.0.dev1",
-  "receipt_sha256": "23e263384dd4499fedaa859b72d442fd92eee3090aede11a33d80e755505cd34",
+  "receipt_sha256": "3baf421f91696e6bd684a71975e95a6a139ba448f0f8871e7aacd23d15f15e83",
   "schema": "rdg-ephemeris-monthly-full-span-benchmark-v1"
 }

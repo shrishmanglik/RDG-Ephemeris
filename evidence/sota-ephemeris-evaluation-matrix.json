@@ -6,7 +6,7 @@
       "core_1800_2100_max_diff_arcsec": 0.026041,
       "core_1800_2100_median_diff_arcsec": 0.000227,
       "epochs_evaluated": 9074,
-      "evaluation_duration_ms": 63397.58,
+      "evaluation_duration_ms": 66080.675,
       "evaluation_mode": "LIVE_REPRODUCED_AGAINST_SHA256_PINNED_DE440_BSP",
       "failures": 0,
       "months_evaluated": 9074,
@@ -294,7 +294,7 @@
       2300,
       3000
     ],
-    "elapsed_ms": 1152.953,
+    "elapsed_ms": 1079.496,
     "epochs_tested": 459,
     "failures": 0,
     "graha_evaluations": 4131,
@@ -342,32 +342,32 @@
       "skyfield_1_55": "MIT (permissive, astronomy only)"
     },
     {
-      "astropy_6_x": "Built-in analytical approximation or external SPK download required",
-      "legacy_c_ephemeris_se_2_10": "Requires external .se1 or .bsp data files managed separately on disk",
+      "astropy_6_x": "Built-in approximate ephemeris default; JPL DE440/DE441 uses external SPK",
+      "legacy_c_ephemeris_se_2_10": "Uses external .se1 or .bsp data files managed separately on disk",
       "parameter": "Zero-Config Offline Embedded NASA JPL DE440 Span",
-      "rdg_ephemeris_oss": "1550 CE to 2306 CE embedded in wheel (~7.7 MB Chebyshev polynomials, 0 external downloads required)",
-      "skyfield_1_55": "Requires downloading external 114 MB de440.bsp file at runtime"
+      "rdg_ephemeris_oss": "1550 CE to 2306 CE embedded in wheel (~6.68 MB Chebyshev polynomials, 0 external downloads required)",
+      "skyfield_1_55": "Loads local or cached SPK files (e.g., de421.bsp, de440s.bsp, de440.bsp; not bundled in wheel)"
     },
     {
-      "astropy_6_x": "Requires external JPL SPK kernels for high precision across millennia",
-      "legacy_c_ephemeris_se_2_10": "Requires multi-file .se1 archive download across centuries",
+      "astropy_6_x": "Built-in approximate ephemeris default; JPL DE441 uses external SPK",
+      "legacy_c_ephemeris_se_2_10": "Uses multi-file .se1 archive across centuries",
       "parameter": "Multi-Millennium Historical & Future Span",
-      "rdg_ephemeris_oss": "3102 BCE (Kali Yuga Epoch) to 3000 CE seamless offline fallback (IAU 2006 / Vondrak 2011 +/-200,000 yr precession) + optional DE441 (-13200 to +17191)",
-      "skyfield_1_55": "Requires 3.3 GB DE441 SPK download for dates outside 1550-2650 CE"
+      "rdg_ephemeris_oss": "3102 BCE (Kali Yuga Epoch) to 3000 CE offline fallback (IAU 2006 / Vondrak 2011 +/-200,000 yr precession) + optional DE441 (-13200 to +17191)",
+      "skyfield_1_55": "Loads local or cached SPK files (e.g., de440.bsp / de441.bsp)"
     },
     {
-      "astropy_6_x": "UNKNOWN (third-party engine not executed in this clean-room repository; depends on external SPK kernel)",
+      "astropy_6_x": "UNKNOWN (third-party engine not executed in this clean-room repository; depends on selected ephemeris)",
       "legacy_c_ephemeris_se_2_10": "UNKNOWN (third-party engine not executed in this clean-room repository; depends on external .se1/.bsp files)",
       "parameter": "Reproduced Fidelity vs NASA JPL DE440 (1800-2100 CE)",
       "rdg_ephemeris_oss": "<= 0.000717 arcsec worst error (0.000019 arcsec median across 3,612 monthly TT epochs per planet; live-verified)",
-      "skyfield_1_55": "UNKNOWN (third-party engine not executed in this clean-room repository; depends on external 114 MB de440.bsp)"
+      "skyfield_1_55": "UNKNOWN (third-party engine not executed in this clean-room repository; depends on selected SPK file)"
     },
     {
-      "astropy_6_x": "UNKNOWN (third-party engine not executed in this clean-room repository; requires external SPK kernel)",
+      "astropy_6_x": "UNKNOWN (third-party engine not executed in this clean-room repository; depends on selected ephemeris)",
       "legacy_c_ephemeris_se_2_10": "UNKNOWN (third-party engine not executed in this clean-room repository; depends on external .se1 files)",
       "parameter": "Reproduced Fidelity vs NASA JPL DE440 (1550-2306 CE Extended Embedded Span)",
       "rdg_ephemeris_oss": "<= 0.026041 arcsec worst error across 63,518 live body-epoch evaluations from embedded Chebyshev wings",
-      "skyfield_1_55": "UNKNOWN (third-party engine not executed in this clean-room repository; requires external 114 MB de440.bsp)"
+      "skyfield_1_55": "UNKNOWN (third-party engine not executed in this clean-room repository; depends on selected SPK file)"
     },
     {
       "astropy_6_x": "None",
@@ -394,7 +394,7 @@
       "astropy_6_x": "None",
       "legacy_c_ephemeris_se_2_10": "Coordinates, ayanamsa, houses, and basic phenomena only (zero Vargas, Yogas, Dashas, Shadbala, or Ashtakavarga)",
       "parameter": "Native Vedic & Classical Jyotish Computation Stack",
-      "rdg_ephemeris_oss": "Complete: 23 Vargas (D1-D144), 337 Yogas, 6-fold Shadbala, Ashtakavarga, 8 Dasha systems, Jaimini, Nadi, Tajika, Muhurta, Drik Panchang, SVG rendering",
+      "rdg_ephemeris_oss": "Complete: 23 Vargas (D1-D144), 86 Classical & Tajika Yogas, 6-fold Shadbala, 337-Bindu Ashtakavarga, 8 Dasha systems, Jaimini, Nadi, Tajika, Muhurta, Drik Panchang, SVG rendering",
       "skyfield_1_55": "None"
     },
     {
@@ -416,7 +416,7 @@
     "bayesian_birth_time_rectification": {
       "best_total_score": 84.5,
       "candidate_count": 61,
-      "latency_ms": 83.768,
+      "latency_ms": 88.396,
       "receipt_sha256": "fbe50ae2887fa49fb4aeb319f7e86ad7a5b1a29c83a1431c5e75b4b4c90613a9",
       "rectified_offset_seconds": -180.0,
       "varga_transitions_detected": 20
@@ -455,15 +455,15 @@
       "dominant_digbala_planet": "Saturn",
       "dominant_vimshopaka_planet": "Mercury",
       "fingerprint_id_sha256": "01abe5b895f7b9113b61354270a653b5fc5a3d940c19b28115545ee1f0fb0aee",
-      "latency_ms": 3232.106,
+      "latency_ms": 3336.862,
       "overall_clock_confidence_score": 0.609865,
       "overall_personal_transit_resonance_score": 61.4522,
-      "receipt_sha256": "f7245f4d78f48cbfd40ceded88280b08dc7af7c3422432a2a12b28374e6e430f"
+      "receipt_sha256": "22bfa04d0ce37142cebc1f0bf6dac187c0d2be7339b78ae6e8c09d945cca59ea"
     },
     "rare_phenomena_scanner": {
       "combustion_window_count": 6,
       "graha_yuddha_count": 10,
-      "latency_ms": 5264.551,
+      "latency_ms": 5395.767,
       "receipt_sha256": "edef8aba3fa94a2c863ad997c06f9cfec3b6347a181bc48a259375ba6debdf17",
       "retrograde_station_count": 4
     },
@@ -476,16 +476,16 @@
     },
     "siddhanta_vs_de440_drift_analyzer": {
       "ahargana_days": 1872673.5,
-      "latency_ms": 74.97,
+      "latency_ms": 75.217,
       "max_abs_delta_deg": 176.036154,
       "mean_abs_delta_deg": 41.55173,
       "receipt_sha256": "cef6f9f7196ddf72eb6359c372cfa9b098af5d5b2d77d4c9cb112a536154c83d"
     },
     "subsecond_varga_cusp_solver": {
-      "latency_ms": 3501.42,
+      "latency_ms": 3279.274,
       "minimum_ascendant_cusp_margin_seconds": 15.8172,
       "most_sensitive_varga": "D45",
-      "receipt_sha256": "1d98abfcb42e0ed6e4d768c407c600a24cd79b7a5856ba593b2e0089f74851b6"
+      "receipt_sha256": "3ba06a6c0409cd29b10fe5715e62f764f03dc1807950dfc0366e884ddb1d4965"
     }
   },
   "license": "Apache-2.0",
@@ -493,7 +493,7 @@
     {
       "ascendant_deg": 321.60009,
       "ayanamsa_deg": 313.357426,
-      "complete_kundali_latency_ms": 21.854,
+      "complete_kundali_latency_ms": 23.161,
       "ephemeris_source": "vondrak2011-analytical",
       "epoch_label": "3102 BCE (Kali Yuga Epoch)",
       "jd_ut": 588465.5,
@@ -504,7 +504,7 @@
     {
       "ascendant_deg": 338.06747,
       "ayanamsa_deg": 2.962144,
-      "complete_kundali_latency_ms": 23.774,
+      "complete_kundali_latency_ms": 25.86,
       "ephemeris_source": "vondrak2011-analytical",
       "epoch_label": "499 CE (Aryabhata Epoch)",
       "jd_ut": 1903396.5,
@@ -515,7 +515,7 @@
     {
       "ascendant_deg": 236.890307,
       "ayanamsa_deg": 18.274548,
-      "complete_kundali_latency_ms": 33.675,
+      "complete_kundali_latency_ms": 36.259,
       "ephemeris_source": "de440-chebyshev",
       "epoch_label": "1600 CE (Early DE440 Chebyshev)",
       "jd_ut": 2305447.5,
@@ -526,7 +526,7 @@
     {
       "ascendant_deg": 232.155896,
       "ayanamsa_deg": 23.703448,
-      "complete_kundali_latency_ms": 35.484,
+      "complete_kundali_latency_ms": 35.032,
       "ephemeris_source": "de440-chebyshev",
       "epoch_label": "1989 CE (IAE Rashtriya Panchang)",
       "jd_ut": 2447527.5,
@@ -537,7 +537,7 @@
     {
       "ascendant_deg": 159.2751,
       "ayanamsa_deg": 24.224033,
-      "complete_kundali_latency_ms": 29.901,
+      "complete_kundali_latency_ms": 31.267,
       "ephemeris_source": "de440-chebyshev",
       "epoch_label": "2026 CE (Modern DE440 Chebyshev)",
       "jd_ut": 2461139.0,
@@ -548,7 +548,7 @@
     {
       "ascendant_deg": 227.557254,
       "ayanamsa_deg": 28.050424,
-      "complete_kundali_latency_ms": 33.529,
+      "complete_kundali_latency_ms": 36.265,
       "ephemeris_source": "de440-chebyshev",
       "epoch_label": "2300 CE (Future DE440 Chebyshev)",
       "jd_ut": 2561117.5,
@@ -559,7 +559,7 @@
     {
       "ascendant_deg": 218.225365,
       "ayanamsa_deg": 37.856338,
-      "complete_kundali_latency_ms": 23.919,
+      "complete_kundali_latency_ms": 27.871,
       "ephemeris_source": "vondrak2011-analytical",
       "epoch_label": "3000 CE (Far Future Vondrak-2011)",
       "jd_ut": 2816787.5,
@@ -570,6 +570,6 @@
   ],
   "package_name": "ephemeris-oss",
   "package_version": "0.2.0.dev1",
-  "receipt_sha256": "d16e56575b44b5f2ade050f6a26865903247d70190f3ce2116e0cf6da13db297",
+  "receipt_sha256": "66597bf9a98d7d4b6c491c19d2045dc4fbfc7e41c7da9a2cdb7ef5312a36d3df",
   "schema": "rdg-ephemeris-sota-evaluation-v1"
 }

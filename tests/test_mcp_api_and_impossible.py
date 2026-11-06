@@ -869,3 +869,67 @@ def test_personalized_astro_fingerprint_across_sdk_cli_mcp_and_rest_api() -> Non
     assert (repo_root / "docs/AI-MCP-AND-PLUGIN-INTEGRATION-GUIDE.md").is_file()
 
 
+@pytest.mark.parametrize("true_node", [False, True], ids=["mean-node", "true-node"])
+def test_personalized_astro_fingerprint_selected_node_divisional_consistency(true_node: bool) -> None:
+    """Ensure Rahu and Ketu varga_phases, D9, and D60 metadata match the selected node mode."""
+    report = compute_personalized_astro_fingerprint(2461139.0, true_node=true_node)
+    assert report.true_node is true_node
+    for body in ("Rahu", "Ketu"):
+        matrix = report.harmonic_phase_matrix[body]
+        lon = float(matrix["sidereal_longitude_deg"])
+        for v_key, phase in matrix["varga_phases"].items():
+            expected = varga_sign(lon, v_key)
+            assert phase["sign_name"] == expected.sign_name, (true_node, body, v_key)
+            assert phase["sign_lord"] == expected.sign_lord, (true_node, body, v_key)
+        d60_expected = varga_sign(lon, "D60")
+        assert matrix["d60_shashtiamsa_name"] == d60_expected.shashtiamsa_name
+        assert matrix["d60_shashtiamsa_is_benefic"] == d60_expected.shashtiamsa_is_benefic
+
+
+def test_public_utc_and_supplied_callback_lunar_interval_straddle() -> None:
+    """Verify public UTC positions() and supplied-callback _apparent_state share the lunar 16-day straddle fix."""
+    from ephemeris_oss import Engine
+    from ephemeris_oss.engine.numerical_provider import TimeScaleState
+
+    target_tdb = 2460032.5 + (0.4 / 86400.0)
+    with Engine.load(kernels="compact", eop=None) as compact:
+        instant = datetime(2000, 1, 1, 12, tzinfo=timezone.utc) + timedelta(days=target_tdb - 2451545.0)
+        for _ in range(3):
+            instant += timedelta(days=target_tdb - compact._provider.utc_time_scales(instant).tdb_jd)
+        times = compact._provider.utc_time_scales(instant)
+        assert abs(times.tdb_jd - target_tdb) < 1.0e-8
+
+        tt_pos = compact.positions_tt(times.tt_jd, ("moon",)).value["moon"]
+        utc_pos = compact.positions(instant, ("moon",)).value["moon"]
+        diff_deg = abs((tt_pos["longitude_deg"] - utc_pos["longitude_deg"] + 180.0) % 360.0 - 180.0)
+        assert diff_deg * 3600.0 < 0.001
+
+        ts = TimeScaleState((math.nan, math.nan), (2451545.0, target_tdb - 2451545.0), (2451545.0, target_tdb - 2451545.0))
+        res_default, _ = compact._provider._apparent_state(
+            body="moon",
+            instant_utc=None,
+            kernel_year=2023,
+            observer=None,
+            times=ts,
+            apply_deflection=True,
+            apply_aberration=True,
+            precomputed_target_func=None,
+        )
+        res_cb, _ = compact._provider._apparent_state(
+            body="moon",
+            instant_utc=None,
+            kernel_year=2023,
+            observer=None,
+            times=ts,
+            apply_deflection=True,
+            apply_aberration=True,
+            precomputed_target_func=lambda at: compact._provider.barycentric_state_at_tdb(
+                body="moon",
+                tdb=(2451545.0, at - 2451545.0),
+                kernel_year=2023,
+            ),
+        )
+        assert res_default.apparent_vector_km == res_cb.apparent_vector_km
+
+
+

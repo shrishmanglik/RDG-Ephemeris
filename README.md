@@ -34,10 +34,10 @@ The table below separates reproduced `ephemeris-oss` measurements from sourced c
 | Parameter | RDG-Ephemeris (`ephemeris-oss`) | Legacy C Ephemeris (`SE 2.10.03`) | `Skyfield 1.55` | `Astropy 6.x` |
 |---|---|---|---|---|
 | **Open-Source License** | **Apache-2.0** (free for commercial SaaS, apps, and research) | GPL v2+ / AGPL v3 or paid commercial license | MIT (astronomy only) | BSD-3-Clause (astronomy only) |
-| **Offline Embedded NASA JPL DE440 Span** | **`1550 CE` to `2306 CE`** bundled in wheel (~6.68 MB Chebyshev polynomials, `9,074` months) | Requires external `.se1` or `.bsp` files on disk | Requires external 114 MB `de440.bsp` download | Built-in approximation or external SPK download |
-| **Multi-Millennium Historical Span** | **`3102 BCE` to `3000 CE`** offline (`Vondrak-2011` + analytical) + optional `DE441` (`-13200..+17191`) | Requires multi-file `.se1` archive across centuries | Requires 3.3 GB `DE441` SPK download outside `1550..2650` | Requires external SPK download |
-| **Reproduced Fidelity vs Full NASA JPL DE440 (`1800..2100 CE`, `12:00 TT`)** | **`<= 0.000717 arcsec` max** (`0.000019 arcsec` median across 3,612 monthly TT epochs/planet) | UNKNOWN (not executed in this clean-room repository; depends on external `.se1`/`.bsp` files) | UNKNOWN (not executed in this clean-room repository; depends on external 114 MB `de440.bsp`) | UNKNOWN (not executed in this clean-room repository; depends on external SPK) |
-| **Reproduced Month-by-Month Fidelity vs Full NASA JPL DE440 (`1550-01` to `2306-02`, `9,074` Months)** | **`<= 0.026041 arcsec` max** across **63,518 live body-epoch evaluations** (`0` failures; `0.011989"` in `1550..1800`, `0.026041"` in `1800..2100`, `0.013609"` in `2101..2306`) | UNKNOWN (not executed in this clean-room repository; depends on external `.se1` files) | UNKNOWN (not executed in this clean-room repository; requires external 114 MB `de440.bsp`) | UNKNOWN (not executed in this clean-room repository; requires external SPK) |
+| **Offline Embedded NASA JPL DE440 Span** | **`1550 CE` to `2306 CE`** bundled in wheel (~6.68 MB Chebyshev polynomials, `9,074` months) | Uses external `.se1` or `.bsp` files on disk | Loads local/cached SPK files (e.g., `de421.bsp`, `de440s.bsp`, `de440.bsp`; not bundled in wheel) | Built-in approximate ephemeris default; JPL `DE440`/`DE441` uses external SPK |
+| **Multi-Millennium Historical Span** | **`3102 BCE` to `3000 CE`** offline (`Vondrak-2011` + analytical) + optional `DE441` (`-13200..+17191`) | Uses multi-file `.se1` archive across centuries | Loads local/cached SPK files (e.g., `de440.bsp` / `de441.bsp`) | Built-in approximate ephemeris default; JPL `DE441` uses external SPK |
+| **Reproduced Fidelity vs Full NASA JPL DE440 (`1800..2100 CE`, `12:00 TT`)** | **`<= 0.000717 arcsec` max** (`0.000019 arcsec` median across 3,612 monthly TT epochs/planet) | UNKNOWN (not executed in this clean-room repository; depends on external `.se1`/`.bsp` files) | UNKNOWN (not executed in this clean-room repository; depends on selected SPK file) | UNKNOWN (not executed in this clean-room repository; depends on selected ephemeris) |
+| **Reproduced Month-by-Month Fidelity vs Full NASA JPL DE440 (`1550-01` to `2306-02`, `9,074` Months)** | **`<= 0.026041 arcsec` max** across **63,518 live body-epoch evaluations** (`0` failures; `0.011989"` in `1550..1800`, `0.026041"` in `1800..2100`, `0.013609"` in `2101..2306`) | UNKNOWN (not executed in this clean-room repository; depends on external `.se1` files) | UNKNOWN (not executed in this clean-room repository; depends on selected SPK file) | UNKNOWN (not executed in this clean-room repository; depends on selected ephemeris) |
 | **Cryptographic Receipts (`SHA-256`)** | **Built-in on every result** (binds kernel SHA-256, NAIF IDs, conventions, and output) | None (mutable C arrays) | None | None |
 | **Built-in LLM MCP Server (`stdio`)** | **Built-in (`rdg-ephemeris-mcp`)** with **9 tools** + AI hallucination auditor | None | None | None |
 | **Built-in HTTP REST API (`OpenAPI 3.1`)** | **Built-in (`rdg-ephemeris-api`)** zero-dependency JSON server (**12 endpoints**) | None | None | None |
@@ -47,7 +47,7 @@ The table below separates reproduced `ephemeris-oss` measurements from sourced c
 
 ---
 
-## Install in 30 Seconds
+## Installation & Quick Start
 
 Requires Python 3.11 or later. Runtime dependencies are `numpy`, `pyerfa`, `jplephem`, and `tzdata`, each under its own permissive license.
 

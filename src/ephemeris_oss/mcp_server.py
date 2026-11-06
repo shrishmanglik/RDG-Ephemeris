@@ -148,6 +148,7 @@ MCP_TOOLS: tuple[dict[str, Any], ...] = (
                 "window_minutes": {"type": "number", "default": 15.0},
                 "step_seconds": {"type": "number", "default": 15.0},
                 "ayanamsa": {"type": "string", "default": "lahiri"},
+                "true_node": {"type": "boolean", "default": False},
             },
         },
     },
@@ -360,11 +361,13 @@ def execute_mcp_tool(name: str, arguments: Mapping[str, Any] | None = None) -> d
         win_min = float(args.get("window_minutes", 15.0))
         step_sec = float(args.get("step_seconds", 15.0))
         ayanamsa = str(args.get("ayanamsa", "lahiri"))
+        use_true_node = bool(args.get("true_node", False))
         cusp_report = solve_subsecond_shodashvarga_cusp_transitions(
             jd_ut,
             lat,
             lon,
             ayanamsa=ayanamsa,
+            true_node=use_true_node,
             adapter=adapter,
         )
         rect_report = rectify_birth_time_bayesian(
@@ -374,15 +377,19 @@ def execute_mcp_tool(name: str, arguments: Mapping[str, Any] | None = None) -> d
             window_minutes=win_min,
             step_seconds=step_sec,
             ayanamsa=ayanamsa,
+            true_node=use_true_node,
             adapter=adapter,
         )
         return _to_jsonable(
             {
                 "jd_ut": jd_ut,
                 "iso_utc": jd_to_iso_utc(jd_ut),
+                "node_mode": "true" if use_true_node else "mean",
                 "most_sensitive_varga": cusp_report.most_sensitive_varga,
                 "minimum_ascendant_cusp_margin_seconds": cusp_report.minimum_ascendant_cusp_margin_seconds,
                 "ascendant_varga_margins": cusp_report.ascendant_margins,
+                "planet_varga_margins": cusp_report.planet_margins,
+                "cusp_receipt_sha256": cusp_report.receipt_sha256,
                 "rectified_jd_ut": rect_report.rectified_jd_ut,
                 "rectified_iso_utc": jd_to_iso_utc(rect_report.rectified_jd_ut),
                 "offset_seconds": rect_report.offset_seconds,

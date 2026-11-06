@@ -4,7 +4,7 @@ RDG-Ephemeris (`ephemeris-oss`) is designed to be loaded directly into AI assist
 
 ---
 
-## 1. Install in 10 Seconds
+## 1. Installation & Quick Start
 
 ```bash
 # Install from a local checkout or built wheel
