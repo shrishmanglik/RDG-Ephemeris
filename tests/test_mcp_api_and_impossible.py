@@ -888,6 +888,8 @@ def test_personalized_astro_fingerprint_selected_node_divisional_consistency(tru
 
 def test_public_utc_and_supplied_callback_lunar_interval_straddle() -> None:
     """Verify public UTC positions() and supplied-callback _apparent_state share the lunar 16-day straddle fix."""
+    from datetime import datetime, timedelta, timezone
+    import math
     from ephemeris_oss import Engine
     from ephemeris_oss.engine.numerical_provider import TimeScaleState
 
@@ -899,7 +901,7 @@ def test_public_utc_and_supplied_callback_lunar_interval_straddle() -> None:
         times = compact._provider.utc_time_scales(instant)
         assert abs(times.tdb_jd - target_tdb) < 1.0e-8
 
-        tt_pos = compact.positions_tt(times.tt_jd, ("moon",)).value["moon"]
+        tt_pos = compact.positions_tt(times.tt_jd, ("moon",), jd_tdb=times.tdb_jd, mean_equinox=True).value["moon"]
         utc_pos = compact.positions(instant, ("moon",)).value["moon"]
         diff_deg = abs((tt_pos["longitude_deg"] - utc_pos["longitude_deg"] + 180.0) % 360.0 - 180.0)
         assert diff_deg * 3600.0 < 0.001
