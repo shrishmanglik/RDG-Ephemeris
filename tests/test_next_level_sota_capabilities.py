@@ -326,11 +326,11 @@ def test_human_readable_classical_ephemeris_and_jyotish_academy_compendium() -> 
     )
     assert len(sahams_36) == 36
 
-    # 4. Verify 20-Chapter Human-Readable Master Compendium & Real HTML Book Renderer
+    # 4. Verify 28-Chapter Human-Readable Master Compendium & Real HTML Book Renderer
     comp = generate_human_manual_ephemeris_compendium(2026, 11, latitude_deg=28.6139, longitude_deg=77.2090)
     assert comp.year == 2026
     assert comp.month == 11
-    assert comp.chapter_count == 20
+    assert comp.chapter_count == 28
     assert len(comp.daily_rows) == 30
     assert len(comp.full_sky_rows) == 30
     assert len(comp.receipt_sha256) == 64
@@ -343,7 +343,7 @@ def test_human_readable_classical_ephemeris_and_jyotish_academy_compendium() -> 
     assert "g" in first_day.dinamana_ghati_pala
 
     md = comp.to_markdown()
-    assert len(md) > 150000
+    assert len(md) > 450000
     assert "Chapter 1 — Fundamental Astronomical Constants" in md
     assert "Chapter 2 — Section 1 — Daily Sidereal (*Nirayana*) & Tropical (*Sayana*)" in md
     assert "Chapter 3 — Daily Spherical & Physical Ephemeris Grid" in md
@@ -363,11 +363,157 @@ def test_human_readable_classical_ephemeris_and_jyotish_academy_compendium() -> 
     assert "Chapter 18 — Complete *Ashtakoota* (36-Guna) Compatibility" in md
     assert "Chapter 19 — Complete Classical Parashari Yoga Identification Directory" in md
     assert "Chapter 20 — Section 7 — Pt. Maheshji's Jyotish Academy Step-by-Step Worked Manual Kundali Worksheet" in md
+    assert "Chapter 21 — Topocentric WGS84 Surface-Observer Astrometry" in md
+    assert "Chapter 22 — Synodic Retrograde Phase-Space Loops" in md
+    assert "Chapter 23 — Solar & Lunar Eclipse" in md
+    assert "Chapter 24 — Complete Manual Compendium of All 10 Conditional Parashari *Nakshatra Dashas*" in md
+    assert "Chapter 25 — 5-Level *Vimshottari Prana-Dasha* Sub-Hour Chronometer" in md
+    assert "Chapter 26 — Complete 150-Division *Nadi Amsa*" in md
+    assert "Chapter 27 — Complete 3-Ring *Sudarshana Chakra*" in md
+    assert "Chapter 28 — Golden *Muhurta* Electional Optimization" in md
 
     html_doc = comp.to_html()
     assert "<!DOCTYPE html>" in html_doc
-    assert "Master Table of Contents (20 Chapters)" in html_doc
+    assert "Master Table of Contents (28 Chapters)" in html_doc
     assert "<table class='ephemeris-table'>" in html_doc
     assert "<pre>" not in html_doc
+
+
+def test_frontier_topocentric_relativistic_astrometry_and_flips() -> None:
+    """Verify WGS84 topocentric parallax, atmospheric refraction, relativistic Shapiro/deflection, and varga flip detection."""
+    from ephemeris_oss.frontier_astrodynamics import compute_topocentric_relativistic_astrometry
+
+    rep = compute_topocentric_relativistic_astrometry(
+        2461345.65,
+        latitude_deg=28.6139,
+        longitude_deg=77.2090,
+        elevation_m=225.0,
+        temperature_c=24.0,
+        pressure_hpa=1008.0,
+    )
+    assert len(rep.bodies) == 13
+    assert abs(rep.wgs84_rho_cos_phi_prime) > 0.5
+    moon = rep.bodies["moon"]
+    assert abs(moon.parallax_longitude_shift_arcsec) <= 3800.0
+    assert abs(moon.parallax_longitude_shift_arcsec) > 1.0
+    assert moon.shapiro_delay_microseconds > 0.0
+    assert moon.light_time_seconds > 1.0
+    assert len(rep.receipt_sha256) == 64
+
+
+def test_frontier_synodic_retrograde_loops_and_triple_passes() -> None:
+    """Verify 5-point synodic retrograde loop phase-space solver and natal triple-pass detector."""
+    from ephemeris_oss.frontier_astrodynamics import solve_synodic_retrograde_loops_and_triple_passes
+
+    rep = solve_synodic_retrograde_loops_and_triple_passes(
+        2461300.5,
+        2461480.5,
+        bodies=("mercury",),
+        natal_longitudes_deg={"natal_mercury": 208.0, "natal_sun": 212.0},
+    )
+    assert len(rep.loops) >= 1
+    lp = rep.loops[0]
+    assert lp.shadow_entry_jd_ut <= lp.station_retrograde_jd_ut < lp.station_direct_jd_ut <= lp.shadow_exit_jd_ut
+    assert lp.retrograde_arc_deg > 5.0
+    assert lp.retrograde_duration_days > 10.0
+    assert len(rep.receipt_sha256) == 64
+
+
+def test_frontier_eclipse_natal_sensitivity_scanner() -> None:
+    """Verify Solar/Lunar eclipse local obscuration and natal degree Grahan sensitivity scanner."""
+    from ephemeris_oss.frontier_astrodynamics import evaluate_lifetime_eclipse_natal_sensitivity
+
+    rep = evaluate_lifetime_eclipse_natal_sensitivity(
+        2461041.5,
+        2461406.5,
+        natal_longitudes_deg={"sun": 305.0, "moon": 139.0, "ascendant": 116.0},
+        latitude_deg=28.6139,
+        longitude_deg=77.2090,
+        orb_deg=5.0,
+    )
+    assert len(rep.eclipses) >= 2
+    assert len(rep.natal_hits) >= 1
+    assert len(rep.receipt_sha256) == 64
+
+
+def test_frontier_all_10_conditional_nakshatra_dashas_and_prana_and_nadi_and_muhurta() -> None:
+    """Verify all 10 BPHS conditional Nakshatra Dashas, 5-level Prana Dasha, 150-Nadi Amsa, 3-Ring Sudarshana, and Muhurta Optimizer."""
+    from ephemeris_oss.jyotish.conditional_dashas_and_nadi import (
+        compute_all_10_parashari_nakshatra_dashas,
+        compute_nadi_amsa_and_sudarshana_chakra,
+        compute_vimshottari_5_level_prana_chronometer,
+        solve_golden_muhurta_electional_windows,
+    )
+
+    lons = {
+        "sun": 225.4,
+        "moon": 42.8,
+        "mars": 115.2,
+        "mercury": 218.9,
+        "jupiter": 102.5,
+        "venus": 195.1,
+        "saturn": 344.2,
+        "rahu": 312.0,
+        "ketu": 132.0,
+    }
+    dasha_10 = compute_all_10_parashari_nakshatra_dashas(
+        moon_sidereal_lon_deg=42.8,
+        asc_sidereal_lon_deg=48.2,
+        sun_sidereal_lon_deg=225.4,
+        planet_longitudes_deg=lons,
+        birth_jd=2451545.0,
+        query_jd=2461345.5,
+        is_day_birth=True,
+    )
+    assert len(dasha_10.systems) == 10
+    cycle_totals = {s.system_key: int(round(s.total_cycle_years)) for s in dasha_10.systems}
+    assert cycle_totals["vimshottari"] == 120
+    assert cycle_totals["ashtottari"] == 108
+    assert cycle_totals["shodashottari"] == 116
+    assert cycle_totals["dwadashottari"] == 112
+    assert cycle_totals["panchottari"] == 105
+    assert cycle_totals["shatabdika"] == 100
+    assert cycle_totals["chaturashiti_sama"] == 84
+    assert cycle_totals["dwisaptati_sama"] == 72
+    assert cycle_totals["shat_trimsha_sama"] == 36
+    assert cycle_totals["yogini"] == 36
+    assert len(dasha_10.consensus_ranking) >= 1
+
+    prana_rep = compute_vimshottari_5_level_prana_chronometer(
+        moon_sidereal_lon_deg=42.8,
+        birth_jd=2451545.0,
+        query_jd=2461345.5,
+    )
+    assert prana_rep.mahadasha_lord != ""
+    assert prana_rep.antardasha_lord != ""
+    assert prana_rep.pratyantardasha_lord != ""
+    assert prana_rep.sookshma_lord != ""
+    assert prana_rep.active_prana_lord != ""
+    assert len(prana_rep.prana_windows) == 9
+
+    nadi_sud = compute_nadi_amsa_and_sudarshana_chakra(
+        asc_sidereal_lon_deg=48.2,
+        planet_longitudes_deg=lons,
+        birth_jd=2451545.0,
+        query_jd=2461345.5,
+    )
+    assert 1 <= nadi_sud.ascendant_nadi.nadi_amsa_number_1_to_150 <= 150
+    assert len(nadi_sud.planet_nadis) == 9
+    assert len(nadi_sud.sudarshana_houses) == 12
+    assert len(nadi_sud.sudarshana_dasha_years) == 12
+
+    muh = solve_golden_muhurta_electional_windows(
+        start_jd_ut=2461345.5,
+        end_jd_ut=2461350.5,
+        latitude_deg=28.6139,
+        longitude_deg=77.2090,
+        activity="vyapara_business",
+        natal_moon_lon_deg=42.8,
+        step_minutes=60,
+    )
+    assert len(muh.top_windows) >= 1
+    assert 0.0 <= muh.top_windows[0].score_0_to_100 <= 100.0
+    assert len(muh.receipt_sha256) == 64
+
 
 

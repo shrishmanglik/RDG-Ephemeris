@@ -252,6 +252,10 @@ _ROUTE_TO_TOOL: Mapping[str, str] = {
     "/v1/inverse-date": "solve_inverse_chart_date",
     "/v1/triple-lock": "compute_triple_lock_convergence",
     "/v1/human-ephemeris": "generate_human_manual_ephemeris",
+    "/v1/topocentric-astrometry": "compute_topocentric_astrometry",
+    "/v1/retrograde-loops": "solve_retrograde_loops",
+    "/v1/eclipse-sensitivity": "evaluate_eclipse_sensitivity",
+    "/v1/conditional-dashas-nadi": "compute_conditional_dashas_and_nadi",
 }
 
 

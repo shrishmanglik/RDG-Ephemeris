@@ -44,12 +44,28 @@ from ..engine.conventions import AYANAMSA_CATALOG
 from ..engine.earth_orientation import estimate_delta_t
 from ..engine.receipt import canonical_hash
 from ..engine.stellar_anchors import YOGATARA_30_CATALOG
+from ..frontier_astrodynamics import (
+    _rozenberg_air_mass,
+    _saemundsson_refraction_arcsec,
+    compute_topocentric_relativistic_astrometry,
+    evaluate_lifetime_eclipse_natal_sensitivity,
+    solve_synodic_retrograde_loops_and_triple_passes,
+)
 from ..impossible_astrology import (
     evaluate_yogatara_stellar_bheda_and_visibility,
     solve_krantisamya_mahapata_windows,
 )
 from ..jyotish import compute_vedic_chart_analysis
 from ..jyotish.ashtakavarga import BAV_BENEFIC_HOUSES
+from ..jyotish.conditional_dashas_and_nadi import (
+    BPHS_10_NAKSHATRA_DASHAS,
+    NADI_AMSA_BASE_NAMES_15,
+    NADI_AMSA_DECADE_QUALITIES_10,
+    compute_all_10_parashari_nakshatra_dashas,
+    compute_nadi_amsa_and_sudarshana_chakra,
+    compute_vimshottari_5_level_prana_chronometer,
+    solve_golden_muhurta_electional_windows,
+)
 from ..jyotish.dasha import (
     ASHTOTTARI_RULERS as ASHTOTTARI_LORDS,
     ASHTOTTARI_YEARS,
@@ -262,7 +278,7 @@ class HumanManualEphemerisCompendium:
     receipt_sha256: str
     full_sky_rows: tuple[Mapping[str, FullAstronomicalBodyEphemeris], ...] = ()
     phenomena_summary: Mapping[str, Any] | None = None
-    chapter_count: int = 20
+    chapter_count: int = 28
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -321,7 +337,22 @@ class HumanManualEphemerisCompendium:
             "worked_example": {
                 k: v
                 for k, v in self.worked_example.items()
-                if k not in ("vishesha_report", "upagrahas_report", "sphutas_report", "kundali_bundle", "sahams_report", "kalachakra_report")
+                if k
+                not in (
+                    "vishesha_report",
+                    "upagrahas_report",
+                    "sphutas_report",
+                    "kundali_bundle",
+                    "sahams_report",
+                    "kalachakra_report",
+                    "frontier_topo_report",
+                    "frontier_retro_report",
+                    "frontier_eclipse_report",
+                    "frontier_dashas_report",
+                    "frontier_prana_report",
+                    "frontier_nadi_report",
+                    "frontier_muhurta_report",
+                )
             },
             "receipt": dict(self.receipt),
             "receipt_sha256": self.receipt_sha256,
@@ -605,6 +636,68 @@ def generate_human_manual_ephemeris_compendium(
         worked_houses.ascendant_deg,
         is_day_birth=True,
     )
+    natal_lons_worked = {
+        p: ad.calc_ut(jd_worked_ut, p, sidereal=True, ayanamsa=ayanamsa).longitude_deg % 360.0
+        for p in ("sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn", "rahu", "ketu")
+    }
+    frontier_topo_worked = compute_topocentric_relativistic_astrometry(
+        jd_worked_ut,
+        lat,
+        lon,
+        elevation_m=491.0,
+        temperature_c=24.0,
+        pressure_hpa=1008.0,
+        ayanamsa=ayanamsa,
+        adapter=ad,
+    )
+    frontier_retro_worked = solve_synodic_retrograde_loops_and_triple_passes(
+        daily_rows[0].jd_reference_ut - 180.0,
+        daily_rows[-1].jd_reference_ut + 180.0,
+        natal_longitudes_deg={**natal_lons_worked, "ascendant": worked_houses.ascendant_deg},
+        ayanamsa=ayanamsa,
+        adapter=ad,
+    )
+    frontier_eclipse_worked = evaluate_lifetime_eclipse_natal_sensitivity(
+        daily_rows[0].jd_reference_ut - 300.0,
+        daily_rows[-1].jd_reference_ut + 120.0,
+        natal_longitudes_deg={**natal_lons_worked, "ascendant": worked_houses.ascendant_deg},
+        latitude_deg=lat,
+        longitude_deg=lon,
+        orb_deg=6.0,
+        ayanamsa=ayanamsa,
+        adapter=ad,
+    )
+    frontier_dashas_worked = compute_all_10_parashari_nakshatra_dashas(
+        moon_exact_lon,
+        sun_w_lon,
+        worked_houses.ascendant_deg,
+        natal_lons_worked,
+        jd_worked_ut,
+        is_day_birth=True,
+        query_jd=jd_worked_ut + 365.2425 * 24.0,
+    )
+    frontier_prana_worked = compute_vimshottari_5_level_prana_chronometer(
+        moon_exact_lon,
+        jd_worked_ut,
+        jd_worked_ut + 365.2425 * 24.0,
+    )
+    frontier_nadi_worked = compute_nadi_amsa_and_sudarshana_chakra(
+        worked_houses.ascendant_deg,
+        natal_lons_worked,
+        jd_worked_ut,
+        query_jd=jd_worked_ut + 365.2425 * 24.0,
+    )
+    frontier_muhurta_worked = solve_golden_muhurta_electional_windows(
+        daily_rows[0].jd_reference_ut,
+        daily_rows[min(6, len(daily_rows) - 1)].jd_reference_ut,
+        latitude_deg=lat,
+        longitude_deg=lon,
+        natal_moon_lon_deg=moon_exact_lon,
+        step_minutes=120,
+        top_k=15,
+        ayanamsa=ayanamsa,
+        adapter=ad,
+    )
 
     worked_example = {
         "civil_date": row_d0.civil_date,
@@ -625,6 +718,13 @@ def generate_human_manual_ephemeris_compendium(
         "kundali_bundle": kundali_worked,
         "sahams_report": sahams_worked,
         "kalachakra_report": kalachakra_worked,
+        "frontier_topo_report": frontier_topo_worked,
+        "frontier_retro_report": frontier_retro_worked,
+        "frontier_eclipse_report": frontier_eclipse_worked,
+        "frontier_dashas_report": frontier_dashas_worked,
+        "frontier_prana_report": frontier_prana_worked,
+        "frontier_nadi_report": frontier_nadi_worked,
+        "frontier_muhurta_report": frontier_muhurta_worked,
     }
 
     receipt_payload = {
@@ -632,7 +732,7 @@ def generate_human_manual_ephemeris_compendium(
         "version": __version__,
         "year": yr,
         "month": mo,
-        "chapter_count": 20,
+        "chapter_count": 28,
         "latitude_deg": round(lat, 6),
         "longitude_deg": round(lon, 6),
         "ayanamsa": ayanamsa,
@@ -657,7 +757,7 @@ def generate_human_manual_ephemeris_compendium(
         receipt_sha256=receipt_sha256,
         full_sky_rows=tuple(full_sky_rows),
         phenomena_summary=phenomena_summary,
-        chapter_count=20,
+        chapter_count=28,
     )
 
 
@@ -2008,6 +2108,438 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
         + f" *(all `{len(sah_rep)}` Sahams computed deterministically)*."
     )
     lines.append("")
+
+    # =========================================================================
+    # CHAPTER 21: Topocentric Parallax, Atmospheric Refraction, & Relativistic Astrometry
+    # =========================================================================
+    lines.append("## Chapter 21 — Topocentric WGS84 Surface-Observer Astrometry, Lunar Parallax (`1°02'`), Atmospheric Refraction, Air Mass, Doppler Velocity, & Relativistic Shapiro Delay")
+    lines.append("")
+    lines.append(
+        "> **Why Topocentric & Relativistic Astrometry Matters:** Classical *Surya Siddhanta* (*Lambana* & *Nati* chapters) "
+        "and modern IAU observatory physics agree that an observer stands on the rotating, oblate surface of the Earth (`r ≈ 6,378.137 km`), "
+        "not at Earth's center. For the Moon, surface parallax shifts apparent sidereal longitude by up to **`1° 02' 00\"` (`3,720\"`)** — "
+        "enough to flip `D9 Navamsa`, `D60 Shashtiamsa`, `Nakshatra Pada`, and `KP 249 Sub-Lords`."
+    )
+    lines.append("")
+    topo_rep = we["frontier_topo_report"]
+    lines.append("### 21.1 Worked Case Study: 13-Body Geocentric vs Topocentric & Relativistic Astrometry Table")
+    lines.append("")
+    lines.append("| Body | Geocentric Sidereal (`DMS`) | Topocentric Sidereal (`DMS`) | Parallax Shift (`Δλ\" / Δβ\"`) | Azimuth / True Alt / Refracted Alt | Air Mass $X$ | Doppler $\\dot{r}$ (`km/s`) | Light-Time $\\tau$ (`s`) | Shapiro $\\Delta t$ (`μs`) | GR Defl (`mas`) | `D9 / D60 / KP` Flip Audit |")
+    lines.append("|---|---|---|---|---|---|---|---|---|---|---|")
+    for b_k, tb in topo_rep.bodies.items():
+        flip_tag = (
+            f"D9:{'FLIP' if tb.d9_navamsa_flipped else 'OK'}({tb.geocentric_d9_sign}->{tb.topocentric_d9_sign}) "
+            f"D60:{'FLIP' if tb.d60_shashtiamsa_flipped else 'OK'}({tb.geocentric_d60_index}->{tb.topocentric_d60_index}) "
+            f"KP:{'FLIP' if tb.kp_sub_lord_flipped else 'OK'}({tb.geocentric_kp_sub_lord}->{tb.topocentric_kp_sub_lord})"
+        )
+        lines.append(
+            f"| **{tb.display_name}** | `{format_classical_rashi_dms(tb.geocentric_sidereal_lon_deg)}` | **`{tb.topocentric_classical_dms}`** | "
+            f"`{tb.parallax_longitude_shift_arcsec:+.2f}\" / {tb.parallax_latitude_shift_arcsec:+.2f}\"` | "
+            f"`Az {tb.azimuth_deg:.1f}° / Alt {tb.geometric_altitude_deg:+.2f}° -> {tb.apparent_altitude_deg:+.2f}° (+{tb.refraction_correction_arcsec:.1f}\")` | "
+            f"`{tb.air_mass_rozenberg:.2f}` | `{tb.radial_velocity_km_s:+.3f}` | `{tb.light_time_seconds:.2f}s` | "
+            f"`{tb.shapiro_delay_microseconds:.2f}μs` | `{tb.solar_gravitational_deflection_mas:.2f}` | `{flip_tag}` |"
+        )
+    lines.append("")
+
+    lines.append("### 21.2 Daily Geocentric vs Topocentric Moon & Sun Parallax Almanac Across the Month (`05:30 IST`)")
+    lines.append("")
+    lines.append("| Date | Local Sidereal Time | Geocentric Moon (`DMS`) | Topocentric Moon (`DMS`) | Lunar Parallax Shift (`Δλ\" / Δβ\"`) | Moon Alt / Azimuth / Refraction | Geocentric vs Topocentric `D9 / D60 / KP-Sub` Audit |")
+    lines.append("|---|---|---|---|---|---|---|")
+    for d_row in comp.daily_rows:
+        t_day = compute_topocentric_relativistic_astrometry(
+            d_row.jd_reference_ut,
+            comp.observer_latitude_deg,
+            comp.observer_longitude_deg,
+            elevation_m=491.0,
+            ayanamsa=comp.ayanamsa_mode,
+            adapter=ad,
+        )
+        tm = t_day.bodies["moon"]
+        audit_s = (
+            f"D9: {tm.geocentric_d9_sign}->{tm.topocentric_d9_sign} | "
+            f"D60: #{tm.geocentric_d60_index}->#{tm.topocentric_d60_index} | "
+            f"KP: {tm.geocentric_kp_sub_lord}->{tm.topocentric_kp_sub_lord}"
+        )
+        lines.append(
+            f"| `{d_row.civil_date}` | `{d_row.local_sidereal_time_hms}` | `{format_classical_rashi_dms(tm.geocentric_sidereal_lon_deg)}` | "
+            f"**`{tm.topocentric_classical_dms}`** | **`{tm.parallax_longitude_shift_arcsec:+.1f}\" / {tm.parallax_latitude_shift_arcsec:+.1f}\"`** | "
+            f"`Alt {tm.apparent_altitude_deg:+.1f}° / Az {tm.azimuth_deg:.1f}° (Refr +{tm.refraction_correction_arcsec:.1f}\")` | `{audit_s}` |"
+        )
+    lines.append("")
+
+    lines.append("### 21.3 Saemundsson-Bennett Atmospheric Refraction & Rozenberg Optical Air Mass Master Table (`-1°` to `90°` Altitude)")
+    lines.append("")
+    lines.append("| True Altitude $h_0$ | Std Refraction (`15°C, 1013 hPa`) | Hot Tropical (`35°C, 1005 hPa`) | Cold Winter (`0°C, 1020 hPa`) | High Altitude (`2200m, 780 hPa`) | Rozenberg Optical Air Mass $X(z)$ | Extinction Loss (`Δmag`, $k=0.20$) |")
+    lines.append("|---|---|---|---|---|---|---|")
+    for h_deg in (-1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 60.0, 70.0, 80.0, 90.0):
+        r_std = _saemundsson_refraction_arcsec(h_deg, 15.0, 1013.25)
+        r_hot = _saemundsson_refraction_arcsec(h_deg, 35.0, 1005.0)
+        r_cold = _saemundsson_refraction_arcsec(h_deg, 0.0, 1020.0)
+        r_high = _saemundsson_refraction_arcsec(h_deg, 10.0, 780.0)
+        am_x = _rozenberg_air_mass(h_deg + r_std / 3600.0)
+        ext_mag = 0.20 * am_x
+        lines.append(
+            f"| **`{h_deg:+5.1f}°`** | `{r_std:6.1f}\"` (`{r_std/60.0:4.2f}'`) | `{r_hot:6.1f}\"` | `{r_cold:6.1f}\"` | `{r_high:6.1f}\"` | **`{am_x:5.2f}x`** | `+{ext_mag:4.2f} mag` |"
+        )
+    lines.append("")
+
+    # =========================================================================
+    # CHAPTER 22: Synodic Retrograde Phase-Space Loops & Triple-Pass Transit Solver
+    # =========================================================================
+    lines.append("## Chapter 22 — Synodic Retrograde Phase-Space Loops (*Vakri / Vakra-Tyaga*), Perigee Brilliance, & 360° Natal Triple-Pass Transit Matrix")
+    lines.append("")
+    retro_rep = we["frontier_retro_report"]
+    lines.append("### 22.1 Complete 5-Point Synodic Retrograde Phase-Space Loops (±180 Days Around Reference Epoch)")
+    lines.append("")
+    lines.append("| Body | Pre-Shadow Entry | First Station $S_1$ (*Vakri*) | Minimum Distance / Opposition Peak | Second Station $S_2$ (*Margi*) | Post-Shadow Exit | Retrograde Arc Width | Loop Duration (`Days`) |")
+    lines.append("|---|---|---|---|---|---|---|---|")
+    for lp in retro_rep.loops:
+        lines.append(
+            f"| **{lp.body_key.capitalize()}** | `{lp.shadow_entry_iso_utc or '—'}` | "
+            f"**`{lp.station_retrograde_iso_utc}`** (`{lp.station_retrograde_dms}`) | "
+            f"`{lp.minimum_distance_iso_utc}` (`{lp.minimum_distance_au:.4f} AU`, `{lp.peak_visual_magnitude:+.2f} mag`) | "
+            f"**`{lp.station_direct_iso_utc}`** (`{lp.station_direct_dms}`) | "
+            f"`{lp.shadow_exit_iso_utc or '—'}` | **`{lp.retrograde_arc_deg:.2f}°`** | **`{lp.retrograde_duration_days:.2f} d`** |"
+        )
+    lines.append("")
+
+    lines.append("### 22.2 Complete 360-Degree Zodiacal Retrograde Triple-Pass, Divisional (`D9/D10/D60`), & `KP` Master Reference Table (`0°` to `359°`)")
+    lines.append("")
+    lines.append("| Zodiacal Degree (`Nirayana`) | Classical `Rashi DMS` | `Nakshatra & Pada` | `D9 Navamsa` | `D10 Dasamsa` | `D60 Shashtiamsa` | `KP Sign / Star / Sub / Sub-Sub` | Active Retrograde Shadow Zone Status (±180d Window) |")
+    lines.append("|---|---|---|---|---|---|---|---|")
+    for deg_step in range(0, 360):
+        lon_v = float(deg_step)
+        nk_v = nakshatra_position(lon_v)
+        d9_v = varga_sign(lon_v, "D9").sign_name
+        d10_v = varga_sign(lon_v, "D10").sign_name
+        d60_v = varga_sign(lon_v, "D60").sign_name
+        kp_v = kp_coordinate_lords(lon_v)
+        in_loops: list[str] = []
+        for lp in retro_rep.loops:
+            s1_l = lp.station_retrograde_lon_deg
+            s2_l = lp.station_direct_lon_deg
+            arc_w = (s1_l - s2_l) % 360.0
+            rel_d = (s1_l - lon_v) % 360.0
+            if 0.0 < arc_w < 40.0 and rel_d <= arc_w:
+                in_loops.append(f"**{lp.body_key.capitalize()} Triple-Pass Zone** (`{lp.station_direct_dms}`..`{lp.station_retrograde_dms}`)")
+        zone_str = "; ".join(in_loops) if in_loops else "Single Direct Transit Pass"
+        lines.append(
+            f"| **`{deg_step:03d}° 00'`** | `{format_classical_rashi_dms(lon_v)}` | *{nk_v.name}* P{nk_v.pada} ({nk_v.vimshottari_ruler}) | "
+            f"**{d9_v}** | {d10_v} | {d60_v} | `{kp_v.sign_lord}/{kp_v.star_lord}/{kp_v.sub_lord}/{kp_v.sub_sub_lord}` | {zone_str} |"
+        )
+    lines.append("")
+
+    # =========================================================================
+    # CHAPTER 23: Solar & Lunar Eclipse Local Obscuration & Natal Grahan Sensitivity
+    # =========================================================================
+    lines.append("## Chapter 23 — Solar & Lunar Eclipse (*Surya & Chandra Grahan*) Local Obscuration, Nodal Limits, & Natal *Grahan* Sensitivity Compendium")
+    lines.append("")
+    ecl_rep = we["frontier_eclipse_report"]
+    lines.append("### 23.1 Solar & Lunar Eclipses Around Epoch & Local Observer Obscuration")
+    lines.append("")
+    lines.append("| Eclipse Category | Subtype | Maximum Eclipse (`UTC`) | Sidereal Longitude (`DMS`) | Sign (`Rashi`) | `Nakshatra & Pada` | Local Visible? | Local Obscuration Fraction |")
+    lines.append("|---|---|---|---|---|---|---|---|")
+    for ec in ecl_rep.eclipses:
+        lines.append(
+            f"| **{ec.eclipse_Category}** | **{ec.eclipse_subtype}** | `{ec.maximum_iso_utc}` | **`{ec.sidereal_classical_dms}`** | "
+            f"{ec.rashi_name} | *{ec.nakshatra_name}* P{ec.pada} | `{'YES' if ec.local_visible else 'No'}` | **`{ec.local_obscuration_fraction*100.0:.1f}%`** |"
+        )
+    lines.append("")
+    if ecl_rep.natal_hits:
+        lines.append("### 23.2 Worked Case Study: Natal *Grahan* Sensitivity Hits")
+        lines.append("")
+        lines.append("| Natal Point | Natal Longitude | Eclipse Type & Date (`UTC`) | Eclipse Longitude (`DMS`) | Aspect Type | Orb (`deg`) | Impact Severity |")
+        lines.append("|---|---|---|---|---|---|---|")
+        for nh in ecl_rep.natal_hits:
+            lines.append(
+                f"| **{nh.natal_point_name}** | `{nh.natal_sidereal_dms}` | **{nh.eclipse_subtype}** (`{nh.eclipse_iso_utc}`) | "
+                f"`{nh.eclipse_sidereal_dms}` | **{nh.contact_type}** | `{nh.orb_deg:.2f}°` | **`{nh.sensitivity_score_0_to_100:.1f} / 100`** |"
+            )
+        lines.append("")
+
+    # =========================================================================
+    # CHAPTER 24: All 10 Conditional Parashari Nakshatra Dashas & Multi-Dasha Synchronicity
+    # =========================================================================
+    lines.append("## Chapter 24 — Complete Manual Compendium of All 10 Conditional Parashari *Nakshatra Dashas* (BPHS Ch. 46) & Multi-Dasha Synchronicity")
+    lines.append("")
+    lines.append(
+        "> **Unabridged BPHS Chapter 46 Conditional Nakshatra Dasha Suite:** Beyond universal *Vimshottari* (`120y`), "
+        "Maharishi Parashara prescribes nine conditional *Nakshatra Dashas* (*Ashtottari 108y, Shodashottari 116y, "
+        "Dwadashottari 112y, Panchottari 105y, Shatabdika 100y, Chaturashiti-Sama 84y, Dwisaptati-Sama 72y, "
+        "Shat-Trimsha-Sama 36y, and Yogini 36y*). Below is the complete 27-Nakshatra Opening Lord & Duration Master Matrix."
+    )
+    lines.append("")
+    lines.append("### 24.1 Master 27-Nakshatra Opening Lord & Full Duration Lookup Table Across All 10 BPHS Nakshatra Dasha Systems")
+    lines.append("")
+    lines.append("| `#` | Nakshatra (`0°..360°`) | Vimshottari (`120y`) | Ashtottari (`108y`) | Shodashottari (`116y`) | Dwadashottari (`112y`) | Panchottari (`105y`) | Shatabdika (`100y`) | Chaturashiti (`84y`) | Dwisaptati (`72y`) | Shat-Trimsha (`36y`) | Yogini (`36y`) |")
+    lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
+    for nk_i, nk_name in enumerate(NAKSHATRA_NAMES):
+        row_cells: list[str] = [f"`#{nk_i+1:02d}`", f"**{nk_name}**"]
+        for spec in BPHS_10_NAKSHATRA_DASHAS:
+            s_k = spec["key"]
+            lords_t = spec["lords"]
+            yrs_t = spec["years"]
+            st_n = int(spec["start_nakshatra_index"])
+            dv = int(spec["divisor"])
+            if s_k == "vimshottari":
+                o_i = nk_i % 9
+            elif s_k == "dwadashottari":
+                o_i = ((st_n - nk_i) % 27) % dv
+            elif s_k == "yogini":
+                o_i = (nk_i + 3) % 8
+            else:
+                o_i = ((nk_i - st_n) % 27) % dv
+            row_cells.append(f"`{lords_t[o_i]} ({int(yrs_t[o_i])}y)`")
+        lines.append("| " + " | ".join(row_cells) + " |")
+    lines.append("")
+
+    dashas_rep = we["frontier_dashas_report"]
+    lines.append("### 24.2 Worked Case Study: All 10 BPHS Conditional Dasha Eligibility & Active Period Synchronicity")
+    lines.append("")
+    lines.append("| Dasha System | Cycle (`Years`) | BPHS Conditional Eligibility | Eligibility Reason | Opening Lord & Balance (`Years`) | Active Mahadasha (`+24y`) | Active Antardasha (`+24y`) |")
+    lines.append("|---|---|---|---|---|---|---|")
+    for sys_e in dashas_rep.systems:
+        lines.append(
+            f"| **{sys_e.title}** | `{sys_e.total_cycle_years:.0f}y` | **`{'ELIGIBLE' if sys_e.is_conditionally_eligible else 'Secondary'}`** | "
+            f"{sys_e.eligibility_reason} | `{sys_e.opening_lord}` (`{sys_e.birth_balance_years:.2f}y`) | "
+            f"**`{sys_e.active_mahadasha_lord}`** | **`{sys_e.active_antardasha_lord}`** |"
+        )
+    lines.append("")
+    lines.append("### 24.3 Worked Multi-Dasha Consensus Ranking")
+    lines.append("")
+    lines.append("| Rank | Graha | Active Mahadasha Count | Active Antardasha Count | Eligible-System MD Count | Consensus Score (`0..100`) | Supporting Dasha Systems |")
+    lines.append("|---|---|---|---|---|---|---|")
+    for rk_i, c_item in enumerate(dashas_rep.consensus_ranking, start=1):
+        lines.append(
+            f"| `#{rk_i}` | **{c_item.planet}** | `{c_item.active_mahadasha_count}` | `{c_item.active_antardasha_count}` | "
+            f"`{c_item.eligible_system_mahadasha_count}` | **`{c_item.consensus_score_0_to_100:.1f}`** | `{', '.join(c_item.supporting_systems)}` |"
+        )
+    lines.append("")
+
+    # =========================================================================
+    # CHAPTER 25: 5-Level Vimshottari Prana-Dasha Sub-Hour Chronometer
+    # =========================================================================
+    lines.append("## Chapter 25 — 5-Level *Vimshottari Prana-Dasha* Sub-Hour Chronometer (*Mahadasha -> Antardasha -> Pratyantardasha -> Sookshma -> Prana*)")
+    lines.append("")
+    lines.append("### 25.1 Complete 81-Row *Mahadasha × Antardasha* Proportional Sub-Period Ready Reckoner (Exact Days, Hours, & Self-Sub *Pratyantardasha / Sookshma / Prana* Durations)")
+    lines.append("")
+    lines.append("| Mahadasha (`MD`) | Antardasha (`AD`) | `MD × AD` Duration (`Years`) | Exact Solar Days (`365.2425d/y`) | Self-`PD` Duration (`Days`) | Self-`Sookshma` Duration (`Hours`) | Self-`Prana` Duration (`Minutes`) |")
+    lines.append("|---|---|---|---|---|---|---|")
+    for md_l in VIMSHOTTARI_LORDS:
+        md_y = float(VIMSHOTTARI_YEARS[md_l])
+        for ad_l in VIMSHOTTARI_LORDS:
+            ad_y = float(VIMSHOTTARI_YEARS[ad_l])
+            w_ad = ad_y / 120.0
+            ad_yrs = md_y * w_ad
+            ad_days = ad_yrs * 365.2425
+            pd_self_days = ad_days * w_ad
+            sd_self_hours = pd_self_days * w_ad * 24.0
+            pr_self_mins = sd_self_hours * w_ad * 60.0
+            lines.append(
+                f"| **{md_l}** (`{int(md_y)}y`) | **{ad_l}** (`{int(ad_y)}y`) | `{ad_yrs:.4f}y` | **`{ad_days:.2f} d`** | "
+                f"`{pd_self_days:.2f} d` | `{sd_self_hours:.2f} h` | **`{pr_self_mins:.2f} min`** |"
+            )
+    lines.append("")
+
+    prana_rep = we["frontier_prana_report"]
+    lines.append(
+        f"### 25.2 Worked Case Study: 5-Level *Prana-Dasha* Sub-Hour Chronometer at `{prana_rep.query_iso_utc}`\n\n"
+        f"- **Level 1 (*Mahadasha*):** **{prana_rep.mahadasha_lord}** (`{prana_rep.mahadasha_start_iso}` to `{prana_rep.mahadasha_end_iso}`)\n"
+        f"- **Level 2 (*Antardasha*):** **{prana_rep.antardasha_lord}** (`{prana_rep.antardasha_start_iso}` to `{prana_rep.antardasha_end_iso}`)\n"
+        f"- **Level 3 (*Pratyantardasha*):** **{prana_rep.pratyantardasha_lord}** (`{prana_rep.pratyantardasha_start_iso}` to `{prana_rep.pratyantardasha_end_iso}`)\n"
+        f"- **Level 4 (*Sookshma Dasha*):** **{prana_rep.sookshma_lord}** (`{prana_rep.sookshma_start_iso}` to `{prana_rep.sookshma_end_iso}`, Duration = `{prana_rep.sookshma_duration_hours:.2f} hours`)\n"
+        f"- **Level 5 (*Active Prana Dasha*):** **`{prana_rep.active_prana_lord}`**"
+    )
+    lines.append("")
+    lines.append("| Prana Order | Level-5 *Prana Dasha* Lord | Start (`UTC`) | End (`UTC`) | Duration (`Minutes`) | Active at Query? |")
+    lines.append("|---|---|---|---|---|---|")
+    for pr_i, pw in enumerate(prana_rep.prana_windows, start=1):
+        lines.append(
+            f"| `#{pr_i}` | **{pw.prana_lord}** | `{pw.start_iso_utc}` | `{pw.end_iso_utc}` | **`{pw.duration_minutes:.2f} min`** | `{'ACTIVE' if pw.is_active_at_query else '—'}` |"
+        )
+    lines.append("")
+
+    # =========================================================================
+    # CHAPTER 26: Complete 150-Division Nadi Amsa (Deva Keralam) Master Compendium
+    # =========================================================================
+    lines.append("## Chapter 26 — Complete 150-Division *Nadi Amsa* (`0°12'` *Chandra Kala Nadi / Deva Keralam*) Master Reckoning Table (`#001` to `#150`) & Birth-Time Rectification")
+    lines.append("")
+    lines.append(
+        "> **150 *Nadi Amsas* per Rashi (`1,800` Across `360°`):** Each `30°` sign is divided into `150` micro-slices of **`0° 12' 00\"`** (`720\"`). "
+        "In *Chara* (Movable: Mesha, Karka, Tula, Makara) signs, numbering runs directly `1..150`; in *Sthira* (Fixed: Vrishabha, Simha, Vrishchika, Kumbha) "
+        "signs, numbering reverses `150..1`; in *Dwiswabhava* (Dual: Mithuna, Kanya, Dhanu, Meena) signs, numbering begins at the midpoint `76..150` followed by `1..75`."
+    )
+    lines.append("")
+    lines.append("### 26.1 Unabridged 150-*Nadi Amsa* (`0°00'` to `30°00'`) Master Lookup Table")
+    lines.append("")
+    lines.append("| Slice `#` | Degree Span in Sign (`0°..30°`) | *Chara* (Movable) Nadi `#` & Name | *Sthira* (Fixed) Nadi `#` & Name | *Dwiswabhava* (Dual) Nadi `#` & Name | Nadi Planetary Ruler | Lagna Rectification Window (`Seconds`) |")
+    lines.append("|---|---|---|---|---|---|---|")
+    for sl_i in range(1, 151):
+        d_start = (sl_i - 1) * 0.2
+        d_end = sl_i * 0.2
+        d_s_deg = int(d_start)
+        d_s_min = int(round((d_start - d_s_deg) * 60.0))
+        d_e_deg = int(d_end)
+        d_e_min = int(round((d_end - d_e_deg) * 60.0))
+        span_s = f"`{d_s_deg:02d}° {d_s_min:02d}' .. {d_e_deg:02d}° {d_e_min:02d}'`"
+
+        n_chara = sl_i
+        n_sthira = 151 - sl_i
+        n_dwi = (sl_i + 75) if sl_i <= 75 else (sl_i - 75)
+
+        def _nadi_label(n_num: int) -> str:
+            b_nm = NADI_AMSA_BASE_NAMES_15[(n_num - 1) % 15]
+            q_nm = NADI_AMSA_DECADE_QUALITIES_10[(n_num - 1) // 15]
+            return f"`#{n_num:03d}` **{b_nm}** *({q_nm})*"
+
+        ruler_c = VIMSHOTTARI_LORDS[(n_chara - 1) % 9]
+        lines.append(
+            f"| **`#{sl_i:03d}`** | {span_s} | {_nadi_label(n_chara)} | {_nadi_label(n_sthira)} | {_nadi_label(n_dwi)} | **{ruler_c}** | `48.0 sec` (`0°12'` Lagna shift) |"
+        )
+    lines.append("")
+
+    nadi_rep = we["frontier_nadi_report"]
+    lines.append("### 26.2 Worked Case Study: Natal 150-*Nadi Amsa* Coordinates & Exact Seconds to Boundary Flip")
+    lines.append("")
+    lines.append("| Point | Sidereal Longitude (`DMS`) | Sign & Modality | Nadi `#` (`1..150`) | Zodiacal Nadi (`1..1800`) | Classical *Deva Keralam* Nadi Name | Nadi Ruler | Seconds to Prev / Next Nadi Flip |")
+    lines.append("|---|---|---|---|---|---|---|---|")
+    for nc in (nadi_rep.ascendant_nadi, *nadi_rep.planet_nadis.values()):
+        lines.append(
+            f"| **{nc.point_name}** | `{nc.classical_dms}` | {nc.rashi_name} *({nc.sign_modality})* | **`#{nc.nadi_amsa_number_1_to_150:03d}`** | "
+            f"`#{nc.zodiacal_nadi_index_1_to_1800:04d}` | **{nc.nadi_amsa_name}** | `{nc.nadi_ruler}` | "
+            f"`-{nc.seconds_of_birth_time_to_prev_nadi:.1f}s / +{nc.seconds_of_birth_time_to_next_nadi:.1f}s` |"
+        )
+    lines.append("")
+
+    lines.append("### 26.3 Complete 360-Degree Zodiacal *Deva Keralam Nadi Amsa* (`1..1800`) & *Shashtiamsa* (`D60`) Deity Cross-Reference Encyclopedia (`0°` to `359°`)")
+    lines.append("")
+    lines.append("| Zodiacal Degree | `Rashi & Degree` | Sign Modality | Slice (`1..150`) | Modality-Adjusted Nadi `#` | Zodiacal Nadi (`1..1800`) | *Deva Keralam* Nadi Name & Quality | `D60` *Shashtiamsa* `#` & Deity |")
+    lines.append("|---|---|---|---|---|---|---|---|")
+    for deg_z in range(0, 360):
+        r_z = deg_z // 30
+        d_in_s = deg_z % 30
+        sl_z = d_in_s * 5 + 1
+        if (r_z % 3) == 0:
+            mod_z = "Chara (Direct)"
+            n_z = sl_z
+        elif (r_z % 3) == 1:
+            mod_z = "Sthira (Reverse)"
+            n_z = 151 - sl_z
+        else:
+            mod_z = "Dwiswabhava (Mid)"
+            n_z = (sl_z + 75) if sl_z <= 75 else (sl_z - 75)
+        zn_idx = r_z * 150 + n_z
+        b_nm_z = NADI_AMSA_BASE_NAMES_15[(n_z - 1) % 15]
+        q_nm_z = NADI_AMSA_DECADE_QUALITIES_10[(n_z - 1) // 15]
+        sh_idx = min(59, d_in_s * 2)
+        sh_entry = SHASHTIAMSA_CATALOG[sh_idx]
+        lines.append(
+            f"| **`{deg_z:03d}° 00'`** | **{RASHI_NAMES[r_z]}** `{d_in_s:02d}° 00'` | {mod_z} | `Slice #{sl_z:03d}` | "
+            f"**`Nadi #{n_z:03d}`** | `#{zn_idx:04d} / 1800` | **{b_nm_z}** *({q_nm_z})* | `D60 #{sh_idx+1:02d}` **{sh_entry[1]}** *({sh_entry[2]})* |"
+        )
+    lines.append("")
+
+    # =========================================================================
+    # CHAPTER 27: Complete 3-Ring Sudarshana Chakra (BPHS Ch. 67) & 100-Year Progression
+    # =========================================================================
+    lines.append("## Chapter 27 — Complete 3-Ring *Sudarshana Chakra* (BPHS Ch. 67: *Lagna, Chandra, & Surya* Wheels) & 100-Year Cyclic Progression Table")
+    lines.append("")
+    lines.append("### 27.1 Worked Case Study: 12-House 3-Ring *Sudarshana Chakra* Synthesis Matrix")
+    lines.append("")
+    lines.append("| Bhava (`1..12`) | Inner Ring: *Lagna* Sign & Lord | *Lagna* Occupants | Middle Ring: *Chandra* Sign & Lord | *Chandra* Occupants | Outer Ring: *Surya* Sign & Lord | *Surya* Occupants | 3-Ring Convergence Score (`0..100`) |")
+    lines.append("|---|---|---|---|---|---|---|---|")
+    for sh_r in nadi_rep.sudarshana_houses:
+        lines.append(
+            f"| **Bhava `{sh_r.house_number:02d}`** | **{sh_r.lagna_ring_sign}** ({sh_r.lagna_ring_lord}) | `{', '.join(sh_r.lagna_ring_occupants) or '—'}` | "
+            f"**{sh_r.chandra_ring_sign}** ({sh_r.chandra_ring_lord}) | `{', '.join(sh_r.chandra_ring_occupants) or '—'}` | "
+            f"**{sh_r.surya_ring_sign}** ({sh_r.surya_ring_lord}) | `{', '.join(sh_r.surya_ring_occupants) or '—'}` | **`{sh_r.triple_frame_convergence_score_0_to_100:.1f}`** |"
+        )
+    lines.append("")
+
+    lines.append("### 27.2 Complete 100-Year *Sudarshana Chakra* Annual Progression Table (Ages `1` to `100`)")
+    lines.append("")
+    lines.append("| AgeYear | Progressed House (`Bhava`) | Progressed *Lagna* Sign & Lord | Progressed *Chandra* Sign & Lord | Progressed *Surya* Sign & Lord | Annual 3-Ring Convergence Score |")
+    lines.append("|---|---|---|---|---|---|")
+    for age_y in range(1, 101):
+        h_idx = (age_y - 1) % 12
+        sh_row = nadi_rep.sudarshana_houses[h_idx]
+        lines.append(
+            f"| **Year `{age_y:03d}`** (Age {age_y-1}..{age_y}) | **Bhava `{sh_row.house_number:02d}`** | **{sh_row.lagna_ring_sign}** ({sh_row.lagna_ring_lord}) | "
+            f"**{sh_row.chandra_ring_sign}** ({sh_row.chandra_ring_lord}) | **{sh_row.surya_ring_sign}** ({sh_row.surya_ring_lord}) | **`{sh_row.triple_frame_convergence_score_0_to_100:.1f}`** |"
+        )
+    lines.append("")
+
+    # =========================================================================
+    # CHAPTER 28: Golden Muhurta Electional Optimizer, 27x27 Tarabala, & Panchaka Rahita
+    # =========================================================================
+    lines.append("## Chapter 28 — Golden *Muhurta* Electional Optimization, Complete `27 × 9` *Tarabala* & `12 × 12` *Chandrabala* Master Reckoners, & *Panchaka Rahita* Matrix")
+    lines.append("")
+    lines.append("### 28.1 Complete 27-Nakshatra *Navatara* (`9-Tara` Cycle) *Tarabala* Master Lookup Matrix")
+    lines.append("")
+    lines.append("| Birth Star (`Janma Nakshatra`) | `1: Janma` (Mixed) | `2: Sampat` (Wealth) | `3: Vipat` (Danger) | `4: Kshema` (Prosperity) | `5: Pratyak` (Obstacle) | `6: Sadhana` (Success) | `7: Naidhana` (Peril) | `8: Mitra` (Friend) | `9: Parama Mitra` (Supreme) |")
+    lines.append("|---|---|---|---|---|---|---|---|---|---|")
+    for b_nk_i, b_nk_name in enumerate(NAKSHATRA_NAMES):
+        tara_cols: list[str] = []
+        for t_rem in range(9):
+            stars_in_tara = [
+                NAKSHATRA_NAMES[(b_nk_i + t_rem + 9 * grp) % 27]
+                for grp in range(3)
+            ]
+            tara_cols.append(", ".join(stars_in_tara))
+        lines.append(f"| **`#{b_nk_i+1:02d}` {b_nk_name}** | " + " | ".join(tara_cols) + " |")
+    lines.append("")
+
+    lines.append("### 28.2 Complete `12 × 12` *Chandrabala* (Natal Moon Rashi vs Transit Moon Rashi) Master Matrix")
+    lines.append("")
+    lines.append("| Natal Moon Rashi (`Janma Rashi`) | Auspicious Transit Moon Signs (`1, 3, 6, 7, 10, 11` = *Shubha Chandrabala*) | Avoided *Ashtama / Dusthana* Signs (`4, 8, 12` = *Chandrashtama / Ari*) | Neutral Signs (`2, 5, 9`) |")
+    lines.append("|---|---|---|---|")
+    for m_r_i, m_r_name in enumerate(RASHI_NAMES):
+        good_r = [f"**{RASHI_NAMES[(m_r_i + h - 1) % 12]}** ({h}H)" for h in (1, 3, 6, 7, 10, 11)]
+        bad_r = [f"`{RASHI_NAMES[(m_r_i + h - 1) % 12]}` ({h}H)" for h in (4, 8, 12)]
+        neu_r = [f"{RASHI_NAMES[(m_r_i + h - 1) % 12]} ({h}H)" for h in (2, 5, 9)]
+        lines.append(f"| **{m_r_name}** | {', '.join(good_r)} | {', '.join(bad_r)} | {', '.join(neu_r)} |")
+    lines.append("")
+
+    muh_rep = we["frontier_muhurta_report"]
+    lines.append("### 28.3 Worked Case Study: Top 15 Golden *Muhurta* Electional Windows (12-Constraint Multi-Objective Optimization)")
+    lines.append("")
+    lines.append("| Rank | Window (`UTC`) | Vara | Tithi | Nakshatra | Yoga | Ascendant (`Lagna`) | *Panchaka Rahita* | *Tarabala* | *Chandrabala* | Score (`0..100`) | Grade & Auspicious Factors |")
+    lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
+    for mw_i, mw in enumerate(muh_rep.top_windows, start=1):
+        panch_s = f"Shubha (r={mw.panchaka_remainder})" if mw.is_panchaka_rahita else f"Dosha (r={mw.panchaka_remainder})"
+        lines.append(
+            f"| `#{mw_i:02d}` | `{mw.iso_utc}` | {mw.vara_name} | {mw.paksha} #{mw.tithi_number} | *{mw.nakshatra_name}* | Yoga #{mw.yoga_number} | "
+            f"**{mw.electional_lagna_sign}** | `{panch_s}` | `{mw.tarabala_name}` | {mw.chandrabala_house_1_to_12}H | "
+            f"**`{mw.score_0_to_100:.1f}`** | **{mw.grade}**: {', '.join(mw.passed_checks[:3])} |"
+        )
+    lines.append("")
+
+    lines.append("### 28.4 Complete `30 Tithi × 7 Vara` (`210-Row`) *Panchaka Rahita*, *Dagdha Rashi*, & *Amrita/Sarvartha Siddhi* Electional Master Table")
+    lines.append("")
+    lines.append("| Lunar Tithi (`1..30`) | Paksha & Tithi Group (*Nanda/Bhadra/Jaya/Rikta/Purna*) | Weekday (`Vara`) | *Dagdha Rashi* (Burnt Sign to Avoid) | *Amrita Siddhi* Star | *Sarvartha Siddhi* Stars | Safe *Panchaka Rahita* Ascendants (`Mesha..Meena` for Star #1) |")
+    lines.append("|---|---|---|---|---|---|---|")
+    tithi_groups_5 = ("Nanda (Joy)", "Bhadra (Good)", "Jaya (Victory)", "Rikta (Empty/Avoid)", "Purna (Fullness)")
+    weekdays_7 = ("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+    for t_num in range(1, 31):
+        pk_name = "Shukla" if t_num <= 15 else "Krishna"
+        pk_tithi = t_num if t_num <= 15 else (t_num - 15)
+        t_grp = tithi_groups_5[(pk_tithi - 1) % 5]
+        dag_pair = DAGDHA_RASI_BY_PAKSHA_TITHI.get(pk_tithi, ())
+        dag_str = ", ".join(RASHI_NAMES[idx] for idx in dag_pair) if dag_pair else "None (Shubha)"
+        for w_idx, w_name in enumerate(weekdays_7):
+            am_idx = AMRITA_SIDDHI_NAKSHATRA.get(w_idx)
+            am_str = NAKSHATRA_NAMES[am_idx] if am_idx is not None else "—"
+            sarv_indices = SARVARTHA_SIDDHI_NAKSHATRAS.get(w_idx, ())
+            sarv_str = ", ".join(NAKSHATRA_NAMES[idx] for idx in sorted(sarv_indices)[:4])
+            safe_lagnas = [
+                RASHI_NAMES[lg_i]
+                for lg_i in range(12)
+                if ((t_num + (w_idx + 1) + 1 + (lg_i + 1)) % 9) not in (1, 2, 4, 6, 8)
+            ]
+            lines.append(
+                f"| **`Tithi #{t_num:02d}`** ({pk_name} {pk_tithi:02d}) | {t_grp} | **{w_name}** | `{dag_str}` | *{am_str}* | {sarv_str} | {', '.join(safe_lagnas[:6])} |"
+            )
+    lines.append("")
     return "\n".join(lines)
 
 
@@ -2130,7 +2662,7 @@ def _render_compendium_html(comp: HumanManualEphemerisCompendium) -> str:
 
     close_blocks()
 
-    toc_html = "<nav class='toc-box'><h2>Master Table of Contents (20 Chapters)</h2><ol>" + "".join(
+    toc_html = "<nav class='toc-box'><h2>Master Table of Contents (28 Chapters)</h2><ol>" + "".join(
         f"<li><a href='#{cid}'>{ctitle}</a></li>" for cid, ctitle in toc_items
     ) + "</ol></nav>"
 
@@ -2139,7 +2671,7 @@ def _render_compendium_html(comp: HumanManualEphemerisCompendium) -> str:
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>RDG Ephemeris — 20-Chapter Classical Ephemeris &amp; Pt. Maheshji's Jyotish Academy Compendium ({comp.year}-{comp.month:02d})</title>
+<title>RDG Ephemeris — 28-Chapter Classical Ephemeris &amp; Pt. Maheshji's Jyotish Academy Compendium ({comp.year}-{comp.month:02d})</title>
 <style>
   :root {{
     --bg: #fdfaf3;

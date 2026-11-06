@@ -26,6 +26,11 @@ from ._version import __version__
 from .adapter import EphemerisAdapter, VEDIC_NINE_GRAHAS
 from .almanac import compute_regional_panchang, generate_human_manual_ephemeris_compendium
 from .fact_sheet import compile_ai_fact_sheet, verify_ai_interpretation
+from .frontier_astrodynamics import (
+    compute_topocentric_relativistic_astrometry,
+    evaluate_lifetime_eclipse_natal_sensitivity,
+    solve_synodic_retrograde_loops_and_triple_passes,
+)
 from .impossible_astrology import (
     analyze_siddhanta_vs_jpl_de440_drift,
     compute_personalized_astro_fingerprint,
@@ -36,6 +41,12 @@ from .impossible_astrology import (
     solve_chart_date_from_planetary_constraints,
     solve_krantisamya_mahapata_windows,
     solve_subsecond_shodashvarga_cusp_transitions,
+)
+from .jyotish.conditional_dashas_and_nadi import (
+    compute_all_10_parashari_nakshatra_dashas,
+    compute_nadi_amsa_and_sudarshana_chakra,
+    compute_vimshottari_5_level_prana_chronometer,
+    solve_golden_muhurta_electional_windows,
 )
 from .jyotish.dasha import jd_to_iso_utc
 
@@ -357,6 +368,85 @@ MCP_TOOLS: tuple[dict[str, Any], ...] = (
             },
         },
     },
+    {
+        "name": "compute_topocentric_astrometry",
+        "description": (
+            "Compute WGS84 surface-observer topocentric planetary positions, 3D lunar/planetary "
+            "parallax (up to 1 deg 02 min for Moon), Saemundsson-Bennett atmospheric refraction, "
+            "Rozenberg optical air mass, Doppler radial velocity, relativistic Shapiro delay, "
+            "and Geocentric-vs-Topocentric D9/D60/KP Sub-Lord boundary flips."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "jd_ut": {"type": "number"},
+                "iso_utc": {"type": "string"},
+                "latitude_deg": {"type": "number", "default": 28.6139},
+                "longitude_deg": {"type": "number", "default": 77.2090},
+                "elevation_m": {"type": "number", "default": 0.0},
+                "temperature_c": {"type": "number", "default": 15.0},
+                "pressure_hpa": {"type": "number", "default": 1013.25},
+                "ayanamsa": {"type": "string", "default": "lahiri"},
+            },
+        },
+    },
+    {
+        "name": "solve_retrograde_loops",
+        "description": (
+            "Solve 5-point synodic retrograde phase-space loops (Pre-Shadow, Station S1, "
+            "Perigee/Minimum Distance, Station S2, Post-Shadow) and Natal Triple-Pass Transit hits."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "start_jd_ut": {"type": "number"},
+                "end_jd_ut": {"type": "number"},
+                "natal_longitudes_deg": {"type": "object"},
+                "ayanamsa": {"type": "string", "default": "lahiri"},
+            },
+            "required": ["start_jd_ut", "end_jd_ut"],
+        },
+    },
+    {
+        "name": "evaluate_eclipse_sensitivity",
+        "description": (
+            "Scan Solar and Lunar eclipses across any date span, computing sidereal eclipse axes, "
+            "local observer visibility/obscuration, and natal degree Grahan resonance hits."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "start_jd_ut": {"type": "number"},
+                "end_jd_ut": {"type": "number"},
+                "natal_longitudes_deg": {"type": "object"},
+                "latitude_deg": {"type": "number", "default": 28.6139},
+                "longitude_deg": {"type": "number", "default": 77.2090},
+                "orb_deg": {"type": "number", "default": 5.0},
+                "ayanamsa": {"type": "string", "default": "lahiri"},
+            },
+            "required": ["start_jd_ut", "end_jd_ut"],
+        },
+    },
+    {
+        "name": "compute_conditional_dashas_and_nadi",
+        "description": (
+            "Evaluate all 10 Classical BPHS Ch. 46 Conditional Nakshatra Dashas with Multi-Dasha "
+            "Synchronicity ranking, 5-level Vimshottari Prana-Dasha sub-hour chronometer, "
+            "150-Division Nadi Amsa (Deva Keralam) coordinates, and 3-Ring Sudarshana Chakra."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "birth_jd_ut": {"type": "number"},
+                "query_jd_ut": {"type": "number"},
+                "latitude_deg": {"type": "number", "default": 28.6139},
+                "longitude_deg": {"type": "number", "default": 77.2090},
+                "is_day_birth": {"type": "boolean", "default": True},
+                "ayanamsa": {"type": "string", "default": "lahiri"},
+            },
+            "required": ["birth_jd_ut"],
+        },
+    },
 )
 
 
@@ -675,6 +765,91 @@ def execute_mcp_tool(name: str, arguments: Mapping[str, Any] | None = None) -> d
         if inc_md:
             res_dict["markdown"] = comp.to_markdown()
         return _to_jsonable(res_dict)
+
+    if name == "compute_topocentric_astrometry":
+        jd_ut = _resolve_jd_ut(args)
+        lat = float(args.get("latitude_deg", 28.6139))
+        lon = float(args.get("longitude_deg", 77.2090))
+        elev = float(args.get("elevation_m", 0.0))
+        temp_c = float(args.get("temperature_c", 15.0))
+        press_hpa = float(args.get("pressure_hpa", 1013.25))
+        ayanamsa = str(args.get("ayanamsa", "lahiri"))
+        rep = compute_topocentric_relativistic_astrometry(
+            jd_ut,
+            lat,
+            lon,
+            elevation_m=elev,
+            temperature_c=temp_c,
+            pressure_hpa=press_hpa,
+            ayanamsa=ayanamsa,
+            adapter=adapter,
+        )
+        return _to_jsonable(rep)
+
+    if name == "solve_retrograde_loops":
+        start_jd = float(args["start_jd_ut"])
+        end_jd = float(args["end_jd_ut"])
+        natal_lons = {str(k): float(v) for k, v in dict(args.get("natal_longitudes_deg") or {}).items()} or None
+        ayanamsa = str(args.get("ayanamsa", "lahiri"))
+        rep = solve_synodic_retrograde_loops_and_triple_passes(
+            start_jd,
+            end_jd,
+            natal_longitudes_deg=natal_lons,
+            ayanamsa=ayanamsa,
+            adapter=adapter,
+        )
+        return _to_jsonable(rep)
+
+    if name == "evaluate_eclipse_sensitivity":
+        start_jd = float(args["start_jd_ut"])
+        end_jd = float(args["end_jd_ut"])
+        natal_lons = {str(k): float(v) for k, v in dict(args.get("natal_longitudes_deg") or {}).items()} or None
+        lat = float(args.get("latitude_deg", 28.6139))
+        lon = float(args.get("longitude_deg", 77.2090))
+        orb = float(args.get("orb_deg", 5.0))
+        ayanamsa = str(args.get("ayanamsa", "lahiri"))
+        rep = evaluate_lifetime_eclipse_natal_sensitivity(
+            start_jd,
+            end_jd,
+            natal_longitudes_deg=natal_lons,
+            latitude_deg=lat,
+            longitude_deg=lon,
+            orb_deg=orb,
+            ayanamsa=ayanamsa,
+            adapter=adapter,
+        )
+        return _to_jsonable(rep)
+
+    if name == "compute_conditional_dashas_and_nadi":
+        birth_jd = float(args["birth_jd_ut"])
+        query_jd = float(args.get("query_jd_ut", birth_jd + 365.2425 * 24.0))
+        lat = float(args.get("latitude_deg", 28.6139))
+        lon = float(args.get("longitude_deg", 77.2090))
+        is_day = bool(args.get("is_day_birth", True))
+        ayanamsa = str(args.get("ayanamsa", "lahiri"))
+        houses = adapter.houses_ut(birth_jd, lat, lon, system="placidus", ayanamsa=ayanamsa)
+        p_lons = {
+            p: adapter.calc_ut(birth_jd, p, sidereal=True, ayanamsa=ayanamsa).longitude_deg % 360.0
+            for p in VEDIC_NINE_GRAHAS
+        }
+        dashas_rep = compute_all_10_parashari_nakshatra_dashas(
+            p_lons["moon"],
+            houses.ascendant_deg,
+            p_lons["sun"],
+            p_lons,
+            birth_jd,
+            query_jd=query_jd,
+            is_day_birth=is_day,
+        )
+        prana_rep = compute_vimshottari_5_level_prana_chronometer(p_lons["moon"], birth_jd, query_jd)
+        nadi_rep = compute_nadi_amsa_and_sudarshana_chakra(houses.ascendant_deg, p_lons, birth_jd, query_jd=query_jd)
+        return _to_jsonable(
+            {
+                "conditional_dashas": dashas_rep,
+                "prana_chronometer": prana_rep,
+                "nadi_and_sudarshana": nadi_rep,
+            }
+        )
 
     raise ValueError(f"Unknown MCP tool: {name!r}")
 

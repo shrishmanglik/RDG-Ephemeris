@@ -9,7 +9,7 @@
 - **Reference Meridian / Location:** Latitude `23.1765°`, Longitude `75.7885°` (UTC`+5.50h` — Ujjain Mahakaleshwar Prime Meridian)
 - **Primary Sidereal Ayanamsha:** `lahiri` (Chitrapaksha / IAE 1989 Lahiri Standard + 25-Ayanamsha Conversion Table in Chapter 1)
 - **Astronomical Kernel Backbone:** NASA JPL DE440 / DE441 + IAU 2006/2000A Precession-Nutation (`ephemeris-oss v0.2.0.dev1`)
-- **Cryptographic SHA-256 Receipt:** `sha256:21e2f634318de88bd7610e870cdefbd3b3e7ec65bf9db5abc72c0fc82bec694b`
+- **Cryptographic SHA-256 Receipt:** `sha256:08bdd0998425d14932fac3c97bca60bb14484d33172cba14b42c06916076a0b2`
 
 ## Chapter 1 — Fundamental Astronomical Constants, Julian Day Tables (`1900–2050`), $\Delta T$, & 25-Ayanamsha Master Conversion Table
 
@@ -1599,3 +1599,1616 @@ $$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \fr
 **Worked *Kalachakra Dasha* at Birth:** Chakra Group = **Savya**, *Dehamsha* = **Kanya**, *Jeevamsha* = **Kumbha**, Paramayus = `85 Years`, Birth Period = **Simha** (`Krama Gati` Gati).
 
 **Worked Sample of 36 *Tajika Sahams*:** **Punya Saham:** `Kumbha 27° 22' 49"`, **Vidya Saham:** `Vrishchika 17° 13' 11"`, **Yasas Saham:** `Mithuna 26° 29' 09"`, **Mitra Saham:** `Mesha 02° 50' 37"`, **Mahatmya Saham:** `Karka 18° 29' 46"`, **Asha Saham:** `Mithuna 07° 55' 31"`, **Samarthya Saham:** `Dhanu 21° 55' 04"`, **Bhratri Saham:** `Mithuna 09° 35' 00"`, **Gaurava Saham:** `Vrishabha 26° 29' 09"`, **Pitri Saham:** `Vrishabha 07° 58' 08"`, **Matri Saham:** `Meena 27° 20' 12"`, **Putra Saham:** `Simha 20° 10' 19"` *(all `36` Sahams computed deterministically)*.
+
+## Chapter 21 — Topocentric WGS84 Surface-Observer Astrometry, Lunar Parallax (`1°02'`), Atmospheric Refraction, Air Mass, Doppler Velocity, & Relativistic Shapiro Delay
+
+> **Why Topocentric & Relativistic Astrometry Matters:** Classical *Surya Siddhanta* (*Lambana* & *Nati* chapters) and modern IAU observatory physics agree that an observer stands on the rotating, oblate surface of the Earth (`r ≈ 6,378.137 km`), not at Earth's center. For the Moon, surface parallax shifts apparent sidereal longitude by up to **`1° 02' 00"` (`3,720"`)** — enough to flip `D9 Navamsa`, `D60 Shashtiamsa`, `Nakshatra Pada`, and `KP 249 Sub-Lords`.
+
+### 21.1 Worked Case Study: 13-Body Geocentric vs Topocentric & Relativistic Astrometry Table
+
+| Body | Geocentric Sidereal (`DMS`) | Topocentric Sidereal (`DMS`) | Parallax Shift (`Δλ" / Δβ"`) | Azimuth / True Alt / Refracted Alt | Air Mass $X$ | Doppler $\dot{r}$ (`km/s`) | Light-Time $\tau$ (`s`) | Shapiro $\Delta t$ (`μs`) | GR Defl (`mas`) | `D9 / D60 / KP` Flip Audit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **sun** | `Tula 28° 36' 50"` | **`Tula 28° 36' 55"`** | `+4.45" / +5.30"` | `Az 150.5° / Alt +42.97° -> +42.99° (+62.1")` | `1.47` | `-0.393` | `493.65s` | `29.89μs` | `0.00` | `D9:OK(Mithuna->Mithuna) D60:OK(58->58) KP:OK(venus->venus)` |
+| **moon** | `Makara 03° 41' 39"` | **`Makara 04° 26' 35"`** | `+2695.25" / -1687.73"` | `Az 110.3° / Alt -11.75° -> -11.75° (+0.0")` | `40.00` | `-0.020` | `1.35s` | `0.10μs` | `6.38` | `D9:OK(Kumbha->Kumbha) D60:FLIP(8->9) KP:OK(saturn->saturn)` |
+| **mars** | `Simha 01° 11' 03"` | **`Simha 01° 10' 58"`** | `-4.76" / -10.58"` | `Az 273.0° / Alt +33.27° -> +33.29° (+87.9")` | `1.82` | `-14.758` | `655.70s` | `10.97μs` | `4.26` | `D9:OK(Mesha->Mesha) D60:OK(3->3) KP:OK(venus->venus)` |
+| **mercury** | `Tula 11° 01' 01"` | **`Tula 11° 01' 04"`** | `+2.40" / +2.10"` | `Az 170.3° / Alt +55.22° -> +55.23° (+40.3")` | `1.22` | `+44.165` | `424.62s` | `15.39μs` | `26.31` | `D9:OK(Makara->Makara) D60:OK(23->23) KP:OK(saturn->saturn)` |
+| **jupiter** | `Simha 01° 33' 59"` | **`Simha 01° 33' 57"`** | `-1.23" / -7.94"` | `Az 271.6° / Alt +32.84° -> +32.86° (+89.4")` | `1.84` | `-27.185` | `2634.61s` | `23.84μs` | `4.29` | `D9:OK(Mesha->Mesha) D60:OK(4->4) KP:OK(venus->venus)` |
+| **venus** | `Kanya 28° 39' 27"` | **`Kanya 28° 39' 30"`** | `+2.74" / -9.73"` | `Az 193.1° / Alt +55.85° -> +55.86° (+39.3")` | `1.21` | `+8.723` | `165.49s` | `3.87μs` | `15.22` | `D9:OK(Kanya->Kanya) D60:OK(58->58) KP:OK(saturn->saturn)` |
+| **saturn** | `Meena 14° 16' 59"` | **`Meena 14° 16' 58"`** | `-0.45" / -2.36"` | `Az 40.4° / Alt -59.47° -> -59.47° (+0.0")` | `40.00` | `+20.065` | `4335.70s` | `23.70μs` | `1.66` | `D9:OK(Vrishchika->Vrishchika) D60:OK(29->29) KP:OK(rahu->rahu)` |
+| **rahu** | `Kumbha 01° 05' 10"` | **`Kumbha 01° 40' 41"`** | `+2131.00" / -1706.39"` | `Az 91.3° / Alt -32.76° -> -32.76° (+0.0")` | `40.00` | `+0.000` | `1.28s` | `0.10μs` | `3.90` | `D9:OK(Tula->Tula) D60:FLIP(3->4) KP:OK(mercury->mercury)` |
+| **true_rahu** | `Kumbha 00° 56' 51"` | **`Kumbha 01° 32' 27"`** | `+2135.17" / -1706.40"` | `Az 91.4° / Alt -32.65° -> -32.65° (+0.0")` | `40.00` | `-0.020` | `1.35s` | `0.10μs` | `3.91` | `D9:OK(Tula->Tula) D60:FLIP(2->4) KP:OK(mercury->mercury)` |
+| **ketu** | `Simha 01° 05' 10"` | **`Simha 00° 29' 03"`** | `-2166.90" / -1749.56"` | `Az 271.3° / Alt +31.23° -> +31.25° (+95.1")` | `1.93` | `+0.000` | `1.28s` | `0.10μs` | `4.25` | `D9:OK(Mesha->Mesha) D60:FLIP(3->1) KP:FLIP(venus->ketu)` |
+| **uranus** | `Vrishabha 09° 53' 15"` | **`Vrishabha 09° 53' 15"`** | `-0.31" / -11.57"` | `Az 320.3° / Alt -34.89° -> -34.89° (+0.0")` | `40.00` | `-5.745` | `9209.99s` | `29.43μs` | `0.40` | `D9:OK(Meena->Meena) D60:OK(20->20) KP:OK(venus->venus)` |
+| **neptune** | `Meena 07° 35' 05"` | **`Meena 07° 35' 05"`** | `-0.24" / -0.55"` | `Az 51.7° / Alt -56.20° -> -56.20° (+0.0")` | `40.00` | `+23.470` | `14593.30s` | `35.59μs` | `1.94` | `D9:OK(Kanya->Kanya) D60:OK(16->16) KP:OK(ketu->ketu)` |
+| **pluto** | `Makara 09° 02' 57"` | **`Makara 09° 02' 56"`** | `-0.32" / +10.39"` | `Az 109.1° / Alt -16.42° -> -16.42° (+0.0")` | `40.00` | `+29.233` | `17946.19s` | `46.15μs` | `5.77` | `D9:OK(Meena->Meena) D60:OK(19->19) KP:OK(venus->venus)` |
+
+### 21.2 Daily Geocentric vs Topocentric Moon & Sun Parallax Almanac Across the Month (`05:30 IST`)
+
+| Date | Local Sidereal Time | Geocentric Moon (`DMS`) | Topocentric Moon (`DMS`) | Lunar Parallax Shift (`Δλ" / Δβ"`) | Moon Alt / Azimuth / Refraction | Geocentric vs Topocentric `D9 / D60 / KP-Sub` Audit |
+|---|---|---|---|---|---|---|
+| `2026-11-01` | `07h 44m 21s` | `Karka 03° 14' 11"` | **`Karka 03° 17' 57"`** | **`+226.2" / +36.1"`** | `Alt +86.3° / Az 90.3° (Refr +3.9")` | `D9: Karka->Karka | D60: #7->#7 | KP: rahu->rahu` |
+| `2026-11-02` | `07h 48m 18s` | `Karka 17° 14' 11"` | **`Karka 17° 31' 20"`** | **`+1028.9" / -47.3"`** | `Alt +73.0° / Az 102.5° (Refr +18.4")` | `D9: Dhanu->Dhanu | D60: #35->#36 | KP: mercury->mercury` |
+| `2026-11-03` | `07h 52m 14s` | `Simha 00° 58' 43"` | **`Simha 01° 27' 50"`** | **`+1746.9" / -126.8"`** | `Alt +59.9° / Az 104.4° (Refr +34.9")` | `D9: Mesha->Mesha | D60: #2->#3 | KP: venus->venus` |
+| `2026-11-04` | `07h 56m 11s` | `Simha 14° 28' 48"` | **`Simha 15° 07' 58"`** | **`+2350.4" / -187.9"`** | `Alt +47.1° / Az 105.3° (Refr +55.9")` | `D9: Simha->Simha | D60: #29->#31 | KP: venus->venus` |
+| `2026-11-05` | `08h 00m 07s` | `Simha 27° 45' 45"` | **`Simha 28° 32' 45"`** | **`+2819.8" / -221.7"`** | `Alt +34.5° / Az 105.9° (Refr +87.2")` | `D9: Dhanu->Dhanu | D60: #56->#58 | KP: moon->mars` |
+| `2026-11-06` | `08h 04m 04s` | `Kanya 10° 50' 49"` | **`Kanya 11° 43' 13"`** | **`+3143.9" / -225.7"`** | `Alt +22.2° / Az 106.4° (Refr +145.7")` | `D9: Mesha->Mesha | D60: #22->#24 | KP: moon->mars` |
+| `2026-11-07` | `08h 08m 00s` | `Kanya 23° 44' 48"` | **`Kanya 24° 40' 06"`** | **`+3318.2" / -203.1"`** | `Alt +10.1° / Az 106.7° (Refr +318.5")` | `D9: Simha->Simha | D60: #48->#50 | KP: mars->rahu` |
+| `2026-11-08` | `08h 11m 57s` | `Tula 06° 28' 05"` | **`Tula 07° 23' 51"`** | **`+3345.3" / -161.8"`** | `Alt -1.8° / Az 107.0° (Refr +0.0")` | `D9: Vrishchika->Dhanu | D60: #13->#15 | KP: moon->rahu` |
+| `2026-11-09` | `08h 15m 54s` | `Tula 19° 00' 43"` | **`Tula 19° 54' 37"`** | **`+3234.0" / -112.4"`** | `Alt -13.4° / Az 107.1° (Refr +0.0")` | `D9: Meena->Meena | D60: #39->#40 | KP: moon->mars` |
+| `2026-11-10` | `08h 19m 50s` | `Vrishchika 01° 22' 43"` | **`Vrishchika 02° 12' 42"`** | **`+2998.6" / -65.7"`** | `Alt -24.8° / Az 107.1° (Refr +0.0")` | `D9: Karka->Karka | D60: #3->#5 | KP: rahu->rahu` |
+| `2026-11-11` | `08h 23m 47s` | `Vrishchika 13° 34' 23"` | **`Vrishchika 14° 18' 40"`** | **`+2657.1" / -31.2"`** | `Alt -36.0° / Az 106.9° (Refr +0.0")` | `D9: Vrishchika->Vrishchika | D60: #28->#29 | KP: rahu->rahu` |
+| `2026-11-12` | `08h 27m 43s` | `Vrishchika 25° 36' 37"` | **`Vrishchika 26° 13' 46"`** | **`+2229.0" / -15.5"`** | `Alt -47.0° / Az 106.3° (Refr +0.0")` | `D9: Kumbha->Kumbha | D60: #52->#53 | KP: rahu->jupiter` |
+| `2026-11-13` | `08h 31m 40s` | `Dhanu 07° 31' 05"` | **`Dhanu 07° 59' 59"`** | **`+1733.5" / -22.3"`** | `Alt -57.8° / Az 105.2° (Refr +0.0")` | `D9: Mithuna->Mithuna | D60: #16->#16 | KP: rahu->jupiter` |
+| `2026-11-14` | `08h 35m 36s` | `Dhanu 19° 20' 25"` | **`Dhanu 19° 40' 12"`** | **`+1187.4" / -51.7"`** | `Alt -68.5° / Az 102.5° (Refr +0.0")` | `D9: Kanya->Kanya | D60: #39->#40 | KP: rahu->rahu` |
+| `2026-11-15` | `08h 39m 33s` | `Makara 01° 08' 07"` | **`Makara 01° 18' 12"`** | **`+604.9" / -101.6"`** | `Alt -79.1° / Az 94.2° (Refr +0.0")` | `D9: Makara->Makara | D60: #3->#3 | KP: rahu->jupiter` |
+| `2026-11-16` | `08h 43m 30s` | `Makara 12° 58' 35"` | **`Makara 12° 58' 32"`** | **`-2.2" / -167.4"`** | `Alt -86.8° / Az 13.9° (Refr +0.0")` | `D9: Mesha->Mesha | D60: #26->#26 | KP: rahu->rahu` |
+| `2026-11-17` | `08h 47m 26s` | `Makara 24° 56' 49"` | **`Makara 24° 46' 25"`** | **`-623.3" / -242.8"`** | `Alt -78.1° / Az 307.4° (Refr +0.0")` | `D9: Simha->Simha | D60: #50->#50 | KP: rahu->rahu` |
+| `2026-11-18` | `08h 51m 23s` | `Kumbha 07° 08' 17"` | **`Kumbha 06° 47' 31"`** | **`-1246.5" / -320.2"`** | `Alt -67.1° / Az 299.8° (Refr +0.0")` | `D9: Dhanu->Dhanu | D60: #15->#14 | KP: rahu->rahu` |
+| `2026-11-19` | `08h 55m 19s` | `Kumbha 19° 38' 30"` | **`Kumbha 19° 07' 34"`** | **`-1856.1" / -390.4"`** | `Alt -55.7° / Az 297.0° (Refr +0.0")` | `D9: Meena->Meena | D60: #40->#39 | KP: mars->moon` |
+| `2026-11-20` | `08h 59m 16s` | `Meena 02° 32' 29"` | **`Meena 01° 51' 59"`** | **`-2429.4" / -444.0"`** | `Alt -43.8° / Az 295.5° (Refr +0.0")` | `D9: Karka->Karka | D60: #6->#4 | KP: rahu->rahu` |
+| `2026-11-21` | `09h 03m 12s` | `Meena 15° 54' 06"` | **`Meena 15° 05' 13"`** | **`-2933.6" / -472.3"`** | `Alt -31.5° / Az 294.5° (Refr +0.0")` | `D9: Vrishchika->Vrishchika | D60: #32->#31 | KP: jupiter->jupiter` |
+| `2026-11-22` | `09h 07m 09s` | `Meena 29° 45' 14"` | **`Meena 28° 49' 48"`** | **`-3326.0" / -470.4"`** | `Alt -18.7° / Az 293.6° (Refr +0.0")` | `D9: Meena->Meena | D60: #60->#58 | KP: saturn->saturn` |
+| `2026-11-23` | `09h 11m 05s` | `Mesha 14° 04' 53"` | **`Mesha 13° 05' 36"`** | **`-3557.2" / -439.7"`** | `Alt -5.3° / Az 292.6° (Refr +0.0")` | `D9: Simha->Karka | D60: #29->#27 | KP: venus->mercury` |
+| `2026-11-24` | `09h 15m 02s` | `Mesha 28° 48' 42"` | **`Mesha 27° 49' 00"`** | **`-3581.6" / -390.8"`** | `Alt +8.5° / Az 291.5° (Refr +373.1")` | `D9: Dhanu->Dhanu | D60: #58->#56 | KP: mars->moon` |
+| `2026-11-25` | `09h 18m 59s` | `Vrishabha 13° 49' 06"` | **`Vrishabha 12° 52' 55"`** | **`-3371.1" / -341.9"`** | `Alt +22.5° / Az 290.0° (Refr +143.1")` | `D9: Vrishabha->Mesha | D60: #28->#26 | KP: rahu->rahu` |
+| `2026-11-26` | `09h 22m 55s` | `Vrishabha 28° 56' 15"` | **`Vrishabha 28° 07' 27"`** | **`-2928.2" / -313.9"`** | `Alt +36.7° / Az 287.9° (Refr +80.3")` | `D9: Kanya->Kanya | D60: #58->#57 | KP: saturn->saturn` |
+| `2026-11-27` | `09h 26m 52s` | `Mithuna 13° 59' 53"` | **`Mithuna 13° 21' 43"`** | **`-2289.6" / -321.4"`** | `Alt +50.9° / Az 284.4° (Refr +48.9")` | `D9: Kumbha->Kumbha | D60: #28->#27 | KP: mercury->mercury` |
+| `2026-11-28` | `09h 30m 48s` | `Mithuna 28° 50' 59"` | **`Mithuna 28° 25' 41"`** | **`-1517.3" / -367.0"`** | `Alt +64.6° / Az 277.4° (Refr +28.6")` | `D9: Mithuna->Mithuna | D60: #58->#57 | KP: sun->venus` |
+| `2026-11-29` | `09h 34m 45s` | `Karka 13° 23' 13"` | **`Karka 13° 11' 50"`** | **`-682.5" / -441.3"`** | `Alt +77.0° / Az 256.9° (Refr +14.0")` | `D9: Vrishchika->Tula | D60: #27->#27 | KP: rahu->rahu` |
+| `2026-11-30` | `09h 38m 41s` | `Karka 27° 33' 17"` | **`Karka 27° 35' 47"`** | **`+149.5" / -527.3"`** | `Alt +81.1° / Az 182.9° (Refr +9.5")` | `D9: Meena->Meena | D60: #56->#56 | KP: jupiter->jupiter` |
+
+### 21.3 Saemundsson-Bennett Atmospheric Refraction & Rozenberg Optical Air Mass Master Table (`-1°` to `90°` Altitude)
+
+| True Altitude $h_0$ | Std Refraction (`15°C, 1013 hPa`) | Hot Tropical (`35°C, 1005 hPa`) | Cold Winter (`0°C, 1020 hPa`) | High Altitude (`2200m, 780 hPa`) | Rozenberg Optical Air Mass $X(z)$ | Extinction Loss (`Δmag`, $k=0.20$) |
+|---|---|---|---|---|---|---|
+| **` -1.0°`** | `2294.8"` (`38.25'`) | `2128.3"` | `2437.0"` | `1797.7"` | **`40.00x`** | `+8.00 mag` |
+| **` -0.5°`** | `1992.7"` (`33.21'`) | `1848.1"` | `2116.2"` | `1561.1"` | **`38.94x`** | `+7.79 mag` |
+| **` +0.0°`** | `1714.3"` (`28.57'`) | `1590.0"` | `1820.6"` | `1343.0"` | **`32.13x`** | `+6.43 mag` |
+| **` +0.5°`** | `1479.0"` (`24.65'`) | `1371.7"` | `1570.7"` | `1158.7"` | **`27.11x`** | `+5.42 mag` |
+| **` +1.0°`** | `1286.2"` (`21.44'`) | `1192.9"` | `1365.9"` | `1007.6"` | **`23.28x`** | `+4.66 mag` |
+| **` +1.5°`** | `1129.3"` (`18.82'`) | `1047.4"` | `1199.3"` | ` 884.7"` | **`20.28x`** | `+4.06 mag` |
+| **` +2.0°`** | `1001.2"` (`16.69'`) | ` 928.6"` | `1063.3"` | ` 784.4"` | **`17.89x`** | `+3.58 mag` |
+| **` +3.0°`** | ` 808.1"` (`13.47'`) | ` 749.5"` | ` 858.2"` | ` 633.1"` | **`14.34x`** | `+2.87 mag` |
+| **` +4.0°`** | ` 672.1"` (`11.20'`) | ` 623.3"` | ` 713.7"` | ` 526.5"` | **`11.88x`** | `+2.38 mag` |
+| **` +5.0°`** | ` 572.3"` (`9.54'`) | ` 530.8"` | ` 607.8"` | ` 448.4"` | **`10.08x`** | `+2.02 mag` |
+| **` +6.0°`** | ` 496.7"` (`8.28'`) | ` 460.7"` | ` 527.5"` | ` 389.1"` | **` 8.72x`** | `+1.74 mag` |
+| **` +8.0°`** | ` 390.5"` (`6.51'`) | ` 362.1"` | ` 414.7"` | ` 305.9"` | **` 6.83x`** | `+1.37 mag` |
+| **`+10.0°`** | ` 320.0"` (`5.33'`) | ` 296.8"` | ` 339.8"` | ` 250.7"` | **` 5.59x`** | `+1.12 mag` |
+| **`+12.0°`** | ` 270.0"` (`4.50'`) | ` 250.4"` | ` 286.7"` | ` 211.5"` | **` 4.72x`** | `+0.94 mag` |
+| **`+15.0°`** | ` 217.5"` (`3.62'`) | ` 201.7"` | ` 231.0"` | ` 170.4"` | **` 3.83x`** | `+0.77 mag` |
+| **`+20.0°`** | ` 162.3"` (`2.70'`) | ` 150.5"` | ` 172.3"` | ` 127.1"` | **` 2.91x`** | `+0.58 mag` |
+| **`+25.0°`** | ` 127.5"` (`2.13'`) | ` 118.3"` | ` 135.4"` | `  99.9"` | **` 2.36x`** | `+0.47 mag` |
+| **`+30.0°`** | ` 103.4"` (`1.72'`) | `  95.9"` | ` 109.8"` | `  81.0"` | **` 2.00x`** | `+0.40 mag` |
+| **`+35.0°`** | `  85.5"` (`1.42'`) | `  79.3"` | `  90.8"` | `  66.9"` | **` 1.74x`** | `+0.35 mag` |
+| **`+40.0°`** | `  71.4"` (`1.19'`) | `  66.3"` | `  75.9"` | `  56.0"` | **` 1.56x`** | `+0.31 mag` |
+| **`+45.0°`** | `  60.0"` (`1.00'`) | `  55.7"` | `  63.7"` | `  47.0"` | **` 1.41x`** | `+0.28 mag` |
+| **`+50.0°`** | `  50.4"` (`0.84'`) | `  46.7"` | `  53.5"` | `  39.5"` | **` 1.31x`** | `+0.26 mag` |
+| **`+60.0°`** | `  34.7"` (`0.58'`) | `  32.2"` | `  36.9"` | `  27.2"` | **` 1.15x`** | `+0.23 mag` |
+| **`+70.0°`** | `  21.9"` (`0.37'`) | `  20.3"` | `  23.3"` | `  17.2"` | **` 1.06x`** | `+0.21 mag` |
+| **`+80.0°`** | `  10.6"` (`0.18'`) | `   9.9"` | `  11.3"` | `   8.3"` | **` 1.02x`** | `+0.20 mag` |
+| **`+90.0°`** | `   0.0"` (`0.00'`) | `   0.0"` | `   0.0"` | `   0.0"` | **` 1.00x`** | `+0.20 mag` |
+
+## Chapter 22 — Synodic Retrograde Phase-Space Loops (*Vakri / Vakra-Tyaga*), Perigee Brilliance, & 360° Natal Triple-Pass Transit Matrix
+
+### 22.1 Complete 5-Point Synodic Retrograde Phase-Space Loops (±180 Days Around Reference Epoch)
+
+| Body | Pre-Shadow Entry | First Station $S_1$ (*Vakri*) | Minimum Distance / Opposition Peak | Second Station $S_2$ (*Margi*) | Post-Shadow Exit | Retrograde Arc Width | Loop Duration (`Days`) |
+|---|---|---|---|---|---|---|---|
+| **Mercury** | `2026-06-13T00:50:17Z` | **`2026-06-29T17:35:03Z`** (`Karka 02° 01' 41"`) | `2026-07-10T15:12:52Z` (`0.5687 AU`, `+128.31 mag`) | **`2026-07-23T22:59:06Z`** (`Mithuna 22° 05' 09"`) | `2026-08-07T03:38:51Z` | **`9.94°`** | **`24.23 d`** |
+| **Saturn** | `2026-04-20T10:15:20Z` | **`2026-07-26T17:41:58Z`** (`Meena 20° 31' 09"`) | `2026-10-03T08:28:21Z` (`8.4345 AU`, `+0.59 mag`) | **`2026-12-10T23:14:44Z`** (`Meena 13° 41' 42"`) | `2027-03-15T08:42:53Z` | **`6.82°`** | **`137.23 d`** |
+| **Venus** | `2026-08-31T14:40:57Z` | **`2026-10-03T07:15:04Z`** (`Tula 14° 15' 29"`) | `2026-10-24T03:53:17Z` (`0.2729 AU`, `+4.22 mag`) | **`2026-11-14T00:31:30Z`** (`Kanya 28° 37' 44"`) | `2026-12-15T18:49:21Z` | **`15.63°`** | **`41.72 d`** |
+| **Mercury** | `2026-10-04T09:07:43Z` | **`2026-10-24T07:13:01Z`** (`Tula 26° 44' 43"`) | `2026-11-03T11:33:49Z` (`0.6726 AU`, `+129.86 mag`) | **`2026-11-13T15:54:36Z`** (`Tula 10° 47' 56"`) | `2026-11-30T06:18:09Z` | **`15.95°`** | **`20.36 d`** |
+| **Jupiter** | `2026-09-17T03:26:17Z` | **`2026-12-12T23:50:18Z`** (`Simha 02° 47' 18"`) | `2027-02-11T12:56:10Z` (`4.3612 AU`, `-2.56 mag`) | **`2027-04-13T02:02:01Z`** (`Karka 22° 45' 15"`) | `2027-07-11T05:57:21Z` | **`10.03°`** | **`121.09 d`** |
+| **Mars** | `2026-11-05T15:14:34Z` | **`2027-01-10T12:45:29Z`** (`Simha 16° 11' 28"`) | `2027-02-20T01:24:04Z` (`0.6779 AU`, `-1.33 mag`) | **`2027-04-01T14:02:39Z`** (`Karka 26° 41' 09"`) | `2027-06-08T02:15:34Z` | **`19.51°`** | **`81.05 d`** |
+| **Mercury** | `2027-01-25T18:56:10Z` | **`2027-02-09T17:36:07Z`** (`Kumbha 11° 44' 32"`) | `2027-02-20T15:04:34Z` (`0.6377 AU`, `+121.26 mag`) | **`2027-03-03T12:33:01Z`** (`Makara 26° 41' 00"`) | `2027-03-23T14:59:25Z` | **`15.06°`** | **`21.79 d`** |
+
+### 22.2 Complete 360-Degree Zodiacal Retrograde Triple-Pass, Divisional (`D9/D10/D60`), & `KP` Master Reference Table (`0°` to `359°`)
+
+| Zodiacal Degree (`Nirayana`) | Classical `Rashi DMS` | `Nakshatra & Pada` | `D9 Navamsa` | `D10 Dasamsa` | `D60 Shashtiamsa` | `KP Sign / Star / Sub / Sub-Sub` | Active Retrograde Shadow Zone Status (±180d Window) |
+|---|---|---|---|---|---|---|---|
+| **`000° 00'`** | `Mesha 00° 00' 00"` | *Ashwini* P1 (Ketu) | **Mesha** | Mesha | Mesha | `mars/ketu/ketu/ketu` | Single Direct Transit Pass |
+| **`001° 00'`** | `Mesha 01° 00' 00"` | *Ashwini* P1 (Ketu) | **Mesha** | Mesha | Mithuna | `mars/ketu/venus/venus` | Single Direct Transit Pass |
+| **`002° 00'`** | `Mesha 02° 00' 00"` | *Ashwini* P1 (Ketu) | **Mesha** | Mesha | Simha | `mars/ketu/venus/jupiter` | Single Direct Transit Pass |
+| **`003° 00'`** | `Mesha 03° 00' 00"` | *Ashwini* P1 (Ketu) | **Mesha** | Vrishabha | Tula | `mars/ketu/sun/sun` | Single Direct Transit Pass |
+| **`004° 00'`** | `Mesha 04° 00' 00"` | *Ashwini* P2 (Ketu) | **Vrishabha** | Vrishabha | Dhanu | `mars/ketu/moon/jupiter` | Single Direct Transit Pass |
+| **`005° 00'`** | `Mesha 05° 00' 00"` | *Ashwini* P2 (Ketu) | **Vrishabha** | Vrishabha | Kumbha | `mars/ketu/mars/jupiter` | Single Direct Transit Pass |
+| **`006° 00'`** | `Mesha 06° 00' 00"` | *Ashwini* P2 (Ketu) | **Vrishabha** | Mithuna | Mesha | `mars/ketu/rahu/jupiter` | Single Direct Transit Pass |
+| **`007° 00'`** | `Mesha 07° 00' 00"` | *Ashwini* P3 (Ketu) | **Mithuna** | Mithuna | Mithuna | `mars/ketu/rahu/venus` | Single Direct Transit Pass |
+| **`008° 00'`** | `Mesha 08° 00' 00"` | *Ashwini* P3 (Ketu) | **Mithuna** | Mithuna | Simha | `mars/ketu/jupiter/saturn` | Single Direct Transit Pass |
+| **`009° 00'`** | `Mesha 09° 00' 00"` | *Ashwini* P3 (Ketu) | **Mithuna** | Karka | Tula | `mars/ketu/jupiter/mars` | Single Direct Transit Pass |
+| **`010° 00'`** | `Mesha 10° 00' 00"` | *Ashwini* P4 (Ketu) | **Karka** | Karka | Dhanu | `mars/ketu/saturn/ketu` | Single Direct Transit Pass |
+| **`011° 00'`** | `Mesha 11° 00' 00"` | *Ashwini* P4 (Ketu) | **Karka** | Karka | Kumbha | `mars/ketu/saturn/rahu` | Single Direct Transit Pass |
+| **`012° 00'`** | `Mesha 12° 00' 00"` | *Ashwini* P4 (Ketu) | **Karka** | Simha | Mesha | `mars/ketu/mercury/venus` | Single Direct Transit Pass |
+| **`013° 00'`** | `Mesha 13° 00' 00"` | *Ashwini* P4 (Ketu) | **Karka** | Simha | Mithuna | `mars/ketu/mercury/jupiter` | Single Direct Transit Pass |
+| **`014° 00'`** | `Mesha 14° 00' 00"` | *Bharani* P1 (Venus) | **Simha** | Simha | Simha | `mars/venus/venus/moon` | Single Direct Transit Pass |
+| **`015° 00'`** | `Mesha 15° 00' 00"` | *Bharani* P1 (Venus) | **Simha** | Kanya | Tula | `mars/venus/venus/saturn` | Single Direct Transit Pass |
+| **`016° 00'`** | `Mesha 16° 00' 00"` | *Bharani* P1 (Venus) | **Simha** | Kanya | Dhanu | `mars/venus/sun/mercury` | Single Direct Transit Pass |
+| **`017° 00'`** | `Mesha 17° 00' 00"` | *Bharani* P2 (Venus) | **Kanya** | Kanya | Kumbha | `mars/venus/moon/mercury` | Single Direct Transit Pass |
+| **`018° 00'`** | `Mesha 18° 00' 00"` | *Bharani* P2 (Venus) | **Kanya** | Tula | Mesha | `mars/venus/mars/venus` | Single Direct Transit Pass |
+| **`019° 00'`** | `Mesha 19° 00' 00"` | *Bharani* P2 (Venus) | **Kanya** | Tula | Mithuna | `mars/venus/rahu/mercury` | Single Direct Transit Pass |
+| **`020° 00'`** | `Mesha 20° 00' 00"` | *Bharani* P2 (Venus) | **Tula** | Tula | Simha | `mars/venus/rahu/mars` | Single Direct Transit Pass |
+| **`021° 00'`** | `Mesha 21° 00' 00"` | *Bharani* P3 (Venus) | **Tula** | Vrishchika | Tula | `mars/venus/jupiter/venus` | Single Direct Transit Pass |
+| **`022° 00'`** | `Mesha 22° 00' 00"` | *Bharani* P3 (Venus) | **Tula** | Vrishchika | Dhanu | `mars/venus/saturn/saturn` | Single Direct Transit Pass |
+| **`023° 00'`** | `Mesha 23° 00' 00"` | *Bharani* P3 (Venus) | **Tula** | Vrishchika | Kumbha | `mars/venus/saturn/sun` | Single Direct Transit Pass |
+| **`024° 00'`** | `Mesha 24° 00' 00"` | *Bharani* P4 (Venus) | **Vrishchika** | Dhanu | Mesha | `mars/venus/mercury/mercury` | Single Direct Transit Pass |
+| **`025° 00'`** | `Mesha 25° 00' 00"` | *Bharani* P4 (Venus) | **Vrishchika** | Dhanu | Mithuna | `mars/venus/mercury/mars` | Single Direct Transit Pass |
+| **`026° 00'`** | `Mesha 26° 00' 00"` | *Bharani* P4 (Venus) | **Vrishchika** | Dhanu | Simha | `mars/venus/ketu/venus` | Single Direct Transit Pass |
+| **`027° 00'`** | `Mesha 27° 00' 00"` | *Krittika* P1 (Sun) | **Dhanu** | Makara | Tula | `mars/sun/sun/saturn` | Single Direct Transit Pass |
+| **`028° 00'`** | `Mesha 28° 00' 00"` | *Krittika* P1 (Sun) | **Dhanu** | Makara | Dhanu | `mars/sun/moon/mercury` | Single Direct Transit Pass |
+| **`029° 00'`** | `Mesha 29° 00' 00"` | *Krittika* P1 (Sun) | **Dhanu** | Makara | Kumbha | `mars/sun/mars/venus` | Single Direct Transit Pass |
+| **`030° 00'`** | `Vrishabha 00° 00' 00"` | *Krittika* P1 (Sun) | **Makara** | Makara | Vrishabha | `venus/sun/rahu/saturn` | Single Direct Transit Pass |
+| **`031° 00'`** | `Vrishabha 01° 00' 00"` | *Krittika* P2 (Sun) | **Makara** | Makara | Karka | `venus/sun/rahu/moon` | Single Direct Transit Pass |
+| **`032° 00'`** | `Vrishabha 02° 00' 00"` | *Krittika* P2 (Sun) | **Makara** | Makara | Kanya | `venus/sun/jupiter/ketu` | Single Direct Transit Pass |
+| **`033° 00'`** | `Vrishabha 03° 00' 00"` | *Krittika* P2 (Sun) | **Makara** | Kumbha | Vrishchika | `venus/sun/jupiter/rahu` | Single Direct Transit Pass |
+| **`034° 00'`** | `Vrishabha 04° 00' 00"` | *Krittika* P3 (Sun) | **Kumbha** | Kumbha | Makara | `venus/sun/saturn/venus` | Single Direct Transit Pass |
+| **`035° 00'`** | `Vrishabha 05° 00' 00"` | *Krittika* P3 (Sun) | **Kumbha** | Kumbha | Meena | `venus/sun/saturn/jupiter` | Single Direct Transit Pass |
+| **`036° 00'`** | `Vrishabha 06° 00' 00"` | *Krittika* P3 (Sun) | **Kumbha** | Meena | Vrishabha | `venus/sun/mercury/moon` | Single Direct Transit Pass |
+| **`037° 00'`** | `Vrishabha 07° 00' 00"` | *Krittika* P4 (Sun) | **Meena** | Meena | Karka | `venus/sun/mercury/saturn` | Single Direct Transit Pass |
+| **`038° 00'`** | `Vrishabha 08° 00' 00"` | *Krittika* P4 (Sun) | **Meena** | Meena | Kanya | `venus/sun/venus/venus` | Single Direct Transit Pass |
+| **`039° 00'`** | `Vrishabha 09° 00' 00"` | *Krittika* P4 (Sun) | **Meena** | Mesha | Vrishchika | `venus/sun/venus/jupiter` | Single Direct Transit Pass |
+| **`040° 00'`** | `Vrishabha 10° 00' 00"` | *Rohini* P1 (Moon) | **Mesha** | Mesha | Makara | `venus/sun/venus/ketu` | Single Direct Transit Pass |
+| **`041° 00'`** | `Vrishabha 11° 00' 00"` | *Rohini* P1 (Moon) | **Mesha** | Mesha | Meena | `venus/moon/moon/venus` | Single Direct Transit Pass |
+| **`042° 00'`** | `Vrishabha 12° 00' 00"` | *Rohini* P1 (Moon) | **Mesha** | Vrishabha | Vrishabha | `venus/moon/rahu/rahu` | Single Direct Transit Pass |
+| **`043° 00'`** | `Vrishabha 13° 00' 00"` | *Rohini* P1 (Moon) | **Mesha** | Vrishabha | Karka | `venus/moon/rahu/mercury` | Single Direct Transit Pass |
+| **`044° 00'`** | `Vrishabha 14° 00' 00"` | *Rohini* P2 (Moon) | **Vrishabha** | Vrishabha | Kanya | `venus/moon/jupiter/jupiter` | Single Direct Transit Pass |
+| **`045° 00'`** | `Vrishabha 15° 00' 00"` | *Rohini* P2 (Moon) | **Vrishabha** | Mithuna | Vrishchika | `venus/moon/jupiter/venus` | Single Direct Transit Pass |
+| **`046° 00'`** | `Vrishabha 16° 00' 00"` | *Rohini* P2 (Moon) | **Vrishabha** | Mithuna | Makara | `venus/moon/saturn/saturn` | Single Direct Transit Pass |
+| **`047° 00'`** | `Vrishabha 17° 00' 00"` | *Rohini* P3 (Moon) | **Mithuna** | Mithuna | Meena | `venus/moon/saturn/moon` | Single Direct Transit Pass |
+| **`048° 00'`** | `Vrishabha 18° 00' 00"` | *Rohini* P3 (Moon) | **Mithuna** | Karka | Vrishabha | `venus/moon/mercury/mercury` | Single Direct Transit Pass |
+| **`049° 00'`** | `Vrishabha 19° 00' 00"` | *Rohini* P3 (Moon) | **Mithuna** | Karka | Karka | `venus/moon/mercury/rahu` | Single Direct Transit Pass |
+| **`050° 00'`** | `Vrishabha 20° 00' 00"` | *Rohini* P4 (Moon) | **Karka** | Karka | Kanya | `venus/moon/ketu/rahu` | Single Direct Transit Pass |
+| **`051° 00'`** | `Vrishabha 21° 00' 00"` | *Rohini* P4 (Moon) | **Karka** | Simha | Vrishchika | `venus/moon/venus/moon` | Single Direct Transit Pass |
+| **`052° 00'`** | `Vrishabha 22° 00' 00"` | *Rohini* P4 (Moon) | **Karka** | Simha | Makara | `venus/moon/venus/saturn` | Single Direct Transit Pass |
+| **`053° 00'`** | `Vrishabha 23° 00' 00"` | *Rohini* P4 (Moon) | **Karka** | Simha | Meena | `venus/moon/sun/saturn` | Single Direct Transit Pass |
+| **`054° 00'`** | `Vrishabha 24° 00' 00"` | *Mrigashirsha* P1 (Mars) | **Simha** | Kanya | Vrishabha | `venus/mars/mars/venus` | Single Direct Transit Pass |
+| **`055° 00'`** | `Vrishabha 25° 00' 00"` | *Mrigashirsha* P1 (Mars) | **Simha** | Kanya | Karka | `venus/mars/rahu/mercury` | Single Direct Transit Pass |
+| **`056° 00'`** | `Vrishabha 26° 00' 00"` | *Mrigashirsha* P1 (Mars) | **Simha** | Kanya | Kanya | `venus/mars/rahu/mars` | Single Direct Transit Pass |
+| **`057° 00'`** | `Vrishabha 27° 00' 00"` | *Mrigashirsha* P2 (Mars) | **Kanya** | Tula | Vrishchika | `venus/mars/jupiter/venus` | Single Direct Transit Pass |
+| **`058° 00'`** | `Vrishabha 28° 00' 00"` | *Mrigashirsha* P2 (Mars) | **Kanya** | Tula | Makara | `venus/mars/saturn/saturn` | Single Direct Transit Pass |
+| **`059° 00'`** | `Vrishabha 29° 00' 00"` | *Mrigashirsha* P2 (Mars) | **Kanya** | Tula | Meena | `venus/mars/saturn/sun` | Single Direct Transit Pass |
+| **`060° 00'`** | `Mithuna 00° 00' 00"` | *Mrigashirsha* P2 (Mars) | **Tula** | Mithuna | Mithuna | `mercury/mars/saturn/jupiter` | Single Direct Transit Pass |
+| **`061° 00'`** | `Mithuna 01° 00' 00"` | *Mrigashirsha* P3 (Mars) | **Tula** | Mithuna | Simha | `mercury/mars/mercury/mars` | Single Direct Transit Pass |
+| **`062° 00'`** | `Mithuna 02° 00' 00"` | *Mrigashirsha* P3 (Mars) | **Tula** | Mithuna | Tula | `mercury/mars/ketu/venus` | Single Direct Transit Pass |
+| **`063° 00'`** | `Mithuna 03° 00' 00"` | *Mrigashirsha* P3 (Mars) | **Tula** | Karka | Dhanu | `mercury/mars/venus/venus` | Single Direct Transit Pass |
+| **`064° 00'`** | `Mithuna 04° 00' 00"` | *Mrigashirsha* P4 (Mars) | **Vrishchika** | Karka | Kumbha | `mercury/mars/venus/jupiter` | Single Direct Transit Pass |
+| **`065° 00'`** | `Mithuna 05° 00' 00"` | *Mrigashirsha* P4 (Mars) | **Vrishchika** | Karka | Mesha | `mercury/mars/sun/mars` | Single Direct Transit Pass |
+| **`066° 00'`** | `Mithuna 06° 00' 00"` | *Mrigashirsha* P4 (Mars) | **Vrishchika** | Simha | Mithuna | `mercury/mars/moon/jupiter` | Single Direct Transit Pass |
+| **`067° 00'`** | `Mithuna 07° 00' 00"` | *Ardra* P1 (Rahu) | **Dhanu** | Simha | Simha | `mercury/rahu/rahu/jupiter` | Single Direct Transit Pass |
+| **`068° 00'`** | `Mithuna 08° 00' 00"` | *Ardra* P1 (Rahu) | **Dhanu** | Simha | Tula | `mercury/rahu/rahu/venus` | Single Direct Transit Pass |
+| **`069° 00'`** | `Mithuna 09° 00' 00"` | *Ardra* P1 (Rahu) | **Dhanu** | Kanya | Dhanu | `mercury/rahu/jupiter/saturn` | Single Direct Transit Pass |
+| **`070° 00'`** | `Mithuna 10° 00' 00"` | *Ardra* P1 (Rahu) | **Makara** | Kanya | Kumbha | `mercury/rahu/jupiter/moon` | Single Direct Transit Pass |
+| **`071° 00'`** | `Mithuna 11° 00' 00"` | *Ardra* P2 (Rahu) | **Makara** | Kanya | Mesha | `mercury/rahu/saturn/mercury` | Single Direct Transit Pass |
+| **`072° 00'`** | `Mithuna 12° 00' 00"` | *Ardra* P2 (Rahu) | **Makara** | Tula | Mithuna | `mercury/rahu/saturn/rahu` | Single Direct Transit Pass |
+| **`073° 00'`** | `Mithuna 13° 00' 00"` | *Ardra* P2 (Rahu) | **Makara** | Tula | Simha | `mercury/rahu/mercury/venus` | Single Direct Transit Pass |
+| **`074° 00'`** | `Mithuna 14° 00' 00"` | *Ardra* P3 (Rahu) | **Kumbha** | Tula | Tula | `mercury/rahu/mercury/jupiter` | Single Direct Transit Pass |
+| **`075° 00'`** | `Mithuna 15° 00' 00"` | *Ardra* P3 (Rahu) | **Kumbha** | Vrishchika | Dhanu | `mercury/rahu/ketu/saturn` | Single Direct Transit Pass |
+| **`076° 00'`** | `Mithuna 16° 00' 00"` | *Ardra* P3 (Rahu) | **Kumbha** | Vrishchika | Kumbha | `mercury/rahu/venus/mars` | Single Direct Transit Pass |
+| **`077° 00'`** | `Mithuna 17° 00' 00"` | *Ardra* P4 (Rahu) | **Meena** | Vrishchika | Mesha | `mercury/rahu/venus/saturn` | Single Direct Transit Pass |
+| **`078° 00'`** | `Mithuna 18° 00' 00"` | *Ardra* P4 (Rahu) | **Meena** | Dhanu | Mithuna | `mercury/rahu/sun/ketu` | Single Direct Transit Pass |
+| **`079° 00'`** | `Mithuna 19° 00' 00"` | *Ardra* P4 (Rahu) | **Meena** | Dhanu | Simha | `mercury/rahu/moon/venus` | Single Direct Transit Pass |
+| **`080° 00'`** | `Mithuna 20° 00' 00"` | *Punarvasu* P1 (Jupiter) | **Mesha** | Dhanu | Tula | `mercury/rahu/mars/moon` | Single Direct Transit Pass |
+| **`081° 00'`** | `Mithuna 21° 00' 00"` | *Punarvasu* P1 (Jupiter) | **Mesha** | Makara | Dhanu | `mercury/jupiter/jupiter/venus` | Single Direct Transit Pass |
+| **`082° 00'`** | `Mithuna 22° 00' 00"` | *Punarvasu* P1 (Jupiter) | **Mesha** | Makara | Kumbha | `mercury/jupiter/saturn/saturn` | Single Direct Transit Pass |
+| **`083° 00'`** | `Mithuna 23° 00' 00"` | *Punarvasu* P1 (Jupiter) | **Mesha** | Makara | Mesha | `mercury/jupiter/saturn/moon` | **Mercury Triple-Pass Zone** (`Mithuna 22° 05' 09"`..`Karka 02° 01' 41"`) |
+| **`084° 00'`** | `Mithuna 24° 00' 00"` | *Punarvasu* P2 (Jupiter) | **Vrishabha** | Kumbha | Mithuna | `mercury/jupiter/mercury/mercury` | **Mercury Triple-Pass Zone** (`Mithuna 22° 05' 09"`..`Karka 02° 01' 41"`) |
+| **`085° 00'`** | `Mithuna 25° 00' 00"` | *Punarvasu* P2 (Jupiter) | **Vrishabha** | Kumbha | Simha | `mercury/jupiter/mercury/rahu` | **Mercury Triple-Pass Zone** (`Mithuna 22° 05' 09"`..`Karka 02° 01' 41"`) |
+| **`086° 00'`** | `Mithuna 26° 00' 00"` | *Punarvasu* P2 (Jupiter) | **Vrishabha** | Kumbha | Tula | `mercury/jupiter/ketu/moon` | **Mercury Triple-Pass Zone** (`Mithuna 22° 05' 09"`..`Karka 02° 01' 41"`) |
+| **`087° 00'`** | `Mithuna 27° 00' 00"` | *Punarvasu* P3 (Jupiter) | **Mithuna** | Meena | Dhanu | `mercury/jupiter/venus/sun` | **Mercury Triple-Pass Zone** (`Mithuna 22° 05' 09"`..`Karka 02° 01' 41"`) |
+| **`088° 00'`** | `Mithuna 28° 00' 00"` | *Punarvasu* P3 (Jupiter) | **Mithuna** | Meena | Kumbha | `mercury/jupiter/venus/saturn` | **Mercury Triple-Pass Zone** (`Mithuna 22° 05' 09"`..`Karka 02° 01' 41"`) |
+| **`089° 00'`** | `Mithuna 29° 00' 00"` | *Punarvasu* P3 (Jupiter) | **Mithuna** | Meena | Mesha | `mercury/jupiter/sun/rahu` | **Mercury Triple-Pass Zone** (`Mithuna 22° 05' 09"`..`Karka 02° 01' 41"`) |
+| **`090° 00'`** | `Karka 00° 00' 00"` | *Punarvasu* P4 (Jupiter) | **Karka** | Meena | Karka | `moon/jupiter/moon/saturn` | **Mercury Triple-Pass Zone** (`Mithuna 22° 05' 09"`..`Karka 02° 01' 41"`) |
+| **`091° 00'`** | `Karka 01° 00' 00"` | *Punarvasu* P4 (Jupiter) | **Karka** | Meena | Kanya | `moon/jupiter/mars/mercury` | **Mercury Triple-Pass Zone** (`Mithuna 22° 05' 09"`..`Karka 02° 01' 41"`) |
+| **`092° 00'`** | `Karka 02° 00' 00"` | *Punarvasu* P4 (Jupiter) | **Karka** | Meena | Vrishchika | `moon/jupiter/rahu/saturn` | **Mercury Triple-Pass Zone** (`Mithuna 22° 05' 09"`..`Karka 02° 01' 41"`) |
+| **`093° 00'`** | `Karka 03° 00' 00"` | *Punarvasu* P4 (Jupiter) | **Karka** | Mesha | Makara | `moon/jupiter/rahu/sun` | Single Direct Transit Pass |
+| **`094° 00'`** | `Karka 04° 00' 00"` | *Pushya* P1 (Saturn) | **Simha** | Mesha | Meena | `moon/saturn/saturn/ketu` | Single Direct Transit Pass |
+| **`095° 00'`** | `Karka 05° 00' 00"` | *Pushya* P1 (Saturn) | **Simha** | Mesha | Vrishabha | `moon/saturn/saturn/rahu` | Single Direct Transit Pass |
+| **`096° 00'`** | `Karka 06° 00' 00"` | *Pushya* P1 (Saturn) | **Simha** | Vrishabha | Karka | `moon/saturn/mercury/venus` | Single Direct Transit Pass |
+| **`097° 00'`** | `Karka 07° 00' 00"` | *Pushya* P2 (Saturn) | **Kanya** | Vrishabha | Kanya | `moon/saturn/mercury/jupiter` | Single Direct Transit Pass |
+| **`098° 00'`** | `Karka 08° 00' 00"` | *Pushya* P2 (Saturn) | **Kanya** | Vrishabha | Vrishchika | `moon/saturn/ketu/saturn` | Single Direct Transit Pass |
+| **`099° 00'`** | `Karka 09° 00' 00"` | *Pushya* P2 (Saturn) | **Kanya** | Mithuna | Makara | `moon/saturn/venus/rahu` | Single Direct Transit Pass |
+| **`100° 00'`** | `Karka 10° 00' 00"` | *Pushya* P2 (Saturn) | **Tula** | Mithuna | Meena | `moon/saturn/venus/mercury` | Single Direct Transit Pass |
+| **`101° 00'`** | `Karka 11° 00' 00"` | *Pushya* P3 (Saturn) | **Tula** | Mithuna | Vrishabha | `moon/saturn/sun/venus` | Single Direct Transit Pass |
+| **`102° 00'`** | `Karka 12° 00' 00"` | *Pushya* P3 (Saturn) | **Tula** | Karka | Karka | `moon/saturn/moon/venus` | Single Direct Transit Pass |
+| **`103° 00'`** | `Karka 13° 00' 00"` | *Pushya* P3 (Saturn) | **Tula** | Karka | Kanya | `moon/saturn/rahu/rahu` | Single Direct Transit Pass |
+| **`104° 00'`** | `Karka 14° 00' 00"` | *Pushya* P4 (Saturn) | **Vrishchika** | Karka | Vrishchika | `moon/saturn/rahu/mercury` | Single Direct Transit Pass |
+| **`105° 00'`** | `Karka 15° 00' 00"` | *Pushya* P4 (Saturn) | **Vrishchika** | Simha | Makara | `moon/saturn/jupiter/jupiter` | Single Direct Transit Pass |
+| **`106° 00'`** | `Karka 16° 00' 00"` | *Pushya* P4 (Saturn) | **Vrishchika** | Simha | Meena | `moon/saturn/jupiter/venus` | Single Direct Transit Pass |
+| **`107° 00'`** | `Karka 17° 00' 00"` | *Ashlesha* P1 (Mercury) | **Dhanu** | Simha | Vrishabha | `moon/mercury/mercury/ketu` | Single Direct Transit Pass |
+| **`108° 00'`** | `Karka 18° 00' 00"` | *Ashlesha* P1 (Mercury) | **Dhanu** | Kanya | Karka | `moon/mercury/mercury/rahu` | Single Direct Transit Pass |
+| **`109° 00'`** | `Karka 19° 00' 00"` | *Ashlesha* P1 (Mercury) | **Dhanu** | Kanya | Kanya | `moon/mercury/ketu/jupiter` | Single Direct Transit Pass |
+| **`110° 00'`** | `Karka 20° 00' 00"` | *Ashlesha* P1 (Mercury) | **Makara** | Kanya | Vrishchika | `moon/mercury/venus/moon` | Single Direct Transit Pass |
+| **`111° 00'`** | `Karka 21° 00' 00"` | *Ashlesha* P2 (Mercury) | **Makara** | Tula | Makara | `moon/mercury/venus/saturn` | Single Direct Transit Pass |
+| **`112° 00'`** | `Karka 22° 00' 00"` | *Ashlesha* P2 (Mercury) | **Makara** | Tula | Meena | `moon/mercury/sun/mercury` | Single Direct Transit Pass |
+| **`113° 00'`** | `Karka 23° 00' 00"` | *Ashlesha* P2 (Mercury) | **Makara** | Tula | Vrishabha | `moon/mercury/moon/mercury` | **Jupiter Triple-Pass Zone** (`Karka 22° 45' 15"`..`Simha 02° 47' 18"`) |
+| **`114° 00'`** | `Karka 24° 00' 00"` | *Ashlesha* P3 (Mercury) | **Kumbha** | Vrishchika | Karka | `moon/mercury/mars/venus` | **Jupiter Triple-Pass Zone** (`Karka 22° 45' 15"`..`Simha 02° 47' 18"`) |
+| **`115° 00'`** | `Karka 25° 00' 00"` | *Ashlesha* P3 (Mercury) | **Kumbha** | Vrishchika | Kanya | `moon/mercury/rahu/mercury` | **Jupiter Triple-Pass Zone** (`Karka 22° 45' 15"`..`Simha 02° 47' 18"`) |
+| **`116° 00'`** | `Karka 26° 00' 00"` | *Ashlesha* P3 (Mercury) | **Kumbha** | Vrishchika | Vrishchika | `moon/mercury/rahu/mars` | **Jupiter Triple-Pass Zone** (`Karka 22° 45' 15"`..`Simha 02° 47' 18"`) |
+| **`117° 00'`** | `Karka 27° 00' 00"` | *Ashlesha* P4 (Mercury) | **Meena** | Dhanu | Makara | `moon/mercury/jupiter/venus` | **Jupiter Triple-Pass Zone** (`Karka 22° 45' 15"`..`Simha 02° 47' 18"`); **Mars Triple-Pass Zone** (`Karka 26° 41' 09"`..`Simha 16° 11' 28"`) |
+| **`118° 00'`** | `Karka 28° 00' 00"` | *Ashlesha* P4 (Mercury) | **Meena** | Dhanu | Meena | `moon/mercury/saturn/saturn` | **Jupiter Triple-Pass Zone** (`Karka 22° 45' 15"`..`Simha 02° 47' 18"`); **Mars Triple-Pass Zone** (`Karka 26° 41' 09"`..`Simha 16° 11' 28"`) |
+| **`119° 00'`** | `Karka 29° 00' 00"` | *Ashlesha* P4 (Mercury) | **Meena** | Dhanu | Vrishabha | `moon/mercury/saturn/sun` | **Jupiter Triple-Pass Zone** (`Karka 22° 45' 15"`..`Simha 02° 47' 18"`); **Mars Triple-Pass Zone** (`Karka 26° 41' 09"`..`Simha 16° 11' 28"`) |
+| **`120° 00'`** | `Simha 00° 00' 00"` | *Magha* P1 (Ketu) | **Mesha** | Simha | Simha | `sun/mercury/saturn/jupiter` | **Jupiter Triple-Pass Zone** (`Karka 22° 45' 15"`..`Simha 02° 47' 18"`); **Mars Triple-Pass Zone** (`Karka 26° 41' 09"`..`Simha 16° 11' 28"`) |
+| **`121° 00'`** | `Simha 01° 00' 00"` | *Magha* P1 (Ketu) | **Mesha** | Simha | Tula | `sun/ketu/venus/venus` | **Jupiter Triple-Pass Zone** (`Karka 22° 45' 15"`..`Simha 02° 47' 18"`); **Mars Triple-Pass Zone** (`Karka 26° 41' 09"`..`Simha 16° 11' 28"`) |
+| **`122° 00'`** | `Simha 02° 00' 00"` | *Magha* P1 (Ketu) | **Mesha** | Simha | Dhanu | `sun/ketu/venus/jupiter` | **Jupiter Triple-Pass Zone** (`Karka 22° 45' 15"`..`Simha 02° 47' 18"`); **Mars Triple-Pass Zone** (`Karka 26° 41' 09"`..`Simha 16° 11' 28"`) |
+| **`123° 00'`** | `Simha 03° 00' 00"` | *Magha* P1 (Ketu) | **Mesha** | Kanya | Kumbha | `sun/ketu/sun/sun` | **Mars Triple-Pass Zone** (`Karka 26° 41' 09"`..`Simha 16° 11' 28"`) |
+| **`124° 00'`** | `Simha 04° 00' 00"` | *Magha* P2 (Ketu) | **Vrishabha** | Kanya | Mesha | `sun/ketu/moon/jupiter` | **Mars Triple-Pass Zone** (`Karka 26° 41' 09"`..`Simha 16° 11' 28"`) |
+| **`125° 00'`** | `Simha 05° 00' 00"` | *Magha* P2 (Ketu) | **Vrishabha** | Kanya | Mithuna | `sun/ketu/mars/jupiter` | **Mars Triple-Pass Zone** (`Karka 26° 41' 09"`..`Simha 16° 11' 28"`) |
+| **`126° 00'`** | `Simha 06° 00' 00"` | *Magha* P2 (Ketu) | **Vrishabha** | Tula | Simha | `sun/ketu/rahu/jupiter` | **Mars Triple-Pass Zone** (`Karka 26° 41' 09"`..`Simha 16° 11' 28"`) |
+| **`127° 00'`** | `Simha 07° 00' 00"` | *Magha* P3 (Ketu) | **Mithuna** | Tula | Tula | `sun/ketu/rahu/venus` | **Mars Triple-Pass Zone** (`Karka 26° 41' 09"`..`Simha 16° 11' 28"`) |
+| **`128° 00'`** | `Simha 08° 00' 00"` | *Magha* P3 (Ketu) | **Mithuna** | Tula | Dhanu | `sun/ketu/jupiter/saturn` | **Mars Triple-Pass Zone** (`Karka 26° 41' 09"`..`Simha 16° 11' 28"`) |
+| **`129° 00'`** | `Simha 09° 00' 00"` | *Magha* P3 (Ketu) | **Mithuna** | Vrishchika | Kumbha | `sun/ketu/jupiter/mars` | **Mars Triple-Pass Zone** (`Karka 26° 41' 09"`..`Simha 16° 11' 28"`) |
+| **`130° 00'`** | `Simha 10° 00' 00"` | *Magha* P4 (Ketu) | **Karka** | Vrishchika | Mesha | `sun/ketu/saturn/ketu` | **Mars Triple-Pass Zone** (`Karka 26° 41' 09"`..`Simha 16° 11' 28"`) |
+| **`131° 00'`** | `Simha 11° 00' 00"` | *Magha* P4 (Ketu) | **Karka** | Vrishchika | Mithuna | `sun/ketu/saturn/rahu` | **Mars Triple-Pass Zone** (`Karka 26° 41' 09"`..`Simha 16° 11' 28"`) |
+| **`132° 00'`** | `Simha 12° 00' 00"` | *Magha* P4 (Ketu) | **Karka** | Dhanu | Simha | `sun/ketu/mercury/venus` | **Mars Triple-Pass Zone** (`Karka 26° 41' 09"`..`Simha 16° 11' 28"`) |
+| **`133° 00'`** | `Simha 13° 00' 00"` | *Magha* P4 (Ketu) | **Karka** | Dhanu | Tula | `sun/ketu/mercury/jupiter` | **Mars Triple-Pass Zone** (`Karka 26° 41' 09"`..`Simha 16° 11' 28"`) |
+| **`134° 00'`** | `Simha 14° 00' 00"` | *Purva Phalguni* P1 (Venus) | **Simha** | Dhanu | Dhanu | `sun/venus/venus/moon` | **Mars Triple-Pass Zone** (`Karka 26° 41' 09"`..`Simha 16° 11' 28"`) |
+| **`135° 00'`** | `Simha 15° 00' 00"` | *Purva Phalguni* P1 (Venus) | **Simha** | Makara | Kumbha | `sun/venus/venus/saturn` | **Mars Triple-Pass Zone** (`Karka 26° 41' 09"`..`Simha 16° 11' 28"`) |
+| **`136° 00'`** | `Simha 16° 00' 00"` | *Purva Phalguni* P1 (Venus) | **Simha** | Makara | Mesha | `sun/venus/sun/mercury` | **Mars Triple-Pass Zone** (`Karka 26° 41' 09"`..`Simha 16° 11' 28"`) |
+| **`137° 00'`** | `Simha 17° 00' 00"` | *Purva Phalguni* P2 (Venus) | **Kanya** | Makara | Mithuna | `sun/venus/moon/mercury` | Single Direct Transit Pass |
+| **`138° 00'`** | `Simha 18° 00' 00"` | *Purva Phalguni* P2 (Venus) | **Kanya** | Kumbha | Simha | `sun/venus/mars/venus` | Single Direct Transit Pass |
+| **`139° 00'`** | `Simha 19° 00' 00"` | *Purva Phalguni* P2 (Venus) | **Kanya** | Kumbha | Tula | `sun/venus/rahu/mercury` | Single Direct Transit Pass |
+| **`140° 00'`** | `Simha 20° 00' 00"` | *Purva Phalguni* P2 (Venus) | **Tula** | Kumbha | Dhanu | `sun/venus/rahu/mars` | Single Direct Transit Pass |
+| **`141° 00'`** | `Simha 21° 00' 00"` | *Purva Phalguni* P3 (Venus) | **Tula** | Meena | Kumbha | `sun/venus/jupiter/venus` | Single Direct Transit Pass |
+| **`142° 00'`** | `Simha 22° 00' 00"` | *Purva Phalguni* P3 (Venus) | **Tula** | Meena | Mesha | `sun/venus/saturn/saturn` | Single Direct Transit Pass |
+| **`143° 00'`** | `Simha 23° 00' 00"` | *Purva Phalguni* P3 (Venus) | **Tula** | Meena | Mithuna | `sun/venus/saturn/sun` | Single Direct Transit Pass |
+| **`144° 00'`** | `Simha 24° 00' 00"` | *Purva Phalguni* P4 (Venus) | **Vrishchika** | Mesha | Simha | `sun/venus/saturn/jupiter` | Single Direct Transit Pass |
+| **`145° 00'`** | `Simha 25° 00' 00"` | *Purva Phalguni* P4 (Venus) | **Vrishchika** | Mesha | Tula | `sun/venus/mercury/mars` | Single Direct Transit Pass |
+| **`146° 00'`** | `Simha 26° 00' 00"` | *Purva Phalguni* P4 (Venus) | **Vrishchika** | Mesha | Dhanu | `sun/venus/ketu/venus` | Single Direct Transit Pass |
+| **`147° 00'`** | `Simha 27° 00' 00"` | *Uttara Phalguni* P1 (Sun) | **Dhanu** | Vrishabha | Kumbha | `sun/sun/sun/saturn` | Single Direct Transit Pass |
+| **`148° 00'`** | `Simha 28° 00' 00"` | *Uttara Phalguni* P1 (Sun) | **Dhanu** | Vrishabha | Mesha | `sun/sun/moon/mercury` | Single Direct Transit Pass |
+| **`149° 00'`** | `Simha 29° 00' 00"` | *Uttara Phalguni* P1 (Sun) | **Dhanu** | Vrishabha | Mithuna | `sun/sun/mars/venus` | Single Direct Transit Pass |
+| **`150° 00'`** | `Kanya 00° 00' 00"` | *Uttara Phalguni* P1 (Sun) | **Makara** | Vrishabha | Kanya | `mercury/sun/rahu/saturn` | Single Direct Transit Pass |
+| **`151° 00'`** | `Kanya 01° 00' 00"` | *Uttara Phalguni* P2 (Sun) | **Makara** | Vrishabha | Vrishchika | `mercury/sun/rahu/moon` | Single Direct Transit Pass |
+| **`152° 00'`** | `Kanya 02° 00' 00"` | *Uttara Phalguni* P2 (Sun) | **Makara** | Vrishabha | Makara | `mercury/sun/jupiter/ketu` | Single Direct Transit Pass |
+| **`153° 00'`** | `Kanya 03° 00' 00"` | *Uttara Phalguni* P2 (Sun) | **Makara** | Mithuna | Meena | `mercury/sun/jupiter/rahu` | Single Direct Transit Pass |
+| **`154° 00'`** | `Kanya 04° 00' 00"` | *Uttara Phalguni* P3 (Sun) | **Kumbha** | Mithuna | Vrishabha | `mercury/sun/saturn/venus` | Single Direct Transit Pass |
+| **`155° 00'`** | `Kanya 05° 00' 00"` | *Uttara Phalguni* P3 (Sun) | **Kumbha** | Mithuna | Karka | `mercury/sun/saturn/jupiter` | Single Direct Transit Pass |
+| **`156° 00'`** | `Kanya 06° 00' 00"` | *Uttara Phalguni* P3 (Sun) | **Kumbha** | Karka | Kanya | `mercury/sun/mercury/moon` | Single Direct Transit Pass |
+| **`157° 00'`** | `Kanya 07° 00' 00"` | *Uttara Phalguni* P4 (Sun) | **Meena** | Karka | Vrishchika | `mercury/sun/mercury/saturn` | Single Direct Transit Pass |
+| **`158° 00'`** | `Kanya 08° 00' 00"` | *Uttara Phalguni* P4 (Sun) | **Meena** | Karka | Makara | `mercury/sun/venus/venus` | Single Direct Transit Pass |
+| **`159° 00'`** | `Kanya 09° 00' 00"` | *Uttara Phalguni* P4 (Sun) | **Meena** | Simha | Meena | `mercury/sun/venus/jupiter` | Single Direct Transit Pass |
+| **`160° 00'`** | `Kanya 10° 00' 00"` | *Hasta* P1 (Moon) | **Mesha** | Simha | Vrishabha | `mercury/sun/venus/ketu` | Single Direct Transit Pass |
+| **`161° 00'`** | `Kanya 11° 00' 00"` | *Hasta* P1 (Moon) | **Mesha** | Simha | Karka | `mercury/moon/moon/venus` | Single Direct Transit Pass |
+| **`162° 00'`** | `Kanya 12° 00' 00"` | *Hasta* P1 (Moon) | **Mesha** | Kanya | Kanya | `mercury/moon/rahu/rahu` | Single Direct Transit Pass |
+| **`163° 00'`** | `Kanya 13° 00' 00"` | *Hasta* P1 (Moon) | **Mesha** | Kanya | Vrishchika | `mercury/moon/rahu/mercury` | Single Direct Transit Pass |
+| **`164° 00'`** | `Kanya 14° 00' 00"` | *Hasta* P2 (Moon) | **Vrishabha** | Kanya | Makara | `mercury/moon/jupiter/jupiter` | Single Direct Transit Pass |
+| **`165° 00'`** | `Kanya 15° 00' 00"` | *Hasta* P2 (Moon) | **Vrishabha** | Tula | Meena | `mercury/moon/jupiter/venus` | Single Direct Transit Pass |
+| **`166° 00'`** | `Kanya 16° 00' 00"` | *Hasta* P2 (Moon) | **Vrishabha** | Tula | Vrishabha | `mercury/moon/saturn/saturn` | Single Direct Transit Pass |
+| **`167° 00'`** | `Kanya 17° 00' 00"` | *Hasta* P3 (Moon) | **Mithuna** | Tula | Karka | `mercury/moon/saturn/moon` | Single Direct Transit Pass |
+| **`168° 00'`** | `Kanya 18° 00' 00"` | *Hasta* P3 (Moon) | **Mithuna** | Vrishchika | Kanya | `mercury/moon/mercury/mercury` | Single Direct Transit Pass |
+| **`169° 00'`** | `Kanya 19° 00' 00"` | *Hasta* P3 (Moon) | **Mithuna** | Vrishchika | Vrishchika | `mercury/moon/mercury/rahu` | Single Direct Transit Pass |
+| **`170° 00'`** | `Kanya 20° 00' 00"` | *Hasta* P4 (Moon) | **Karka** | Vrishchika | Makara | `mercury/moon/ketu/rahu` | Single Direct Transit Pass |
+| **`171° 00'`** | `Kanya 21° 00' 00"` | *Hasta* P4 (Moon) | **Karka** | Dhanu | Meena | `mercury/moon/venus/moon` | Single Direct Transit Pass |
+| **`172° 00'`** | `Kanya 22° 00' 00"` | *Hasta* P4 (Moon) | **Karka** | Dhanu | Vrishabha | `mercury/moon/venus/saturn` | Single Direct Transit Pass |
+| **`173° 00'`** | `Kanya 23° 00' 00"` | *Hasta* P4 (Moon) | **Karka** | Dhanu | Karka | `mercury/moon/sun/saturn` | Single Direct Transit Pass |
+| **`174° 00'`** | `Kanya 24° 00' 00"` | *Chitra* P1 (Mars) | **Simha** | Makara | Kanya | `mercury/mars/mars/venus` | Single Direct Transit Pass |
+| **`175° 00'`** | `Kanya 25° 00' 00"` | *Chitra* P1 (Mars) | **Simha** | Makara | Vrishchika | `mercury/mars/rahu/mercury` | Single Direct Transit Pass |
+| **`176° 00'`** | `Kanya 26° 00' 00"` | *Chitra* P1 (Mars) | **Simha** | Makara | Makara | `mercury/mars/rahu/mars` | Single Direct Transit Pass |
+| **`177° 00'`** | `Kanya 27° 00' 00"` | *Chitra* P2 (Mars) | **Kanya** | Kumbha | Meena | `mercury/mars/jupiter/venus` | Single Direct Transit Pass |
+| **`178° 00'`** | `Kanya 28° 00' 00"` | *Chitra* P2 (Mars) | **Kanya** | Kumbha | Vrishabha | `mercury/mars/saturn/saturn` | Single Direct Transit Pass |
+| **`179° 00'`** | `Kanya 29° 00' 00"` | *Chitra* P2 (Mars) | **Kanya** | Kumbha | Karka | `mercury/mars/saturn/sun` | **Venus Triple-Pass Zone** (`Kanya 28° 37' 44"`..`Tula 14° 15' 29"`) |
+| **`180° 00'`** | `Tula 00° 00' 00"` | *Chitra* P2 (Mars) | **Tula** | Tula | Tula | `venus/mars/saturn/jupiter` | **Venus Triple-Pass Zone** (`Kanya 28° 37' 44"`..`Tula 14° 15' 29"`) |
+| **`181° 00'`** | `Tula 01° 00' 00"` | *Chitra* P3 (Mars) | **Tula** | Tula | Dhanu | `venus/mars/mercury/mars` | **Venus Triple-Pass Zone** (`Kanya 28° 37' 44"`..`Tula 14° 15' 29"`) |
+| **`182° 00'`** | `Tula 02° 00' 00"` | *Chitra* P3 (Mars) | **Tula** | Tula | Kumbha | `venus/mars/ketu/venus` | **Venus Triple-Pass Zone** (`Kanya 28° 37' 44"`..`Tula 14° 15' 29"`) |
+| **`183° 00'`** | `Tula 03° 00' 00"` | *Chitra* P3 (Mars) | **Tula** | Vrishchika | Mesha | `venus/mars/venus/venus` | **Venus Triple-Pass Zone** (`Kanya 28° 37' 44"`..`Tula 14° 15' 29"`) |
+| **`184° 00'`** | `Tula 04° 00' 00"` | *Chitra* P4 (Mars) | **Vrishchika** | Vrishchika | Mithuna | `venus/mars/venus/jupiter` | **Venus Triple-Pass Zone** (`Kanya 28° 37' 44"`..`Tula 14° 15' 29"`) |
+| **`185° 00'`** | `Tula 05° 00' 00"` | *Chitra* P4 (Mars) | **Vrishchika** | Vrishchika | Simha | `venus/mars/sun/mars` | **Venus Triple-Pass Zone** (`Kanya 28° 37' 44"`..`Tula 14° 15' 29"`) |
+| **`186° 00'`** | `Tula 06° 00' 00"` | *Chitra* P4 (Mars) | **Vrishchika** | Dhanu | Tula | `venus/mars/moon/jupiter` | **Venus Triple-Pass Zone** (`Kanya 28° 37' 44"`..`Tula 14° 15' 29"`) |
+| **`187° 00'`** | `Tula 07° 00' 00"` | *Swati* P1 (Rahu) | **Dhanu** | Dhanu | Dhanu | `venus/rahu/rahu/jupiter` | **Venus Triple-Pass Zone** (`Kanya 28° 37' 44"`..`Tula 14° 15' 29"`) |
+| **`188° 00'`** | `Tula 08° 00' 00"` | *Swati* P1 (Rahu) | **Dhanu** | Dhanu | Kumbha | `venus/rahu/rahu/venus` | **Venus Triple-Pass Zone** (`Kanya 28° 37' 44"`..`Tula 14° 15' 29"`) |
+| **`189° 00'`** | `Tula 09° 00' 00"` | *Swati* P1 (Rahu) | **Dhanu** | Makara | Mesha | `venus/rahu/jupiter/saturn` | **Venus Triple-Pass Zone** (`Kanya 28° 37' 44"`..`Tula 14° 15' 29"`) |
+| **`190° 00'`** | `Tula 10° 00' 00"` | *Swati* P1 (Rahu) | **Makara** | Makara | Mithuna | `venus/rahu/jupiter/moon` | **Venus Triple-Pass Zone** (`Kanya 28° 37' 44"`..`Tula 14° 15' 29"`) |
+| **`191° 00'`** | `Tula 11° 00' 00"` | *Swati* P2 (Rahu) | **Makara** | Makara | Simha | `venus/rahu/saturn/mercury` | **Venus Triple-Pass Zone** (`Kanya 28° 37' 44"`..`Tula 14° 15' 29"`); **Mercury Triple-Pass Zone** (`Tula 10° 47' 56"`..`Tula 26° 44' 43"`) |
+| **`192° 00'`** | `Tula 12° 00' 00"` | *Swati* P2 (Rahu) | **Makara** | Kumbha | Tula | `venus/rahu/saturn/rahu` | **Venus Triple-Pass Zone** (`Kanya 28° 37' 44"`..`Tula 14° 15' 29"`); **Mercury Triple-Pass Zone** (`Tula 10° 47' 56"`..`Tula 26° 44' 43"`) |
+| **`193° 00'`** | `Tula 13° 00' 00"` | *Swati* P2 (Rahu) | **Makara** | Kumbha | Dhanu | `venus/rahu/mercury/venus` | **Venus Triple-Pass Zone** (`Kanya 28° 37' 44"`..`Tula 14° 15' 29"`); **Mercury Triple-Pass Zone** (`Tula 10° 47' 56"`..`Tula 26° 44' 43"`) |
+| **`194° 00'`** | `Tula 14° 00' 00"` | *Swati* P3 (Rahu) | **Kumbha** | Kumbha | Kumbha | `venus/rahu/mercury/jupiter` | **Venus Triple-Pass Zone** (`Kanya 28° 37' 44"`..`Tula 14° 15' 29"`); **Mercury Triple-Pass Zone** (`Tula 10° 47' 56"`..`Tula 26° 44' 43"`) |
+| **`195° 00'`** | `Tula 15° 00' 00"` | *Swati* P3 (Rahu) | **Kumbha** | Meena | Mesha | `venus/rahu/ketu/saturn` | **Mercury Triple-Pass Zone** (`Tula 10° 47' 56"`..`Tula 26° 44' 43"`) |
+| **`196° 00'`** | `Tula 16° 00' 00"` | *Swati* P3 (Rahu) | **Kumbha** | Meena | Mithuna | `venus/rahu/venus/mars` | **Mercury Triple-Pass Zone** (`Tula 10° 47' 56"`..`Tula 26° 44' 43"`) |
+| **`197° 00'`** | `Tula 17° 00' 00"` | *Swati* P4 (Rahu) | **Meena** | Meena | Simha | `venus/rahu/venus/saturn` | **Mercury Triple-Pass Zone** (`Tula 10° 47' 56"`..`Tula 26° 44' 43"`) |
+| **`198° 00'`** | `Tula 18° 00' 00"` | *Swati* P4 (Rahu) | **Meena** | Mesha | Tula | `venus/rahu/sun/ketu` | **Mercury Triple-Pass Zone** (`Tula 10° 47' 56"`..`Tula 26° 44' 43"`) |
+| **`199° 00'`** | `Tula 19° 00' 00"` | *Swati* P4 (Rahu) | **Meena** | Mesha | Dhanu | `venus/rahu/moon/venus` | **Mercury Triple-Pass Zone** (`Tula 10° 47' 56"`..`Tula 26° 44' 43"`) |
+| **`200° 00'`** | `Tula 20° 00' 00"` | *Vishakha* P1 (Jupiter) | **Mesha** | Mesha | Kumbha | `venus/rahu/mars/moon` | **Mercury Triple-Pass Zone** (`Tula 10° 47' 56"`..`Tula 26° 44' 43"`) |
+| **`201° 00'`** | `Tula 21° 00' 00"` | *Vishakha* P1 (Jupiter) | **Mesha** | Vrishabha | Mesha | `venus/jupiter/jupiter/venus` | **Mercury Triple-Pass Zone** (`Tula 10° 47' 56"`..`Tula 26° 44' 43"`) |
+| **`202° 00'`** | `Tula 22° 00' 00"` | *Vishakha* P1 (Jupiter) | **Mesha** | Vrishabha | Mithuna | `venus/jupiter/saturn/saturn` | **Mercury Triple-Pass Zone** (`Tula 10° 47' 56"`..`Tula 26° 44' 43"`) |
+| **`203° 00'`** | `Tula 23° 00' 00"` | *Vishakha* P1 (Jupiter) | **Mesha** | Vrishabha | Simha | `venus/jupiter/saturn/moon` | **Mercury Triple-Pass Zone** (`Tula 10° 47' 56"`..`Tula 26° 44' 43"`) |
+| **`204° 00'`** | `Tula 24° 00' 00"` | *Vishakha* P2 (Jupiter) | **Vrishabha** | Mithuna | Tula | `venus/jupiter/mercury/mercury` | **Mercury Triple-Pass Zone** (`Tula 10° 47' 56"`..`Tula 26° 44' 43"`) |
+| **`205° 00'`** | `Tula 25° 00' 00"` | *Vishakha* P2 (Jupiter) | **Vrishabha** | Mithuna | Dhanu | `venus/jupiter/mercury/rahu` | **Mercury Triple-Pass Zone** (`Tula 10° 47' 56"`..`Tula 26° 44' 43"`) |
+| **`206° 00'`** | `Tula 26° 00' 00"` | *Vishakha* P2 (Jupiter) | **Vrishabha** | Mithuna | Kumbha | `venus/jupiter/ketu/moon` | **Mercury Triple-Pass Zone** (`Tula 10° 47' 56"`..`Tula 26° 44' 43"`) |
+| **`207° 00'`** | `Tula 27° 00' 00"` | *Vishakha* P3 (Jupiter) | **Mithuna** | Karka | Mesha | `venus/jupiter/venus/sun` | Single Direct Transit Pass |
+| **`208° 00'`** | `Tula 28° 00' 00"` | *Vishakha* P3 (Jupiter) | **Mithuna** | Karka | Mithuna | `venus/jupiter/venus/saturn` | Single Direct Transit Pass |
+| **`209° 00'`** | `Tula 29° 00' 00"` | *Vishakha* P3 (Jupiter) | **Mithuna** | Karka | Simha | `venus/jupiter/sun/rahu` | Single Direct Transit Pass |
+| **`210° 00'`** | `Vrishchika 00° 00' 00"` | *Vishakha* P4 (Jupiter) | **Karka** | Karka | Vrishchika | `mars/jupiter/moon/saturn` | Single Direct Transit Pass |
+| **`211° 00'`** | `Vrishchika 01° 00' 00"` | *Vishakha* P4 (Jupiter) | **Karka** | Karka | Makara | `mars/jupiter/mars/mercury` | Single Direct Transit Pass |
+| **`212° 00'`** | `Vrishchika 02° 00' 00"` | *Vishakha* P4 (Jupiter) | **Karka** | Karka | Meena | `mars/jupiter/rahu/saturn` | Single Direct Transit Pass |
+| **`213° 00'`** | `Vrishchika 03° 00' 00"` | *Vishakha* P4 (Jupiter) | **Karka** | Simha | Vrishabha | `mars/jupiter/rahu/sun` | Single Direct Transit Pass |
+| **`214° 00'`** | `Vrishchika 04° 00' 00"` | *Anuradha* P1 (Saturn) | **Simha** | Simha | Karka | `mars/saturn/saturn/ketu` | Single Direct Transit Pass |
+| **`215° 00'`** | `Vrishchika 05° 00' 00"` | *Anuradha* P1 (Saturn) | **Simha** | Simha | Kanya | `mars/saturn/saturn/rahu` | Single Direct Transit Pass |
+| **`216° 00'`** | `Vrishchika 06° 00' 00"` | *Anuradha* P1 (Saturn) | **Simha** | Kanya | Vrishchika | `mars/saturn/mercury/venus` | Single Direct Transit Pass |
+| **`217° 00'`** | `Vrishchika 07° 00' 00"` | *Anuradha* P2 (Saturn) | **Kanya** | Kanya | Makara | `mars/saturn/mercury/jupiter` | Single Direct Transit Pass |
+| **`218° 00'`** | `Vrishchika 08° 00' 00"` | *Anuradha* P2 (Saturn) | **Kanya** | Kanya | Meena | `mars/saturn/ketu/saturn` | Single Direct Transit Pass |
+| **`219° 00'`** | `Vrishchika 09° 00' 00"` | *Anuradha* P2 (Saturn) | **Kanya** | Tula | Vrishabha | `mars/saturn/venus/rahu` | Single Direct Transit Pass |
+| **`220° 00'`** | `Vrishchika 10° 00' 00"` | *Anuradha* P2 (Saturn) | **Tula** | Tula | Karka | `mars/saturn/venus/mercury` | Single Direct Transit Pass |
+| **`221° 00'`** | `Vrishchika 11° 00' 00"` | *Anuradha* P3 (Saturn) | **Tula** | Tula | Kanya | `mars/saturn/sun/venus` | Single Direct Transit Pass |
+| **`222° 00'`** | `Vrishchika 12° 00' 00"` | *Anuradha* P3 (Saturn) | **Tula** | Vrishchika | Vrishchika | `mars/saturn/moon/venus` | Single Direct Transit Pass |
+| **`223° 00'`** | `Vrishchika 13° 00' 00"` | *Anuradha* P3 (Saturn) | **Tula** | Vrishchika | Makara | `mars/saturn/rahu/rahu` | Single Direct Transit Pass |
+| **`224° 00'`** | `Vrishchika 14° 00' 00"` | *Anuradha* P4 (Saturn) | **Vrishchika** | Vrishchika | Meena | `mars/saturn/rahu/mercury` | Single Direct Transit Pass |
+| **`225° 00'`** | `Vrishchika 15° 00' 00"` | *Anuradha* P4 (Saturn) | **Vrishchika** | Dhanu | Vrishabha | `mars/saturn/jupiter/jupiter` | Single Direct Transit Pass |
+| **`226° 00'`** | `Vrishchika 16° 00' 00"` | *Anuradha* P4 (Saturn) | **Vrishchika** | Dhanu | Karka | `mars/saturn/jupiter/venus` | Single Direct Transit Pass |
+| **`227° 00'`** | `Vrishchika 17° 00' 00"` | *Jyeshtha* P1 (Mercury) | **Dhanu** | Dhanu | Kanya | `mars/mercury/mercury/ketu` | Single Direct Transit Pass |
+| **`228° 00'`** | `Vrishchika 18° 00' 00"` | *Jyeshtha* P1 (Mercury) | **Dhanu** | Makara | Vrishchika | `mars/mercury/mercury/rahu` | Single Direct Transit Pass |
+| **`229° 00'`** | `Vrishchika 19° 00' 00"` | *Jyeshtha* P1 (Mercury) | **Dhanu** | Makara | Makara | `mars/mercury/ketu/jupiter` | Single Direct Transit Pass |
+| **`230° 00'`** | `Vrishchika 20° 00' 00"` | *Jyeshtha* P1 (Mercury) | **Makara** | Makara | Meena | `mars/mercury/venus/moon` | Single Direct Transit Pass |
+| **`231° 00'`** | `Vrishchika 21° 00' 00"` | *Jyeshtha* P2 (Mercury) | **Makara** | Kumbha | Vrishabha | `mars/mercury/venus/saturn` | Single Direct Transit Pass |
+| **`232° 00'`** | `Vrishchika 22° 00' 00"` | *Jyeshtha* P2 (Mercury) | **Makara** | Kumbha | Karka | `mars/mercury/sun/mercury` | Single Direct Transit Pass |
+| **`233° 00'`** | `Vrishchika 23° 00' 00"` | *Jyeshtha* P2 (Mercury) | **Makara** | Kumbha | Kanya | `mars/mercury/moon/mercury` | Single Direct Transit Pass |
+| **`234° 00'`** | `Vrishchika 24° 00' 00"` | *Jyeshtha* P3 (Mercury) | **Kumbha** | Meena | Vrishchika | `mars/mercury/mars/venus` | Single Direct Transit Pass |
+| **`235° 00'`** | `Vrishchika 25° 00' 00"` | *Jyeshtha* P3 (Mercury) | **Kumbha** | Meena | Makara | `mars/mercury/rahu/mercury` | Single Direct Transit Pass |
+| **`236° 00'`** | `Vrishchika 26° 00' 00"` | *Jyeshtha* P3 (Mercury) | **Kumbha** | Meena | Meena | `mars/mercury/rahu/mars` | Single Direct Transit Pass |
+| **`237° 00'`** | `Vrishchika 27° 00' 00"` | *Jyeshtha* P4 (Mercury) | **Meena** | Mesha | Vrishabha | `mars/mercury/jupiter/venus` | Single Direct Transit Pass |
+| **`238° 00'`** | `Vrishchika 28° 00' 00"` | *Jyeshtha* P4 (Mercury) | **Meena** | Mesha | Karka | `mars/mercury/saturn/saturn` | Single Direct Transit Pass |
+| **`239° 00'`** | `Vrishchika 29° 00' 00"` | *Jyeshtha* P4 (Mercury) | **Meena** | Mesha | Kanya | `mars/mercury/saturn/sun` | Single Direct Transit Pass |
+| **`240° 00'`** | `Dhanu 00° 00' 00"` | *Mula* P1 (Ketu) | **Mesha** | Dhanu | Dhanu | `jupiter/mercury/saturn/jupiter` | Single Direct Transit Pass |
+| **`241° 00'`** | `Dhanu 01° 00' 00"` | *Mula* P1 (Ketu) | **Mesha** | Dhanu | Kumbha | `jupiter/ketu/venus/venus` | Single Direct Transit Pass |
+| **`242° 00'`** | `Dhanu 02° 00' 00"` | *Mula* P1 (Ketu) | **Mesha** | Dhanu | Mesha | `jupiter/ketu/venus/jupiter` | Single Direct Transit Pass |
+| **`243° 00'`** | `Dhanu 03° 00' 00"` | *Mula* P1 (Ketu) | **Mesha** | Makara | Mithuna | `jupiter/ketu/sun/sun` | Single Direct Transit Pass |
+| **`244° 00'`** | `Dhanu 04° 00' 00"` | *Mula* P2 (Ketu) | **Vrishabha** | Makara | Simha | `jupiter/ketu/moon/jupiter` | Single Direct Transit Pass |
+| **`245° 00'`** | `Dhanu 05° 00' 00"` | *Mula* P2 (Ketu) | **Vrishabha** | Makara | Tula | `jupiter/ketu/mars/jupiter` | Single Direct Transit Pass |
+| **`246° 00'`** | `Dhanu 06° 00' 00"` | *Mula* P2 (Ketu) | **Vrishabha** | Kumbha | Dhanu | `jupiter/ketu/rahu/jupiter` | Single Direct Transit Pass |
+| **`247° 00'`** | `Dhanu 07° 00' 00"` | *Mula* P3 (Ketu) | **Mithuna** | Kumbha | Kumbha | `jupiter/ketu/rahu/venus` | Single Direct Transit Pass |
+| **`248° 00'`** | `Dhanu 08° 00' 00"` | *Mula* P3 (Ketu) | **Mithuna** | Kumbha | Mesha | `jupiter/ketu/jupiter/saturn` | Single Direct Transit Pass |
+| **`249° 00'`** | `Dhanu 09° 00' 00"` | *Mula* P3 (Ketu) | **Mithuna** | Meena | Mithuna | `jupiter/ketu/jupiter/mars` | Single Direct Transit Pass |
+| **`250° 00'`** | `Dhanu 10° 00' 00"` | *Mula* P4 (Ketu) | **Karka** | Meena | Simha | `jupiter/ketu/saturn/ketu` | Single Direct Transit Pass |
+| **`251° 00'`** | `Dhanu 11° 00' 00"` | *Mula* P4 (Ketu) | **Karka** | Meena | Tula | `jupiter/ketu/saturn/rahu` | Single Direct Transit Pass |
+| **`252° 00'`** | `Dhanu 12° 00' 00"` | *Mula* P4 (Ketu) | **Karka** | Mesha | Dhanu | `jupiter/ketu/mercury/venus` | Single Direct Transit Pass |
+| **`253° 00'`** | `Dhanu 13° 00' 00"` | *Mula* P4 (Ketu) | **Karka** | Mesha | Kumbha | `jupiter/ketu/mercury/jupiter` | Single Direct Transit Pass |
+| **`254° 00'`** | `Dhanu 14° 00' 00"` | *Purva Ashadha* P1 (Venus) | **Simha** | Mesha | Mesha | `jupiter/venus/venus/moon` | Single Direct Transit Pass |
+| **`255° 00'`** | `Dhanu 15° 00' 00"` | *Purva Ashadha* P1 (Venus) | **Simha** | Vrishabha | Mithuna | `jupiter/venus/venus/saturn` | Single Direct Transit Pass |
+| **`256° 00'`** | `Dhanu 16° 00' 00"` | *Purva Ashadha* P1 (Venus) | **Simha** | Vrishabha | Simha | `jupiter/venus/sun/mercury` | Single Direct Transit Pass |
+| **`257° 00'`** | `Dhanu 17° 00' 00"` | *Purva Ashadha* P2 (Venus) | **Kanya** | Vrishabha | Tula | `jupiter/venus/moon/mercury` | Single Direct Transit Pass |
+| **`258° 00'`** | `Dhanu 18° 00' 00"` | *Purva Ashadha* P2 (Venus) | **Kanya** | Mithuna | Dhanu | `jupiter/venus/mars/venus` | Single Direct Transit Pass |
+| **`259° 00'`** | `Dhanu 19° 00' 00"` | *Purva Ashadha* P2 (Venus) | **Kanya** | Mithuna | Kumbha | `jupiter/venus/rahu/mercury` | Single Direct Transit Pass |
+| **`260° 00'`** | `Dhanu 20° 00' 00"` | *Purva Ashadha* P2 (Venus) | **Tula** | Mithuna | Mesha | `jupiter/venus/rahu/mars` | Single Direct Transit Pass |
+| **`261° 00'`** | `Dhanu 21° 00' 00"` | *Purva Ashadha* P3 (Venus) | **Tula** | Karka | Mithuna | `jupiter/venus/jupiter/venus` | Single Direct Transit Pass |
+| **`262° 00'`** | `Dhanu 22° 00' 00"` | *Purva Ashadha* P3 (Venus) | **Tula** | Karka | Simha | `jupiter/venus/saturn/saturn` | Single Direct Transit Pass |
+| **`263° 00'`** | `Dhanu 23° 00' 00"` | *Purva Ashadha* P3 (Venus) | **Tula** | Karka | Tula | `jupiter/venus/saturn/sun` | Single Direct Transit Pass |
+| **`264° 00'`** | `Dhanu 24° 00' 00"` | *Purva Ashadha* P4 (Venus) | **Vrishchika** | Simha | Dhanu | `jupiter/venus/saturn/jupiter` | Single Direct Transit Pass |
+| **`265° 00'`** | `Dhanu 25° 00' 00"` | *Purva Ashadha* P4 (Venus) | **Vrishchika** | Simha | Kumbha | `jupiter/venus/mercury/mars` | Single Direct Transit Pass |
+| **`266° 00'`** | `Dhanu 26° 00' 00"` | *Purva Ashadha* P4 (Venus) | **Vrishchika** | Simha | Mesha | `jupiter/venus/ketu/venus` | Single Direct Transit Pass |
+| **`267° 00'`** | `Dhanu 27° 00' 00"` | *Uttara Ashadha* P1 (Sun) | **Dhanu** | Kanya | Mithuna | `jupiter/sun/sun/saturn` | Single Direct Transit Pass |
+| **`268° 00'`** | `Dhanu 28° 00' 00"` | *Uttara Ashadha* P1 (Sun) | **Dhanu** | Kanya | Simha | `jupiter/sun/moon/mercury` | Single Direct Transit Pass |
+| **`269° 00'`** | `Dhanu 29° 00' 00"` | *Uttara Ashadha* P1 (Sun) | **Dhanu** | Kanya | Tula | `jupiter/sun/mars/venus` | Single Direct Transit Pass |
+| **`270° 00'`** | `Makara 00° 00' 00"` | *Uttara Ashadha* P1 (Sun) | **Makara** | Kanya | Makara | `saturn/sun/rahu/saturn` | Single Direct Transit Pass |
+| **`271° 00'`** | `Makara 01° 00' 00"` | *Uttara Ashadha* P2 (Sun) | **Makara** | Kanya | Meena | `saturn/sun/rahu/moon` | Single Direct Transit Pass |
+| **`272° 00'`** | `Makara 02° 00' 00"` | *Uttara Ashadha* P2 (Sun) | **Makara** | Kanya | Vrishabha | `saturn/sun/jupiter/ketu` | Single Direct Transit Pass |
+| **`273° 00'`** | `Makara 03° 00' 00"` | *Uttara Ashadha* P2 (Sun) | **Makara** | Tula | Karka | `saturn/sun/jupiter/rahu` | Single Direct Transit Pass |
+| **`274° 00'`** | `Makara 04° 00' 00"` | *Uttara Ashadha* P3 (Sun) | **Kumbha** | Tula | Kanya | `saturn/sun/saturn/venus` | Single Direct Transit Pass |
+| **`275° 00'`** | `Makara 05° 00' 00"` | *Uttara Ashadha* P3 (Sun) | **Kumbha** | Tula | Vrishchika | `saturn/sun/saturn/jupiter` | Single Direct Transit Pass |
+| **`276° 00'`** | `Makara 06° 00' 00"` | *Uttara Ashadha* P3 (Sun) | **Kumbha** | Vrishchika | Makara | `saturn/sun/mercury/moon` | Single Direct Transit Pass |
+| **`277° 00'`** | `Makara 07° 00' 00"` | *Uttara Ashadha* P4 (Sun) | **Meena** | Vrishchika | Meena | `saturn/sun/mercury/saturn` | Single Direct Transit Pass |
+| **`278° 00'`** | `Makara 08° 00' 00"` | *Uttara Ashadha* P4 (Sun) | **Meena** | Vrishchika | Vrishabha | `saturn/sun/venus/venus` | Single Direct Transit Pass |
+| **`279° 00'`** | `Makara 09° 00' 00"` | *Uttara Ashadha* P4 (Sun) | **Meena** | Dhanu | Karka | `saturn/sun/venus/jupiter` | Single Direct Transit Pass |
+| **`280° 00'`** | `Makara 10° 00' 00"` | *Shravana* P1 (Moon) | **Mesha** | Dhanu | Kanya | `saturn/sun/venus/ketu` | Single Direct Transit Pass |
+| **`281° 00'`** | `Makara 11° 00' 00"` | *Shravana* P1 (Moon) | **Mesha** | Dhanu | Vrishchika | `saturn/moon/moon/venus` | Single Direct Transit Pass |
+| **`282° 00'`** | `Makara 12° 00' 00"` | *Shravana* P1 (Moon) | **Mesha** | Makara | Makara | `saturn/moon/rahu/rahu` | Single Direct Transit Pass |
+| **`283° 00'`** | `Makara 13° 00' 00"` | *Shravana* P1 (Moon) | **Mesha** | Makara | Meena | `saturn/moon/rahu/mercury` | Single Direct Transit Pass |
+| **`284° 00'`** | `Makara 14° 00' 00"` | *Shravana* P2 (Moon) | **Vrishabha** | Makara | Vrishabha | `saturn/moon/jupiter/jupiter` | Single Direct Transit Pass |
+| **`285° 00'`** | `Makara 15° 00' 00"` | *Shravana* P2 (Moon) | **Vrishabha** | Kumbha | Karka | `saturn/moon/jupiter/venus` | Single Direct Transit Pass |
+| **`286° 00'`** | `Makara 16° 00' 00"` | *Shravana* P2 (Moon) | **Vrishabha** | Kumbha | Kanya | `saturn/moon/saturn/saturn` | Single Direct Transit Pass |
+| **`287° 00'`** | `Makara 17° 00' 00"` | *Shravana* P3 (Moon) | **Mithuna** | Kumbha | Vrishchika | `saturn/moon/saturn/moon` | Single Direct Transit Pass |
+| **`288° 00'`** | `Makara 18° 00' 00"` | *Shravana* P3 (Moon) | **Mithuna** | Meena | Makara | `saturn/moon/mercury/mercury` | Single Direct Transit Pass |
+| **`289° 00'`** | `Makara 19° 00' 00"` | *Shravana* P3 (Moon) | **Mithuna** | Meena | Meena | `saturn/moon/mercury/rahu` | Single Direct Transit Pass |
+| **`290° 00'`** | `Makara 20° 00' 00"` | *Shravana* P4 (Moon) | **Karka** | Meena | Vrishabha | `saturn/moon/ketu/rahu` | Single Direct Transit Pass |
+| **`291° 00'`** | `Makara 21° 00' 00"` | *Shravana* P4 (Moon) | **Karka** | Mesha | Karka | `saturn/moon/venus/moon` | Single Direct Transit Pass |
+| **`292° 00'`** | `Makara 22° 00' 00"` | *Shravana* P4 (Moon) | **Karka** | Mesha | Kanya | `saturn/moon/venus/saturn` | Single Direct Transit Pass |
+| **`293° 00'`** | `Makara 23° 00' 00"` | *Shravana* P4 (Moon) | **Karka** | Mesha | Vrishchika | `saturn/moon/sun/saturn` | Single Direct Transit Pass |
+| **`294° 00'`** | `Makara 24° 00' 00"` | *Dhanishta* P1 (Mars) | **Simha** | Vrishabha | Makara | `saturn/mars/mars/venus` | Single Direct Transit Pass |
+| **`295° 00'`** | `Makara 25° 00' 00"` | *Dhanishta* P1 (Mars) | **Simha** | Vrishabha | Meena | `saturn/mars/rahu/mercury` | Single Direct Transit Pass |
+| **`296° 00'`** | `Makara 26° 00' 00"` | *Dhanishta* P1 (Mars) | **Simha** | Vrishabha | Vrishabha | `saturn/mars/rahu/mars` | Single Direct Transit Pass |
+| **`297° 00'`** | `Makara 27° 00' 00"` | *Dhanishta* P2 (Mars) | **Kanya** | Mithuna | Karka | `saturn/mars/jupiter/venus` | **Mercury Triple-Pass Zone** (`Makara 26° 41' 00"`..`Kumbha 11° 44' 32"`) |
+| **`298° 00'`** | `Makara 28° 00' 00"` | *Dhanishta* P2 (Mars) | **Kanya** | Mithuna | Kanya | `saturn/mars/saturn/saturn` | **Mercury Triple-Pass Zone** (`Makara 26° 41' 00"`..`Kumbha 11° 44' 32"`) |
+| **`299° 00'`** | `Makara 29° 00' 00"` | *Dhanishta* P2 (Mars) | **Kanya** | Mithuna | Vrishchika | `saturn/mars/saturn/sun` | **Mercury Triple-Pass Zone** (`Makara 26° 41' 00"`..`Kumbha 11° 44' 32"`) |
+| **`300° 00'`** | `Kumbha 00° 00' 00"` | *Dhanishta* P2 (Mars) | **Tula** | Kumbha | Kumbha | `saturn/mars/saturn/jupiter` | **Mercury Triple-Pass Zone** (`Makara 26° 41' 00"`..`Kumbha 11° 44' 32"`) |
+| **`301° 00'`** | `Kumbha 01° 00' 00"` | *Dhanishta* P3 (Mars) | **Tula** | Kumbha | Mesha | `saturn/mars/mercury/mars` | **Mercury Triple-Pass Zone** (`Makara 26° 41' 00"`..`Kumbha 11° 44' 32"`) |
+| **`302° 00'`** | `Kumbha 02° 00' 00"` | *Dhanishta* P3 (Mars) | **Tula** | Kumbha | Mithuna | `saturn/mars/ketu/venus` | **Mercury Triple-Pass Zone** (`Makara 26° 41' 00"`..`Kumbha 11° 44' 32"`) |
+| **`303° 00'`** | `Kumbha 03° 00' 00"` | *Dhanishta* P3 (Mars) | **Tula** | Meena | Simha | `saturn/mars/venus/venus` | **Mercury Triple-Pass Zone** (`Makara 26° 41' 00"`..`Kumbha 11° 44' 32"`) |
+| **`304° 00'`** | `Kumbha 04° 00' 00"` | *Dhanishta* P4 (Mars) | **Vrishchika** | Meena | Tula | `saturn/mars/venus/jupiter` | **Mercury Triple-Pass Zone** (`Makara 26° 41' 00"`..`Kumbha 11° 44' 32"`) |
+| **`305° 00'`** | `Kumbha 05° 00' 00"` | *Dhanishta* P4 (Mars) | **Vrishchika** | Meena | Dhanu | `saturn/mars/sun/mars` | **Mercury Triple-Pass Zone** (`Makara 26° 41' 00"`..`Kumbha 11° 44' 32"`) |
+| **`306° 00'`** | `Kumbha 06° 00' 00"` | *Dhanishta* P4 (Mars) | **Vrishchika** | Mesha | Kumbha | `saturn/mars/moon/jupiter` | **Mercury Triple-Pass Zone** (`Makara 26° 41' 00"`..`Kumbha 11° 44' 32"`) |
+| **`307° 00'`** | `Kumbha 07° 00' 00"` | *Shatabhisha* P1 (Rahu) | **Dhanu** | Mesha | Mesha | `saturn/rahu/rahu/jupiter` | **Mercury Triple-Pass Zone** (`Makara 26° 41' 00"`..`Kumbha 11° 44' 32"`) |
+| **`308° 00'`** | `Kumbha 08° 00' 00"` | *Shatabhisha* P1 (Rahu) | **Dhanu** | Mesha | Mithuna | `saturn/rahu/rahu/venus` | **Mercury Triple-Pass Zone** (`Makara 26° 41' 00"`..`Kumbha 11° 44' 32"`) |
+| **`309° 00'`** | `Kumbha 09° 00' 00"` | *Shatabhisha* P1 (Rahu) | **Dhanu** | Vrishabha | Simha | `saturn/rahu/jupiter/saturn` | **Mercury Triple-Pass Zone** (`Makara 26° 41' 00"`..`Kumbha 11° 44' 32"`) |
+| **`310° 00'`** | `Kumbha 10° 00' 00"` | *Shatabhisha* P1 (Rahu) | **Makara** | Vrishabha | Tula | `saturn/rahu/jupiter/moon` | **Mercury Triple-Pass Zone** (`Makara 26° 41' 00"`..`Kumbha 11° 44' 32"`) |
+| **`311° 00'`** | `Kumbha 11° 00' 00"` | *Shatabhisha* P2 (Rahu) | **Makara** | Vrishabha | Dhanu | `saturn/rahu/saturn/mercury` | **Mercury Triple-Pass Zone** (`Makara 26° 41' 00"`..`Kumbha 11° 44' 32"`) |
+| **`312° 00'`** | `Kumbha 12° 00' 00"` | *Shatabhisha* P2 (Rahu) | **Makara** | Mithuna | Kumbha | `saturn/rahu/saturn/rahu` | Single Direct Transit Pass |
+| **`313° 00'`** | `Kumbha 13° 00' 00"` | *Shatabhisha* P2 (Rahu) | **Makara** | Mithuna | Mesha | `saturn/rahu/mercury/venus` | Single Direct Transit Pass |
+| **`314° 00'`** | `Kumbha 14° 00' 00"` | *Shatabhisha* P3 (Rahu) | **Kumbha** | Mithuna | Mithuna | `saturn/rahu/mercury/jupiter` | Single Direct Transit Pass |
+| **`315° 00'`** | `Kumbha 15° 00' 00"` | *Shatabhisha* P3 (Rahu) | **Kumbha** | Karka | Simha | `saturn/rahu/ketu/saturn` | Single Direct Transit Pass |
+| **`316° 00'`** | `Kumbha 16° 00' 00"` | *Shatabhisha* P3 (Rahu) | **Kumbha** | Karka | Tula | `saturn/rahu/venus/mars` | Single Direct Transit Pass |
+| **`317° 00'`** | `Kumbha 17° 00' 00"` | *Shatabhisha* P4 (Rahu) | **Meena** | Karka | Dhanu | `saturn/rahu/venus/saturn` | Single Direct Transit Pass |
+| **`318° 00'`** | `Kumbha 18° 00' 00"` | *Shatabhisha* P4 (Rahu) | **Meena** | Simha | Kumbha | `saturn/rahu/sun/ketu` | Single Direct Transit Pass |
+| **`319° 00'`** | `Kumbha 19° 00' 00"` | *Shatabhisha* P4 (Rahu) | **Meena** | Simha | Mesha | `saturn/rahu/moon/venus` | Single Direct Transit Pass |
+| **`320° 00'`** | `Kumbha 20° 00' 00"` | *Purva Bhadrapada* P1 (Jupiter) | **Mesha** | Simha | Mithuna | `saturn/rahu/mars/moon` | Single Direct Transit Pass |
+| **`321° 00'`** | `Kumbha 21° 00' 00"` | *Purva Bhadrapada* P1 (Jupiter) | **Mesha** | Kanya | Simha | `saturn/jupiter/jupiter/venus` | Single Direct Transit Pass |
+| **`322° 00'`** | `Kumbha 22° 00' 00"` | *Purva Bhadrapada* P1 (Jupiter) | **Mesha** | Kanya | Tula | `saturn/jupiter/saturn/saturn` | Single Direct Transit Pass |
+| **`323° 00'`** | `Kumbha 23° 00' 00"` | *Purva Bhadrapada* P1 (Jupiter) | **Mesha** | Kanya | Dhanu | `saturn/jupiter/saturn/moon` | Single Direct Transit Pass |
+| **`324° 00'`** | `Kumbha 24° 00' 00"` | *Purva Bhadrapada* P2 (Jupiter) | **Vrishabha** | Tula | Kumbha | `saturn/jupiter/mercury/mercury` | Single Direct Transit Pass |
+| **`325° 00'`** | `Kumbha 25° 00' 00"` | *Purva Bhadrapada* P2 (Jupiter) | **Vrishabha** | Tula | Mesha | `saturn/jupiter/mercury/rahu` | Single Direct Transit Pass |
+| **`326° 00'`** | `Kumbha 26° 00' 00"` | *Purva Bhadrapada* P2 (Jupiter) | **Vrishabha** | Tula | Mithuna | `saturn/jupiter/ketu/moon` | Single Direct Transit Pass |
+| **`327° 00'`** | `Kumbha 27° 00' 00"` | *Purva Bhadrapada* P3 (Jupiter) | **Mithuna** | Vrishchika | Simha | `saturn/jupiter/venus/sun` | Single Direct Transit Pass |
+| **`328° 00'`** | `Kumbha 28° 00' 00"` | *Purva Bhadrapada* P3 (Jupiter) | **Mithuna** | Vrishchika | Tula | `saturn/jupiter/venus/saturn` | Single Direct Transit Pass |
+| **`329° 00'`** | `Kumbha 29° 00' 00"` | *Purva Bhadrapada* P3 (Jupiter) | **Mithuna** | Vrishchika | Dhanu | `saturn/jupiter/sun/rahu` | Single Direct Transit Pass |
+| **`330° 00'`** | `Meena 00° 00' 00"` | *Purva Bhadrapada* P4 (Jupiter) | **Karka** | Vrishchika | Meena | `jupiter/jupiter/moon/saturn` | Single Direct Transit Pass |
+| **`331° 00'`** | `Meena 01° 00' 00"` | *Purva Bhadrapada* P4 (Jupiter) | **Karka** | Vrishchika | Vrishabha | `jupiter/jupiter/mars/mercury` | Single Direct Transit Pass |
+| **`332° 00'`** | `Meena 02° 00' 00"` | *Purva Bhadrapada* P4 (Jupiter) | **Karka** | Vrishchika | Karka | `jupiter/jupiter/rahu/saturn` | Single Direct Transit Pass |
+| **`333° 00'`** | `Meena 03° 00' 00"` | *Purva Bhadrapada* P4 (Jupiter) | **Karka** | Dhanu | Kanya | `jupiter/jupiter/rahu/sun` | Single Direct Transit Pass |
+| **`334° 00'`** | `Meena 04° 00' 00"` | *Uttara Bhadrapada* P1 (Saturn) | **Simha** | Dhanu | Vrishchika | `jupiter/saturn/saturn/ketu` | Single Direct Transit Pass |
+| **`335° 00'`** | `Meena 05° 00' 00"` | *Uttara Bhadrapada* P1 (Saturn) | **Simha** | Dhanu | Makara | `jupiter/saturn/saturn/rahu` | Single Direct Transit Pass |
+| **`336° 00'`** | `Meena 06° 00' 00"` | *Uttara Bhadrapada* P1 (Saturn) | **Simha** | Makara | Meena | `jupiter/saturn/mercury/venus` | Single Direct Transit Pass |
+| **`337° 00'`** | `Meena 07° 00' 00"` | *Uttara Bhadrapada* P2 (Saturn) | **Kanya** | Makara | Vrishabha | `jupiter/saturn/mercury/jupiter` | Single Direct Transit Pass |
+| **`338° 00'`** | `Meena 08° 00' 00"` | *Uttara Bhadrapada* P2 (Saturn) | **Kanya** | Makara | Karka | `jupiter/saturn/ketu/saturn` | Single Direct Transit Pass |
+| **`339° 00'`** | `Meena 09° 00' 00"` | *Uttara Bhadrapada* P2 (Saturn) | **Kanya** | Kumbha | Kanya | `jupiter/saturn/venus/rahu` | Single Direct Transit Pass |
+| **`340° 00'`** | `Meena 10° 00' 00"` | *Uttara Bhadrapada* P2 (Saturn) | **Tula** | Kumbha | Vrishchika | `jupiter/saturn/venus/mercury` | Single Direct Transit Pass |
+| **`341° 00'`** | `Meena 11° 00' 00"` | *Uttara Bhadrapada* P3 (Saturn) | **Tula** | Kumbha | Makara | `jupiter/saturn/sun/venus` | Single Direct Transit Pass |
+| **`342° 00'`** | `Meena 12° 00' 00"` | *Uttara Bhadrapada* P3 (Saturn) | **Tula** | Meena | Meena | `jupiter/saturn/moon/venus` | Single Direct Transit Pass |
+| **`343° 00'`** | `Meena 13° 00' 00"` | *Uttara Bhadrapada* P3 (Saturn) | **Tula** | Meena | Vrishabha | `jupiter/saturn/rahu/rahu` | Single Direct Transit Pass |
+| **`344° 00'`** | `Meena 14° 00' 00"` | *Uttara Bhadrapada* P4 (Saturn) | **Vrishchika** | Meena | Karka | `jupiter/saturn/rahu/mercury` | **Saturn Triple-Pass Zone** (`Meena 13° 41' 42"`..`Meena 20° 31' 09"`) |
+| **`345° 00'`** | `Meena 15° 00' 00"` | *Uttara Bhadrapada* P4 (Saturn) | **Vrishchika** | Mesha | Kanya | `jupiter/saturn/jupiter/jupiter` | **Saturn Triple-Pass Zone** (`Meena 13° 41' 42"`..`Meena 20° 31' 09"`) |
+| **`346° 00'`** | `Meena 16° 00' 00"` | *Uttara Bhadrapada* P4 (Saturn) | **Vrishchika** | Mesha | Vrishchika | `jupiter/saturn/jupiter/venus` | **Saturn Triple-Pass Zone** (`Meena 13° 41' 42"`..`Meena 20° 31' 09"`) |
+| **`347° 00'`** | `Meena 17° 00' 00"` | *Revati* P1 (Mercury) | **Dhanu** | Mesha | Makara | `jupiter/mercury/mercury/ketu` | **Saturn Triple-Pass Zone** (`Meena 13° 41' 42"`..`Meena 20° 31' 09"`) |
+| **`348° 00'`** | `Meena 18° 00' 00"` | *Revati* P1 (Mercury) | **Dhanu** | Vrishabha | Meena | `jupiter/mercury/mercury/rahu` | **Saturn Triple-Pass Zone** (`Meena 13° 41' 42"`..`Meena 20° 31' 09"`) |
+| **`349° 00'`** | `Meena 19° 00' 00"` | *Revati* P1 (Mercury) | **Dhanu** | Vrishabha | Vrishabha | `jupiter/mercury/ketu/jupiter` | **Saturn Triple-Pass Zone** (`Meena 13° 41' 42"`..`Meena 20° 31' 09"`) |
+| **`350° 00'`** | `Meena 20° 00' 00"` | *Revati* P1 (Mercury) | **Makara** | Vrishabha | Karka | `jupiter/mercury/venus/moon` | **Saturn Triple-Pass Zone** (`Meena 13° 41' 42"`..`Meena 20° 31' 09"`) |
+| **`351° 00'`** | `Meena 21° 00' 00"` | *Revati* P2 (Mercury) | **Makara** | Mithuna | Kanya | `jupiter/mercury/venus/saturn` | Single Direct Transit Pass |
+| **`352° 00'`** | `Meena 22° 00' 00"` | *Revati* P2 (Mercury) | **Makara** | Mithuna | Vrishchika | `jupiter/mercury/sun/mercury` | Single Direct Transit Pass |
+| **`353° 00'`** | `Meena 23° 00' 00"` | *Revati* P2 (Mercury) | **Makara** | Mithuna | Makara | `jupiter/mercury/moon/mercury` | Single Direct Transit Pass |
+| **`354° 00'`** | `Meena 24° 00' 00"` | *Revati* P3 (Mercury) | **Kumbha** | Karka | Meena | `jupiter/mercury/mars/venus` | Single Direct Transit Pass |
+| **`355° 00'`** | `Meena 25° 00' 00"` | *Revati* P3 (Mercury) | **Kumbha** | Karka | Vrishabha | `jupiter/mercury/rahu/mercury` | Single Direct Transit Pass |
+| **`356° 00'`** | `Meena 26° 00' 00"` | *Revati* P3 (Mercury) | **Kumbha** | Karka | Karka | `jupiter/mercury/rahu/mars` | Single Direct Transit Pass |
+| **`357° 00'`** | `Meena 27° 00' 00"` | *Revati* P4 (Mercury) | **Meena** | Simha | Kanya | `jupiter/mercury/jupiter/venus` | Single Direct Transit Pass |
+| **`358° 00'`** | `Meena 28° 00' 00"` | *Revati* P4 (Mercury) | **Meena** | Simha | Vrishchika | `jupiter/mercury/saturn/saturn` | Single Direct Transit Pass |
+| **`359° 00'`** | `Meena 29° 00' 00"` | *Revati* P4 (Mercury) | **Meena** | Simha | Makara | `jupiter/mercury/saturn/sun` | Single Direct Transit Pass |
+
+## Chapter 23 — Solar & Lunar Eclipse (*Surya & Chandra Grahan*) Local Obscuration, Nodal Limits, & Natal *Grahan* Sensitivity Compendium
+
+### 23.1 Solar & Lunar Eclipses Around Epoch & Local Observer Obscuration
+
+| Eclipse Category | Subtype | Maximum Eclipse (`UTC`) | Sidereal Longitude (`DMS`) | Sign (`Rashi`) | `Nakshatra & Pada` | Local Visible? | Local Obscuration Fraction |
+|---|---|---|---|---|---|---|---|
+| **Solar** | **Partial Solar** | `2026-02-17T12:01:09Z` | **`Kumbha 04° 36' 17"`** | Kumbha | *Dhanishta* P4 | `YES` | **`38.1%`** |
+| **Lunar** | **Total Lunar** | `2026-03-03T11:37:54Z` | **`Simha 18° 40' 25"`** | Simha | *Purva Phalguni* P2 | `No` | **`0.0%`** |
+| **Solar** | **Partial Solar** | `2026-08-12T17:36:44Z` | **`Karka 25° 48' 05"`** | Karka | *Ashlesha* P3 | `No` | **`0.0%`** |
+| **Lunar** | **Partial Lunar** | `2026-08-28T04:18:32Z` | **`Kumbha 10° 40' 12"`** | Kumbha | *Shatabhisha* P2 | `No` | **`0.0%`** |
+| **Solar** | **Total/Annular Solar** | `2027-02-06T15:56:01Z` | **`Makara 23° 23' 17"`** | Makara | *Dhanishta* P1 | `No` | **`0.0%`** |
+| **Lunar** | **Penumbral Lunar** | `2027-02-20T23:23:32Z` | **`Simha 07° 51' 12"`** | Simha | *Magha* P3 | `YES` | **`2.1%`** |
+
+### 23.2 Worked Case Study: Natal *Grahan* Sensitivity Hits
+
+| Natal Point | Natal Longitude | Eclipse Type & Date (`UTC`) | Eclipse Longitude (`DMS`) | Aspect Type | Orb (`deg`) | Impact Severity |
+|---|---|---|---|---|---|---|
+| **mars** | `Simha 01° 11' 03"` | **Partial Solar** (`2026-02-17T12:01:09Z`) | `Kumbha 04° 36' 17"` | **Opposition (180 deg Axis)** | `3.42°` | **`43.0 / 100`** |
+| **jupiter** | `Simha 01° 33' 59"` | **Partial Solar** (`2026-02-17T12:01:09Z`) | `Kumbha 04° 36' 17"` | **Opposition (180 deg Axis)** | `3.04°` | **`49.4 / 100`** |
+| **rahu** | `Kumbha 01° 05' 10"` | **Partial Solar** (`2026-02-17T12:01:09Z`) | `Kumbha 04° 36' 17"` | **Conjunction (0 deg)** | `3.52°` | **`41.4 / 100`** |
+| **ketu** | `Simha 01° 05' 10"` | **Partial Solar** (`2026-02-17T12:01:09Z`) | `Kumbha 04° 36' 17"` | **Opposition (180 deg Axis)** | `3.52°` | **`41.4 / 100`** |
+| **mars** | `Simha 01° 11' 03"` | **Partial Solar** (`2026-08-12T17:36:44Z`) | `Karka 25° 48' 05"` | **Conjunction (0 deg)** | `5.38°` | **`10.3 / 100`** |
+| **jupiter** | `Simha 01° 33' 59"` | **Partial Solar** (`2026-08-12T17:36:44Z`) | `Karka 25° 48' 05"` | **Conjunction (0 deg)** | `5.76°` | **`3.9 / 100`** |
+| **rahu** | `Kumbha 01° 05' 10"` | **Partial Solar** (`2026-08-12T17:36:44Z`) | `Karka 25° 48' 05"` | **Opposition (180 deg Axis)** | `5.28°` | **`11.9 / 100`** |
+| **ketu** | `Simha 01° 05' 10"` | **Partial Solar** (`2026-08-12T17:36:44Z`) | `Karka 25° 48' 05"` | **Conjunction (0 deg)** | `5.28°` | **`11.9 / 100`** |
+
+## Chapter 24 — Complete Manual Compendium of All 10 Conditional Parashari *Nakshatra Dashas* (BPHS Ch. 46) & Multi-Dasha Synchronicity
+
+> **Unabridged BPHS Chapter 46 Conditional Nakshatra Dasha Suite:** Beyond universal *Vimshottari* (`120y`), Maharishi Parashara prescribes nine conditional *Nakshatra Dashas* (*Ashtottari 108y, Shodashottari 116y, Dwadashottari 112y, Panchottari 105y, Shatabdika 100y, Chaturashiti-Sama 84y, Dwisaptati-Sama 72y, Shat-Trimsha-Sama 36y, and Yogini 36y*). Below is the complete 27-Nakshatra Opening Lord & Duration Master Matrix.
+
+### 24.1 Master 27-Nakshatra Opening Lord & Full Duration Lookup Table Across All 10 BPHS Nakshatra Dasha Systems
+
+| `#` | Nakshatra (`0°..360°`) | Vimshottari (`120y`) | Ashtottari (`108y`) | Shodashottari (`116y`) | Dwadashottari (`112y`) | Panchottari (`105y`) | Shatabdika (`100y`) | Chaturashiti (`84y`) | Dwisaptati (`72y`) | Shat-Trimsha (`36y`) | Yogini (`36y`) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| `#01` | **Ashwini** | `Ketu (7y)` | `Rahu (12y)` | `Ketu (15y)` | `Ketu (11y)` | `Venus (16y)` | `Sun (5y)` | `Saturn (12y)` | `Moon (9y)` | `Venus (7y)` | `Bhramari (Mars) (4y)` |
+| `#02` | **Bharani** | `Venus (20y)` | `Venus (21y)` | `Moon (16y)` | `Jupiter (9y)` | `Moon (17y)` | `Moon (10y)` | `Sun (12y)` | `Mars (9y)` | `Rahu (8y)` | `Bhadrika (Mercury) (5y)` |
+| `#03` | **Krittika** | `Sun (6y)` | `Sun (6y)` | `Mercury (17y)` | `Sun (7y)` | `Jupiter (18y)` | `Mercury (10y)` | `Moon (12y)` | `Mercury (9y)` | `Moon (1y)` | `Ulka (Saturn) (6y)` |
+| `#04` | **Rohini** | `Moon (10y)` | `Moon (15y)` | `Venus (18y)` | `Moon (21y)` | `Sun (12y)` | `Jupiter (20y)` | `Mars (12y)` | `Jupiter (9y)` | `Sun (2y)` | `Siddha (Venus) (7y)` |
+| `#05` | **Mrigashirsha** | `Mars (7y)` | `Mars (8y)` | `Sun (11y)` | `Saturn (19y)` | `Mercury (13y)` | `Mars (20y)` | `Mercury (12y)` | `Venus (9y)` | `Jupiter (3y)` | `Sankata (Rahu) (8y)` |
+| `#06` | **Ardra** | `Rahu (18y)` | `Sun (6y)` | `Mars (12y)` | `Mars (17y)` | `Saturn (14y)` | `Saturn (30y)` | `Jupiter (12y)` | `Saturn (9y)` | `Mars (4y)` | `Mangala (Moon) (1y)` |
+| `#07` | **Punarvasu** | `Jupiter (16y)` | `Moon (15y)` | `Jupiter (13y)` | `Rahu (15y)` | `Mars (15y)` | `Venus (5y)` | `Venus (12y)` | `Rahu (9y)` | `Mercury (5y)` | `Pingala (Sun) (2y)` |
+| `#08` | **Pushya** | `Saturn (19y)` | `Mars (8y)` | `Sun (11y)` | `Mercury (13y)` | `Venus (16y)` | `Sun (5y)` | `Saturn (12y)` | `Sun (9y)` | `Saturn (6y)` | `Dhanya (Jupiter) (3y)` |
+| `#09` | **Ashlesha** | `Mercury (17y)` | `Mercury (17y)` | `Mars (12y)` | `Ketu (11y)` | `Moon (17y)` | `Moon (10y)` | `Sun (12y)` | `Moon (9y)` | `Venus (7y)` | `Bhramari (Mars) (4y)` |
+| `#10` | **Magha** | `Ketu (7y)` | `Saturn (10y)` | `Jupiter (13y)` | `Jupiter (9y)` | `Jupiter (18y)` | `Mercury (10y)` | `Moon (12y)` | `Mars (9y)` | `Rahu (8y)` | `Bhadrika (Mercury) (5y)` |
+| `#11` | **Purva Phalguni** | `Venus (20y)` | `Jupiter (19y)` | `Saturn (14y)` | `Sun (7y)` | `Sun (12y)` | `Jupiter (20y)` | `Mars (12y)` | `Mercury (9y)` | `Moon (1y)` | `Ulka (Saturn) (6y)` |
+| `#12` | **Uttara Phalguni** | `Sun (6y)` | `Rahu (12y)` | `Ketu (15y)` | `Moon (21y)` | `Mercury (13y)` | `Mars (20y)` | `Mercury (12y)` | `Jupiter (9y)` | `Sun (2y)` | `Siddha (Venus) (7y)` |
+| `#13` | **Hasta** | `Moon (10y)` | `Venus (21y)` | `Moon (16y)` | `Saturn (19y)` | `Saturn (14y)` | `Saturn (30y)` | `Jupiter (12y)` | `Venus (9y)` | `Jupiter (3y)` | `Sankata (Rahu) (8y)` |
+| `#14` | **Chitra** | `Mars (7y)` | `Sun (6y)` | `Mercury (17y)` | `Mars (17y)` | `Mars (15y)` | `Venus (5y)` | `Venus (12y)` | `Saturn (9y)` | `Mars (4y)` | `Mangala (Moon) (1y)` |
+| `#15` | **Swati** | `Rahu (18y)` | `Moon (15y)` | `Venus (18y)` | `Rahu (15y)` | `Venus (16y)` | `Sun (5y)` | `Sun (12y)` | `Rahu (9y)` | `Mercury (5y)` | `Pingala (Sun) (2y)` |
+| `#16` | **Vishakha** | `Jupiter (16y)` | `Mars (8y)` | `Sun (11y)` | `Mercury (13y)` | `Moon (17y)` | `Moon (10y)` | `Moon (12y)` | `Sun (9y)` | `Saturn (6y)` | `Dhanya (Jupiter) (3y)` |
+| `#17` | **Anuradha** | `Saturn (19y)` | `Mercury (17y)` | `Mars (12y)` | `Ketu (11y)` | `Sun (12y)` | `Mercury (10y)` | `Mars (12y)` | `Moon (9y)` | `Venus (7y)` | `Bhramari (Mars) (4y)` |
+| `#18` | **Jyeshtha** | `Mercury (17y)` | `Saturn (10y)` | `Jupiter (13y)` | `Jupiter (9y)` | `Mercury (13y)` | `Jupiter (20y)` | `Mercury (12y)` | `Mars (9y)` | `Rahu (8y)` | `Bhadrika (Mercury) (5y)` |
+| `#19` | **Mula** | `Ketu (7y)` | `Jupiter (19y)` | `Saturn (14y)` | `Sun (7y)` | `Saturn (14y)` | `Mars (20y)` | `Jupiter (12y)` | `Sun (9y)` | `Moon (1y)` | `Ulka (Saturn) (6y)` |
+| `#20` | **Purva Ashadha** | `Venus (20y)` | `Rahu (12y)` | `Ketu (15y)` | `Moon (21y)` | `Mars (15y)` | `Saturn (30y)` | `Venus (12y)` | `Moon (9y)` | `Sun (2y)` | `Siddha (Venus) (7y)` |
+| `#21` | **Uttara Ashadha** | `Sun (6y)` | `Venus (21y)` | `Moon (16y)` | `Saturn (19y)` | `Venus (16y)` | `Venus (5y)` | `Saturn (12y)` | `Mars (9y)` | `Jupiter (3y)` | `Sankata (Rahu) (8y)` |
+| `#22` | **Shravana** | `Moon (10y)` | `Sun (6y)` | `Mercury (17y)` | `Mars (17y)` | `Moon (17y)` | `Sun (5y)` | `Sun (12y)` | `Mercury (9y)` | `Moon (1y)` | `Mangala (Moon) (1y)` |
+| `#23` | **Dhanishta** | `Mars (7y)` | `Moon (15y)` | `Venus (18y)` | `Rahu (15y)` | `Jupiter (18y)` | `Moon (10y)` | `Moon (12y)` | `Jupiter (9y)` | `Sun (2y)` | `Pingala (Sun) (2y)` |
+| `#24` | **Shatabhisha** | `Rahu (18y)` | `Mars (8y)` | `Sun (11y)` | `Mercury (13y)` | `Sun (12y)` | `Mercury (10y)` | `Mars (12y)` | `Venus (9y)` | `Jupiter (3y)` | `Dhanya (Jupiter) (3y)` |
+| `#25` | **Purva Bhadrapada** | `Jupiter (16y)` | `Mercury (17y)` | `Mars (12y)` | `Ketu (11y)` | `Mercury (13y)` | `Jupiter (20y)` | `Mercury (12y)` | `Saturn (9y)` | `Mars (4y)` | `Bhramari (Mars) (4y)` |
+| `#26` | **Uttara Bhadrapada** | `Saturn (19y)` | `Saturn (10y)` | `Jupiter (13y)` | `Jupiter (9y)` | `Saturn (14y)` | `Mars (20y)` | `Jupiter (12y)` | `Rahu (9y)` | `Mercury (5y)` | `Bhadrika (Mercury) (5y)` |
+| `#27` | **Revati** | `Mercury (17y)` | `Jupiter (19y)` | `Saturn (14y)` | `Sun (7y)` | `Mars (15y)` | `Venus (5y)` | `Venus (12y)` | `Sun (9y)` | `Saturn (6y)` | `Ulka (Saturn) (6y)` |
+
+### 24.2 Worked Case Study: All 10 BPHS Conditional Dasha Eligibility & Active Period Synchronicity
+
+| Dasha System | Cycle (`Years`) | BPHS Conditional Eligibility | Eligibility Reason | Opening Lord & Balance (`Years`) | Active Mahadasha (`+24y`) | Active Antardasha (`+24y`) |
+|---|---|---|---|---|---|---|
+| **Vimshottari Dasha (120-Year Universal Mahadasha)** | `120y` | **`ELIGIBLE`** | Universal Kali Yuga primary Nakshatra Dasha (always applicable). | `Sun` (`2.84y`) | **`Rahu`** | **`Jupiter`** |
+| **Ashtottari Dasha (108-Year Conditional Mahadasha)** | `108y` | **`Secondary`** | Secondary: Rahu in House 6 from Venus and Day=True/Shukla=True. | `Venus` (`9.93y`) | **`Moon`** | **`Jupiter`** |
+| **Shodashottari Dasha (116-Year Conditional Mahadasha)** | `116y` | **`Secondary`** | Secondary: Hora Lagna and Paksha polarity do not trigger primary Shodashottari condition. | `Moon` (`7.57y`) | **`Mercury`** | **`Moon`** |
+| **Dwadashottari Dasha (112-Year Conditional Mahadasha)** | `112y` | **`Secondary`** | Secondary: Ascendant D9 Navamsa is Mithuna (not Taurus/Libra). | `Saturn` (`8.99y`) | **`Moon`** | **`Mars`** |
+| **Panchottari Dasha (105-Year Conditional Mahadasha)** | `105y` | **`Secondary`** | Secondary: Ascendant is Tula (D12 Kanya). | `Venus` (`7.57y`) | **`Moon`** | **`Venus`** |
+| **Shatabdika Dasha (100-Year Vargottama Mahadasha)** | `100y` | **`Secondary`** | Secondary: Ascendant D1 (Tula) != D9 (Mithuna). | `Venus` (`2.36y`) | **`Mercury`** | **`Saturn`** |
+| **Chaturashiti-Sama Dasha (84-Year 10th-Lord Mahadasha)** | `84y` | **`Secondary`** | Secondary: 10th Lord (Moon) is in Makara. | `Saturn` (`5.68y`) | **`Moon`** | **`Jupiter`** |
+| **Dwisaptati-Sama Dasha (72-Year Lagna/7th-Lord Mahadasha)** | `72y` | **`Secondary`** | Secondary: Lagna Lord (Venus) in Kanya. | `Mars` (`4.26y`) | **`Venus`** | **`Saturn`** |
+| **Shat-Trimsha-Sama Dasha (36-Year Hora-Aligned Mahadasha)** | `36y` | **`Secondary`** | Secondary: Day/Night birth does not match Sun/Moon Hora Lagna. | `Jupiter` (`1.42y`) | **`Rahu`** | **`Rahu`** |
+| **Yogini Dasha (36-Year Tantric/Parashari Mahadasha)** | `36y` | **`ELIGIBLE`** | Universal companion 36-year Yogini Dasha cycle. | `Sankata (Rahu)` (`3.78y`) | **`Ulka (Saturn)`** | **`Bhadrika (Mercury)`** |
+
+### 24.3 Worked Multi-Dasha Consensus Ranking
+
+| Rank | Graha | Active Mahadasha Count | Active Antardasha Count | Eligible-System MD Count | Consensus Score (`0..100`) | Supporting Dasha Systems |
+|---|---|---|---|---|---|---|
+| `#1` | **Moon** | `4` | `1` | `0` | **`64.0`** | `ashtottari:MD, dwadashottari:MD, panchottari:MD, chaturashiti_sama:MD, shodashottari:AD` |
+| `#2` | **Rahu** | `2` | `1` | `1` | **`46.0`** | `vimshottari:MD, shat_trimsha_sama:MD, shat_trimsha_sama:AD` |
+| `#3` | **Saturn** | `1` | `2` | `1` | **`40.0`** | `yogini:MD, shatabdika:AD, dwisaptati_sama:AD` |
+| `#4` | **Mercury** | `2` | `1` | `0` | **`36.0`** | `shodashottari:MD, shatabdika:MD, yogini:AD` |
+| `#5` | **Jupiter** | `0` | `3` | `0` | **`24.0`** | `vimshottari:AD, ashtottari:AD, chaturashiti_sama:AD` |
+| `#6` | **Venus** | `1` | `1` | `0` | **`22.0`** | `dwisaptati_sama:MD, panchottari:AD` |
+| `#7` | **Mars** | `0` | `1` | `0` | **`8.0`** | `dwadashottari:AD` |
+
+## Chapter 25 — 5-Level *Vimshottari Prana-Dasha* Sub-Hour Chronometer (*Mahadasha -> Antardasha -> Pratyantardasha -> Sookshma -> Prana*)
+
+### 25.1 Complete 81-Row *Mahadasha × Antardasha* Proportional Sub-Period Ready Reckoner (Exact Days, Hours, & Self-Sub *Pratyantardasha / Sookshma / Prana* Durations)
+
+| Mahadasha (`MD`) | Antardasha (`AD`) | `MD × AD` Duration (`Years`) | Exact Solar Days (`365.2425d/y`) | Self-`PD` Duration (`Days`) | Self-`Sookshma` Duration (`Hours`) | Self-`Prana` Duration (`Minutes`) |
+|---|---|---|---|---|---|---|
+| **Ketu** (`7y`) | **Ketu** (`7y`) | `0.4083y` | **`149.14 d`** | `8.70 d` | `12.18 h` | **`42.63 min`** |
+| **Ketu** (`7y`) | **Venus** (`20y`) | `1.1667y` | **`426.12 d`** | `71.02 d` | `284.08 h` | **`2840.77 min`** |
+| **Ketu** (`7y`) | **Sun** (`6y`) | `0.3500y` | **`127.83 d`** | `6.39 d` | `7.67 h` | **`23.01 min`** |
+| **Ketu** (`7y`) | **Moon** (`10y`) | `0.5833y` | **`213.06 d`** | `17.75 d` | `35.51 h` | **`177.55 min`** |
+| **Ketu** (`7y`) | **Mars** (`7y`) | `0.4083y` | **`149.14 d`** | `8.70 d` | `12.18 h` | **`42.63 min`** |
+| **Ketu** (`7y`) | **Rahu** (`18y`) | `1.0500y` | **`383.50 d`** | `57.53 d` | `207.09 h` | **`1863.83 min`** |
+| **Ketu** (`7y`) | **Jupiter** (`16y`) | `0.9333y` | **`340.89 d`** | `45.45 d` | `145.45 h` | **`1163.58 min`** |
+| **Ketu** (`7y`) | **Saturn** (`19y`) | `1.1083y` | **`404.81 d`** | `64.09 d` | `243.56 h` | **`2313.83 min`** |
+| **Ketu** (`7y`) | **Mercury** (`17y`) | `0.9917y` | **`362.20 d`** | `51.31 d` | `174.46 h` | **`1482.90 min`** |
+| **Venus** (`20y`) | **Ketu** (`7y`) | `1.1667y` | **`426.12 d`** | `24.86 d` | `34.80 h` | **`121.80 min`** |
+| **Venus** (`20y`) | **Venus** (`20y`) | `3.3333y` | **`1217.47 d`** | `202.91 d` | `811.65 h` | **`8116.50 min`** |
+| **Venus** (`20y`) | **Sun** (`6y`) | `1.0000y` | **`365.24 d`** | `18.26 d` | `21.91 h` | **`65.74 min`** |
+| **Venus** (`20y`) | **Moon** (`10y`) | `1.6667y` | **`608.74 d`** | `50.73 d` | `101.46 h` | **`507.28 min`** |
+| **Venus** (`20y`) | **Mars** (`7y`) | `1.1667y` | **`426.12 d`** | `24.86 d` | `34.80 h` | **`121.80 min`** |
+| **Venus** (`20y`) | **Rahu** (`18y`) | `3.0000y` | **`1095.73 d`** | `164.36 d` | `591.69 h` | **`5325.24 min`** |
+| **Venus** (`20y`) | **Jupiter** (`16y`) | `2.6667y` | **`973.98 d`** | `129.86 d` | `415.56 h` | **`3324.52 min`** |
+| **Venus** (`20y`) | **Saturn** (`19y`) | `3.1667y` | **`1156.60 d`** | `183.13 d` | `695.89 h` | **`6610.94 min`** |
+| **Venus** (`20y`) | **Mercury** (`17y`) | `2.8333y` | **`1034.85 d`** | `146.60 d` | `498.45 h` | **`4236.86 min`** |
+| **Sun** (`6y`) | **Ketu** (`7y`) | `0.3500y` | **`127.83 d`** | `7.46 d` | `10.44 h` | **`36.54 min`** |
+| **Sun** (`6y`) | **Venus** (`20y`) | `1.0000y` | **`365.24 d`** | `60.87 d` | `243.49 h` | **`2434.95 min`** |
+| **Sun** (`6y`) | **Sun** (`6y`) | `0.3000y` | **`109.57 d`** | `5.48 d` | `6.57 h` | **`19.72 min`** |
+| **Sun** (`6y`) | **Moon** (`10y`) | `0.5000y` | **`182.62 d`** | `15.22 d` | `30.44 h` | **`152.18 min`** |
+| **Sun** (`6y`) | **Mars** (`7y`) | `0.3500y` | **`127.83 d`** | `7.46 d` | `10.44 h` | **`36.54 min`** |
+| **Sun** (`6y`) | **Rahu** (`18y`) | `0.9000y` | **`328.72 d`** | `49.31 d` | `177.51 h` | **`1597.57 min`** |
+| **Sun** (`6y`) | **Jupiter** (`16y`) | `0.8000y` | **`292.19 d`** | `38.96 d` | `124.67 h` | **`997.36 min`** |
+| **Sun** (`6y`) | **Saturn** (`19y`) | `0.9500y` | **`346.98 d`** | `54.94 d` | `208.77 h` | **`1983.28 min`** |
+| **Sun** (`6y`) | **Mercury** (`17y`) | `0.8500y` | **`310.46 d`** | `43.98 d` | `149.54 h` | **`1271.06 min`** |
+| **Moon** (`10y`) | **Ketu** (`7y`) | `0.5833y` | **`213.06 d`** | `12.43 d` | `17.40 h` | **`60.90 min`** |
+| **Moon** (`10y`) | **Venus** (`20y`) | `1.6667y` | **`608.74 d`** | `101.46 d` | `405.82 h` | **`4058.25 min`** |
+| **Moon** (`10y`) | **Sun** (`6y`) | `0.5000y` | **`182.62 d`** | `9.13 d` | `10.96 h` | **`32.87 min`** |
+| **Moon** (`10y`) | **Moon** (`10y`) | `0.8333y` | **`304.37 d`** | `25.36 d` | `50.73 h` | **`253.64 min`** |
+| **Moon** (`10y`) | **Mars** (`7y`) | `0.5833y` | **`213.06 d`** | `12.43 d` | `17.40 h` | **`60.90 min`** |
+| **Moon** (`10y`) | **Rahu** (`18y`) | `1.5000y` | **`547.86 d`** | `82.18 d` | `295.85 h` | **`2662.62 min`** |
+| **Moon** (`10y`) | **Jupiter** (`16y`) | `1.3333y` | **`486.99 d`** | `64.93 d` | `207.78 h` | **`1662.26 min`** |
+| **Moon** (`10y`) | **Saturn** (`19y`) | `1.5833y` | **`578.30 d`** | `91.56 d` | `347.94 h` | **`3305.47 min`** |
+| **Moon** (`10y`) | **Mercury** (`17y`) | `1.4167y` | **`517.43 d`** | `73.30 d` | `249.23 h` | **`2118.43 min`** |
+| **Mars** (`7y`) | **Ketu** (`7y`) | `0.4083y` | **`149.14 d`** | `8.70 d` | `12.18 h` | **`42.63 min`** |
+| **Mars** (`7y`) | **Venus** (`20y`) | `1.1667y` | **`426.12 d`** | `71.02 d` | `284.08 h` | **`2840.77 min`** |
+| **Mars** (`7y`) | **Sun** (`6y`) | `0.3500y` | **`127.83 d`** | `6.39 d` | `7.67 h` | **`23.01 min`** |
+| **Mars** (`7y`) | **Moon** (`10y`) | `0.5833y` | **`213.06 d`** | `17.75 d` | `35.51 h` | **`177.55 min`** |
+| **Mars** (`7y`) | **Mars** (`7y`) | `0.4083y` | **`149.14 d`** | `8.70 d` | `12.18 h` | **`42.63 min`** |
+| **Mars** (`7y`) | **Rahu** (`18y`) | `1.0500y` | **`383.50 d`** | `57.53 d` | `207.09 h` | **`1863.83 min`** |
+| **Mars** (`7y`) | **Jupiter** (`16y`) | `0.9333y` | **`340.89 d`** | `45.45 d` | `145.45 h` | **`1163.58 min`** |
+| **Mars** (`7y`) | **Saturn** (`19y`) | `1.1083y` | **`404.81 d`** | `64.09 d` | `243.56 h` | **`2313.83 min`** |
+| **Mars** (`7y`) | **Mercury** (`17y`) | `0.9917y` | **`362.20 d`** | `51.31 d` | `174.46 h` | **`1482.90 min`** |
+| **Rahu** (`18y`) | **Ketu** (`7y`) | `1.0500y` | **`383.50 d`** | `22.37 d` | `31.32 h` | **`109.62 min`** |
+| **Rahu** (`18y`) | **Venus** (`20y`) | `3.0000y` | **`1095.73 d`** | `182.62 d` | `730.48 h` | **`7304.85 min`** |
+| **Rahu** (`18y`) | **Sun** (`6y`) | `0.9000y` | **`328.72 d`** | `16.44 d` | `19.72 h` | **`59.17 min`** |
+| **Rahu** (`18y`) | **Moon** (`10y`) | `1.5000y` | **`547.86 d`** | `45.66 d` | `91.31 h` | **`456.55 min`** |
+| **Rahu** (`18y`) | **Mars** (`7y`) | `1.0500y` | **`383.50 d`** | `22.37 d` | `31.32 h` | **`109.62 min`** |
+| **Rahu** (`18y`) | **Rahu** (`18y`) | `2.7000y` | **`986.15 d`** | `147.92 d` | `532.52 h` | **`4792.71 min`** |
+| **Rahu** (`18y`) | **Jupiter** (`16y`) | `2.4000y` | **`876.58 d`** | `116.88 d` | `374.01 h` | **`2992.07 min`** |
+| **Rahu** (`18y`) | **Saturn** (`19y`) | `2.8500y` | **`1040.94 d`** | `164.82 d` | `626.30 h` | **`5949.85 min`** |
+| **Rahu** (`18y`) | **Mercury** (`17y`) | `2.5500y` | **`931.37 d`** | `131.94 d` | `448.61 h` | **`3813.18 min`** |
+| **Jupiter** (`16y`) | **Ketu** (`7y`) | `0.9333y` | **`340.89 d`** | `19.89 d` | `27.84 h` | **`97.44 min`** |
+| **Jupiter** (`16y`) | **Venus** (`20y`) | `2.6667y` | **`973.98 d`** | `162.33 d` | `649.32 h` | **`6493.20 min`** |
+| **Jupiter** (`16y`) | **Sun** (`6y`) | `0.8000y` | **`292.19 d`** | `14.61 d` | `17.53 h` | **`52.59 min`** |
+| **Jupiter** (`16y`) | **Moon** (`10y`) | `1.3333y` | **`486.99 d`** | `40.58 d` | `81.16 h` | **`405.82 min`** |
+| **Jupiter** (`16y`) | **Mars** (`7y`) | `0.9333y` | **`340.89 d`** | `19.89 d` | `27.84 h` | **`97.44 min`** |
+| **Jupiter** (`16y`) | **Rahu** (`18y`) | `2.4000y` | **`876.58 d`** | `131.49 d` | `473.35 h` | **`4260.19 min`** |
+| **Jupiter** (`16y`) | **Jupiter** (`16y`) | `2.1333y` | **`779.18 d`** | `103.89 d` | `332.45 h` | **`2659.61 min`** |
+| **Jupiter** (`16y`) | **Saturn** (`19y`) | `2.5333y` | **`925.28 d`** | `146.50 d` | `556.71 h` | **`5288.75 min`** |
+| **Jupiter** (`16y`) | **Mercury** (`17y`) | `2.2667y` | **`827.88 d`** | `117.28 d` | `398.76 h` | **`3389.49 min`** |
+| **Saturn** (`19y`) | **Ketu** (`7y`) | `1.1083y` | **`404.81 d`** | `23.61 d` | `33.06 h` | **`115.71 min`** |
+| **Saturn** (`19y`) | **Venus** (`20y`) | `3.1667y` | **`1156.60 d`** | `192.77 d` | `771.07 h` | **`7710.67 min`** |
+| **Saturn** (`19y`) | **Sun** (`6y`) | `0.9500y` | **`346.98 d`** | `17.35 d` | `20.82 h` | **`62.46 min`** |
+| **Saturn** (`19y`) | **Moon** (`10y`) | `1.5833y` | **`578.30 d`** | `48.19 d` | `96.38 h` | **`481.92 min`** |
+| **Saturn** (`19y`) | **Mars** (`7y`) | `1.1083y` | **`404.81 d`** | `23.61 d` | `33.06 h` | **`115.71 min`** |
+| **Saturn** (`19y`) | **Rahu** (`18y`) | `2.8500y` | **`1040.94 d`** | `156.14 d` | `562.11 h` | **`5058.97 min`** |
+| **Saturn** (`19y`) | **Jupiter** (`16y`) | `2.5333y` | **`925.28 d`** | `123.37 d` | `394.79 h` | **`3158.29 min`** |
+| **Saturn** (`19y`) | **Saturn** (`19y`) | `3.0083y` | **`1098.77 d`** | `173.97 d` | `661.09 h` | **`6280.39 min`** |
+| **Saturn** (`19y`) | **Mercury** (`17y`) | `2.6917y` | **`983.11 d`** | `139.27 d` | `473.53 h` | **`4025.02 min`** |
+| **Mercury** (`17y`) | **Ketu** (`7y`) | `0.9917y` | **`362.20 d`** | `21.13 d` | `29.58 h` | **`103.53 min`** |
+| **Mercury** (`17y`) | **Venus** (`20y`) | `2.8333y` | **`1034.85 d`** | `172.48 d` | `689.90 h` | **`6899.02 min`** |
+| **Mercury** (`17y`) | **Sun** (`6y`) | `0.8500y` | **`310.46 d`** | `15.52 d` | `18.63 h` | **`55.88 min`** |
+| **Mercury** (`17y`) | **Moon** (`10y`) | `1.4167y` | **`517.43 d`** | `43.12 d` | `86.24 h` | **`431.19 min`** |
+| **Mercury** (`17y`) | **Mars** (`7y`) | `0.9917y` | **`362.20 d`** | `21.13 d` | `29.58 h` | **`103.53 min`** |
+| **Mercury** (`17y`) | **Rahu** (`18y`) | `2.5500y` | **`931.37 d`** | `139.71 d` | `502.94 h` | **`4526.45 min`** |
+| **Mercury** (`17y`) | **Jupiter** (`16y`) | `2.2667y` | **`827.88 d`** | `110.38 d` | `353.23 h` | **`2825.84 min`** |
+| **Mercury** (`17y`) | **Saturn** (`19y`) | `2.6917y` | **`983.11 d`** | `155.66 d` | `591.51 h` | **`5619.30 min`** |
+| **Mercury** (`17y`) | **Mercury** (`17y`) | `2.4083y` | **`879.63 d`** | `124.61 d` | `423.69 h` | **`3601.33 min`** |
+
+### 25.2 Worked Case Study: 5-Level *Prana-Dasha* Sub-Hour Chronometer at `2050-11-15T00:52:47Z`
+
+- **Level 1 (*Mahadasha*):** **Rahu** (`2046-09-16T17:43:33Z` to `2064-09-16T02:29:09Z`)
+- **Level 2 (*Antardasha*):** **Jupiter** (`2049-05-29T21:26:24Z` to `2051-10-23T11:24:29Z`)
+- **Level 3 (*Pratyantardasha*):** **Venus** (`2050-08-03T21:06:27Z` to `2050-12-27T23:26:08Z`)
+- **Level 4 (*Sookshma Dasha*):** **Saturn** (`2050-11-05T15:00:05Z` to `2050-11-28T18:10:12Z`, Duration = `555.17 hours`)
+- **Level 5 (*Active Prana Dasha*):** **`Venus`**
+
+| Prana Order | Level-5 *Prana Dasha* Lord | Start (`UTC`) | End (`UTC`) | Duration (`Minutes`) | Active at Query? |
+|---|---|---|---|---|---|
+| `#1` | **Saturn** | `2050-11-05T15:00:05Z` | `2050-11-09T06:54:11Z` | **`5274.10 min`** | `—` |
+| `#2` | **Mercury** | `2050-11-09T06:54:11Z` | `2050-11-12T13:33:07Z` | **`4718.93 min`** | `—` |
+| `#3` | **Ketu** | `2050-11-12T13:33:07Z` | `2050-11-13T21:56:12Z` | **`1943.09 min`** | `—` |
+| `#4` | **Venus** | `2050-11-13T21:56:12Z` | `2050-11-17T18:27:54Z` | **`5551.69 min`** | `ACTIVE` |
+| `#5` | **Sun** | `2050-11-17T18:27:54Z` | `2050-11-18T22:13:24Z` | **`1665.51 min`** | `—` |
+| `#6` | **Moon** | `2050-11-18T22:13:24Z` | `2050-11-20T20:29:15Z` | **`2775.84 min`** | `—` |
+| `#7` | **Mars** | `2050-11-20T20:29:15Z` | `2050-11-22T04:52:20Z` | **`1943.09 min`** | `—` |
+| `#8` | **Rahu** | `2050-11-22T04:52:20Z` | `2050-11-25T16:08:51Z` | **`4996.52 min`** | `—` |
+| `#9` | **Jupiter** | `2050-11-25T16:08:51Z` | `2050-11-28T18:10:12Z` | **`4441.35 min`** | `—` |
+
+## Chapter 26 — Complete 150-Division *Nadi Amsa* (`0°12'` *Chandra Kala Nadi / Deva Keralam*) Master Reckoning Table (`#001` to `#150`) & Birth-Time Rectification
+
+> **150 *Nadi Amsas* per Rashi (`1,800` Across `360°`):** Each `30°` sign is divided into `150` micro-slices of **`0° 12' 00"`** (`720"`). In *Chara* (Movable: Mesha, Karka, Tula, Makara) signs, numbering runs directly `1..150`; in *Sthira* (Fixed: Vrishabha, Simha, Vrishchika, Kumbha) signs, numbering reverses `150..1`; in *Dwiswabhava* (Dual: Mithuna, Kanya, Dhanu, Meena) signs, numbering begins at the midpoint `76..150` followed by `1..75`.
+
+### 26.1 Unabridged 150-*Nadi Amsa* (`0°00'` to `30°00'`) Master Lookup Table
+
+| Slice `#` | Degree Span in Sign (`0°..30°`) | *Chara* (Movable) Nadi `#` & Name | *Sthira* (Fixed) Nadi `#` & Name | *Dwiswabhava* (Dual) Nadi `#` & Name | Nadi Planetary Ruler | Lagna Rectification Window (`Seconds`) |
+|---|---|---|---|---|---|---|
+| **`#001`** | `00° 00' .. 00° 12'` | `#001` **Vasudha** *(Prathama-Kala)* | `#150` **Kumbhini** *(Dashama-Kala)* | `#076` **Vasudha** *(Shashtha-Kala)* | **Ketu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#002`** | `00° 12' .. 00° 24'` | `#002` **Vaishnavi** *(Prathama-Kala)* | `#149` **Ghora** *(Dashama-Kala)* | `#077` **Vaishnavi** *(Shashtha-Kala)* | **Venus** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#003`** | `00° 24' .. 00° 36'` | `#003` **Brahmi** *(Prathama-Kala)* | `#148` **Manjuswana** *(Dashama-Kala)* | `#078` **Brahmi** *(Shashtha-Kala)* | **Sun** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#004`** | `00° 36' .. 00° 48'` | `#004` **Kalakoota** *(Prathama-Kala)* | `#147` **Madhavi** *(Dashama-Kala)* | `#079` **Kalakoota** *(Shashtha-Kala)* | **Moon** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#005`** | `00° 48' .. 01° 00'` | `#005` **Shankari** *(Prathama-Kala)* | `#146` **Manohara** *(Dashama-Kala)* | `#080` **Shankari** *(Shashtha-Kala)* | **Mars** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#006`** | `01° 00' .. 01° 12'` | `#006` **Sudhakara** *(Prathama-Kala)* | `#145` **Maya** *(Dashama-Kala)* | `#081` **Sudhakara** *(Shashtha-Kala)* | **Rahu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#007`** | `01° 12' .. 01° 24'` | `#007` **Sama** *(Prathama-Kala)* | `#144` **Sura** *(Dashama-Kala)* | `#082` **Sama** *(Shashtha-Kala)* | **Jupiter** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#008`** | `01° 24' .. 01° 36'` | `#008` **Saumya** *(Prathama-Kala)* | `#143` **Saumya** *(Dashama-Kala)* | `#083` **Saumya** *(Shashtha-Kala)* | **Saturn** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#009`** | `01° 36' .. 01° 48'` | `#009` **Sura** *(Prathama-Kala)* | `#142` **Sama** *(Dashama-Kala)* | `#084` **Sura** *(Shashtha-Kala)* | **Mercury** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#010`** | `01° 48' .. 02° 00'` | `#010` **Maya** *(Prathama-Kala)* | `#141` **Sudhakara** *(Dashama-Kala)* | `#085` **Maya** *(Shashtha-Kala)* | **Ketu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#011`** | `02° 00' .. 02° 12'` | `#011` **Manohara** *(Prathama-Kala)* | `#140` **Shankari** *(Dashama-Kala)* | `#086` **Manohara** *(Shashtha-Kala)* | **Venus** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#012`** | `02° 12' .. 02° 24'` | `#012` **Madhavi** *(Prathama-Kala)* | `#139` **Kalakoota** *(Dashama-Kala)* | `#087` **Madhavi** *(Shashtha-Kala)* | **Sun** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#013`** | `02° 24' .. 02° 36'` | `#013` **Manjuswana** *(Prathama-Kala)* | `#138` **Brahmi** *(Dashama-Kala)* | `#088` **Manjuswana** *(Shashtha-Kala)* | **Moon** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#014`** | `02° 36' .. 02° 48'` | `#014` **Ghora** *(Prathama-Kala)* | `#137` **Vaishnavi** *(Dashama-Kala)* | `#089` **Ghora** *(Shashtha-Kala)* | **Mars** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#015`** | `02° 48' .. 03° 00'` | `#015` **Kumbhini** *(Prathama-Kala)* | `#136` **Vasudha** *(Dashama-Kala)* | `#090` **Kumbhini** *(Shashtha-Kala)* | **Rahu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#016`** | `03° 00' .. 03° 12'` | `#016` **Vasudha** *(Dvitiya-Kala)* | `#135` **Kumbhini** *(Navama-Kala)* | `#091` **Vasudha** *(Saptama-Kala)* | **Jupiter** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#017`** | `03° 12' .. 03° 24'` | `#017` **Vaishnavi** *(Dvitiya-Kala)* | `#134` **Ghora** *(Navama-Kala)* | `#092` **Vaishnavi** *(Saptama-Kala)* | **Saturn** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#018`** | `03° 24' .. 03° 36'` | `#018` **Brahmi** *(Dvitiya-Kala)* | `#133` **Manjuswana** *(Navama-Kala)* | `#093` **Brahmi** *(Saptama-Kala)* | **Mercury** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#019`** | `03° 36' .. 03° 48'` | `#019` **Kalakoota** *(Dvitiya-Kala)* | `#132` **Madhavi** *(Navama-Kala)* | `#094` **Kalakoota** *(Saptama-Kala)* | **Ketu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#020`** | `03° 48' .. 04° 00'` | `#020` **Shankari** *(Dvitiya-Kala)* | `#131` **Manohara** *(Navama-Kala)* | `#095` **Shankari** *(Saptama-Kala)* | **Venus** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#021`** | `04° 00' .. 04° 12'` | `#021` **Sudhakara** *(Dvitiya-Kala)* | `#130` **Maya** *(Navama-Kala)* | `#096` **Sudhakara** *(Saptama-Kala)* | **Sun** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#022`** | `04° 12' .. 04° 24'` | `#022` **Sama** *(Dvitiya-Kala)* | `#129` **Sura** *(Navama-Kala)* | `#097` **Sama** *(Saptama-Kala)* | **Moon** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#023`** | `04° 24' .. 04° 36'` | `#023` **Saumya** *(Dvitiya-Kala)* | `#128` **Saumya** *(Navama-Kala)* | `#098` **Saumya** *(Saptama-Kala)* | **Mars** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#024`** | `04° 36' .. 04° 48'` | `#024` **Sura** *(Dvitiya-Kala)* | `#127` **Sama** *(Navama-Kala)* | `#099` **Sura** *(Saptama-Kala)* | **Rahu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#025`** | `04° 48' .. 05° 00'` | `#025` **Maya** *(Dvitiya-Kala)* | `#126` **Sudhakara** *(Navama-Kala)* | `#100` **Maya** *(Saptama-Kala)* | **Jupiter** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#026`** | `05° 00' .. 05° 12'` | `#026` **Manohara** *(Dvitiya-Kala)* | `#125` **Shankari** *(Navama-Kala)* | `#101` **Manohara** *(Saptama-Kala)* | **Saturn** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#027`** | `05° 12' .. 05° 24'` | `#027` **Madhavi** *(Dvitiya-Kala)* | `#124` **Kalakoota** *(Navama-Kala)* | `#102` **Madhavi** *(Saptama-Kala)* | **Mercury** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#028`** | `05° 24' .. 05° 36'` | `#028` **Manjuswana** *(Dvitiya-Kala)* | `#123` **Brahmi** *(Navama-Kala)* | `#103` **Manjuswana** *(Saptama-Kala)* | **Ketu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#029`** | `05° 36' .. 05° 48'` | `#029` **Ghora** *(Dvitiya-Kala)* | `#122` **Vaishnavi** *(Navama-Kala)* | `#104` **Ghora** *(Saptama-Kala)* | **Venus** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#030`** | `05° 48' .. 06° 00'` | `#030` **Kumbhini** *(Dvitiya-Kala)* | `#121` **Vasudha** *(Navama-Kala)* | `#105` **Kumbhini** *(Saptama-Kala)* | **Sun** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#031`** | `06° 00' .. 06° 12'` | `#031` **Vasudha** *(Tritiya-Kala)* | `#120` **Kumbhini** *(Ashtama-Kala)* | `#106` **Vasudha** *(Ashtama-Kala)* | **Moon** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#032`** | `06° 12' .. 06° 24'` | `#032` **Vaishnavi** *(Tritiya-Kala)* | `#119` **Ghora** *(Ashtama-Kala)* | `#107` **Vaishnavi** *(Ashtama-Kala)* | **Mars** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#033`** | `06° 24' .. 06° 36'` | `#033` **Brahmi** *(Tritiya-Kala)* | `#118` **Manjuswana** *(Ashtama-Kala)* | `#108` **Brahmi** *(Ashtama-Kala)* | **Rahu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#034`** | `06° 36' .. 06° 48'` | `#034` **Kalakoota** *(Tritiya-Kala)* | `#117` **Madhavi** *(Ashtama-Kala)* | `#109` **Kalakoota** *(Ashtama-Kala)* | **Jupiter** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#035`** | `06° 48' .. 07° 00'` | `#035` **Shankari** *(Tritiya-Kala)* | `#116` **Manohara** *(Ashtama-Kala)* | `#110` **Shankari** *(Ashtama-Kala)* | **Saturn** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#036`** | `07° 00' .. 07° 12'` | `#036` **Sudhakara** *(Tritiya-Kala)* | `#115` **Maya** *(Ashtama-Kala)* | `#111` **Sudhakara** *(Ashtama-Kala)* | **Mercury** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#037`** | `07° 12' .. 07° 24'` | `#037` **Sama** *(Tritiya-Kala)* | `#114` **Sura** *(Ashtama-Kala)* | `#112` **Sama** *(Ashtama-Kala)* | **Ketu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#038`** | `07° 24' .. 07° 36'` | `#038` **Saumya** *(Tritiya-Kala)* | `#113` **Saumya** *(Ashtama-Kala)* | `#113` **Saumya** *(Ashtama-Kala)* | **Venus** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#039`** | `07° 36' .. 07° 48'` | `#039` **Sura** *(Tritiya-Kala)* | `#112` **Sama** *(Ashtama-Kala)* | `#114` **Sura** *(Ashtama-Kala)* | **Sun** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#040`** | `07° 48' .. 08° 00'` | `#040` **Maya** *(Tritiya-Kala)* | `#111` **Sudhakara** *(Ashtama-Kala)* | `#115` **Maya** *(Ashtama-Kala)* | **Moon** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#041`** | `08° 00' .. 08° 12'` | `#041` **Manohara** *(Tritiya-Kala)* | `#110` **Shankari** *(Ashtama-Kala)* | `#116` **Manohara** *(Ashtama-Kala)* | **Mars** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#042`** | `08° 12' .. 08° 24'` | `#042` **Madhavi** *(Tritiya-Kala)* | `#109` **Kalakoota** *(Ashtama-Kala)* | `#117` **Madhavi** *(Ashtama-Kala)* | **Rahu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#043`** | `08° 24' .. 08° 36'` | `#043` **Manjuswana** *(Tritiya-Kala)* | `#108` **Brahmi** *(Ashtama-Kala)* | `#118` **Manjuswana** *(Ashtama-Kala)* | **Jupiter** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#044`** | `08° 36' .. 08° 48'` | `#044` **Ghora** *(Tritiya-Kala)* | `#107` **Vaishnavi** *(Ashtama-Kala)* | `#119` **Ghora** *(Ashtama-Kala)* | **Saturn** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#045`** | `08° 48' .. 09° 00'` | `#045` **Kumbhini** *(Tritiya-Kala)* | `#106` **Vasudha** *(Ashtama-Kala)* | `#120` **Kumbhini** *(Ashtama-Kala)* | **Mercury** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#046`** | `09° 00' .. 09° 12'` | `#046` **Vasudha** *(Chaturtha-Kala)* | `#105` **Kumbhini** *(Saptama-Kala)* | `#121` **Vasudha** *(Navama-Kala)* | **Ketu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#047`** | `09° 12' .. 09° 24'` | `#047` **Vaishnavi** *(Chaturtha-Kala)* | `#104` **Ghora** *(Saptama-Kala)* | `#122` **Vaishnavi** *(Navama-Kala)* | **Venus** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#048`** | `09° 24' .. 09° 36'` | `#048` **Brahmi** *(Chaturtha-Kala)* | `#103` **Manjuswana** *(Saptama-Kala)* | `#123` **Brahmi** *(Navama-Kala)* | **Sun** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#049`** | `09° 36' .. 09° 48'` | `#049` **Kalakoota** *(Chaturtha-Kala)* | `#102` **Madhavi** *(Saptama-Kala)* | `#124` **Kalakoota** *(Navama-Kala)* | **Moon** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#050`** | `09° 48' .. 10° 00'` | `#050` **Shankari** *(Chaturtha-Kala)* | `#101` **Manohara** *(Saptama-Kala)* | `#125` **Shankari** *(Navama-Kala)* | **Mars** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#051`** | `10° 00' .. 10° 12'` | `#051` **Sudhakara** *(Chaturtha-Kala)* | `#100` **Maya** *(Saptama-Kala)* | `#126` **Sudhakara** *(Navama-Kala)* | **Rahu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#052`** | `10° 12' .. 10° 24'` | `#052` **Sama** *(Chaturtha-Kala)* | `#099` **Sura** *(Saptama-Kala)* | `#127` **Sama** *(Navama-Kala)* | **Jupiter** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#053`** | `10° 24' .. 10° 36'` | `#053` **Saumya** *(Chaturtha-Kala)* | `#098` **Saumya** *(Saptama-Kala)* | `#128` **Saumya** *(Navama-Kala)* | **Saturn** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#054`** | `10° 36' .. 10° 48'` | `#054` **Sura** *(Chaturtha-Kala)* | `#097` **Sama** *(Saptama-Kala)* | `#129` **Sura** *(Navama-Kala)* | **Mercury** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#055`** | `10° 48' .. 11° 00'` | `#055` **Maya** *(Chaturtha-Kala)* | `#096` **Sudhakara** *(Saptama-Kala)* | `#130` **Maya** *(Navama-Kala)* | **Ketu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#056`** | `11° 00' .. 11° 12'` | `#056` **Manohara** *(Chaturtha-Kala)* | `#095` **Shankari** *(Saptama-Kala)* | `#131` **Manohara** *(Navama-Kala)* | **Venus** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#057`** | `11° 12' .. 11° 24'` | `#057` **Madhavi** *(Chaturtha-Kala)* | `#094` **Kalakoota** *(Saptama-Kala)* | `#132` **Madhavi** *(Navama-Kala)* | **Sun** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#058`** | `11° 24' .. 11° 36'` | `#058` **Manjuswana** *(Chaturtha-Kala)* | `#093` **Brahmi** *(Saptama-Kala)* | `#133` **Manjuswana** *(Navama-Kala)* | **Moon** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#059`** | `11° 36' .. 11° 48'` | `#059` **Ghora** *(Chaturtha-Kala)* | `#092` **Vaishnavi** *(Saptama-Kala)* | `#134` **Ghora** *(Navama-Kala)* | **Mars** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#060`** | `11° 48' .. 12° 00'` | `#060` **Kumbhini** *(Chaturtha-Kala)* | `#091` **Vasudha** *(Saptama-Kala)* | `#135` **Kumbhini** *(Navama-Kala)* | **Rahu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#061`** | `12° 00' .. 12° 12'` | `#061` **Vasudha** *(Panchama-Kala)* | `#090` **Kumbhini** *(Shashtha-Kala)* | `#136` **Vasudha** *(Dashama-Kala)* | **Jupiter** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#062`** | `12° 12' .. 12° 24'` | `#062` **Vaishnavi** *(Panchama-Kala)* | `#089` **Ghora** *(Shashtha-Kala)* | `#137` **Vaishnavi** *(Dashama-Kala)* | **Saturn** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#063`** | `12° 24' .. 12° 36'` | `#063` **Brahmi** *(Panchama-Kala)* | `#088` **Manjuswana** *(Shashtha-Kala)* | `#138` **Brahmi** *(Dashama-Kala)* | **Mercury** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#064`** | `12° 36' .. 12° 48'` | `#064` **Kalakoota** *(Panchama-Kala)* | `#087` **Madhavi** *(Shashtha-Kala)* | `#139` **Kalakoota** *(Dashama-Kala)* | **Ketu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#065`** | `12° 48' .. 13° 00'` | `#065` **Shankari** *(Panchama-Kala)* | `#086` **Manohara** *(Shashtha-Kala)* | `#140` **Shankari** *(Dashama-Kala)* | **Venus** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#066`** | `13° 00' .. 13° 12'` | `#066` **Sudhakara** *(Panchama-Kala)* | `#085` **Maya** *(Shashtha-Kala)* | `#141` **Sudhakara** *(Dashama-Kala)* | **Sun** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#067`** | `13° 12' .. 13° 24'` | `#067` **Sama** *(Panchama-Kala)* | `#084` **Sura** *(Shashtha-Kala)* | `#142` **Sama** *(Dashama-Kala)* | **Moon** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#068`** | `13° 24' .. 13° 36'` | `#068` **Saumya** *(Panchama-Kala)* | `#083` **Saumya** *(Shashtha-Kala)* | `#143` **Saumya** *(Dashama-Kala)* | **Mars** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#069`** | `13° 36' .. 13° 48'` | `#069` **Sura** *(Panchama-Kala)* | `#082` **Sama** *(Shashtha-Kala)* | `#144` **Sura** *(Dashama-Kala)* | **Rahu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#070`** | `13° 48' .. 14° 00'` | `#070` **Maya** *(Panchama-Kala)* | `#081` **Sudhakara** *(Shashtha-Kala)* | `#145` **Maya** *(Dashama-Kala)* | **Jupiter** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#071`** | `14° 00' .. 14° 12'` | `#071` **Manohara** *(Panchama-Kala)* | `#080` **Shankari** *(Shashtha-Kala)* | `#146` **Manohara** *(Dashama-Kala)* | **Saturn** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#072`** | `14° 12' .. 14° 24'` | `#072` **Madhavi** *(Panchama-Kala)* | `#079` **Kalakoota** *(Shashtha-Kala)* | `#147` **Madhavi** *(Dashama-Kala)* | **Mercury** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#073`** | `14° 24' .. 14° 36'` | `#073` **Manjuswana** *(Panchama-Kala)* | `#078` **Brahmi** *(Shashtha-Kala)* | `#148` **Manjuswana** *(Dashama-Kala)* | **Ketu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#074`** | `14° 36' .. 14° 48'` | `#074` **Ghora** *(Panchama-Kala)* | `#077` **Vaishnavi** *(Shashtha-Kala)* | `#149` **Ghora** *(Dashama-Kala)* | **Venus** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#075`** | `14° 48' .. 15° 00'` | `#075` **Kumbhini** *(Panchama-Kala)* | `#076` **Vasudha** *(Shashtha-Kala)* | `#150` **Kumbhini** *(Dashama-Kala)* | **Sun** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#076`** | `15° 00' .. 15° 12'` | `#076` **Vasudha** *(Shashtha-Kala)* | `#075` **Kumbhini** *(Panchama-Kala)* | `#001` **Vasudha** *(Prathama-Kala)* | **Moon** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#077`** | `15° 12' .. 15° 24'` | `#077` **Vaishnavi** *(Shashtha-Kala)* | `#074` **Ghora** *(Panchama-Kala)* | `#002` **Vaishnavi** *(Prathama-Kala)* | **Mars** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#078`** | `15° 24' .. 15° 36'` | `#078` **Brahmi** *(Shashtha-Kala)* | `#073` **Manjuswana** *(Panchama-Kala)* | `#003` **Brahmi** *(Prathama-Kala)* | **Rahu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#079`** | `15° 36' .. 15° 48'` | `#079` **Kalakoota** *(Shashtha-Kala)* | `#072` **Madhavi** *(Panchama-Kala)* | `#004` **Kalakoota** *(Prathama-Kala)* | **Jupiter** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#080`** | `15° 48' .. 16° 00'` | `#080` **Shankari** *(Shashtha-Kala)* | `#071` **Manohara** *(Panchama-Kala)* | `#005` **Shankari** *(Prathama-Kala)* | **Saturn** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#081`** | `16° 00' .. 16° 12'` | `#081` **Sudhakara** *(Shashtha-Kala)* | `#070` **Maya** *(Panchama-Kala)* | `#006` **Sudhakara** *(Prathama-Kala)* | **Mercury** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#082`** | `16° 12' .. 16° 24'` | `#082` **Sama** *(Shashtha-Kala)* | `#069` **Sura** *(Panchama-Kala)* | `#007` **Sama** *(Prathama-Kala)* | **Ketu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#083`** | `16° 24' .. 16° 36'` | `#083` **Saumya** *(Shashtha-Kala)* | `#068` **Saumya** *(Panchama-Kala)* | `#008` **Saumya** *(Prathama-Kala)* | **Venus** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#084`** | `16° 36' .. 16° 48'` | `#084` **Sura** *(Shashtha-Kala)* | `#067` **Sama** *(Panchama-Kala)* | `#009` **Sura** *(Prathama-Kala)* | **Sun** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#085`** | `16° 48' .. 17° 00'` | `#085` **Maya** *(Shashtha-Kala)* | `#066` **Sudhakara** *(Panchama-Kala)* | `#010` **Maya** *(Prathama-Kala)* | **Moon** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#086`** | `17° 00' .. 17° 12'` | `#086` **Manohara** *(Shashtha-Kala)* | `#065` **Shankari** *(Panchama-Kala)* | `#011` **Manohara** *(Prathama-Kala)* | **Mars** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#087`** | `17° 12' .. 17° 24'` | `#087` **Madhavi** *(Shashtha-Kala)* | `#064` **Kalakoota** *(Panchama-Kala)* | `#012` **Madhavi** *(Prathama-Kala)* | **Rahu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#088`** | `17° 24' .. 17° 36'` | `#088` **Manjuswana** *(Shashtha-Kala)* | `#063` **Brahmi** *(Panchama-Kala)* | `#013` **Manjuswana** *(Prathama-Kala)* | **Jupiter** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#089`** | `17° 36' .. 17° 48'` | `#089` **Ghora** *(Shashtha-Kala)* | `#062` **Vaishnavi** *(Panchama-Kala)* | `#014` **Ghora** *(Prathama-Kala)* | **Saturn** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#090`** | `17° 48' .. 18° 00'` | `#090` **Kumbhini** *(Shashtha-Kala)* | `#061` **Vasudha** *(Panchama-Kala)* | `#015` **Kumbhini** *(Prathama-Kala)* | **Mercury** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#091`** | `18° 00' .. 18° 12'` | `#091` **Vasudha** *(Saptama-Kala)* | `#060` **Kumbhini** *(Chaturtha-Kala)* | `#016` **Vasudha** *(Dvitiya-Kala)* | **Ketu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#092`** | `18° 12' .. 18° 24'` | `#092` **Vaishnavi** *(Saptama-Kala)* | `#059` **Ghora** *(Chaturtha-Kala)* | `#017` **Vaishnavi** *(Dvitiya-Kala)* | **Venus** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#093`** | `18° 24' .. 18° 36'` | `#093` **Brahmi** *(Saptama-Kala)* | `#058` **Manjuswana** *(Chaturtha-Kala)* | `#018` **Brahmi** *(Dvitiya-Kala)* | **Sun** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#094`** | `18° 36' .. 18° 48'` | `#094` **Kalakoota** *(Saptama-Kala)* | `#057` **Madhavi** *(Chaturtha-Kala)* | `#019` **Kalakoota** *(Dvitiya-Kala)* | **Moon** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#095`** | `18° 48' .. 19° 00'` | `#095` **Shankari** *(Saptama-Kala)* | `#056` **Manohara** *(Chaturtha-Kala)* | `#020` **Shankari** *(Dvitiya-Kala)* | **Mars** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#096`** | `19° 00' .. 19° 12'` | `#096` **Sudhakara** *(Saptama-Kala)* | `#055` **Maya** *(Chaturtha-Kala)* | `#021` **Sudhakara** *(Dvitiya-Kala)* | **Rahu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#097`** | `19° 12' .. 19° 24'` | `#097` **Sama** *(Saptama-Kala)* | `#054` **Sura** *(Chaturtha-Kala)* | `#022` **Sama** *(Dvitiya-Kala)* | **Jupiter** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#098`** | `19° 24' .. 19° 36'` | `#098` **Saumya** *(Saptama-Kala)* | `#053` **Saumya** *(Chaturtha-Kala)* | `#023` **Saumya** *(Dvitiya-Kala)* | **Saturn** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#099`** | `19° 36' .. 19° 48'` | `#099` **Sura** *(Saptama-Kala)* | `#052` **Sama** *(Chaturtha-Kala)* | `#024` **Sura** *(Dvitiya-Kala)* | **Mercury** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#100`** | `19° 48' .. 20° 00'` | `#100` **Maya** *(Saptama-Kala)* | `#051` **Sudhakara** *(Chaturtha-Kala)* | `#025` **Maya** *(Dvitiya-Kala)* | **Ketu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#101`** | `20° 00' .. 20° 12'` | `#101` **Manohara** *(Saptama-Kala)* | `#050` **Shankari** *(Chaturtha-Kala)* | `#026` **Manohara** *(Dvitiya-Kala)* | **Venus** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#102`** | `20° 12' .. 20° 24'` | `#102` **Madhavi** *(Saptama-Kala)* | `#049` **Kalakoota** *(Chaturtha-Kala)* | `#027` **Madhavi** *(Dvitiya-Kala)* | **Sun** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#103`** | `20° 24' .. 20° 36'` | `#103` **Manjuswana** *(Saptama-Kala)* | `#048` **Brahmi** *(Chaturtha-Kala)* | `#028` **Manjuswana** *(Dvitiya-Kala)* | **Moon** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#104`** | `20° 36' .. 20° 48'` | `#104` **Ghora** *(Saptama-Kala)* | `#047` **Vaishnavi** *(Chaturtha-Kala)* | `#029` **Ghora** *(Dvitiya-Kala)* | **Mars** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#105`** | `20° 48' .. 21° 00'` | `#105` **Kumbhini** *(Saptama-Kala)* | `#046` **Vasudha** *(Chaturtha-Kala)* | `#030` **Kumbhini** *(Dvitiya-Kala)* | **Rahu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#106`** | `21° 00' .. 21° 12'` | `#106` **Vasudha** *(Ashtama-Kala)* | `#045` **Kumbhini** *(Tritiya-Kala)* | `#031` **Vasudha** *(Tritiya-Kala)* | **Jupiter** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#107`** | `21° 12' .. 21° 24'` | `#107` **Vaishnavi** *(Ashtama-Kala)* | `#044` **Ghora** *(Tritiya-Kala)* | `#032` **Vaishnavi** *(Tritiya-Kala)* | **Saturn** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#108`** | `21° 24' .. 21° 36'` | `#108` **Brahmi** *(Ashtama-Kala)* | `#043` **Manjuswana** *(Tritiya-Kala)* | `#033` **Brahmi** *(Tritiya-Kala)* | **Mercury** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#109`** | `21° 36' .. 21° 48'` | `#109` **Kalakoota** *(Ashtama-Kala)* | `#042` **Madhavi** *(Tritiya-Kala)* | `#034` **Kalakoota** *(Tritiya-Kala)* | **Ketu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#110`** | `21° 48' .. 22° 00'` | `#110` **Shankari** *(Ashtama-Kala)* | `#041` **Manohara** *(Tritiya-Kala)* | `#035` **Shankari** *(Tritiya-Kala)* | **Venus** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#111`** | `22° 00' .. 22° 12'` | `#111` **Sudhakara** *(Ashtama-Kala)* | `#040` **Maya** *(Tritiya-Kala)* | `#036` **Sudhakara** *(Tritiya-Kala)* | **Sun** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#112`** | `22° 12' .. 22° 24'` | `#112` **Sama** *(Ashtama-Kala)* | `#039` **Sura** *(Tritiya-Kala)* | `#037` **Sama** *(Tritiya-Kala)* | **Moon** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#113`** | `22° 24' .. 22° 36'` | `#113` **Saumya** *(Ashtama-Kala)* | `#038` **Saumya** *(Tritiya-Kala)* | `#038` **Saumya** *(Tritiya-Kala)* | **Mars** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#114`** | `22° 36' .. 22° 48'` | `#114` **Sura** *(Ashtama-Kala)* | `#037` **Sama** *(Tritiya-Kala)* | `#039` **Sura** *(Tritiya-Kala)* | **Rahu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#115`** | `22° 48' .. 23° 00'` | `#115` **Maya** *(Ashtama-Kala)* | `#036` **Sudhakara** *(Tritiya-Kala)* | `#040` **Maya** *(Tritiya-Kala)* | **Jupiter** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#116`** | `23° 00' .. 23° 12'` | `#116` **Manohara** *(Ashtama-Kala)* | `#035` **Shankari** *(Tritiya-Kala)* | `#041` **Manohara** *(Tritiya-Kala)* | **Saturn** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#117`** | `23° 12' .. 23° 24'` | `#117` **Madhavi** *(Ashtama-Kala)* | `#034` **Kalakoota** *(Tritiya-Kala)* | `#042` **Madhavi** *(Tritiya-Kala)* | **Mercury** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#118`** | `23° 24' .. 23° 36'` | `#118` **Manjuswana** *(Ashtama-Kala)* | `#033` **Brahmi** *(Tritiya-Kala)* | `#043` **Manjuswana** *(Tritiya-Kala)* | **Ketu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#119`** | `23° 36' .. 23° 48'` | `#119` **Ghora** *(Ashtama-Kala)* | `#032` **Vaishnavi** *(Tritiya-Kala)* | `#044` **Ghora** *(Tritiya-Kala)* | **Venus** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#120`** | `23° 48' .. 24° 00'` | `#120` **Kumbhini** *(Ashtama-Kala)* | `#031` **Vasudha** *(Tritiya-Kala)* | `#045` **Kumbhini** *(Tritiya-Kala)* | **Sun** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#121`** | `24° 00' .. 24° 12'` | `#121` **Vasudha** *(Navama-Kala)* | `#030` **Kumbhini** *(Dvitiya-Kala)* | `#046` **Vasudha** *(Chaturtha-Kala)* | **Moon** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#122`** | `24° 12' .. 24° 24'` | `#122` **Vaishnavi** *(Navama-Kala)* | `#029` **Ghora** *(Dvitiya-Kala)* | `#047` **Vaishnavi** *(Chaturtha-Kala)* | **Mars** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#123`** | `24° 24' .. 24° 36'` | `#123` **Brahmi** *(Navama-Kala)* | `#028` **Manjuswana** *(Dvitiya-Kala)* | `#048` **Brahmi** *(Chaturtha-Kala)* | **Rahu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#124`** | `24° 36' .. 24° 48'` | `#124` **Kalakoota** *(Navama-Kala)* | `#027` **Madhavi** *(Dvitiya-Kala)* | `#049` **Kalakoota** *(Chaturtha-Kala)* | **Jupiter** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#125`** | `24° 48' .. 25° 00'` | `#125` **Shankari** *(Navama-Kala)* | `#026` **Manohara** *(Dvitiya-Kala)* | `#050` **Shankari** *(Chaturtha-Kala)* | **Saturn** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#126`** | `25° 00' .. 25° 12'` | `#126` **Sudhakara** *(Navama-Kala)* | `#025` **Maya** *(Dvitiya-Kala)* | `#051` **Sudhakara** *(Chaturtha-Kala)* | **Mercury** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#127`** | `25° 12' .. 25° 24'` | `#127` **Sama** *(Navama-Kala)* | `#024` **Sura** *(Dvitiya-Kala)* | `#052` **Sama** *(Chaturtha-Kala)* | **Ketu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#128`** | `25° 24' .. 25° 36'` | `#128` **Saumya** *(Navama-Kala)* | `#023` **Saumya** *(Dvitiya-Kala)* | `#053` **Saumya** *(Chaturtha-Kala)* | **Venus** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#129`** | `25° 36' .. 25° 48'` | `#129` **Sura** *(Navama-Kala)* | `#022` **Sama** *(Dvitiya-Kala)* | `#054` **Sura** *(Chaturtha-Kala)* | **Sun** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#130`** | `25° 48' .. 26° 00'` | `#130` **Maya** *(Navama-Kala)* | `#021` **Sudhakara** *(Dvitiya-Kala)* | `#055` **Maya** *(Chaturtha-Kala)* | **Moon** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#131`** | `26° 00' .. 26° 12'` | `#131` **Manohara** *(Navama-Kala)* | `#020` **Shankari** *(Dvitiya-Kala)* | `#056` **Manohara** *(Chaturtha-Kala)* | **Mars** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#132`** | `26° 12' .. 26° 24'` | `#132` **Madhavi** *(Navama-Kala)* | `#019` **Kalakoota** *(Dvitiya-Kala)* | `#057` **Madhavi** *(Chaturtha-Kala)* | **Rahu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#133`** | `26° 24' .. 26° 36'` | `#133` **Manjuswana** *(Navama-Kala)* | `#018` **Brahmi** *(Dvitiya-Kala)* | `#058` **Manjuswana** *(Chaturtha-Kala)* | **Jupiter** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#134`** | `26° 36' .. 26° 48'` | `#134` **Ghora** *(Navama-Kala)* | `#017` **Vaishnavi** *(Dvitiya-Kala)* | `#059` **Ghora** *(Chaturtha-Kala)* | **Saturn** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#135`** | `26° 48' .. 27° 00'` | `#135` **Kumbhini** *(Navama-Kala)* | `#016` **Vasudha** *(Dvitiya-Kala)* | `#060` **Kumbhini** *(Chaturtha-Kala)* | **Mercury** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#136`** | `27° 00' .. 27° 12'` | `#136` **Vasudha** *(Dashama-Kala)* | `#015` **Kumbhini** *(Prathama-Kala)* | `#061` **Vasudha** *(Panchama-Kala)* | **Ketu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#137`** | `27° 12' .. 27° 24'` | `#137` **Vaishnavi** *(Dashama-Kala)* | `#014` **Ghora** *(Prathama-Kala)* | `#062` **Vaishnavi** *(Panchama-Kala)* | **Venus** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#138`** | `27° 24' .. 27° 36'` | `#138` **Brahmi** *(Dashama-Kala)* | `#013` **Manjuswana** *(Prathama-Kala)* | `#063` **Brahmi** *(Panchama-Kala)* | **Sun** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#139`** | `27° 36' .. 27° 48'` | `#139` **Kalakoota** *(Dashama-Kala)* | `#012` **Madhavi** *(Prathama-Kala)* | `#064` **Kalakoota** *(Panchama-Kala)* | **Moon** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#140`** | `27° 48' .. 28° 00'` | `#140` **Shankari** *(Dashama-Kala)* | `#011` **Manohara** *(Prathama-Kala)* | `#065` **Shankari** *(Panchama-Kala)* | **Mars** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#141`** | `28° 00' .. 28° 12'` | `#141` **Sudhakara** *(Dashama-Kala)* | `#010` **Maya** *(Prathama-Kala)* | `#066` **Sudhakara** *(Panchama-Kala)* | **Rahu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#142`** | `28° 12' .. 28° 24'` | `#142` **Sama** *(Dashama-Kala)* | `#009` **Sura** *(Prathama-Kala)* | `#067` **Sama** *(Panchama-Kala)* | **Jupiter** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#143`** | `28° 24' .. 28° 36'` | `#143` **Saumya** *(Dashama-Kala)* | `#008` **Saumya** *(Prathama-Kala)* | `#068` **Saumya** *(Panchama-Kala)* | **Saturn** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#144`** | `28° 36' .. 28° 48'` | `#144` **Sura** *(Dashama-Kala)* | `#007` **Sama** *(Prathama-Kala)* | `#069` **Sura** *(Panchama-Kala)* | **Mercury** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#145`** | `28° 48' .. 29° 00'` | `#145` **Maya** *(Dashama-Kala)* | `#006` **Sudhakara** *(Prathama-Kala)* | `#070` **Maya** *(Panchama-Kala)* | **Ketu** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#146`** | `29° 00' .. 29° 12'` | `#146` **Manohara** *(Dashama-Kala)* | `#005` **Shankari** *(Prathama-Kala)* | `#071` **Manohara** *(Panchama-Kala)* | **Venus** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#147`** | `29° 12' .. 29° 24'` | `#147` **Madhavi** *(Dashama-Kala)* | `#004` **Kalakoota** *(Prathama-Kala)* | `#072` **Madhavi** *(Panchama-Kala)* | **Sun** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#148`** | `29° 24' .. 29° 36'` | `#148` **Manjuswana** *(Dashama-Kala)* | `#003` **Brahmi** *(Prathama-Kala)* | `#073` **Manjuswana** *(Panchama-Kala)* | **Moon** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#149`** | `29° 36' .. 29° 48'` | `#149` **Ghora** *(Dashama-Kala)* | `#002` **Vaishnavi** *(Prathama-Kala)* | `#074` **Ghora** *(Panchama-Kala)* | **Mars** | `48.0 sec` (`0°12'` Lagna shift) |
+| **`#150`** | `29° 48' .. 30° 00'` | `#150` **Kumbhini** *(Dashama-Kala)* | `#001` **Vasudha** *(Prathama-Kala)* | `#075` **Kumbhini** *(Panchama-Kala)* | **Rahu** | `48.0 sec` (`0°12'` Lagna shift) |
+
+### 26.2 Worked Case Study: Natal 150-*Nadi Amsa* Coordinates & Exact Seconds to Boundary Flip
+
+| Point | Sidereal Longitude (`DMS`) | Sign & Modality | Nadi `#` (`1..150`) | Zodiacal Nadi (`1..1800`) | Classical *Deva Keralam* Nadi Name | Nadi Ruler | Seconds to Prev / Next Nadi Flip |
+|---|---|---|---|---|---|---|---|
+| **Ascendant (Lagna)** | `Dhanu 22° 18' 00"` | Dhanu *(Dwiswabhava (Dual: 76..150, 1..75))* | **`#037`** | `#1237` | **Sama (Tritiya-Kala)** | `Ketu` | `-24.0s / +24.0s` |
+| **Sun** | `Tula 28° 36' 50"` | Tula *(Chara (Movable: Direct 1..150))* | **`#144`** | `#1044` | **Sura (Dashama-Kala)** | `Mercury` | `-1224.3s / +16308.1s` |
+| **Moon** | `Makara 03° 41' 39"` | Makara *(Chara (Movable: Direct 1..150))* | **`#019`** | `#1369` | **Kalakoota (Dvitiya-Kala)** | `Ketu` | `-618.3s / +693.1s` |
+| **Mars** | `Simha 01° 11' 03"` | Simha *(Sthira (Fixed: Reverse 150..1))* | **`#145`** | `#0745` | **Maya (Dashama-Kala)** | `Ketu` | `-30373.9s / +2603.2s` |
+| **Mercury** | `Tula 11° 01' 01"` | Tula *(Chara (Movable: Direct 1..150))* | **`#056`** | `#0956` | **Manohara (Chaturtha-Kala)** | `Venus` | `-1229.3s / +13170.7s` |
+| **Jupiter** | `Simha 01° 33' 59"` | Simha *(Sthira (Fixed: Reverse 150..1))* | **`#143`** | `#0743` | **Saumya (Dashama-Kala)** | `Saturn` | `-172874.6s / +35067.7s` |
+| **Venus** | `Kanya 28° 39' 27"` | Kanya *(Dwiswabhava (Dual: 76..150, 1..75))* | **`#069`** | `#0819` | **Sura (Panchama-Kala)** | `Rahu` | `-4322.0s / +10704.1s` |
+| **Saturn** | `Meena 14° 16' 59"` | Meena *(Dwiswabhava (Dual: 76..150, 1..75))* | **`#147`** | `#1797` | **Madhavi (Dashama-Kala)** | `Sun` | `-213965.5s / +301855.4s` |
+| **Rahu** | `Kumbha 01° 05' 10"` | Kumbha *(Sthira (Fixed: Reverse 150..1))* | **`#145`** | `#1645` | **Maya (Dashama-Kala)** | `Ketu` | `-140418.7s / +186235.4s` |
+| **Ketu** | `Simha 01° 05' 10"` | Simha *(Sthira (Fixed: Reverse 150..1))* | **`#145`** | `#0745` | **Maya (Dashama-Kala)** | `Ketu` | `-140418.7s / +186235.4s` |
+
+### 26.3 Complete 360-Degree Zodiacal *Deva Keralam Nadi Amsa* (`1..1800`) & *Shashtiamsa* (`D60`) Deity Cross-Reference Encyclopedia (`0°` to `359°`)
+
+| Zodiacal Degree | `Rashi & Degree` | Sign Modality | Slice (`1..150`) | Modality-Adjusted Nadi `#` | Zodiacal Nadi (`1..1800`) | *Deva Keralam* Nadi Name & Quality | `D60` *Shashtiamsa* `#` & Deity |
+|---|---|---|---|---|---|---|---|
+| **`000° 00'`** | **Mesha** `00° 00'` | Chara (Direct) | `Slice #001` | **`Nadi #001`** | `#0001 / 1800` | **Vasudha** *(Prathama-Kala)* | `D60 #01` **Ghora** *(False)* |
+| **`001° 00'`** | **Mesha** `01° 00'` | Chara (Direct) | `Slice #006` | **`Nadi #006`** | `#0006 / 1800` | **Sudhakara** *(Prathama-Kala)* | `D60 #03` **Deva** *(True)* |
+| **`002° 00'`** | **Mesha** `02° 00'` | Chara (Direct) | `Slice #011` | **`Nadi #011`** | `#0011 / 1800` | **Manohara** *(Prathama-Kala)* | `D60 #05` **Yaksha** *(True)* |
+| **`003° 00'`** | **Mesha** `03° 00'` | Chara (Direct) | `Slice #016` | **`Nadi #016`** | `#0016 / 1800` | **Vasudha** *(Dvitiya-Kala)* | `D60 #07` **Bhrashta** *(False)* |
+| **`004° 00'`** | **Mesha** `04° 00'` | Chara (Direct) | `Slice #021` | **`Nadi #021`** | `#0021 / 1800` | **Sudhakara** *(Dvitiya-Kala)* | `D60 #09` **Garala** *(False)* |
+| **`005° 00'`** | **Mesha** `05° 00'` | Chara (Direct) | `Slice #026` | **`Nadi #026`** | `#0026 / 1800` | **Manohara** *(Dvitiya-Kala)* | `D60 #11` **Maya** *(False)* |
+| **`006° 00'`** | **Mesha** `06° 00'` | Chara (Direct) | `Slice #031` | **`Nadi #031`** | `#0031 / 1800` | **Vasudha** *(Tritiya-Kala)* | `D60 #13` **Apampati** *(True)* |
+| **`007° 00'`** | **Mesha** `07° 00'` | Chara (Direct) | `Slice #036` | **`Nadi #036`** | `#0036 / 1800` | **Sudhakara** *(Tritiya-Kala)* | `D60 #15` **Kala** *(False)* |
+| **`008° 00'`** | **Mesha** `08° 00'` | Chara (Direct) | `Slice #041` | **`Nadi #041`** | `#0041 / 1800` | **Manohara** *(Tritiya-Kala)* | `D60 #17` **Amrita** *(True)* |
+| **`009° 00'`** | **Mesha** `09° 00'` | Chara (Direct) | `Slice #046` | **`Nadi #046`** | `#0046 / 1800` | **Vasudha** *(Chaturtha-Kala)* | `D60 #19` **Mridu** *(True)* |
+| **`010° 00'`** | **Mesha** `10° 00'` | Chara (Direct) | `Slice #051` | **`Nadi #051`** | `#0051 / 1800` | **Sudhakara** *(Chaturtha-Kala)* | `D60 #21` **Heramba** *(True)* |
+| **`011° 00'`** | **Mesha** `11° 00'` | Chara (Direct) | `Slice #056` | **`Nadi #056`** | `#0056 / 1800` | **Manohara** *(Chaturtha-Kala)* | `D60 #23` **Vishnu** *(True)* |
+| **`012° 00'`** | **Mesha** `12° 00'` | Chara (Direct) | `Slice #061` | **`Nadi #061`** | `#0061 / 1800` | **Vasudha** *(Panchama-Kala)* | `D60 #25` **Deva** *(True)* |
+| **`013° 00'`** | **Mesha** `13° 00'` | Chara (Direct) | `Slice #066` | **`Nadi #066`** | `#0066 / 1800` | **Sudhakara** *(Panchama-Kala)* | `D60 #27` **Kalinasa** *(True)* |
+| **`014° 00'`** | **Mesha** `14° 00'` | Chara (Direct) | `Slice #071` | **`Nadi #071`** | `#0071 / 1800` | **Manohara** *(Panchama-Kala)* | `D60 #29` **Kamalakara** *(True)* |
+| **`015° 00'`** | **Mesha** `15° 00'` | Chara (Direct) | `Slice #076` | **`Nadi #076`** | `#0076 / 1800` | **Vasudha** *(Shashtha-Kala)* | `D60 #31` **Mrityu** *(False)* |
+| **`016° 00'`** | **Mesha** `16° 00'` | Chara (Direct) | `Slice #081` | **`Nadi #081`** | `#0081 / 1800` | **Sudhakara** *(Shashtha-Kala)* | `D60 #33` **Davagni** *(False)* |
+| **`017° 00'`** | **Mesha** `17° 00'` | Chara (Direct) | `Slice #086` | **`Nadi #086`** | `#0086 / 1800` | **Manohara** *(Shashtha-Kala)* | `D60 #35` **Yama** *(False)* |
+| **`018° 00'`** | **Mesha** `18° 00'` | Chara (Direct) | `Slice #091` | **`Nadi #091`** | `#0091 / 1800` | **Vasudha** *(Saptama-Kala)* | `D60 #37` **Sudha** *(True)* |
+| **`019° 00'`** | **Mesha** `19° 00'` | Chara (Direct) | `Slice #096` | **`Nadi #096`** | `#0096 / 1800` | **Sudhakara** *(Saptama-Kala)* | `D60 #39` **Purnachandra** *(True)* |
+| **`020° 00'`** | **Mesha** `20° 00'` | Chara (Direct) | `Slice #101` | **`Nadi #101`** | `#0101 / 1800` | **Manohara** *(Saptama-Kala)* | `D60 #41` **Kulanasa** *(False)* |
+| **`021° 00'`** | **Mesha** `21° 00'` | Chara (Direct) | `Slice #106` | **`Nadi #106`** | `#0106 / 1800` | **Vasudha** *(Ashtama-Kala)* | `D60 #43` **Utpata** *(False)* |
+| **`022° 00'`** | **Mesha** `22° 00'` | Chara (Direct) | `Slice #111` | **`Nadi #111`** | `#0111 / 1800` | **Sudhakara** *(Ashtama-Kala)* | `D60 #45` **Saumya** *(True)* |
+| **`023° 00'`** | **Mesha** `23° 00'` | Chara (Direct) | `Slice #116` | **`Nadi #116`** | `#0116 / 1800` | **Manohara** *(Ashtama-Kala)* | `D60 #47` **Sheetala** *(True)* |
+| **`024° 00'`** | **Mesha** `24° 00'` | Chara (Direct) | `Slice #121` | **`Nadi #121`** | `#0121 / 1800` | **Vasudha** *(Navama-Kala)* | `D60 #49` **Chandramukhi** *(True)* |
+| **`025° 00'`** | **Mesha** `25° 00'` | Chara (Direct) | `Slice #126` | **`Nadi #126`** | `#0126 / 1800` | **Sudhakara** *(Navama-Kala)* | `D60 #51` **Kalapavaka** *(False)* |
+| **`026° 00'`** | **Mesha** `26° 00'` | Chara (Direct) | `Slice #131` | **`Nadi #131`** | `#0131 / 1800` | **Manohara** *(Navama-Kala)* | `D60 #53` **Nirmala** *(True)* |
+| **`027° 00'`** | **Mesha** `27° 00'` | Chara (Direct) | `Slice #136` | **`Nadi #136`** | `#0136 / 1800` | **Vasudha** *(Dashama-Kala)* | `D60 #55` **Krura** *(False)* |
+| **`028° 00'`** | **Mesha** `28° 00'` | Chara (Direct) | `Slice #141` | **`Nadi #141`** | `#0141 / 1800` | **Sudhakara** *(Dashama-Kala)* | `D60 #57` **Amrita** *(True)* |
+| **`029° 00'`** | **Mesha** `29° 00'` | Chara (Direct) | `Slice #146` | **`Nadi #146`** | `#0146 / 1800` | **Manohara** *(Dashama-Kala)* | `D60 #59` **Bhramana** *(False)* |
+| **`030° 00'`** | **Vrishabha** `00° 00'` | Sthira (Reverse) | `Slice #001` | **`Nadi #150`** | `#0300 / 1800` | **Kumbhini** *(Dashama-Kala)* | `D60 #01` **Ghora** *(False)* |
+| **`031° 00'`** | **Vrishabha** `01° 00'` | Sthira (Reverse) | `Slice #006` | **`Nadi #145`** | `#0295 / 1800` | **Maya** *(Dashama-Kala)* | `D60 #03` **Deva** *(True)* |
+| **`032° 00'`** | **Vrishabha** `02° 00'` | Sthira (Reverse) | `Slice #011` | **`Nadi #140`** | `#0290 / 1800` | **Shankari** *(Dashama-Kala)* | `D60 #05` **Yaksha** *(True)* |
+| **`033° 00'`** | **Vrishabha** `03° 00'` | Sthira (Reverse) | `Slice #016` | **`Nadi #135`** | `#0285 / 1800` | **Kumbhini** *(Navama-Kala)* | `D60 #07` **Bhrashta** *(False)* |
+| **`034° 00'`** | **Vrishabha** `04° 00'` | Sthira (Reverse) | `Slice #021` | **`Nadi #130`** | `#0280 / 1800` | **Maya** *(Navama-Kala)* | `D60 #09` **Garala** *(False)* |
+| **`035° 00'`** | **Vrishabha** `05° 00'` | Sthira (Reverse) | `Slice #026` | **`Nadi #125`** | `#0275 / 1800` | **Shankari** *(Navama-Kala)* | `D60 #11` **Maya** *(False)* |
+| **`036° 00'`** | **Vrishabha** `06° 00'` | Sthira (Reverse) | `Slice #031` | **`Nadi #120`** | `#0270 / 1800` | **Kumbhini** *(Ashtama-Kala)* | `D60 #13` **Apampati** *(True)* |
+| **`037° 00'`** | **Vrishabha** `07° 00'` | Sthira (Reverse) | `Slice #036` | **`Nadi #115`** | `#0265 / 1800` | **Maya** *(Ashtama-Kala)* | `D60 #15` **Kala** *(False)* |
+| **`038° 00'`** | **Vrishabha** `08° 00'` | Sthira (Reverse) | `Slice #041` | **`Nadi #110`** | `#0260 / 1800` | **Shankari** *(Ashtama-Kala)* | `D60 #17` **Amrita** *(True)* |
+| **`039° 00'`** | **Vrishabha** `09° 00'` | Sthira (Reverse) | `Slice #046` | **`Nadi #105`** | `#0255 / 1800` | **Kumbhini** *(Saptama-Kala)* | `D60 #19` **Mridu** *(True)* |
+| **`040° 00'`** | **Vrishabha** `10° 00'` | Sthira (Reverse) | `Slice #051` | **`Nadi #100`** | `#0250 / 1800` | **Maya** *(Saptama-Kala)* | `D60 #21` **Heramba** *(True)* |
+| **`041° 00'`** | **Vrishabha** `11° 00'` | Sthira (Reverse) | `Slice #056` | **`Nadi #095`** | `#0245 / 1800` | **Shankari** *(Saptama-Kala)* | `D60 #23` **Vishnu** *(True)* |
+| **`042° 00'`** | **Vrishabha** `12° 00'` | Sthira (Reverse) | `Slice #061` | **`Nadi #090`** | `#0240 / 1800` | **Kumbhini** *(Shashtha-Kala)* | `D60 #25` **Deva** *(True)* |
+| **`043° 00'`** | **Vrishabha** `13° 00'` | Sthira (Reverse) | `Slice #066` | **`Nadi #085`** | `#0235 / 1800` | **Maya** *(Shashtha-Kala)* | `D60 #27` **Kalinasa** *(True)* |
+| **`044° 00'`** | **Vrishabha** `14° 00'` | Sthira (Reverse) | `Slice #071` | **`Nadi #080`** | `#0230 / 1800` | **Shankari** *(Shashtha-Kala)* | `D60 #29` **Kamalakara** *(True)* |
+| **`045° 00'`** | **Vrishabha** `15° 00'` | Sthira (Reverse) | `Slice #076` | **`Nadi #075`** | `#0225 / 1800` | **Kumbhini** *(Panchama-Kala)* | `D60 #31` **Mrityu** *(False)* |
+| **`046° 00'`** | **Vrishabha** `16° 00'` | Sthira (Reverse) | `Slice #081` | **`Nadi #070`** | `#0220 / 1800` | **Maya** *(Panchama-Kala)* | `D60 #33` **Davagni** *(False)* |
+| **`047° 00'`** | **Vrishabha** `17° 00'` | Sthira (Reverse) | `Slice #086` | **`Nadi #065`** | `#0215 / 1800` | **Shankari** *(Panchama-Kala)* | `D60 #35` **Yama** *(False)* |
+| **`048° 00'`** | **Vrishabha** `18° 00'` | Sthira (Reverse) | `Slice #091` | **`Nadi #060`** | `#0210 / 1800` | **Kumbhini** *(Chaturtha-Kala)* | `D60 #37` **Sudha** *(True)* |
+| **`049° 00'`** | **Vrishabha** `19° 00'` | Sthira (Reverse) | `Slice #096` | **`Nadi #055`** | `#0205 / 1800` | **Maya** *(Chaturtha-Kala)* | `D60 #39` **Purnachandra** *(True)* |
+| **`050° 00'`** | **Vrishabha** `20° 00'` | Sthira (Reverse) | `Slice #101` | **`Nadi #050`** | `#0200 / 1800` | **Shankari** *(Chaturtha-Kala)* | `D60 #41` **Kulanasa** *(False)* |
+| **`051° 00'`** | **Vrishabha** `21° 00'` | Sthira (Reverse) | `Slice #106` | **`Nadi #045`** | `#0195 / 1800` | **Kumbhini** *(Tritiya-Kala)* | `D60 #43` **Utpata** *(False)* |
+| **`052° 00'`** | **Vrishabha** `22° 00'` | Sthira (Reverse) | `Slice #111` | **`Nadi #040`** | `#0190 / 1800` | **Maya** *(Tritiya-Kala)* | `D60 #45` **Saumya** *(True)* |
+| **`053° 00'`** | **Vrishabha** `23° 00'` | Sthira (Reverse) | `Slice #116` | **`Nadi #035`** | `#0185 / 1800` | **Shankari** *(Tritiya-Kala)* | `D60 #47` **Sheetala** *(True)* |
+| **`054° 00'`** | **Vrishabha** `24° 00'` | Sthira (Reverse) | `Slice #121` | **`Nadi #030`** | `#0180 / 1800` | **Kumbhini** *(Dvitiya-Kala)* | `D60 #49` **Chandramukhi** *(True)* |
+| **`055° 00'`** | **Vrishabha** `25° 00'` | Sthira (Reverse) | `Slice #126` | **`Nadi #025`** | `#0175 / 1800` | **Maya** *(Dvitiya-Kala)* | `D60 #51` **Kalapavaka** *(False)* |
+| **`056° 00'`** | **Vrishabha** `26° 00'` | Sthira (Reverse) | `Slice #131` | **`Nadi #020`** | `#0170 / 1800` | **Shankari** *(Dvitiya-Kala)* | `D60 #53` **Nirmala** *(True)* |
+| **`057° 00'`** | **Vrishabha** `27° 00'` | Sthira (Reverse) | `Slice #136` | **`Nadi #015`** | `#0165 / 1800` | **Kumbhini** *(Prathama-Kala)* | `D60 #55` **Krura** *(False)* |
+| **`058° 00'`** | **Vrishabha** `28° 00'` | Sthira (Reverse) | `Slice #141` | **`Nadi #010`** | `#0160 / 1800` | **Maya** *(Prathama-Kala)* | `D60 #57` **Amrita** *(True)* |
+| **`059° 00'`** | **Vrishabha** `29° 00'` | Sthira (Reverse) | `Slice #146` | **`Nadi #005`** | `#0155 / 1800` | **Shankari** *(Prathama-Kala)* | `D60 #59` **Bhramana** *(False)* |
+| **`060° 00'`** | **Mithuna** `00° 00'` | Dwiswabhava (Mid) | `Slice #001` | **`Nadi #076`** | `#0376 / 1800` | **Vasudha** *(Shashtha-Kala)* | `D60 #01` **Ghora** *(False)* |
+| **`061° 00'`** | **Mithuna** `01° 00'` | Dwiswabhava (Mid) | `Slice #006` | **`Nadi #081`** | `#0381 / 1800` | **Sudhakara** *(Shashtha-Kala)* | `D60 #03` **Deva** *(True)* |
+| **`062° 00'`** | **Mithuna** `02° 00'` | Dwiswabhava (Mid) | `Slice #011` | **`Nadi #086`** | `#0386 / 1800` | **Manohara** *(Shashtha-Kala)* | `D60 #05` **Yaksha** *(True)* |
+| **`063° 00'`** | **Mithuna** `03° 00'` | Dwiswabhava (Mid) | `Slice #016` | **`Nadi #091`** | `#0391 / 1800` | **Vasudha** *(Saptama-Kala)* | `D60 #07` **Bhrashta** *(False)* |
+| **`064° 00'`** | **Mithuna** `04° 00'` | Dwiswabhava (Mid) | `Slice #021` | **`Nadi #096`** | `#0396 / 1800` | **Sudhakara** *(Saptama-Kala)* | `D60 #09` **Garala** *(False)* |
+| **`065° 00'`** | **Mithuna** `05° 00'` | Dwiswabhava (Mid) | `Slice #026` | **`Nadi #101`** | `#0401 / 1800` | **Manohara** *(Saptama-Kala)* | `D60 #11` **Maya** *(False)* |
+| **`066° 00'`** | **Mithuna** `06° 00'` | Dwiswabhava (Mid) | `Slice #031` | **`Nadi #106`** | `#0406 / 1800` | **Vasudha** *(Ashtama-Kala)* | `D60 #13` **Apampati** *(True)* |
+| **`067° 00'`** | **Mithuna** `07° 00'` | Dwiswabhava (Mid) | `Slice #036` | **`Nadi #111`** | `#0411 / 1800` | **Sudhakara** *(Ashtama-Kala)* | `D60 #15` **Kala** *(False)* |
+| **`068° 00'`** | **Mithuna** `08° 00'` | Dwiswabhava (Mid) | `Slice #041` | **`Nadi #116`** | `#0416 / 1800` | **Manohara** *(Ashtama-Kala)* | `D60 #17` **Amrita** *(True)* |
+| **`069° 00'`** | **Mithuna** `09° 00'` | Dwiswabhava (Mid) | `Slice #046` | **`Nadi #121`** | `#0421 / 1800` | **Vasudha** *(Navama-Kala)* | `D60 #19` **Mridu** *(True)* |
+| **`070° 00'`** | **Mithuna** `10° 00'` | Dwiswabhava (Mid) | `Slice #051` | **`Nadi #126`** | `#0426 / 1800` | **Sudhakara** *(Navama-Kala)* | `D60 #21` **Heramba** *(True)* |
+| **`071° 00'`** | **Mithuna** `11° 00'` | Dwiswabhava (Mid) | `Slice #056` | **`Nadi #131`** | `#0431 / 1800` | **Manohara** *(Navama-Kala)* | `D60 #23` **Vishnu** *(True)* |
+| **`072° 00'`** | **Mithuna** `12° 00'` | Dwiswabhava (Mid) | `Slice #061` | **`Nadi #136`** | `#0436 / 1800` | **Vasudha** *(Dashama-Kala)* | `D60 #25` **Deva** *(True)* |
+| **`073° 00'`** | **Mithuna** `13° 00'` | Dwiswabhava (Mid) | `Slice #066` | **`Nadi #141`** | `#0441 / 1800` | **Sudhakara** *(Dashama-Kala)* | `D60 #27` **Kalinasa** *(True)* |
+| **`074° 00'`** | **Mithuna** `14° 00'` | Dwiswabhava (Mid) | `Slice #071` | **`Nadi #146`** | `#0446 / 1800` | **Manohara** *(Dashama-Kala)* | `D60 #29` **Kamalakara** *(True)* |
+| **`075° 00'`** | **Mithuna** `15° 00'` | Dwiswabhava (Mid) | `Slice #076` | **`Nadi #001`** | `#0301 / 1800` | **Vasudha** *(Prathama-Kala)* | `D60 #31` **Mrityu** *(False)* |
+| **`076° 00'`** | **Mithuna** `16° 00'` | Dwiswabhava (Mid) | `Slice #081` | **`Nadi #006`** | `#0306 / 1800` | **Sudhakara** *(Prathama-Kala)* | `D60 #33` **Davagni** *(False)* |
+| **`077° 00'`** | **Mithuna** `17° 00'` | Dwiswabhava (Mid) | `Slice #086` | **`Nadi #011`** | `#0311 / 1800` | **Manohara** *(Prathama-Kala)* | `D60 #35` **Yama** *(False)* |
+| **`078° 00'`** | **Mithuna** `18° 00'` | Dwiswabhava (Mid) | `Slice #091` | **`Nadi #016`** | `#0316 / 1800` | **Vasudha** *(Dvitiya-Kala)* | `D60 #37` **Sudha** *(True)* |
+| **`079° 00'`** | **Mithuna** `19° 00'` | Dwiswabhava (Mid) | `Slice #096` | **`Nadi #021`** | `#0321 / 1800` | **Sudhakara** *(Dvitiya-Kala)* | `D60 #39` **Purnachandra** *(True)* |
+| **`080° 00'`** | **Mithuna** `20° 00'` | Dwiswabhava (Mid) | `Slice #101` | **`Nadi #026`** | `#0326 / 1800` | **Manohara** *(Dvitiya-Kala)* | `D60 #41` **Kulanasa** *(False)* |
+| **`081° 00'`** | **Mithuna** `21° 00'` | Dwiswabhava (Mid) | `Slice #106` | **`Nadi #031`** | `#0331 / 1800` | **Vasudha** *(Tritiya-Kala)* | `D60 #43` **Utpata** *(False)* |
+| **`082° 00'`** | **Mithuna** `22° 00'` | Dwiswabhava (Mid) | `Slice #111` | **`Nadi #036`** | `#0336 / 1800` | **Sudhakara** *(Tritiya-Kala)* | `D60 #45` **Saumya** *(True)* |
+| **`083° 00'`** | **Mithuna** `23° 00'` | Dwiswabhava (Mid) | `Slice #116` | **`Nadi #041`** | `#0341 / 1800` | **Manohara** *(Tritiya-Kala)* | `D60 #47` **Sheetala** *(True)* |
+| **`084° 00'`** | **Mithuna** `24° 00'` | Dwiswabhava (Mid) | `Slice #121` | **`Nadi #046`** | `#0346 / 1800` | **Vasudha** *(Chaturtha-Kala)* | `D60 #49` **Chandramukhi** *(True)* |
+| **`085° 00'`** | **Mithuna** `25° 00'` | Dwiswabhava (Mid) | `Slice #126` | **`Nadi #051`** | `#0351 / 1800` | **Sudhakara** *(Chaturtha-Kala)* | `D60 #51` **Kalapavaka** *(False)* |
+| **`086° 00'`** | **Mithuna** `26° 00'` | Dwiswabhava (Mid) | `Slice #131` | **`Nadi #056`** | `#0356 / 1800` | **Manohara** *(Chaturtha-Kala)* | `D60 #53` **Nirmala** *(True)* |
+| **`087° 00'`** | **Mithuna** `27° 00'` | Dwiswabhava (Mid) | `Slice #136` | **`Nadi #061`** | `#0361 / 1800` | **Vasudha** *(Panchama-Kala)* | `D60 #55` **Krura** *(False)* |
+| **`088° 00'`** | **Mithuna** `28° 00'` | Dwiswabhava (Mid) | `Slice #141` | **`Nadi #066`** | `#0366 / 1800` | **Sudhakara** *(Panchama-Kala)* | `D60 #57` **Amrita** *(True)* |
+| **`089° 00'`** | **Mithuna** `29° 00'` | Dwiswabhava (Mid) | `Slice #146` | **`Nadi #071`** | `#0371 / 1800` | **Manohara** *(Panchama-Kala)* | `D60 #59` **Bhramana** *(False)* |
+| **`090° 00'`** | **Karka** `00° 00'` | Chara (Direct) | `Slice #001` | **`Nadi #001`** | `#0451 / 1800` | **Vasudha** *(Prathama-Kala)* | `D60 #01` **Ghora** *(False)* |
+| **`091° 00'`** | **Karka** `01° 00'` | Chara (Direct) | `Slice #006` | **`Nadi #006`** | `#0456 / 1800` | **Sudhakara** *(Prathama-Kala)* | `D60 #03` **Deva** *(True)* |
+| **`092° 00'`** | **Karka** `02° 00'` | Chara (Direct) | `Slice #011` | **`Nadi #011`** | `#0461 / 1800` | **Manohara** *(Prathama-Kala)* | `D60 #05` **Yaksha** *(True)* |
+| **`093° 00'`** | **Karka** `03° 00'` | Chara (Direct) | `Slice #016` | **`Nadi #016`** | `#0466 / 1800` | **Vasudha** *(Dvitiya-Kala)* | `D60 #07` **Bhrashta** *(False)* |
+| **`094° 00'`** | **Karka** `04° 00'` | Chara (Direct) | `Slice #021` | **`Nadi #021`** | `#0471 / 1800` | **Sudhakara** *(Dvitiya-Kala)* | `D60 #09` **Garala** *(False)* |
+| **`095° 00'`** | **Karka** `05° 00'` | Chara (Direct) | `Slice #026` | **`Nadi #026`** | `#0476 / 1800` | **Manohara** *(Dvitiya-Kala)* | `D60 #11` **Maya** *(False)* |
+| **`096° 00'`** | **Karka** `06° 00'` | Chara (Direct) | `Slice #031` | **`Nadi #031`** | `#0481 / 1800` | **Vasudha** *(Tritiya-Kala)* | `D60 #13` **Apampati** *(True)* |
+| **`097° 00'`** | **Karka** `07° 00'` | Chara (Direct) | `Slice #036` | **`Nadi #036`** | `#0486 / 1800` | **Sudhakara** *(Tritiya-Kala)* | `D60 #15` **Kala** *(False)* |
+| **`098° 00'`** | **Karka** `08° 00'` | Chara (Direct) | `Slice #041` | **`Nadi #041`** | `#0491 / 1800` | **Manohara** *(Tritiya-Kala)* | `D60 #17` **Amrita** *(True)* |
+| **`099° 00'`** | **Karka** `09° 00'` | Chara (Direct) | `Slice #046` | **`Nadi #046`** | `#0496 / 1800` | **Vasudha** *(Chaturtha-Kala)* | `D60 #19` **Mridu** *(True)* |
+| **`100° 00'`** | **Karka** `10° 00'` | Chara (Direct) | `Slice #051` | **`Nadi #051`** | `#0501 / 1800` | **Sudhakara** *(Chaturtha-Kala)* | `D60 #21` **Heramba** *(True)* |
+| **`101° 00'`** | **Karka** `11° 00'` | Chara (Direct) | `Slice #056` | **`Nadi #056`** | `#0506 / 1800` | **Manohara** *(Chaturtha-Kala)* | `D60 #23` **Vishnu** *(True)* |
+| **`102° 00'`** | **Karka** `12° 00'` | Chara (Direct) | `Slice #061` | **`Nadi #061`** | `#0511 / 1800` | **Vasudha** *(Panchama-Kala)* | `D60 #25` **Deva** *(True)* |
+| **`103° 00'`** | **Karka** `13° 00'` | Chara (Direct) | `Slice #066` | **`Nadi #066`** | `#0516 / 1800` | **Sudhakara** *(Panchama-Kala)* | `D60 #27` **Kalinasa** *(True)* |
+| **`104° 00'`** | **Karka** `14° 00'` | Chara (Direct) | `Slice #071` | **`Nadi #071`** | `#0521 / 1800` | **Manohara** *(Panchama-Kala)* | `D60 #29` **Kamalakara** *(True)* |
+| **`105° 00'`** | **Karka** `15° 00'` | Chara (Direct) | `Slice #076` | **`Nadi #076`** | `#0526 / 1800` | **Vasudha** *(Shashtha-Kala)* | `D60 #31` **Mrityu** *(False)* |
+| **`106° 00'`** | **Karka** `16° 00'` | Chara (Direct) | `Slice #081` | **`Nadi #081`** | `#0531 / 1800` | **Sudhakara** *(Shashtha-Kala)* | `D60 #33` **Davagni** *(False)* |
+| **`107° 00'`** | **Karka** `17° 00'` | Chara (Direct) | `Slice #086` | **`Nadi #086`** | `#0536 / 1800` | **Manohara** *(Shashtha-Kala)* | `D60 #35` **Yama** *(False)* |
+| **`108° 00'`** | **Karka** `18° 00'` | Chara (Direct) | `Slice #091` | **`Nadi #091`** | `#0541 / 1800` | **Vasudha** *(Saptama-Kala)* | `D60 #37` **Sudha** *(True)* |
+| **`109° 00'`** | **Karka** `19° 00'` | Chara (Direct) | `Slice #096` | **`Nadi #096`** | `#0546 / 1800` | **Sudhakara** *(Saptama-Kala)* | `D60 #39` **Purnachandra** *(True)* |
+| **`110° 00'`** | **Karka** `20° 00'` | Chara (Direct) | `Slice #101` | **`Nadi #101`** | `#0551 / 1800` | **Manohara** *(Saptama-Kala)* | `D60 #41` **Kulanasa** *(False)* |
+| **`111° 00'`** | **Karka** `21° 00'` | Chara (Direct) | `Slice #106` | **`Nadi #106`** | `#0556 / 1800` | **Vasudha** *(Ashtama-Kala)* | `D60 #43` **Utpata** *(False)* |
+| **`112° 00'`** | **Karka** `22° 00'` | Chara (Direct) | `Slice #111` | **`Nadi #111`** | `#0561 / 1800` | **Sudhakara** *(Ashtama-Kala)* | `D60 #45` **Saumya** *(True)* |
+| **`113° 00'`** | **Karka** `23° 00'` | Chara (Direct) | `Slice #116` | **`Nadi #116`** | `#0566 / 1800` | **Manohara** *(Ashtama-Kala)* | `D60 #47` **Sheetala** *(True)* |
+| **`114° 00'`** | **Karka** `24° 00'` | Chara (Direct) | `Slice #121` | **`Nadi #121`** | `#0571 / 1800` | **Vasudha** *(Navama-Kala)* | `D60 #49` **Chandramukhi** *(True)* |
+| **`115° 00'`** | **Karka** `25° 00'` | Chara (Direct) | `Slice #126` | **`Nadi #126`** | `#0576 / 1800` | **Sudhakara** *(Navama-Kala)* | `D60 #51` **Kalapavaka** *(False)* |
+| **`116° 00'`** | **Karka** `26° 00'` | Chara (Direct) | `Slice #131` | **`Nadi #131`** | `#0581 / 1800` | **Manohara** *(Navama-Kala)* | `D60 #53` **Nirmala** *(True)* |
+| **`117° 00'`** | **Karka** `27° 00'` | Chara (Direct) | `Slice #136` | **`Nadi #136`** | `#0586 / 1800` | **Vasudha** *(Dashama-Kala)* | `D60 #55` **Krura** *(False)* |
+| **`118° 00'`** | **Karka** `28° 00'` | Chara (Direct) | `Slice #141` | **`Nadi #141`** | `#0591 / 1800` | **Sudhakara** *(Dashama-Kala)* | `D60 #57` **Amrita** *(True)* |
+| **`119° 00'`** | **Karka** `29° 00'` | Chara (Direct) | `Slice #146` | **`Nadi #146`** | `#0596 / 1800` | **Manohara** *(Dashama-Kala)* | `D60 #59` **Bhramana** *(False)* |
+| **`120° 00'`** | **Simha** `00° 00'` | Sthira (Reverse) | `Slice #001` | **`Nadi #150`** | `#0750 / 1800` | **Kumbhini** *(Dashama-Kala)* | `D60 #01` **Ghora** *(False)* |
+| **`121° 00'`** | **Simha** `01° 00'` | Sthira (Reverse) | `Slice #006` | **`Nadi #145`** | `#0745 / 1800` | **Maya** *(Dashama-Kala)* | `D60 #03` **Deva** *(True)* |
+| **`122° 00'`** | **Simha** `02° 00'` | Sthira (Reverse) | `Slice #011` | **`Nadi #140`** | `#0740 / 1800` | **Shankari** *(Dashama-Kala)* | `D60 #05` **Yaksha** *(True)* |
+| **`123° 00'`** | **Simha** `03° 00'` | Sthira (Reverse) | `Slice #016` | **`Nadi #135`** | `#0735 / 1800` | **Kumbhini** *(Navama-Kala)* | `D60 #07` **Bhrashta** *(False)* |
+| **`124° 00'`** | **Simha** `04° 00'` | Sthira (Reverse) | `Slice #021` | **`Nadi #130`** | `#0730 / 1800` | **Maya** *(Navama-Kala)* | `D60 #09` **Garala** *(False)* |
+| **`125° 00'`** | **Simha** `05° 00'` | Sthira (Reverse) | `Slice #026` | **`Nadi #125`** | `#0725 / 1800` | **Shankari** *(Navama-Kala)* | `D60 #11` **Maya** *(False)* |
+| **`126° 00'`** | **Simha** `06° 00'` | Sthira (Reverse) | `Slice #031` | **`Nadi #120`** | `#0720 / 1800` | **Kumbhini** *(Ashtama-Kala)* | `D60 #13` **Apampati** *(True)* |
+| **`127° 00'`** | **Simha** `07° 00'` | Sthira (Reverse) | `Slice #036` | **`Nadi #115`** | `#0715 / 1800` | **Maya** *(Ashtama-Kala)* | `D60 #15` **Kala** *(False)* |
+| **`128° 00'`** | **Simha** `08° 00'` | Sthira (Reverse) | `Slice #041` | **`Nadi #110`** | `#0710 / 1800` | **Shankari** *(Ashtama-Kala)* | `D60 #17` **Amrita** *(True)* |
+| **`129° 00'`** | **Simha** `09° 00'` | Sthira (Reverse) | `Slice #046` | **`Nadi #105`** | `#0705 / 1800` | **Kumbhini** *(Saptama-Kala)* | `D60 #19` **Mridu** *(True)* |
+| **`130° 00'`** | **Simha** `10° 00'` | Sthira (Reverse) | `Slice #051` | **`Nadi #100`** | `#0700 / 1800` | **Maya** *(Saptama-Kala)* | `D60 #21` **Heramba** *(True)* |
+| **`131° 00'`** | **Simha** `11° 00'` | Sthira (Reverse) | `Slice #056` | **`Nadi #095`** | `#0695 / 1800` | **Shankari** *(Saptama-Kala)* | `D60 #23` **Vishnu** *(True)* |
+| **`132° 00'`** | **Simha** `12° 00'` | Sthira (Reverse) | `Slice #061` | **`Nadi #090`** | `#0690 / 1800` | **Kumbhini** *(Shashtha-Kala)* | `D60 #25` **Deva** *(True)* |
+| **`133° 00'`** | **Simha** `13° 00'` | Sthira (Reverse) | `Slice #066` | **`Nadi #085`** | `#0685 / 1800` | **Maya** *(Shashtha-Kala)* | `D60 #27` **Kalinasa** *(True)* |
+| **`134° 00'`** | **Simha** `14° 00'` | Sthira (Reverse) | `Slice #071` | **`Nadi #080`** | `#0680 / 1800` | **Shankari** *(Shashtha-Kala)* | `D60 #29` **Kamalakara** *(True)* |
+| **`135° 00'`** | **Simha** `15° 00'` | Sthira (Reverse) | `Slice #076` | **`Nadi #075`** | `#0675 / 1800` | **Kumbhini** *(Panchama-Kala)* | `D60 #31` **Mrityu** *(False)* |
+| **`136° 00'`** | **Simha** `16° 00'` | Sthira (Reverse) | `Slice #081` | **`Nadi #070`** | `#0670 / 1800` | **Maya** *(Panchama-Kala)* | `D60 #33` **Davagni** *(False)* |
+| **`137° 00'`** | **Simha** `17° 00'` | Sthira (Reverse) | `Slice #086` | **`Nadi #065`** | `#0665 / 1800` | **Shankari** *(Panchama-Kala)* | `D60 #35` **Yama** *(False)* |
+| **`138° 00'`** | **Simha** `18° 00'` | Sthira (Reverse) | `Slice #091` | **`Nadi #060`** | `#0660 / 1800` | **Kumbhini** *(Chaturtha-Kala)* | `D60 #37` **Sudha** *(True)* |
+| **`139° 00'`** | **Simha** `19° 00'` | Sthira (Reverse) | `Slice #096` | **`Nadi #055`** | `#0655 / 1800` | **Maya** *(Chaturtha-Kala)* | `D60 #39` **Purnachandra** *(True)* |
+| **`140° 00'`** | **Simha** `20° 00'` | Sthira (Reverse) | `Slice #101` | **`Nadi #050`** | `#0650 / 1800` | **Shankari** *(Chaturtha-Kala)* | `D60 #41` **Kulanasa** *(False)* |
+| **`141° 00'`** | **Simha** `21° 00'` | Sthira (Reverse) | `Slice #106` | **`Nadi #045`** | `#0645 / 1800` | **Kumbhini** *(Tritiya-Kala)* | `D60 #43` **Utpata** *(False)* |
+| **`142° 00'`** | **Simha** `22° 00'` | Sthira (Reverse) | `Slice #111` | **`Nadi #040`** | `#0640 / 1800` | **Maya** *(Tritiya-Kala)* | `D60 #45` **Saumya** *(True)* |
+| **`143° 00'`** | **Simha** `23° 00'` | Sthira (Reverse) | `Slice #116` | **`Nadi #035`** | `#0635 / 1800` | **Shankari** *(Tritiya-Kala)* | `D60 #47` **Sheetala** *(True)* |
+| **`144° 00'`** | **Simha** `24° 00'` | Sthira (Reverse) | `Slice #121` | **`Nadi #030`** | `#0630 / 1800` | **Kumbhini** *(Dvitiya-Kala)* | `D60 #49` **Chandramukhi** *(True)* |
+| **`145° 00'`** | **Simha** `25° 00'` | Sthira (Reverse) | `Slice #126` | **`Nadi #025`** | `#0625 / 1800` | **Maya** *(Dvitiya-Kala)* | `D60 #51` **Kalapavaka** *(False)* |
+| **`146° 00'`** | **Simha** `26° 00'` | Sthira (Reverse) | `Slice #131` | **`Nadi #020`** | `#0620 / 1800` | **Shankari** *(Dvitiya-Kala)* | `D60 #53` **Nirmala** *(True)* |
+| **`147° 00'`** | **Simha** `27° 00'` | Sthira (Reverse) | `Slice #136` | **`Nadi #015`** | `#0615 / 1800` | **Kumbhini** *(Prathama-Kala)* | `D60 #55` **Krura** *(False)* |
+| **`148° 00'`** | **Simha** `28° 00'` | Sthira (Reverse) | `Slice #141` | **`Nadi #010`** | `#0610 / 1800` | **Maya** *(Prathama-Kala)* | `D60 #57` **Amrita** *(True)* |
+| **`149° 00'`** | **Simha** `29° 00'` | Sthira (Reverse) | `Slice #146` | **`Nadi #005`** | `#0605 / 1800` | **Shankari** *(Prathama-Kala)* | `D60 #59` **Bhramana** *(False)* |
+| **`150° 00'`** | **Kanya** `00° 00'` | Dwiswabhava (Mid) | `Slice #001` | **`Nadi #076`** | `#0826 / 1800` | **Vasudha** *(Shashtha-Kala)* | `D60 #01` **Ghora** *(False)* |
+| **`151° 00'`** | **Kanya** `01° 00'` | Dwiswabhava (Mid) | `Slice #006` | **`Nadi #081`** | `#0831 / 1800` | **Sudhakara** *(Shashtha-Kala)* | `D60 #03` **Deva** *(True)* |
+| **`152° 00'`** | **Kanya** `02° 00'` | Dwiswabhava (Mid) | `Slice #011` | **`Nadi #086`** | `#0836 / 1800` | **Manohara** *(Shashtha-Kala)* | `D60 #05` **Yaksha** *(True)* |
+| **`153° 00'`** | **Kanya** `03° 00'` | Dwiswabhava (Mid) | `Slice #016` | **`Nadi #091`** | `#0841 / 1800` | **Vasudha** *(Saptama-Kala)* | `D60 #07` **Bhrashta** *(False)* |
+| **`154° 00'`** | **Kanya** `04° 00'` | Dwiswabhava (Mid) | `Slice #021` | **`Nadi #096`** | `#0846 / 1800` | **Sudhakara** *(Saptama-Kala)* | `D60 #09` **Garala** *(False)* |
+| **`155° 00'`** | **Kanya** `05° 00'` | Dwiswabhava (Mid) | `Slice #026` | **`Nadi #101`** | `#0851 / 1800` | **Manohara** *(Saptama-Kala)* | `D60 #11` **Maya** *(False)* |
+| **`156° 00'`** | **Kanya** `06° 00'` | Dwiswabhava (Mid) | `Slice #031` | **`Nadi #106`** | `#0856 / 1800` | **Vasudha** *(Ashtama-Kala)* | `D60 #13` **Apampati** *(True)* |
+| **`157° 00'`** | **Kanya** `07° 00'` | Dwiswabhava (Mid) | `Slice #036` | **`Nadi #111`** | `#0861 / 1800` | **Sudhakara** *(Ashtama-Kala)* | `D60 #15` **Kala** *(False)* |
+| **`158° 00'`** | **Kanya** `08° 00'` | Dwiswabhava (Mid) | `Slice #041` | **`Nadi #116`** | `#0866 / 1800` | **Manohara** *(Ashtama-Kala)* | `D60 #17` **Amrita** *(True)* |
+| **`159° 00'`** | **Kanya** `09° 00'` | Dwiswabhava (Mid) | `Slice #046` | **`Nadi #121`** | `#0871 / 1800` | **Vasudha** *(Navama-Kala)* | `D60 #19` **Mridu** *(True)* |
+| **`160° 00'`** | **Kanya** `10° 00'` | Dwiswabhava (Mid) | `Slice #051` | **`Nadi #126`** | `#0876 / 1800` | **Sudhakara** *(Navama-Kala)* | `D60 #21` **Heramba** *(True)* |
+| **`161° 00'`** | **Kanya** `11° 00'` | Dwiswabhava (Mid) | `Slice #056` | **`Nadi #131`** | `#0881 / 1800` | **Manohara** *(Navama-Kala)* | `D60 #23` **Vishnu** *(True)* |
+| **`162° 00'`** | **Kanya** `12° 00'` | Dwiswabhava (Mid) | `Slice #061` | **`Nadi #136`** | `#0886 / 1800` | **Vasudha** *(Dashama-Kala)* | `D60 #25` **Deva** *(True)* |
+| **`163° 00'`** | **Kanya** `13° 00'` | Dwiswabhava (Mid) | `Slice #066` | **`Nadi #141`** | `#0891 / 1800` | **Sudhakara** *(Dashama-Kala)* | `D60 #27` **Kalinasa** *(True)* |
+| **`164° 00'`** | **Kanya** `14° 00'` | Dwiswabhava (Mid) | `Slice #071` | **`Nadi #146`** | `#0896 / 1800` | **Manohara** *(Dashama-Kala)* | `D60 #29` **Kamalakara** *(True)* |
+| **`165° 00'`** | **Kanya** `15° 00'` | Dwiswabhava (Mid) | `Slice #076` | **`Nadi #001`** | `#0751 / 1800` | **Vasudha** *(Prathama-Kala)* | `D60 #31` **Mrityu** *(False)* |
+| **`166° 00'`** | **Kanya** `16° 00'` | Dwiswabhava (Mid) | `Slice #081` | **`Nadi #006`** | `#0756 / 1800` | **Sudhakara** *(Prathama-Kala)* | `D60 #33` **Davagni** *(False)* |
+| **`167° 00'`** | **Kanya** `17° 00'` | Dwiswabhava (Mid) | `Slice #086` | **`Nadi #011`** | `#0761 / 1800` | **Manohara** *(Prathama-Kala)* | `D60 #35` **Yama** *(False)* |
+| **`168° 00'`** | **Kanya** `18° 00'` | Dwiswabhava (Mid) | `Slice #091` | **`Nadi #016`** | `#0766 / 1800` | **Vasudha** *(Dvitiya-Kala)* | `D60 #37` **Sudha** *(True)* |
+| **`169° 00'`** | **Kanya** `19° 00'` | Dwiswabhava (Mid) | `Slice #096` | **`Nadi #021`** | `#0771 / 1800` | **Sudhakara** *(Dvitiya-Kala)* | `D60 #39` **Purnachandra** *(True)* |
+| **`170° 00'`** | **Kanya** `20° 00'` | Dwiswabhava (Mid) | `Slice #101` | **`Nadi #026`** | `#0776 / 1800` | **Manohara** *(Dvitiya-Kala)* | `D60 #41` **Kulanasa** *(False)* |
+| **`171° 00'`** | **Kanya** `21° 00'` | Dwiswabhava (Mid) | `Slice #106` | **`Nadi #031`** | `#0781 / 1800` | **Vasudha** *(Tritiya-Kala)* | `D60 #43` **Utpata** *(False)* |
+| **`172° 00'`** | **Kanya** `22° 00'` | Dwiswabhava (Mid) | `Slice #111` | **`Nadi #036`** | `#0786 / 1800` | **Sudhakara** *(Tritiya-Kala)* | `D60 #45` **Saumya** *(True)* |
+| **`173° 00'`** | **Kanya** `23° 00'` | Dwiswabhava (Mid) | `Slice #116` | **`Nadi #041`** | `#0791 / 1800` | **Manohara** *(Tritiya-Kala)* | `D60 #47` **Sheetala** *(True)* |
+| **`174° 00'`** | **Kanya** `24° 00'` | Dwiswabhava (Mid) | `Slice #121` | **`Nadi #046`** | `#0796 / 1800` | **Vasudha** *(Chaturtha-Kala)* | `D60 #49` **Chandramukhi** *(True)* |
+| **`175° 00'`** | **Kanya** `25° 00'` | Dwiswabhava (Mid) | `Slice #126` | **`Nadi #051`** | `#0801 / 1800` | **Sudhakara** *(Chaturtha-Kala)* | `D60 #51` **Kalapavaka** *(False)* |
+| **`176° 00'`** | **Kanya** `26° 00'` | Dwiswabhava (Mid) | `Slice #131` | **`Nadi #056`** | `#0806 / 1800` | **Manohara** *(Chaturtha-Kala)* | `D60 #53` **Nirmala** *(True)* |
+| **`177° 00'`** | **Kanya** `27° 00'` | Dwiswabhava (Mid) | `Slice #136` | **`Nadi #061`** | `#0811 / 1800` | **Vasudha** *(Panchama-Kala)* | `D60 #55` **Krura** *(False)* |
+| **`178° 00'`** | **Kanya** `28° 00'` | Dwiswabhava (Mid) | `Slice #141` | **`Nadi #066`** | `#0816 / 1800` | **Sudhakara** *(Panchama-Kala)* | `D60 #57` **Amrita** *(True)* |
+| **`179° 00'`** | **Kanya** `29° 00'` | Dwiswabhava (Mid) | `Slice #146` | **`Nadi #071`** | `#0821 / 1800` | **Manohara** *(Panchama-Kala)* | `D60 #59` **Bhramana** *(False)* |
+| **`180° 00'`** | **Tula** `00° 00'` | Chara (Direct) | `Slice #001` | **`Nadi #001`** | `#0901 / 1800` | **Vasudha** *(Prathama-Kala)* | `D60 #01` **Ghora** *(False)* |
+| **`181° 00'`** | **Tula** `01° 00'` | Chara (Direct) | `Slice #006` | **`Nadi #006`** | `#0906 / 1800` | **Sudhakara** *(Prathama-Kala)* | `D60 #03` **Deva** *(True)* |
+| **`182° 00'`** | **Tula** `02° 00'` | Chara (Direct) | `Slice #011` | **`Nadi #011`** | `#0911 / 1800` | **Manohara** *(Prathama-Kala)* | `D60 #05` **Yaksha** *(True)* |
+| **`183° 00'`** | **Tula** `03° 00'` | Chara (Direct) | `Slice #016` | **`Nadi #016`** | `#0916 / 1800` | **Vasudha** *(Dvitiya-Kala)* | `D60 #07` **Bhrashta** *(False)* |
+| **`184° 00'`** | **Tula** `04° 00'` | Chara (Direct) | `Slice #021` | **`Nadi #021`** | `#0921 / 1800` | **Sudhakara** *(Dvitiya-Kala)* | `D60 #09` **Garala** *(False)* |
+| **`185° 00'`** | **Tula** `05° 00'` | Chara (Direct) | `Slice #026` | **`Nadi #026`** | `#0926 / 1800` | **Manohara** *(Dvitiya-Kala)* | `D60 #11` **Maya** *(False)* |
+| **`186° 00'`** | **Tula** `06° 00'` | Chara (Direct) | `Slice #031` | **`Nadi #031`** | `#0931 / 1800` | **Vasudha** *(Tritiya-Kala)* | `D60 #13` **Apampati** *(True)* |
+| **`187° 00'`** | **Tula** `07° 00'` | Chara (Direct) | `Slice #036` | **`Nadi #036`** | `#0936 / 1800` | **Sudhakara** *(Tritiya-Kala)* | `D60 #15` **Kala** *(False)* |
+| **`188° 00'`** | **Tula** `08° 00'` | Chara (Direct) | `Slice #041` | **`Nadi #041`** | `#0941 / 1800` | **Manohara** *(Tritiya-Kala)* | `D60 #17` **Amrita** *(True)* |
+| **`189° 00'`** | **Tula** `09° 00'` | Chara (Direct) | `Slice #046` | **`Nadi #046`** | `#0946 / 1800` | **Vasudha** *(Chaturtha-Kala)* | `D60 #19` **Mridu** *(True)* |
+| **`190° 00'`** | **Tula** `10° 00'` | Chara (Direct) | `Slice #051` | **`Nadi #051`** | `#0951 / 1800` | **Sudhakara** *(Chaturtha-Kala)* | `D60 #21` **Heramba** *(True)* |
+| **`191° 00'`** | **Tula** `11° 00'` | Chara (Direct) | `Slice #056` | **`Nadi #056`** | `#0956 / 1800` | **Manohara** *(Chaturtha-Kala)* | `D60 #23` **Vishnu** *(True)* |
+| **`192° 00'`** | **Tula** `12° 00'` | Chara (Direct) | `Slice #061` | **`Nadi #061`** | `#0961 / 1800` | **Vasudha** *(Panchama-Kala)* | `D60 #25` **Deva** *(True)* |
+| **`193° 00'`** | **Tula** `13° 00'` | Chara (Direct) | `Slice #066` | **`Nadi #066`** | `#0966 / 1800` | **Sudhakara** *(Panchama-Kala)* | `D60 #27` **Kalinasa** *(True)* |
+| **`194° 00'`** | **Tula** `14° 00'` | Chara (Direct) | `Slice #071` | **`Nadi #071`** | `#0971 / 1800` | **Manohara** *(Panchama-Kala)* | `D60 #29` **Kamalakara** *(True)* |
+| **`195° 00'`** | **Tula** `15° 00'` | Chara (Direct) | `Slice #076` | **`Nadi #076`** | `#0976 / 1800` | **Vasudha** *(Shashtha-Kala)* | `D60 #31` **Mrityu** *(False)* |
+| **`196° 00'`** | **Tula** `16° 00'` | Chara (Direct) | `Slice #081` | **`Nadi #081`** | `#0981 / 1800` | **Sudhakara** *(Shashtha-Kala)* | `D60 #33` **Davagni** *(False)* |
+| **`197° 00'`** | **Tula** `17° 00'` | Chara (Direct) | `Slice #086` | **`Nadi #086`** | `#0986 / 1800` | **Manohara** *(Shashtha-Kala)* | `D60 #35` **Yama** *(False)* |
+| **`198° 00'`** | **Tula** `18° 00'` | Chara (Direct) | `Slice #091` | **`Nadi #091`** | `#0991 / 1800` | **Vasudha** *(Saptama-Kala)* | `D60 #37` **Sudha** *(True)* |
+| **`199° 00'`** | **Tula** `19° 00'` | Chara (Direct) | `Slice #096` | **`Nadi #096`** | `#0996 / 1800` | **Sudhakara** *(Saptama-Kala)* | `D60 #39` **Purnachandra** *(True)* |
+| **`200° 00'`** | **Tula** `20° 00'` | Chara (Direct) | `Slice #101` | **`Nadi #101`** | `#1001 / 1800` | **Manohara** *(Saptama-Kala)* | `D60 #41` **Kulanasa** *(False)* |
+| **`201° 00'`** | **Tula** `21° 00'` | Chara (Direct) | `Slice #106` | **`Nadi #106`** | `#1006 / 1800` | **Vasudha** *(Ashtama-Kala)* | `D60 #43` **Utpata** *(False)* |
+| **`202° 00'`** | **Tula** `22° 00'` | Chara (Direct) | `Slice #111` | **`Nadi #111`** | `#1011 / 1800` | **Sudhakara** *(Ashtama-Kala)* | `D60 #45` **Saumya** *(True)* |
+| **`203° 00'`** | **Tula** `23° 00'` | Chara (Direct) | `Slice #116` | **`Nadi #116`** | `#1016 / 1800` | **Manohara** *(Ashtama-Kala)* | `D60 #47` **Sheetala** *(True)* |
+| **`204° 00'`** | **Tula** `24° 00'` | Chara (Direct) | `Slice #121` | **`Nadi #121`** | `#1021 / 1800` | **Vasudha** *(Navama-Kala)* | `D60 #49` **Chandramukhi** *(True)* |
+| **`205° 00'`** | **Tula** `25° 00'` | Chara (Direct) | `Slice #126` | **`Nadi #126`** | `#1026 / 1800` | **Sudhakara** *(Navama-Kala)* | `D60 #51` **Kalapavaka** *(False)* |
+| **`206° 00'`** | **Tula** `26° 00'` | Chara (Direct) | `Slice #131` | **`Nadi #131`** | `#1031 / 1800` | **Manohara** *(Navama-Kala)* | `D60 #53` **Nirmala** *(True)* |
+| **`207° 00'`** | **Tula** `27° 00'` | Chara (Direct) | `Slice #136` | **`Nadi #136`** | `#1036 / 1800` | **Vasudha** *(Dashama-Kala)* | `D60 #55` **Krura** *(False)* |
+| **`208° 00'`** | **Tula** `28° 00'` | Chara (Direct) | `Slice #141` | **`Nadi #141`** | `#1041 / 1800` | **Sudhakara** *(Dashama-Kala)* | `D60 #57` **Amrita** *(True)* |
+| **`209° 00'`** | **Tula** `29° 00'` | Chara (Direct) | `Slice #146` | **`Nadi #146`** | `#1046 / 1800` | **Manohara** *(Dashama-Kala)* | `D60 #59` **Bhramana** *(False)* |
+| **`210° 00'`** | **Vrishchika** `00° 00'` | Sthira (Reverse) | `Slice #001` | **`Nadi #150`** | `#1200 / 1800` | **Kumbhini** *(Dashama-Kala)* | `D60 #01` **Ghora** *(False)* |
+| **`211° 00'`** | **Vrishchika** `01° 00'` | Sthira (Reverse) | `Slice #006` | **`Nadi #145`** | `#1195 / 1800` | **Maya** *(Dashama-Kala)* | `D60 #03` **Deva** *(True)* |
+| **`212° 00'`** | **Vrishchika** `02° 00'` | Sthira (Reverse) | `Slice #011` | **`Nadi #140`** | `#1190 / 1800` | **Shankari** *(Dashama-Kala)* | `D60 #05` **Yaksha** *(True)* |
+| **`213° 00'`** | **Vrishchika** `03° 00'` | Sthira (Reverse) | `Slice #016` | **`Nadi #135`** | `#1185 / 1800` | **Kumbhini** *(Navama-Kala)* | `D60 #07` **Bhrashta** *(False)* |
+| **`214° 00'`** | **Vrishchika** `04° 00'` | Sthira (Reverse) | `Slice #021` | **`Nadi #130`** | `#1180 / 1800` | **Maya** *(Navama-Kala)* | `D60 #09` **Garala** *(False)* |
+| **`215° 00'`** | **Vrishchika** `05° 00'` | Sthira (Reverse) | `Slice #026` | **`Nadi #125`** | `#1175 / 1800` | **Shankari** *(Navama-Kala)* | `D60 #11` **Maya** *(False)* |
+| **`216° 00'`** | **Vrishchika** `06° 00'` | Sthira (Reverse) | `Slice #031` | **`Nadi #120`** | `#1170 / 1800` | **Kumbhini** *(Ashtama-Kala)* | `D60 #13` **Apampati** *(True)* |
+| **`217° 00'`** | **Vrishchika** `07° 00'` | Sthira (Reverse) | `Slice #036` | **`Nadi #115`** | `#1165 / 1800` | **Maya** *(Ashtama-Kala)* | `D60 #15` **Kala** *(False)* |
+| **`218° 00'`** | **Vrishchika** `08° 00'` | Sthira (Reverse) | `Slice #041` | **`Nadi #110`** | `#1160 / 1800` | **Shankari** *(Ashtama-Kala)* | `D60 #17` **Amrita** *(True)* |
+| **`219° 00'`** | **Vrishchika** `09° 00'` | Sthira (Reverse) | `Slice #046` | **`Nadi #105`** | `#1155 / 1800` | **Kumbhini** *(Saptama-Kala)* | `D60 #19` **Mridu** *(True)* |
+| **`220° 00'`** | **Vrishchika** `10° 00'` | Sthira (Reverse) | `Slice #051` | **`Nadi #100`** | `#1150 / 1800` | **Maya** *(Saptama-Kala)* | `D60 #21` **Heramba** *(True)* |
+| **`221° 00'`** | **Vrishchika** `11° 00'` | Sthira (Reverse) | `Slice #056` | **`Nadi #095`** | `#1145 / 1800` | **Shankari** *(Saptama-Kala)* | `D60 #23` **Vishnu** *(True)* |
+| **`222° 00'`** | **Vrishchika** `12° 00'` | Sthira (Reverse) | `Slice #061` | **`Nadi #090`** | `#1140 / 1800` | **Kumbhini** *(Shashtha-Kala)* | `D60 #25` **Deva** *(True)* |
+| **`223° 00'`** | **Vrishchika** `13° 00'` | Sthira (Reverse) | `Slice #066` | **`Nadi #085`** | `#1135 / 1800` | **Maya** *(Shashtha-Kala)* | `D60 #27` **Kalinasa** *(True)* |
+| **`224° 00'`** | **Vrishchika** `14° 00'` | Sthira (Reverse) | `Slice #071` | **`Nadi #080`** | `#1130 / 1800` | **Shankari** *(Shashtha-Kala)* | `D60 #29` **Kamalakara** *(True)* |
+| **`225° 00'`** | **Vrishchika** `15° 00'` | Sthira (Reverse) | `Slice #076` | **`Nadi #075`** | `#1125 / 1800` | **Kumbhini** *(Panchama-Kala)* | `D60 #31` **Mrityu** *(False)* |
+| **`226° 00'`** | **Vrishchika** `16° 00'` | Sthira (Reverse) | `Slice #081` | **`Nadi #070`** | `#1120 / 1800` | **Maya** *(Panchama-Kala)* | `D60 #33` **Davagni** *(False)* |
+| **`227° 00'`** | **Vrishchika** `17° 00'` | Sthira (Reverse) | `Slice #086` | **`Nadi #065`** | `#1115 / 1800` | **Shankari** *(Panchama-Kala)* | `D60 #35` **Yama** *(False)* |
+| **`228° 00'`** | **Vrishchika** `18° 00'` | Sthira (Reverse) | `Slice #091` | **`Nadi #060`** | `#1110 / 1800` | **Kumbhini** *(Chaturtha-Kala)* | `D60 #37` **Sudha** *(True)* |
+| **`229° 00'`** | **Vrishchika** `19° 00'` | Sthira (Reverse) | `Slice #096` | **`Nadi #055`** | `#1105 / 1800` | **Maya** *(Chaturtha-Kala)* | `D60 #39` **Purnachandra** *(True)* |
+| **`230° 00'`** | **Vrishchika** `20° 00'` | Sthira (Reverse) | `Slice #101` | **`Nadi #050`** | `#1100 / 1800` | **Shankari** *(Chaturtha-Kala)* | `D60 #41` **Kulanasa** *(False)* |
+| **`231° 00'`** | **Vrishchika** `21° 00'` | Sthira (Reverse) | `Slice #106` | **`Nadi #045`** | `#1095 / 1800` | **Kumbhini** *(Tritiya-Kala)* | `D60 #43` **Utpata** *(False)* |
+| **`232° 00'`** | **Vrishchika** `22° 00'` | Sthira (Reverse) | `Slice #111` | **`Nadi #040`** | `#1090 / 1800` | **Maya** *(Tritiya-Kala)* | `D60 #45` **Saumya** *(True)* |
+| **`233° 00'`** | **Vrishchika** `23° 00'` | Sthira (Reverse) | `Slice #116` | **`Nadi #035`** | `#1085 / 1800` | **Shankari** *(Tritiya-Kala)* | `D60 #47` **Sheetala** *(True)* |
+| **`234° 00'`** | **Vrishchika** `24° 00'` | Sthira (Reverse) | `Slice #121` | **`Nadi #030`** | `#1080 / 1800` | **Kumbhini** *(Dvitiya-Kala)* | `D60 #49` **Chandramukhi** *(True)* |
+| **`235° 00'`** | **Vrishchika** `25° 00'` | Sthira (Reverse) | `Slice #126` | **`Nadi #025`** | `#1075 / 1800` | **Maya** *(Dvitiya-Kala)* | `D60 #51` **Kalapavaka** *(False)* |
+| **`236° 00'`** | **Vrishchika** `26° 00'` | Sthira (Reverse) | `Slice #131` | **`Nadi #020`** | `#1070 / 1800` | **Shankari** *(Dvitiya-Kala)* | `D60 #53` **Nirmala** *(True)* |
+| **`237° 00'`** | **Vrishchika** `27° 00'` | Sthira (Reverse) | `Slice #136` | **`Nadi #015`** | `#1065 / 1800` | **Kumbhini** *(Prathama-Kala)* | `D60 #55` **Krura** *(False)* |
+| **`238° 00'`** | **Vrishchika** `28° 00'` | Sthira (Reverse) | `Slice #141` | **`Nadi #010`** | `#1060 / 1800` | **Maya** *(Prathama-Kala)* | `D60 #57` **Amrita** *(True)* |
+| **`239° 00'`** | **Vrishchika** `29° 00'` | Sthira (Reverse) | `Slice #146` | **`Nadi #005`** | `#1055 / 1800` | **Shankari** *(Prathama-Kala)* | `D60 #59` **Bhramana** *(False)* |
+| **`240° 00'`** | **Dhanu** `00° 00'` | Dwiswabhava (Mid) | `Slice #001` | **`Nadi #076`** | `#1276 / 1800` | **Vasudha** *(Shashtha-Kala)* | `D60 #01` **Ghora** *(False)* |
+| **`241° 00'`** | **Dhanu** `01° 00'` | Dwiswabhava (Mid) | `Slice #006` | **`Nadi #081`** | `#1281 / 1800` | **Sudhakara** *(Shashtha-Kala)* | `D60 #03` **Deva** *(True)* |
+| **`242° 00'`** | **Dhanu** `02° 00'` | Dwiswabhava (Mid) | `Slice #011` | **`Nadi #086`** | `#1286 / 1800` | **Manohara** *(Shashtha-Kala)* | `D60 #05` **Yaksha** *(True)* |
+| **`243° 00'`** | **Dhanu** `03° 00'` | Dwiswabhava (Mid) | `Slice #016` | **`Nadi #091`** | `#1291 / 1800` | **Vasudha** *(Saptama-Kala)* | `D60 #07` **Bhrashta** *(False)* |
+| **`244° 00'`** | **Dhanu** `04° 00'` | Dwiswabhava (Mid) | `Slice #021` | **`Nadi #096`** | `#1296 / 1800` | **Sudhakara** *(Saptama-Kala)* | `D60 #09` **Garala** *(False)* |
+| **`245° 00'`** | **Dhanu** `05° 00'` | Dwiswabhava (Mid) | `Slice #026` | **`Nadi #101`** | `#1301 / 1800` | **Manohara** *(Saptama-Kala)* | `D60 #11` **Maya** *(False)* |
+| **`246° 00'`** | **Dhanu** `06° 00'` | Dwiswabhava (Mid) | `Slice #031` | **`Nadi #106`** | `#1306 / 1800` | **Vasudha** *(Ashtama-Kala)* | `D60 #13` **Apampati** *(True)* |
+| **`247° 00'`** | **Dhanu** `07° 00'` | Dwiswabhava (Mid) | `Slice #036` | **`Nadi #111`** | `#1311 / 1800` | **Sudhakara** *(Ashtama-Kala)* | `D60 #15` **Kala** *(False)* |
+| **`248° 00'`** | **Dhanu** `08° 00'` | Dwiswabhava (Mid) | `Slice #041` | **`Nadi #116`** | `#1316 / 1800` | **Manohara** *(Ashtama-Kala)* | `D60 #17` **Amrita** *(True)* |
+| **`249° 00'`** | **Dhanu** `09° 00'` | Dwiswabhava (Mid) | `Slice #046` | **`Nadi #121`** | `#1321 / 1800` | **Vasudha** *(Navama-Kala)* | `D60 #19` **Mridu** *(True)* |
+| **`250° 00'`** | **Dhanu** `10° 00'` | Dwiswabhava (Mid) | `Slice #051` | **`Nadi #126`** | `#1326 / 1800` | **Sudhakara** *(Navama-Kala)* | `D60 #21` **Heramba** *(True)* |
+| **`251° 00'`** | **Dhanu** `11° 00'` | Dwiswabhava (Mid) | `Slice #056` | **`Nadi #131`** | `#1331 / 1800` | **Manohara** *(Navama-Kala)* | `D60 #23` **Vishnu** *(True)* |
+| **`252° 00'`** | **Dhanu** `12° 00'` | Dwiswabhava (Mid) | `Slice #061` | **`Nadi #136`** | `#1336 / 1800` | **Vasudha** *(Dashama-Kala)* | `D60 #25` **Deva** *(True)* |
+| **`253° 00'`** | **Dhanu** `13° 00'` | Dwiswabhava (Mid) | `Slice #066` | **`Nadi #141`** | `#1341 / 1800` | **Sudhakara** *(Dashama-Kala)* | `D60 #27` **Kalinasa** *(True)* |
+| **`254° 00'`** | **Dhanu** `14° 00'` | Dwiswabhava (Mid) | `Slice #071` | **`Nadi #146`** | `#1346 / 1800` | **Manohara** *(Dashama-Kala)* | `D60 #29` **Kamalakara** *(True)* |
+| **`255° 00'`** | **Dhanu** `15° 00'` | Dwiswabhava (Mid) | `Slice #076` | **`Nadi #001`** | `#1201 / 1800` | **Vasudha** *(Prathama-Kala)* | `D60 #31` **Mrityu** *(False)* |
+| **`256° 00'`** | **Dhanu** `16° 00'` | Dwiswabhava (Mid) | `Slice #081` | **`Nadi #006`** | `#1206 / 1800` | **Sudhakara** *(Prathama-Kala)* | `D60 #33` **Davagni** *(False)* |
+| **`257° 00'`** | **Dhanu** `17° 00'` | Dwiswabhava (Mid) | `Slice #086` | **`Nadi #011`** | `#1211 / 1800` | **Manohara** *(Prathama-Kala)* | `D60 #35` **Yama** *(False)* |
+| **`258° 00'`** | **Dhanu** `18° 00'` | Dwiswabhava (Mid) | `Slice #091` | **`Nadi #016`** | `#1216 / 1800` | **Vasudha** *(Dvitiya-Kala)* | `D60 #37` **Sudha** *(True)* |
+| **`259° 00'`** | **Dhanu** `19° 00'` | Dwiswabhava (Mid) | `Slice #096` | **`Nadi #021`** | `#1221 / 1800` | **Sudhakara** *(Dvitiya-Kala)* | `D60 #39` **Purnachandra** *(True)* |
+| **`260° 00'`** | **Dhanu** `20° 00'` | Dwiswabhava (Mid) | `Slice #101` | **`Nadi #026`** | `#1226 / 1800` | **Manohara** *(Dvitiya-Kala)* | `D60 #41` **Kulanasa** *(False)* |
+| **`261° 00'`** | **Dhanu** `21° 00'` | Dwiswabhava (Mid) | `Slice #106` | **`Nadi #031`** | `#1231 / 1800` | **Vasudha** *(Tritiya-Kala)* | `D60 #43` **Utpata** *(False)* |
+| **`262° 00'`** | **Dhanu** `22° 00'` | Dwiswabhava (Mid) | `Slice #111` | **`Nadi #036`** | `#1236 / 1800` | **Sudhakara** *(Tritiya-Kala)* | `D60 #45` **Saumya** *(True)* |
+| **`263° 00'`** | **Dhanu** `23° 00'` | Dwiswabhava (Mid) | `Slice #116` | **`Nadi #041`** | `#1241 / 1800` | **Manohara** *(Tritiya-Kala)* | `D60 #47` **Sheetala** *(True)* |
+| **`264° 00'`** | **Dhanu** `24° 00'` | Dwiswabhava (Mid) | `Slice #121` | **`Nadi #046`** | `#1246 / 1800` | **Vasudha** *(Chaturtha-Kala)* | `D60 #49` **Chandramukhi** *(True)* |
+| **`265° 00'`** | **Dhanu** `25° 00'` | Dwiswabhava (Mid) | `Slice #126` | **`Nadi #051`** | `#1251 / 1800` | **Sudhakara** *(Chaturtha-Kala)* | `D60 #51` **Kalapavaka** *(False)* |
+| **`266° 00'`** | **Dhanu** `26° 00'` | Dwiswabhava (Mid) | `Slice #131` | **`Nadi #056`** | `#1256 / 1800` | **Manohara** *(Chaturtha-Kala)* | `D60 #53` **Nirmala** *(True)* |
+| **`267° 00'`** | **Dhanu** `27° 00'` | Dwiswabhava (Mid) | `Slice #136` | **`Nadi #061`** | `#1261 / 1800` | **Vasudha** *(Panchama-Kala)* | `D60 #55` **Krura** *(False)* |
+| **`268° 00'`** | **Dhanu** `28° 00'` | Dwiswabhava (Mid) | `Slice #141` | **`Nadi #066`** | `#1266 / 1800` | **Sudhakara** *(Panchama-Kala)* | `D60 #57` **Amrita** *(True)* |
+| **`269° 00'`** | **Dhanu** `29° 00'` | Dwiswabhava (Mid) | `Slice #146` | **`Nadi #071`** | `#1271 / 1800` | **Manohara** *(Panchama-Kala)* | `D60 #59` **Bhramana** *(False)* |
+| **`270° 00'`** | **Makara** `00° 00'` | Chara (Direct) | `Slice #001` | **`Nadi #001`** | `#1351 / 1800` | **Vasudha** *(Prathama-Kala)* | `D60 #01` **Ghora** *(False)* |
+| **`271° 00'`** | **Makara** `01° 00'` | Chara (Direct) | `Slice #006` | **`Nadi #006`** | `#1356 / 1800` | **Sudhakara** *(Prathama-Kala)* | `D60 #03` **Deva** *(True)* |
+| **`272° 00'`** | **Makara** `02° 00'` | Chara (Direct) | `Slice #011` | **`Nadi #011`** | `#1361 / 1800` | **Manohara** *(Prathama-Kala)* | `D60 #05` **Yaksha** *(True)* |
+| **`273° 00'`** | **Makara** `03° 00'` | Chara (Direct) | `Slice #016` | **`Nadi #016`** | `#1366 / 1800` | **Vasudha** *(Dvitiya-Kala)* | `D60 #07` **Bhrashta** *(False)* |
+| **`274° 00'`** | **Makara** `04° 00'` | Chara (Direct) | `Slice #021` | **`Nadi #021`** | `#1371 / 1800` | **Sudhakara** *(Dvitiya-Kala)* | `D60 #09` **Garala** *(False)* |
+| **`275° 00'`** | **Makara** `05° 00'` | Chara (Direct) | `Slice #026` | **`Nadi #026`** | `#1376 / 1800` | **Manohara** *(Dvitiya-Kala)* | `D60 #11` **Maya** *(False)* |
+| **`276° 00'`** | **Makara** `06° 00'` | Chara (Direct) | `Slice #031` | **`Nadi #031`** | `#1381 / 1800` | **Vasudha** *(Tritiya-Kala)* | `D60 #13` **Apampati** *(True)* |
+| **`277° 00'`** | **Makara** `07° 00'` | Chara (Direct) | `Slice #036` | **`Nadi #036`** | `#1386 / 1800` | **Sudhakara** *(Tritiya-Kala)* | `D60 #15` **Kala** *(False)* |
+| **`278° 00'`** | **Makara** `08° 00'` | Chara (Direct) | `Slice #041` | **`Nadi #041`** | `#1391 / 1800` | **Manohara** *(Tritiya-Kala)* | `D60 #17` **Amrita** *(True)* |
+| **`279° 00'`** | **Makara** `09° 00'` | Chara (Direct) | `Slice #046` | **`Nadi #046`** | `#1396 / 1800` | **Vasudha** *(Chaturtha-Kala)* | `D60 #19` **Mridu** *(True)* |
+| **`280° 00'`** | **Makara** `10° 00'` | Chara (Direct) | `Slice #051` | **`Nadi #051`** | `#1401 / 1800` | **Sudhakara** *(Chaturtha-Kala)* | `D60 #21` **Heramba** *(True)* |
+| **`281° 00'`** | **Makara** `11° 00'` | Chara (Direct) | `Slice #056` | **`Nadi #056`** | `#1406 / 1800` | **Manohara** *(Chaturtha-Kala)* | `D60 #23` **Vishnu** *(True)* |
+| **`282° 00'`** | **Makara** `12° 00'` | Chara (Direct) | `Slice #061` | **`Nadi #061`** | `#1411 / 1800` | **Vasudha** *(Panchama-Kala)* | `D60 #25` **Deva** *(True)* |
+| **`283° 00'`** | **Makara** `13° 00'` | Chara (Direct) | `Slice #066` | **`Nadi #066`** | `#1416 / 1800` | **Sudhakara** *(Panchama-Kala)* | `D60 #27` **Kalinasa** *(True)* |
+| **`284° 00'`** | **Makara** `14° 00'` | Chara (Direct) | `Slice #071` | **`Nadi #071`** | `#1421 / 1800` | **Manohara** *(Panchama-Kala)* | `D60 #29` **Kamalakara** *(True)* |
+| **`285° 00'`** | **Makara** `15° 00'` | Chara (Direct) | `Slice #076` | **`Nadi #076`** | `#1426 / 1800` | **Vasudha** *(Shashtha-Kala)* | `D60 #31` **Mrityu** *(False)* |
+| **`286° 00'`** | **Makara** `16° 00'` | Chara (Direct) | `Slice #081` | **`Nadi #081`** | `#1431 / 1800` | **Sudhakara** *(Shashtha-Kala)* | `D60 #33` **Davagni** *(False)* |
+| **`287° 00'`** | **Makara** `17° 00'` | Chara (Direct) | `Slice #086` | **`Nadi #086`** | `#1436 / 1800` | **Manohara** *(Shashtha-Kala)* | `D60 #35` **Yama** *(False)* |
+| **`288° 00'`** | **Makara** `18° 00'` | Chara (Direct) | `Slice #091` | **`Nadi #091`** | `#1441 / 1800` | **Vasudha** *(Saptama-Kala)* | `D60 #37` **Sudha** *(True)* |
+| **`289° 00'`** | **Makara** `19° 00'` | Chara (Direct) | `Slice #096` | **`Nadi #096`** | `#1446 / 1800` | **Sudhakara** *(Saptama-Kala)* | `D60 #39` **Purnachandra** *(True)* |
+| **`290° 00'`** | **Makara** `20° 00'` | Chara (Direct) | `Slice #101` | **`Nadi #101`** | `#1451 / 1800` | **Manohara** *(Saptama-Kala)* | `D60 #41` **Kulanasa** *(False)* |
+| **`291° 00'`** | **Makara** `21° 00'` | Chara (Direct) | `Slice #106` | **`Nadi #106`** | `#1456 / 1800` | **Vasudha** *(Ashtama-Kala)* | `D60 #43` **Utpata** *(False)* |
+| **`292° 00'`** | **Makara** `22° 00'` | Chara (Direct) | `Slice #111` | **`Nadi #111`** | `#1461 / 1800` | **Sudhakara** *(Ashtama-Kala)* | `D60 #45` **Saumya** *(True)* |
+| **`293° 00'`** | **Makara** `23° 00'` | Chara (Direct) | `Slice #116` | **`Nadi #116`** | `#1466 / 1800` | **Manohara** *(Ashtama-Kala)* | `D60 #47` **Sheetala** *(True)* |
+| **`294° 00'`** | **Makara** `24° 00'` | Chara (Direct) | `Slice #121` | **`Nadi #121`** | `#1471 / 1800` | **Vasudha** *(Navama-Kala)* | `D60 #49` **Chandramukhi** *(True)* |
+| **`295° 00'`** | **Makara** `25° 00'` | Chara (Direct) | `Slice #126` | **`Nadi #126`** | `#1476 / 1800` | **Sudhakara** *(Navama-Kala)* | `D60 #51` **Kalapavaka** *(False)* |
+| **`296° 00'`** | **Makara** `26° 00'` | Chara (Direct) | `Slice #131` | **`Nadi #131`** | `#1481 / 1800` | **Manohara** *(Navama-Kala)* | `D60 #53` **Nirmala** *(True)* |
+| **`297° 00'`** | **Makara** `27° 00'` | Chara (Direct) | `Slice #136` | **`Nadi #136`** | `#1486 / 1800` | **Vasudha** *(Dashama-Kala)* | `D60 #55` **Krura** *(False)* |
+| **`298° 00'`** | **Makara** `28° 00'` | Chara (Direct) | `Slice #141` | **`Nadi #141`** | `#1491 / 1800` | **Sudhakara** *(Dashama-Kala)* | `D60 #57` **Amrita** *(True)* |
+| **`299° 00'`** | **Makara** `29° 00'` | Chara (Direct) | `Slice #146` | **`Nadi #146`** | `#1496 / 1800` | **Manohara** *(Dashama-Kala)* | `D60 #59` **Bhramana** *(False)* |
+| **`300° 00'`** | **Kumbha** `00° 00'` | Sthira (Reverse) | `Slice #001` | **`Nadi #150`** | `#1650 / 1800` | **Kumbhini** *(Dashama-Kala)* | `D60 #01` **Ghora** *(False)* |
+| **`301° 00'`** | **Kumbha** `01° 00'` | Sthira (Reverse) | `Slice #006` | **`Nadi #145`** | `#1645 / 1800` | **Maya** *(Dashama-Kala)* | `D60 #03` **Deva** *(True)* |
+| **`302° 00'`** | **Kumbha** `02° 00'` | Sthira (Reverse) | `Slice #011` | **`Nadi #140`** | `#1640 / 1800` | **Shankari** *(Dashama-Kala)* | `D60 #05` **Yaksha** *(True)* |
+| **`303° 00'`** | **Kumbha** `03° 00'` | Sthira (Reverse) | `Slice #016` | **`Nadi #135`** | `#1635 / 1800` | **Kumbhini** *(Navama-Kala)* | `D60 #07` **Bhrashta** *(False)* |
+| **`304° 00'`** | **Kumbha** `04° 00'` | Sthira (Reverse) | `Slice #021` | **`Nadi #130`** | `#1630 / 1800` | **Maya** *(Navama-Kala)* | `D60 #09` **Garala** *(False)* |
+| **`305° 00'`** | **Kumbha** `05° 00'` | Sthira (Reverse) | `Slice #026` | **`Nadi #125`** | `#1625 / 1800` | **Shankari** *(Navama-Kala)* | `D60 #11` **Maya** *(False)* |
+| **`306° 00'`** | **Kumbha** `06° 00'` | Sthira (Reverse) | `Slice #031` | **`Nadi #120`** | `#1620 / 1800` | **Kumbhini** *(Ashtama-Kala)* | `D60 #13` **Apampati** *(True)* |
+| **`307° 00'`** | **Kumbha** `07° 00'` | Sthira (Reverse) | `Slice #036` | **`Nadi #115`** | `#1615 / 1800` | **Maya** *(Ashtama-Kala)* | `D60 #15` **Kala** *(False)* |
+| **`308° 00'`** | **Kumbha** `08° 00'` | Sthira (Reverse) | `Slice #041` | **`Nadi #110`** | `#1610 / 1800` | **Shankari** *(Ashtama-Kala)* | `D60 #17` **Amrita** *(True)* |
+| **`309° 00'`** | **Kumbha** `09° 00'` | Sthira (Reverse) | `Slice #046` | **`Nadi #105`** | `#1605 / 1800` | **Kumbhini** *(Saptama-Kala)* | `D60 #19` **Mridu** *(True)* |
+| **`310° 00'`** | **Kumbha** `10° 00'` | Sthira (Reverse) | `Slice #051` | **`Nadi #100`** | `#1600 / 1800` | **Maya** *(Saptama-Kala)* | `D60 #21` **Heramba** *(True)* |
+| **`311° 00'`** | **Kumbha** `11° 00'` | Sthira (Reverse) | `Slice #056` | **`Nadi #095`** | `#1595 / 1800` | **Shankari** *(Saptama-Kala)* | `D60 #23` **Vishnu** *(True)* |
+| **`312° 00'`** | **Kumbha** `12° 00'` | Sthira (Reverse) | `Slice #061` | **`Nadi #090`** | `#1590 / 1800` | **Kumbhini** *(Shashtha-Kala)* | `D60 #25` **Deva** *(True)* |
+| **`313° 00'`** | **Kumbha** `13° 00'` | Sthira (Reverse) | `Slice #066` | **`Nadi #085`** | `#1585 / 1800` | **Maya** *(Shashtha-Kala)* | `D60 #27` **Kalinasa** *(True)* |
+| **`314° 00'`** | **Kumbha** `14° 00'` | Sthira (Reverse) | `Slice #071` | **`Nadi #080`** | `#1580 / 1800` | **Shankari** *(Shashtha-Kala)* | `D60 #29` **Kamalakara** *(True)* |
+| **`315° 00'`** | **Kumbha** `15° 00'` | Sthira (Reverse) | `Slice #076` | **`Nadi #075`** | `#1575 / 1800` | **Kumbhini** *(Panchama-Kala)* | `D60 #31` **Mrityu** *(False)* |
+| **`316° 00'`** | **Kumbha** `16° 00'` | Sthira (Reverse) | `Slice #081` | **`Nadi #070`** | `#1570 / 1800` | **Maya** *(Panchama-Kala)* | `D60 #33` **Davagni** *(False)* |
+| **`317° 00'`** | **Kumbha** `17° 00'` | Sthira (Reverse) | `Slice #086` | **`Nadi #065`** | `#1565 / 1800` | **Shankari** *(Panchama-Kala)* | `D60 #35` **Yama** *(False)* |
+| **`318° 00'`** | **Kumbha** `18° 00'` | Sthira (Reverse) | `Slice #091` | **`Nadi #060`** | `#1560 / 1800` | **Kumbhini** *(Chaturtha-Kala)* | `D60 #37` **Sudha** *(True)* |
+| **`319° 00'`** | **Kumbha** `19° 00'` | Sthira (Reverse) | `Slice #096` | **`Nadi #055`** | `#1555 / 1800` | **Maya** *(Chaturtha-Kala)* | `D60 #39` **Purnachandra** *(True)* |
+| **`320° 00'`** | **Kumbha** `20° 00'` | Sthira (Reverse) | `Slice #101` | **`Nadi #050`** | `#1550 / 1800` | **Shankari** *(Chaturtha-Kala)* | `D60 #41` **Kulanasa** *(False)* |
+| **`321° 00'`** | **Kumbha** `21° 00'` | Sthira (Reverse) | `Slice #106` | **`Nadi #045`** | `#1545 / 1800` | **Kumbhini** *(Tritiya-Kala)* | `D60 #43` **Utpata** *(False)* |
+| **`322° 00'`** | **Kumbha** `22° 00'` | Sthira (Reverse) | `Slice #111` | **`Nadi #040`** | `#1540 / 1800` | **Maya** *(Tritiya-Kala)* | `D60 #45` **Saumya** *(True)* |
+| **`323° 00'`** | **Kumbha** `23° 00'` | Sthira (Reverse) | `Slice #116` | **`Nadi #035`** | `#1535 / 1800` | **Shankari** *(Tritiya-Kala)* | `D60 #47` **Sheetala** *(True)* |
+| **`324° 00'`** | **Kumbha** `24° 00'` | Sthira (Reverse) | `Slice #121` | **`Nadi #030`** | `#1530 / 1800` | **Kumbhini** *(Dvitiya-Kala)* | `D60 #49` **Chandramukhi** *(True)* |
+| **`325° 00'`** | **Kumbha** `25° 00'` | Sthira (Reverse) | `Slice #126` | **`Nadi #025`** | `#1525 / 1800` | **Maya** *(Dvitiya-Kala)* | `D60 #51` **Kalapavaka** *(False)* |
+| **`326° 00'`** | **Kumbha** `26° 00'` | Sthira (Reverse) | `Slice #131` | **`Nadi #020`** | `#1520 / 1800` | **Shankari** *(Dvitiya-Kala)* | `D60 #53` **Nirmala** *(True)* |
+| **`327° 00'`** | **Kumbha** `27° 00'` | Sthira (Reverse) | `Slice #136` | **`Nadi #015`** | `#1515 / 1800` | **Kumbhini** *(Prathama-Kala)* | `D60 #55` **Krura** *(False)* |
+| **`328° 00'`** | **Kumbha** `28° 00'` | Sthira (Reverse) | `Slice #141` | **`Nadi #010`** | `#1510 / 1800` | **Maya** *(Prathama-Kala)* | `D60 #57` **Amrita** *(True)* |
+| **`329° 00'`** | **Kumbha** `29° 00'` | Sthira (Reverse) | `Slice #146` | **`Nadi #005`** | `#1505 / 1800` | **Shankari** *(Prathama-Kala)* | `D60 #59` **Bhramana** *(False)* |
+| **`330° 00'`** | **Meena** `00° 00'` | Dwiswabhava (Mid) | `Slice #001` | **`Nadi #076`** | `#1726 / 1800` | **Vasudha** *(Shashtha-Kala)* | `D60 #01` **Ghora** *(False)* |
+| **`331° 00'`** | **Meena** `01° 00'` | Dwiswabhava (Mid) | `Slice #006` | **`Nadi #081`** | `#1731 / 1800` | **Sudhakara** *(Shashtha-Kala)* | `D60 #03` **Deva** *(True)* |
+| **`332° 00'`** | **Meena** `02° 00'` | Dwiswabhava (Mid) | `Slice #011` | **`Nadi #086`** | `#1736 / 1800` | **Manohara** *(Shashtha-Kala)* | `D60 #05` **Yaksha** *(True)* |
+| **`333° 00'`** | **Meena** `03° 00'` | Dwiswabhava (Mid) | `Slice #016` | **`Nadi #091`** | `#1741 / 1800` | **Vasudha** *(Saptama-Kala)* | `D60 #07` **Bhrashta** *(False)* |
+| **`334° 00'`** | **Meena** `04° 00'` | Dwiswabhava (Mid) | `Slice #021` | **`Nadi #096`** | `#1746 / 1800` | **Sudhakara** *(Saptama-Kala)* | `D60 #09` **Garala** *(False)* |
+| **`335° 00'`** | **Meena** `05° 00'` | Dwiswabhava (Mid) | `Slice #026` | **`Nadi #101`** | `#1751 / 1800` | **Manohara** *(Saptama-Kala)* | `D60 #11` **Maya** *(False)* |
+| **`336° 00'`** | **Meena** `06° 00'` | Dwiswabhava (Mid) | `Slice #031` | **`Nadi #106`** | `#1756 / 1800` | **Vasudha** *(Ashtama-Kala)* | `D60 #13` **Apampati** *(True)* |
+| **`337° 00'`** | **Meena** `07° 00'` | Dwiswabhava (Mid) | `Slice #036` | **`Nadi #111`** | `#1761 / 1800` | **Sudhakara** *(Ashtama-Kala)* | `D60 #15` **Kala** *(False)* |
+| **`338° 00'`** | **Meena** `08° 00'` | Dwiswabhava (Mid) | `Slice #041` | **`Nadi #116`** | `#1766 / 1800` | **Manohara** *(Ashtama-Kala)* | `D60 #17` **Amrita** *(True)* |
+| **`339° 00'`** | **Meena** `09° 00'` | Dwiswabhava (Mid) | `Slice #046` | **`Nadi #121`** | `#1771 / 1800` | **Vasudha** *(Navama-Kala)* | `D60 #19` **Mridu** *(True)* |
+| **`340° 00'`** | **Meena** `10° 00'` | Dwiswabhava (Mid) | `Slice #051` | **`Nadi #126`** | `#1776 / 1800` | **Sudhakara** *(Navama-Kala)* | `D60 #21` **Heramba** *(True)* |
+| **`341° 00'`** | **Meena** `11° 00'` | Dwiswabhava (Mid) | `Slice #056` | **`Nadi #131`** | `#1781 / 1800` | **Manohara** *(Navama-Kala)* | `D60 #23` **Vishnu** *(True)* |
+| **`342° 00'`** | **Meena** `12° 00'` | Dwiswabhava (Mid) | `Slice #061` | **`Nadi #136`** | `#1786 / 1800` | **Vasudha** *(Dashama-Kala)* | `D60 #25` **Deva** *(True)* |
+| **`343° 00'`** | **Meena** `13° 00'` | Dwiswabhava (Mid) | `Slice #066` | **`Nadi #141`** | `#1791 / 1800` | **Sudhakara** *(Dashama-Kala)* | `D60 #27` **Kalinasa** *(True)* |
+| **`344° 00'`** | **Meena** `14° 00'` | Dwiswabhava (Mid) | `Slice #071` | **`Nadi #146`** | `#1796 / 1800` | **Manohara** *(Dashama-Kala)* | `D60 #29` **Kamalakara** *(True)* |
+| **`345° 00'`** | **Meena** `15° 00'` | Dwiswabhava (Mid) | `Slice #076` | **`Nadi #001`** | `#1651 / 1800` | **Vasudha** *(Prathama-Kala)* | `D60 #31` **Mrityu** *(False)* |
+| **`346° 00'`** | **Meena** `16° 00'` | Dwiswabhava (Mid) | `Slice #081` | **`Nadi #006`** | `#1656 / 1800` | **Sudhakara** *(Prathama-Kala)* | `D60 #33` **Davagni** *(False)* |
+| **`347° 00'`** | **Meena** `17° 00'` | Dwiswabhava (Mid) | `Slice #086` | **`Nadi #011`** | `#1661 / 1800` | **Manohara** *(Prathama-Kala)* | `D60 #35` **Yama** *(False)* |
+| **`348° 00'`** | **Meena** `18° 00'` | Dwiswabhava (Mid) | `Slice #091` | **`Nadi #016`** | `#1666 / 1800` | **Vasudha** *(Dvitiya-Kala)* | `D60 #37` **Sudha** *(True)* |
+| **`349° 00'`** | **Meena** `19° 00'` | Dwiswabhava (Mid) | `Slice #096` | **`Nadi #021`** | `#1671 / 1800` | **Sudhakara** *(Dvitiya-Kala)* | `D60 #39` **Purnachandra** *(True)* |
+| **`350° 00'`** | **Meena** `20° 00'` | Dwiswabhava (Mid) | `Slice #101` | **`Nadi #026`** | `#1676 / 1800` | **Manohara** *(Dvitiya-Kala)* | `D60 #41` **Kulanasa** *(False)* |
+| **`351° 00'`** | **Meena** `21° 00'` | Dwiswabhava (Mid) | `Slice #106` | **`Nadi #031`** | `#1681 / 1800` | **Vasudha** *(Tritiya-Kala)* | `D60 #43` **Utpata** *(False)* |
+| **`352° 00'`** | **Meena** `22° 00'` | Dwiswabhava (Mid) | `Slice #111` | **`Nadi #036`** | `#1686 / 1800` | **Sudhakara** *(Tritiya-Kala)* | `D60 #45` **Saumya** *(True)* |
+| **`353° 00'`** | **Meena** `23° 00'` | Dwiswabhava (Mid) | `Slice #116` | **`Nadi #041`** | `#1691 / 1800` | **Manohara** *(Tritiya-Kala)* | `D60 #47` **Sheetala** *(True)* |
+| **`354° 00'`** | **Meena** `24° 00'` | Dwiswabhava (Mid) | `Slice #121` | **`Nadi #046`** | `#1696 / 1800` | **Vasudha** *(Chaturtha-Kala)* | `D60 #49` **Chandramukhi** *(True)* |
+| **`355° 00'`** | **Meena** `25° 00'` | Dwiswabhava (Mid) | `Slice #126` | **`Nadi #051`** | `#1701 / 1800` | **Sudhakara** *(Chaturtha-Kala)* | `D60 #51` **Kalapavaka** *(False)* |
+| **`356° 00'`** | **Meena** `26° 00'` | Dwiswabhava (Mid) | `Slice #131` | **`Nadi #056`** | `#1706 / 1800` | **Manohara** *(Chaturtha-Kala)* | `D60 #53` **Nirmala** *(True)* |
+| **`357° 00'`** | **Meena** `27° 00'` | Dwiswabhava (Mid) | `Slice #136` | **`Nadi #061`** | `#1711 / 1800` | **Vasudha** *(Panchama-Kala)* | `D60 #55` **Krura** *(False)* |
+| **`358° 00'`** | **Meena** `28° 00'` | Dwiswabhava (Mid) | `Slice #141` | **`Nadi #066`** | `#1716 / 1800` | **Sudhakara** *(Panchama-Kala)* | `D60 #57` **Amrita** *(True)* |
+| **`359° 00'`** | **Meena** `29° 00'` | Dwiswabhava (Mid) | `Slice #146` | **`Nadi #071`** | `#1721 / 1800` | **Manohara** *(Panchama-Kala)* | `D60 #59` **Bhramana** *(False)* |
+
+## Chapter 27 — Complete 3-Ring *Sudarshana Chakra* (BPHS Ch. 67: *Lagna, Chandra, & Surya* Wheels) & 100-Year Cyclic Progression Table
+
+### 27.1 Worked Case Study: 12-House 3-Ring *Sudarshana Chakra* Synthesis Matrix
+
+| Bhava (`1..12`) | Inner Ring: *Lagna* Sign & Lord | *Lagna* Occupants | Middle Ring: *Chandra* Sign & Lord | *Chandra* Occupants | Outer Ring: *Surya* Sign & Lord | *Surya* Occupants | 3-Ring Convergence Score (`0..100`) |
+|---|---|---|---|---|---|---|---|
+| **Bhava `01`** | **Dhanu** (Jupiter) | `—` | **Makara** (Saturn) | `Moon` | **Tula** (Venus) | `Sun, Mercury` | **`76.0`** |
+| **Bhava `02`** | **Makara** (Saturn) | `Moon` | **Kumbha** (Saturn) | `Rahu` | **Vrishchika** (Mars) | `—` | **`56.0`** |
+| **Bhava `03`** | **Kumbha** (Saturn) | `Rahu` | **Meena** (Jupiter) | `Saturn` | **Dhanu** (Jupiter) | `—` | **`38.0`** |
+| **Bhava `04`** | **Meena** (Jupiter) | `Saturn` | **Mesha** (Mars) | `—` | **Makara** (Saturn) | `Moon` | **`64.0`** |
+| **Bhava `05`** | **Mesha** (Mars) | `—` | **Vrishabha** (Venus) | `—` | **Kumbha** (Saturn) | `Rahu` | **`52.0`** |
+| **Bhava `06`** | **Vrishabha** (Venus) | `—` | **Mithuna** (Mercury) | `—` | **Meena** (Jupiter) | `Saturn` | **`44.0`** |
+| **Bhava `07`** | **Mithuna** (Mercury) | `—` | **Karka** (Moon) | `—` | **Mesha** (Mars) | `—` | **`58.0`** |
+| **Bhava `08`** | **Karka** (Moon) | `—` | **Simha** (Sun) | `Mars, Jupiter, Ketu` | **Vrishabha** (Venus) | `—` | **`50.0`** |
+| **Bhava `09`** | **Simha** (Sun) | `Mars, Jupiter, Ketu` | **Kanya** (Mercury) | `Venus` | **Mithuna** (Mercury) | `—` | **`70.0`** |
+| **Bhava `10`** | **Kanya** (Mercury) | `Venus` | **Tula** (Venus) | `Sun, Mercury` | **Karka** (Moon) | `—` | **`76.0`** |
+| **Bhava `11`** | **Tula** (Venus) | `Sun, Mercury` | **Vrishchika** (Mars) | `—` | **Simha** (Sun) | `Mars, Jupiter, Ketu` | **`64.0`** |
+| **Bhava `12`** | **Vrishchika** (Mars) | `—` | **Dhanu** (Jupiter) | `—` | **Kanya** (Mercury) | `Venus` | **`62.0`** |
+
+### 27.2 Complete 100-Year *Sudarshana Chakra* Annual Progression Table (Ages `1` to `100`)
+
+| AgeYear | Progressed House (`Bhava`) | Progressed *Lagna* Sign & Lord | Progressed *Chandra* Sign & Lord | Progressed *Surya* Sign & Lord | Annual 3-Ring Convergence Score |
+|---|---|---|---|---|---|
+| **Year `001`** (Age 0..1) | **Bhava `01`** | **Dhanu** (Jupiter) | **Makara** (Saturn) | **Tula** (Venus) | **`76.0`** |
+| **Year `002`** (Age 1..2) | **Bhava `02`** | **Makara** (Saturn) | **Kumbha** (Saturn) | **Vrishchika** (Mars) | **`56.0`** |
+| **Year `003`** (Age 2..3) | **Bhava `03`** | **Kumbha** (Saturn) | **Meena** (Jupiter) | **Dhanu** (Jupiter) | **`38.0`** |
+| **Year `004`** (Age 3..4) | **Bhava `04`** | **Meena** (Jupiter) | **Mesha** (Mars) | **Makara** (Saturn) | **`64.0`** |
+| **Year `005`** (Age 4..5) | **Bhava `05`** | **Mesha** (Mars) | **Vrishabha** (Venus) | **Kumbha** (Saturn) | **`52.0`** |
+| **Year `006`** (Age 5..6) | **Bhava `06`** | **Vrishabha** (Venus) | **Mithuna** (Mercury) | **Meena** (Jupiter) | **`44.0`** |
+| **Year `007`** (Age 6..7) | **Bhava `07`** | **Mithuna** (Mercury) | **Karka** (Moon) | **Mesha** (Mars) | **`58.0`** |
+| **Year `008`** (Age 7..8) | **Bhava `08`** | **Karka** (Moon) | **Simha** (Sun) | **Vrishabha** (Venus) | **`50.0`** |
+| **Year `009`** (Age 8..9) | **Bhava `09`** | **Simha** (Sun) | **Kanya** (Mercury) | **Mithuna** (Mercury) | **`70.0`** |
+| **Year `010`** (Age 9..10) | **Bhava `10`** | **Kanya** (Mercury) | **Tula** (Venus) | **Karka** (Moon) | **`76.0`** |
+| **Year `011`** (Age 10..11) | **Bhava `11`** | **Tula** (Venus) | **Vrishchika** (Mars) | **Simha** (Sun) | **`64.0`** |
+| **Year `012`** (Age 11..12) | **Bhava `12`** | **Vrishchika** (Mars) | **Dhanu** (Jupiter) | **Kanya** (Mercury) | **`62.0`** |
+| **Year `013`** (Age 12..13) | **Bhava `01`** | **Dhanu** (Jupiter) | **Makara** (Saturn) | **Tula** (Venus) | **`76.0`** |
+| **Year `014`** (Age 13..14) | **Bhava `02`** | **Makara** (Saturn) | **Kumbha** (Saturn) | **Vrishchika** (Mars) | **`56.0`** |
+| **Year `015`** (Age 14..15) | **Bhava `03`** | **Kumbha** (Saturn) | **Meena** (Jupiter) | **Dhanu** (Jupiter) | **`38.0`** |
+| **Year `016`** (Age 15..16) | **Bhava `04`** | **Meena** (Jupiter) | **Mesha** (Mars) | **Makara** (Saturn) | **`64.0`** |
+| **Year `017`** (Age 16..17) | **Bhava `05`** | **Mesha** (Mars) | **Vrishabha** (Venus) | **Kumbha** (Saturn) | **`52.0`** |
+| **Year `018`** (Age 17..18) | **Bhava `06`** | **Vrishabha** (Venus) | **Mithuna** (Mercury) | **Meena** (Jupiter) | **`44.0`** |
+| **Year `019`** (Age 18..19) | **Bhava `07`** | **Mithuna** (Mercury) | **Karka** (Moon) | **Mesha** (Mars) | **`58.0`** |
+| **Year `020`** (Age 19..20) | **Bhava `08`** | **Karka** (Moon) | **Simha** (Sun) | **Vrishabha** (Venus) | **`50.0`** |
+| **Year `021`** (Age 20..21) | **Bhava `09`** | **Simha** (Sun) | **Kanya** (Mercury) | **Mithuna** (Mercury) | **`70.0`** |
+| **Year `022`** (Age 21..22) | **Bhava `10`** | **Kanya** (Mercury) | **Tula** (Venus) | **Karka** (Moon) | **`76.0`** |
+| **Year `023`** (Age 22..23) | **Bhava `11`** | **Tula** (Venus) | **Vrishchika** (Mars) | **Simha** (Sun) | **`64.0`** |
+| **Year `024`** (Age 23..24) | **Bhava `12`** | **Vrishchika** (Mars) | **Dhanu** (Jupiter) | **Kanya** (Mercury) | **`62.0`** |
+| **Year `025`** (Age 24..25) | **Bhava `01`** | **Dhanu** (Jupiter) | **Makara** (Saturn) | **Tula** (Venus) | **`76.0`** |
+| **Year `026`** (Age 25..26) | **Bhava `02`** | **Makara** (Saturn) | **Kumbha** (Saturn) | **Vrishchika** (Mars) | **`56.0`** |
+| **Year `027`** (Age 26..27) | **Bhava `03`** | **Kumbha** (Saturn) | **Meena** (Jupiter) | **Dhanu** (Jupiter) | **`38.0`** |
+| **Year `028`** (Age 27..28) | **Bhava `04`** | **Meena** (Jupiter) | **Mesha** (Mars) | **Makara** (Saturn) | **`64.0`** |
+| **Year `029`** (Age 28..29) | **Bhava `05`** | **Mesha** (Mars) | **Vrishabha** (Venus) | **Kumbha** (Saturn) | **`52.0`** |
+| **Year `030`** (Age 29..30) | **Bhava `06`** | **Vrishabha** (Venus) | **Mithuna** (Mercury) | **Meena** (Jupiter) | **`44.0`** |
+| **Year `031`** (Age 30..31) | **Bhava `07`** | **Mithuna** (Mercury) | **Karka** (Moon) | **Mesha** (Mars) | **`58.0`** |
+| **Year `032`** (Age 31..32) | **Bhava `08`** | **Karka** (Moon) | **Simha** (Sun) | **Vrishabha** (Venus) | **`50.0`** |
+| **Year `033`** (Age 32..33) | **Bhava `09`** | **Simha** (Sun) | **Kanya** (Mercury) | **Mithuna** (Mercury) | **`70.0`** |
+| **Year `034`** (Age 33..34) | **Bhava `10`** | **Kanya** (Mercury) | **Tula** (Venus) | **Karka** (Moon) | **`76.0`** |
+| **Year `035`** (Age 34..35) | **Bhava `11`** | **Tula** (Venus) | **Vrishchika** (Mars) | **Simha** (Sun) | **`64.0`** |
+| **Year `036`** (Age 35..36) | **Bhava `12`** | **Vrishchika** (Mars) | **Dhanu** (Jupiter) | **Kanya** (Mercury) | **`62.0`** |
+| **Year `037`** (Age 36..37) | **Bhava `01`** | **Dhanu** (Jupiter) | **Makara** (Saturn) | **Tula** (Venus) | **`76.0`** |
+| **Year `038`** (Age 37..38) | **Bhava `02`** | **Makara** (Saturn) | **Kumbha** (Saturn) | **Vrishchika** (Mars) | **`56.0`** |
+| **Year `039`** (Age 38..39) | **Bhava `03`** | **Kumbha** (Saturn) | **Meena** (Jupiter) | **Dhanu** (Jupiter) | **`38.0`** |
+| **Year `040`** (Age 39..40) | **Bhava `04`** | **Meena** (Jupiter) | **Mesha** (Mars) | **Makara** (Saturn) | **`64.0`** |
+| **Year `041`** (Age 40..41) | **Bhava `05`** | **Mesha** (Mars) | **Vrishabha** (Venus) | **Kumbha** (Saturn) | **`52.0`** |
+| **Year `042`** (Age 41..42) | **Bhava `06`** | **Vrishabha** (Venus) | **Mithuna** (Mercury) | **Meena** (Jupiter) | **`44.0`** |
+| **Year `043`** (Age 42..43) | **Bhava `07`** | **Mithuna** (Mercury) | **Karka** (Moon) | **Mesha** (Mars) | **`58.0`** |
+| **Year `044`** (Age 43..44) | **Bhava `08`** | **Karka** (Moon) | **Simha** (Sun) | **Vrishabha** (Venus) | **`50.0`** |
+| **Year `045`** (Age 44..45) | **Bhava `09`** | **Simha** (Sun) | **Kanya** (Mercury) | **Mithuna** (Mercury) | **`70.0`** |
+| **Year `046`** (Age 45..46) | **Bhava `10`** | **Kanya** (Mercury) | **Tula** (Venus) | **Karka** (Moon) | **`76.0`** |
+| **Year `047`** (Age 46..47) | **Bhava `11`** | **Tula** (Venus) | **Vrishchika** (Mars) | **Simha** (Sun) | **`64.0`** |
+| **Year `048`** (Age 47..48) | **Bhava `12`** | **Vrishchika** (Mars) | **Dhanu** (Jupiter) | **Kanya** (Mercury) | **`62.0`** |
+| **Year `049`** (Age 48..49) | **Bhava `01`** | **Dhanu** (Jupiter) | **Makara** (Saturn) | **Tula** (Venus) | **`76.0`** |
+| **Year `050`** (Age 49..50) | **Bhava `02`** | **Makara** (Saturn) | **Kumbha** (Saturn) | **Vrishchika** (Mars) | **`56.0`** |
+| **Year `051`** (Age 50..51) | **Bhava `03`** | **Kumbha** (Saturn) | **Meena** (Jupiter) | **Dhanu** (Jupiter) | **`38.0`** |
+| **Year `052`** (Age 51..52) | **Bhava `04`** | **Meena** (Jupiter) | **Mesha** (Mars) | **Makara** (Saturn) | **`64.0`** |
+| **Year `053`** (Age 52..53) | **Bhava `05`** | **Mesha** (Mars) | **Vrishabha** (Venus) | **Kumbha** (Saturn) | **`52.0`** |
+| **Year `054`** (Age 53..54) | **Bhava `06`** | **Vrishabha** (Venus) | **Mithuna** (Mercury) | **Meena** (Jupiter) | **`44.0`** |
+| **Year `055`** (Age 54..55) | **Bhava `07`** | **Mithuna** (Mercury) | **Karka** (Moon) | **Mesha** (Mars) | **`58.0`** |
+| **Year `056`** (Age 55..56) | **Bhava `08`** | **Karka** (Moon) | **Simha** (Sun) | **Vrishabha** (Venus) | **`50.0`** |
+| **Year `057`** (Age 56..57) | **Bhava `09`** | **Simha** (Sun) | **Kanya** (Mercury) | **Mithuna** (Mercury) | **`70.0`** |
+| **Year `058`** (Age 57..58) | **Bhava `10`** | **Kanya** (Mercury) | **Tula** (Venus) | **Karka** (Moon) | **`76.0`** |
+| **Year `059`** (Age 58..59) | **Bhava `11`** | **Tula** (Venus) | **Vrishchika** (Mars) | **Simha** (Sun) | **`64.0`** |
+| **Year `060`** (Age 59..60) | **Bhava `12`** | **Vrishchika** (Mars) | **Dhanu** (Jupiter) | **Kanya** (Mercury) | **`62.0`** |
+| **Year `061`** (Age 60..61) | **Bhava `01`** | **Dhanu** (Jupiter) | **Makara** (Saturn) | **Tula** (Venus) | **`76.0`** |
+| **Year `062`** (Age 61..62) | **Bhava `02`** | **Makara** (Saturn) | **Kumbha** (Saturn) | **Vrishchika** (Mars) | **`56.0`** |
+| **Year `063`** (Age 62..63) | **Bhava `03`** | **Kumbha** (Saturn) | **Meena** (Jupiter) | **Dhanu** (Jupiter) | **`38.0`** |
+| **Year `064`** (Age 63..64) | **Bhava `04`** | **Meena** (Jupiter) | **Mesha** (Mars) | **Makara** (Saturn) | **`64.0`** |
+| **Year `065`** (Age 64..65) | **Bhava `05`** | **Mesha** (Mars) | **Vrishabha** (Venus) | **Kumbha** (Saturn) | **`52.0`** |
+| **Year `066`** (Age 65..66) | **Bhava `06`** | **Vrishabha** (Venus) | **Mithuna** (Mercury) | **Meena** (Jupiter) | **`44.0`** |
+| **Year `067`** (Age 66..67) | **Bhava `07`** | **Mithuna** (Mercury) | **Karka** (Moon) | **Mesha** (Mars) | **`58.0`** |
+| **Year `068`** (Age 67..68) | **Bhava `08`** | **Karka** (Moon) | **Simha** (Sun) | **Vrishabha** (Venus) | **`50.0`** |
+| **Year `069`** (Age 68..69) | **Bhava `09`** | **Simha** (Sun) | **Kanya** (Mercury) | **Mithuna** (Mercury) | **`70.0`** |
+| **Year `070`** (Age 69..70) | **Bhava `10`** | **Kanya** (Mercury) | **Tula** (Venus) | **Karka** (Moon) | **`76.0`** |
+| **Year `071`** (Age 70..71) | **Bhava `11`** | **Tula** (Venus) | **Vrishchika** (Mars) | **Simha** (Sun) | **`64.0`** |
+| **Year `072`** (Age 71..72) | **Bhava `12`** | **Vrishchika** (Mars) | **Dhanu** (Jupiter) | **Kanya** (Mercury) | **`62.0`** |
+| **Year `073`** (Age 72..73) | **Bhava `01`** | **Dhanu** (Jupiter) | **Makara** (Saturn) | **Tula** (Venus) | **`76.0`** |
+| **Year `074`** (Age 73..74) | **Bhava `02`** | **Makara** (Saturn) | **Kumbha** (Saturn) | **Vrishchika** (Mars) | **`56.0`** |
+| **Year `075`** (Age 74..75) | **Bhava `03`** | **Kumbha** (Saturn) | **Meena** (Jupiter) | **Dhanu** (Jupiter) | **`38.0`** |
+| **Year `076`** (Age 75..76) | **Bhava `04`** | **Meena** (Jupiter) | **Mesha** (Mars) | **Makara** (Saturn) | **`64.0`** |
+| **Year `077`** (Age 76..77) | **Bhava `05`** | **Mesha** (Mars) | **Vrishabha** (Venus) | **Kumbha** (Saturn) | **`52.0`** |
+| **Year `078`** (Age 77..78) | **Bhava `06`** | **Vrishabha** (Venus) | **Mithuna** (Mercury) | **Meena** (Jupiter) | **`44.0`** |
+| **Year `079`** (Age 78..79) | **Bhava `07`** | **Mithuna** (Mercury) | **Karka** (Moon) | **Mesha** (Mars) | **`58.0`** |
+| **Year `080`** (Age 79..80) | **Bhava `08`** | **Karka** (Moon) | **Simha** (Sun) | **Vrishabha** (Venus) | **`50.0`** |
+| **Year `081`** (Age 80..81) | **Bhava `09`** | **Simha** (Sun) | **Kanya** (Mercury) | **Mithuna** (Mercury) | **`70.0`** |
+| **Year `082`** (Age 81..82) | **Bhava `10`** | **Kanya** (Mercury) | **Tula** (Venus) | **Karka** (Moon) | **`76.0`** |
+| **Year `083`** (Age 82..83) | **Bhava `11`** | **Tula** (Venus) | **Vrishchika** (Mars) | **Simha** (Sun) | **`64.0`** |
+| **Year `084`** (Age 83..84) | **Bhava `12`** | **Vrishchika** (Mars) | **Dhanu** (Jupiter) | **Kanya** (Mercury) | **`62.0`** |
+| **Year `085`** (Age 84..85) | **Bhava `01`** | **Dhanu** (Jupiter) | **Makara** (Saturn) | **Tula** (Venus) | **`76.0`** |
+| **Year `086`** (Age 85..86) | **Bhava `02`** | **Makara** (Saturn) | **Kumbha** (Saturn) | **Vrishchika** (Mars) | **`56.0`** |
+| **Year `087`** (Age 86..87) | **Bhava `03`** | **Kumbha** (Saturn) | **Meena** (Jupiter) | **Dhanu** (Jupiter) | **`38.0`** |
+| **Year `088`** (Age 87..88) | **Bhava `04`** | **Meena** (Jupiter) | **Mesha** (Mars) | **Makara** (Saturn) | **`64.0`** |
+| **Year `089`** (Age 88..89) | **Bhava `05`** | **Mesha** (Mars) | **Vrishabha** (Venus) | **Kumbha** (Saturn) | **`52.0`** |
+| **Year `090`** (Age 89..90) | **Bhava `06`** | **Vrishabha** (Venus) | **Mithuna** (Mercury) | **Meena** (Jupiter) | **`44.0`** |
+| **Year `091`** (Age 90..91) | **Bhava `07`** | **Mithuna** (Mercury) | **Karka** (Moon) | **Mesha** (Mars) | **`58.0`** |
+| **Year `092`** (Age 91..92) | **Bhava `08`** | **Karka** (Moon) | **Simha** (Sun) | **Vrishabha** (Venus) | **`50.0`** |
+| **Year `093`** (Age 92..93) | **Bhava `09`** | **Simha** (Sun) | **Kanya** (Mercury) | **Mithuna** (Mercury) | **`70.0`** |
+| **Year `094`** (Age 93..94) | **Bhava `10`** | **Kanya** (Mercury) | **Tula** (Venus) | **Karka** (Moon) | **`76.0`** |
+| **Year `095`** (Age 94..95) | **Bhava `11`** | **Tula** (Venus) | **Vrishchika** (Mars) | **Simha** (Sun) | **`64.0`** |
+| **Year `096`** (Age 95..96) | **Bhava `12`** | **Vrishchika** (Mars) | **Dhanu** (Jupiter) | **Kanya** (Mercury) | **`62.0`** |
+| **Year `097`** (Age 96..97) | **Bhava `01`** | **Dhanu** (Jupiter) | **Makara** (Saturn) | **Tula** (Venus) | **`76.0`** |
+| **Year `098`** (Age 97..98) | **Bhava `02`** | **Makara** (Saturn) | **Kumbha** (Saturn) | **Vrishchika** (Mars) | **`56.0`** |
+| **Year `099`** (Age 98..99) | **Bhava `03`** | **Kumbha** (Saturn) | **Meena** (Jupiter) | **Dhanu** (Jupiter) | **`38.0`** |
+| **Year `100`** (Age 99..100) | **Bhava `04`** | **Meena** (Jupiter) | **Mesha** (Mars) | **Makara** (Saturn) | **`64.0`** |
+
+## Chapter 28 — Golden *Muhurta* Electional Optimization, Complete `27 × 9` *Tarabala* & `12 × 12` *Chandrabala* Master Reckoners, & *Panchaka Rahita* Matrix
+
+### 28.1 Complete 27-Nakshatra *Navatara* (`9-Tara` Cycle) *Tarabala* Master Lookup Matrix
+
+| Birth Star (`Janma Nakshatra`) | `1: Janma` (Mixed) | `2: Sampat` (Wealth) | `3: Vipat` (Danger) | `4: Kshema` (Prosperity) | `5: Pratyak` (Obstacle) | `6: Sadhana` (Success) | `7: Naidhana` (Peril) | `8: Mitra` (Friend) | `9: Parama Mitra` (Supreme) |
+|---|---|---|---|---|---|---|---|---|---|
+| **`#01` Ashwini** | Ashwini, Magha, Mula | Bharani, Purva Phalguni, Purva Ashadha | Krittika, Uttara Phalguni, Uttara Ashadha | Rohini, Hasta, Shravana | Mrigashirsha, Chitra, Dhanishta | Ardra, Swati, Shatabhisha | Punarvasu, Vishakha, Purva Bhadrapada | Pushya, Anuradha, Uttara Bhadrapada | Ashlesha, Jyeshtha, Revati |
+| **`#02` Bharani** | Bharani, Purva Phalguni, Purva Ashadha | Krittika, Uttara Phalguni, Uttara Ashadha | Rohini, Hasta, Shravana | Mrigashirsha, Chitra, Dhanishta | Ardra, Swati, Shatabhisha | Punarvasu, Vishakha, Purva Bhadrapada | Pushya, Anuradha, Uttara Bhadrapada | Ashlesha, Jyeshtha, Revati | Magha, Mula, Ashwini |
+| **`#03` Krittika** | Krittika, Uttara Phalguni, Uttara Ashadha | Rohini, Hasta, Shravana | Mrigashirsha, Chitra, Dhanishta | Ardra, Swati, Shatabhisha | Punarvasu, Vishakha, Purva Bhadrapada | Pushya, Anuradha, Uttara Bhadrapada | Ashlesha, Jyeshtha, Revati | Magha, Mula, Ashwini | Purva Phalguni, Purva Ashadha, Bharani |
+| **`#04` Rohini** | Rohini, Hasta, Shravana | Mrigashirsha, Chitra, Dhanishta | Ardra, Swati, Shatabhisha | Punarvasu, Vishakha, Purva Bhadrapada | Pushya, Anuradha, Uttara Bhadrapada | Ashlesha, Jyeshtha, Revati | Magha, Mula, Ashwini | Purva Phalguni, Purva Ashadha, Bharani | Uttara Phalguni, Uttara Ashadha, Krittika |
+| **`#05` Mrigashirsha** | Mrigashirsha, Chitra, Dhanishta | Ardra, Swati, Shatabhisha | Punarvasu, Vishakha, Purva Bhadrapada | Pushya, Anuradha, Uttara Bhadrapada | Ashlesha, Jyeshtha, Revati | Magha, Mula, Ashwini | Purva Phalguni, Purva Ashadha, Bharani | Uttara Phalguni, Uttara Ashadha, Krittika | Hasta, Shravana, Rohini |
+| **`#06` Ardra** | Ardra, Swati, Shatabhisha | Punarvasu, Vishakha, Purva Bhadrapada | Pushya, Anuradha, Uttara Bhadrapada | Ashlesha, Jyeshtha, Revati | Magha, Mula, Ashwini | Purva Phalguni, Purva Ashadha, Bharani | Uttara Phalguni, Uttara Ashadha, Krittika | Hasta, Shravana, Rohini | Chitra, Dhanishta, Mrigashirsha |
+| **`#07` Punarvasu** | Punarvasu, Vishakha, Purva Bhadrapada | Pushya, Anuradha, Uttara Bhadrapada | Ashlesha, Jyeshtha, Revati | Magha, Mula, Ashwini | Purva Phalguni, Purva Ashadha, Bharani | Uttara Phalguni, Uttara Ashadha, Krittika | Hasta, Shravana, Rohini | Chitra, Dhanishta, Mrigashirsha | Swati, Shatabhisha, Ardra |
+| **`#08` Pushya** | Pushya, Anuradha, Uttara Bhadrapada | Ashlesha, Jyeshtha, Revati | Magha, Mula, Ashwini | Purva Phalguni, Purva Ashadha, Bharani | Uttara Phalguni, Uttara Ashadha, Krittika | Hasta, Shravana, Rohini | Chitra, Dhanishta, Mrigashirsha | Swati, Shatabhisha, Ardra | Vishakha, Purva Bhadrapada, Punarvasu |
+| **`#09` Ashlesha** | Ashlesha, Jyeshtha, Revati | Magha, Mula, Ashwini | Purva Phalguni, Purva Ashadha, Bharani | Uttara Phalguni, Uttara Ashadha, Krittika | Hasta, Shravana, Rohini | Chitra, Dhanishta, Mrigashirsha | Swati, Shatabhisha, Ardra | Vishakha, Purva Bhadrapada, Punarvasu | Anuradha, Uttara Bhadrapada, Pushya |
+| **`#10` Magha** | Magha, Mula, Ashwini | Purva Phalguni, Purva Ashadha, Bharani | Uttara Phalguni, Uttara Ashadha, Krittika | Hasta, Shravana, Rohini | Chitra, Dhanishta, Mrigashirsha | Swati, Shatabhisha, Ardra | Vishakha, Purva Bhadrapada, Punarvasu | Anuradha, Uttara Bhadrapada, Pushya | Jyeshtha, Revati, Ashlesha |
+| **`#11` Purva Phalguni** | Purva Phalguni, Purva Ashadha, Bharani | Uttara Phalguni, Uttara Ashadha, Krittika | Hasta, Shravana, Rohini | Chitra, Dhanishta, Mrigashirsha | Swati, Shatabhisha, Ardra | Vishakha, Purva Bhadrapada, Punarvasu | Anuradha, Uttara Bhadrapada, Pushya | Jyeshtha, Revati, Ashlesha | Mula, Ashwini, Magha |
+| **`#12` Uttara Phalguni** | Uttara Phalguni, Uttara Ashadha, Krittika | Hasta, Shravana, Rohini | Chitra, Dhanishta, Mrigashirsha | Swati, Shatabhisha, Ardra | Vishakha, Purva Bhadrapada, Punarvasu | Anuradha, Uttara Bhadrapada, Pushya | Jyeshtha, Revati, Ashlesha | Mula, Ashwini, Magha | Purva Ashadha, Bharani, Purva Phalguni |
+| **`#13` Hasta** | Hasta, Shravana, Rohini | Chitra, Dhanishta, Mrigashirsha | Swati, Shatabhisha, Ardra | Vishakha, Purva Bhadrapada, Punarvasu | Anuradha, Uttara Bhadrapada, Pushya | Jyeshtha, Revati, Ashlesha | Mula, Ashwini, Magha | Purva Ashadha, Bharani, Purva Phalguni | Uttara Ashadha, Krittika, Uttara Phalguni |
+| **`#14` Chitra** | Chitra, Dhanishta, Mrigashirsha | Swati, Shatabhisha, Ardra | Vishakha, Purva Bhadrapada, Punarvasu | Anuradha, Uttara Bhadrapada, Pushya | Jyeshtha, Revati, Ashlesha | Mula, Ashwini, Magha | Purva Ashadha, Bharani, Purva Phalguni | Uttara Ashadha, Krittika, Uttara Phalguni | Shravana, Rohini, Hasta |
+| **`#15` Swati** | Swati, Shatabhisha, Ardra | Vishakha, Purva Bhadrapada, Punarvasu | Anuradha, Uttara Bhadrapada, Pushya | Jyeshtha, Revati, Ashlesha | Mula, Ashwini, Magha | Purva Ashadha, Bharani, Purva Phalguni | Uttara Ashadha, Krittika, Uttara Phalguni | Shravana, Rohini, Hasta | Dhanishta, Mrigashirsha, Chitra |
+| **`#16` Vishakha** | Vishakha, Purva Bhadrapada, Punarvasu | Anuradha, Uttara Bhadrapada, Pushya | Jyeshtha, Revati, Ashlesha | Mula, Ashwini, Magha | Purva Ashadha, Bharani, Purva Phalguni | Uttara Ashadha, Krittika, Uttara Phalguni | Shravana, Rohini, Hasta | Dhanishta, Mrigashirsha, Chitra | Shatabhisha, Ardra, Swati |
+| **`#17` Anuradha** | Anuradha, Uttara Bhadrapada, Pushya | Jyeshtha, Revati, Ashlesha | Mula, Ashwini, Magha | Purva Ashadha, Bharani, Purva Phalguni | Uttara Ashadha, Krittika, Uttara Phalguni | Shravana, Rohini, Hasta | Dhanishta, Mrigashirsha, Chitra | Shatabhisha, Ardra, Swati | Purva Bhadrapada, Punarvasu, Vishakha |
+| **`#18` Jyeshtha** | Jyeshtha, Revati, Ashlesha | Mula, Ashwini, Magha | Purva Ashadha, Bharani, Purva Phalguni | Uttara Ashadha, Krittika, Uttara Phalguni | Shravana, Rohini, Hasta | Dhanishta, Mrigashirsha, Chitra | Shatabhisha, Ardra, Swati | Purva Bhadrapada, Punarvasu, Vishakha | Uttara Bhadrapada, Pushya, Anuradha |
+| **`#19` Mula** | Mula, Ashwini, Magha | Purva Ashadha, Bharani, Purva Phalguni | Uttara Ashadha, Krittika, Uttara Phalguni | Shravana, Rohini, Hasta | Dhanishta, Mrigashirsha, Chitra | Shatabhisha, Ardra, Swati | Purva Bhadrapada, Punarvasu, Vishakha | Uttara Bhadrapada, Pushya, Anuradha | Revati, Ashlesha, Jyeshtha |
+| **`#20` Purva Ashadha** | Purva Ashadha, Bharani, Purva Phalguni | Uttara Ashadha, Krittika, Uttara Phalguni | Shravana, Rohini, Hasta | Dhanishta, Mrigashirsha, Chitra | Shatabhisha, Ardra, Swati | Purva Bhadrapada, Punarvasu, Vishakha | Uttara Bhadrapada, Pushya, Anuradha | Revati, Ashlesha, Jyeshtha | Ashwini, Magha, Mula |
+| **`#21` Uttara Ashadha** | Uttara Ashadha, Krittika, Uttara Phalguni | Shravana, Rohini, Hasta | Dhanishta, Mrigashirsha, Chitra | Shatabhisha, Ardra, Swati | Purva Bhadrapada, Punarvasu, Vishakha | Uttara Bhadrapada, Pushya, Anuradha | Revati, Ashlesha, Jyeshtha | Ashwini, Magha, Mula | Bharani, Purva Phalguni, Purva Ashadha |
+| **`#22` Shravana** | Shravana, Rohini, Hasta | Dhanishta, Mrigashirsha, Chitra | Shatabhisha, Ardra, Swati | Purva Bhadrapada, Punarvasu, Vishakha | Uttara Bhadrapada, Pushya, Anuradha | Revati, Ashlesha, Jyeshtha | Ashwini, Magha, Mula | Bharani, Purva Phalguni, Purva Ashadha | Krittika, Uttara Phalguni, Uttara Ashadha |
+| **`#23` Dhanishta** | Dhanishta, Mrigashirsha, Chitra | Shatabhisha, Ardra, Swati | Purva Bhadrapada, Punarvasu, Vishakha | Uttara Bhadrapada, Pushya, Anuradha | Revati, Ashlesha, Jyeshtha | Ashwini, Magha, Mula | Bharani, Purva Phalguni, Purva Ashadha | Krittika, Uttara Phalguni, Uttara Ashadha | Rohini, Hasta, Shravana |
+| **`#24` Shatabhisha** | Shatabhisha, Ardra, Swati | Purva Bhadrapada, Punarvasu, Vishakha | Uttara Bhadrapada, Pushya, Anuradha | Revati, Ashlesha, Jyeshtha | Ashwini, Magha, Mula | Bharani, Purva Phalguni, Purva Ashadha | Krittika, Uttara Phalguni, Uttara Ashadha | Rohini, Hasta, Shravana | Mrigashirsha, Chitra, Dhanishta |
+| **`#25` Purva Bhadrapada** | Purva Bhadrapada, Punarvasu, Vishakha | Uttara Bhadrapada, Pushya, Anuradha | Revati, Ashlesha, Jyeshtha | Ashwini, Magha, Mula | Bharani, Purva Phalguni, Purva Ashadha | Krittika, Uttara Phalguni, Uttara Ashadha | Rohini, Hasta, Shravana | Mrigashirsha, Chitra, Dhanishta | Ardra, Swati, Shatabhisha |
+| **`#26` Uttara Bhadrapada** | Uttara Bhadrapada, Pushya, Anuradha | Revati, Ashlesha, Jyeshtha | Ashwini, Magha, Mula | Bharani, Purva Phalguni, Purva Ashadha | Krittika, Uttara Phalguni, Uttara Ashadha | Rohini, Hasta, Shravana | Mrigashirsha, Chitra, Dhanishta | Ardra, Swati, Shatabhisha | Punarvasu, Vishakha, Purva Bhadrapada |
+| **`#27` Revati** | Revati, Ashlesha, Jyeshtha | Ashwini, Magha, Mula | Bharani, Purva Phalguni, Purva Ashadha | Krittika, Uttara Phalguni, Uttara Ashadha | Rohini, Hasta, Shravana | Mrigashirsha, Chitra, Dhanishta | Ardra, Swati, Shatabhisha | Punarvasu, Vishakha, Purva Bhadrapada | Pushya, Anuradha, Uttara Bhadrapada |
+
+### 28.2 Complete `12 × 12` *Chandrabala* (Natal Moon Rashi vs Transit Moon Rashi) Master Matrix
+
+| Natal Moon Rashi (`Janma Rashi`) | Auspicious Transit Moon Signs (`1, 3, 6, 7, 10, 11` = *Shubha Chandrabala*) | Avoided *Ashtama / Dusthana* Signs (`4, 8, 12` = *Chandrashtama / Ari*) | Neutral Signs (`2, 5, 9`) |
+|---|---|---|---|
+| **Mesha** | **Mesha** (1H), **Mithuna** (3H), **Kanya** (6H), **Tula** (7H), **Makara** (10H), **Kumbha** (11H) | `Karka` (4H), `Vrishchika` (8H), `Meena` (12H) | Vrishabha (2H), Simha (5H), Dhanu (9H) |
+| **Vrishabha** | **Vrishabha** (1H), **Karka** (3H), **Tula** (6H), **Vrishchika** (7H), **Kumbha** (10H), **Meena** (11H) | `Simha` (4H), `Dhanu` (8H), `Mesha` (12H) | Mithuna (2H), Kanya (5H), Makara (9H) |
+| **Mithuna** | **Mithuna** (1H), **Simha** (3H), **Vrishchika** (6H), **Dhanu** (7H), **Meena** (10H), **Mesha** (11H) | `Kanya` (4H), `Makara` (8H), `Vrishabha` (12H) | Karka (2H), Tula (5H), Kumbha (9H) |
+| **Karka** | **Karka** (1H), **Kanya** (3H), **Dhanu** (6H), **Makara** (7H), **Mesha** (10H), **Vrishabha** (11H) | `Tula` (4H), `Kumbha` (8H), `Mithuna` (12H) | Simha (2H), Vrishchika (5H), Meena (9H) |
+| **Simha** | **Simha** (1H), **Tula** (3H), **Makara** (6H), **Kumbha** (7H), **Vrishabha** (10H), **Mithuna** (11H) | `Vrishchika` (4H), `Meena` (8H), `Karka` (12H) | Kanya (2H), Dhanu (5H), Mesha (9H) |
+| **Kanya** | **Kanya** (1H), **Vrishchika** (3H), **Kumbha** (6H), **Meena** (7H), **Mithuna** (10H), **Karka** (11H) | `Dhanu` (4H), `Mesha` (8H), `Simha` (12H) | Tula (2H), Makara (5H), Vrishabha (9H) |
+| **Tula** | **Tula** (1H), **Dhanu** (3H), **Meena** (6H), **Mesha** (7H), **Karka** (10H), **Simha** (11H) | `Makara` (4H), `Vrishabha` (8H), `Kanya` (12H) | Vrishchika (2H), Kumbha (5H), Mithuna (9H) |
+| **Vrishchika** | **Vrishchika** (1H), **Makara** (3H), **Mesha** (6H), **Vrishabha** (7H), **Simha** (10H), **Kanya** (11H) | `Kumbha` (4H), `Mithuna` (8H), `Tula` (12H) | Dhanu (2H), Meena (5H), Karka (9H) |
+| **Dhanu** | **Dhanu** (1H), **Kumbha** (3H), **Vrishabha** (6H), **Mithuna** (7H), **Kanya** (10H), **Tula** (11H) | `Meena` (4H), `Karka` (8H), `Vrishchika` (12H) | Makara (2H), Mesha (5H), Simha (9H) |
+| **Makara** | **Makara** (1H), **Meena** (3H), **Mithuna** (6H), **Karka** (7H), **Tula** (10H), **Vrishchika** (11H) | `Mesha` (4H), `Simha` (8H), `Dhanu` (12H) | Kumbha (2H), Vrishabha (5H), Kanya (9H) |
+| **Kumbha** | **Kumbha** (1H), **Mesha** (3H), **Karka** (6H), **Simha** (7H), **Vrishchika** (10H), **Dhanu** (11H) | `Vrishabha` (4H), `Kanya` (8H), `Makara` (12H) | Meena (2H), Mithuna (5H), Tula (9H) |
+| **Meena** | **Meena** (1H), **Vrishabha** (3H), **Simha** (6H), **Kanya** (7H), **Dhanu** (10H), **Makara** (11H) | `Mithuna` (4H), `Tula` (8H), `Kumbha` (12H) | Mesha (2H), Karka (5H), Vrishchika (9H) |
+
+### 28.3 Worked Case Study: Top 15 Golden *Muhurta* Electional Windows (12-Constraint Multi-Objective Optimization)
+
+| Rank | Window (`UTC`) | Vara | Tithi | Nakshatra | Yoga | Ascendant (`Lagna`) | *Panchaka Rahita* | *Tarabala* | *Chandrabala* | Score (`0..100`) | Grade & Auspicious Factors |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| `#01` | `2026-11-01T02:00:00Z` | Sunday | Krishna #22 | *Pushya* | Yoga #22 | **Tula** | `Shubha (r=5)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Non-Rikta Tithi (Krishna 7), Activity-Favored Nakshatra (Pushya), Auspicious Yoga (#22) |
+| `#02` | `2026-11-01T04:00:00Z` | Sunday | Krishna #22 | *Pushya* | Yoga #22 | **Vrishchika** | `Dosha (r=6)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Non-Rikta Tithi (Krishna 7), Activity-Favored Nakshatra (Pushya), Auspicious Yoga (#22) |
+| `#03` | `2026-11-01T08:00:00Z` | Sunday | Krishna #22 | *Pushya* | Yoga #22 | **Makara** | `Dosha (r=8)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Non-Rikta Tithi (Krishna 7), Activity-Favored Nakshatra (Pushya), Auspicious Yoga (#22) |
+| `#04` | `2026-11-01T10:00:00Z` | Sunday | Krishna #23 | *Pushya* | Yoga #23 | **Meena** | `Dosha (r=2)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Non-Rikta Tithi (Krishna 8), Activity-Favored Nakshatra (Pushya), Auspicious Yoga (#23) |
+| `#05` | `2026-11-01T12:00:00Z` | Sunday | Krishna #23 | *Pushya* | Yoga #23 | **Mesha** | `Shubha (r=0)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Non-Rikta Tithi (Krishna 8), Activity-Favored Nakshatra (Pushya), Auspicious Yoga (#23) |
+| `#06` | `2026-11-01T14:00:00Z` | Sunday | Krishna #23 | *Pushya* | Yoga #23 | **Vrishabha** | `Dosha (r=1)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Non-Rikta Tithi (Krishna 8), Activity-Favored Nakshatra (Pushya), Auspicious Yoga (#23) |
+| `#07` | `2026-11-01T18:00:00Z` | Sunday | Krishna #23 | *Pushya* | Yoga #23 | **Karka** | `Shubha (r=3)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Non-Rikta Tithi (Krishna 8), Activity-Favored Nakshatra (Pushya), Auspicious Yoga (#23) |
+| `#08` | `2026-11-01T20:00:00Z` | Monday | Krishna #23 | *Pushya* | Yoga #23 | **Simha** | `Shubha (r=5)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Shubha Vara (Monday), Non-Rikta Tithi (Krishna 8), Activity-Favored Nakshatra (Pushya) |
+| `#09` | `2026-11-01T22:00:00Z` | Monday | Krishna #23 | *Pushya* | Yoga #23 | **Kanya** | `Dosha (r=6)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Shubha Vara (Monday), Non-Rikta Tithi (Krishna 8), Activity-Favored Nakshatra (Pushya) |
+| `#10` | `2026-11-01T06:00:00Z` | Sunday | Krishna #22 | *Pushya* | Yoga #22 | **Dhanu** | `Shubha (r=7)` | `Sadhana (Realization/Success)` | 7H | **`98.0`** | **Uttama (Supreme Golden Muhurta)**: Non-Rikta Tithi (Krishna 7), Activity-Favored Nakshatra (Pushya), Auspicious Yoga (#22) |
+| `#11` | `2026-11-01T16:00:00Z` | Sunday | Krishna #23 | *Pushya* | Yoga #23 | **Mithuna** | `Dosha (r=2)` | `Sadhana (Realization/Success)` | 7H | **`92.0`** | **Uttama (Supreme Golden Muhurta)**: Non-Rikta Tithi (Krishna 8), Activity-Favored Nakshatra (Pushya), Auspicious Yoga (#23) |
+| `#12` | `2026-11-01T00:00:00Z` | Sunday | Krishna #22 | *Punarvasu* | Yoga #22 | **Kanya** | `Shubha (r=3)` | `Pratyak (Obstacles)` | 7H | **`90.0`** | **Uttama (Supreme Golden Muhurta)**: Non-Rikta Tithi (Krishna 7), Activity-Favored Nakshatra (Punarvasu), Auspicious Yoga (#22) |
+| `#13` | `2026-11-02T04:00:00Z` | Monday | Krishna #23 | *Ashlesha* | Yoga #23 | **Vrishchika** | `Shubha (r=0)` | `Naidhana (Peril/Destruction)` | 7H | **`86.0`** | **Uttama (Supreme Golden Muhurta)**: Shubha Vara (Monday), Non-Rikta Tithi (Krishna 8), Auspicious Yoga (#23) |
+| `#14` | `2026-11-04T08:00:00Z` | Wednesday | Krishna #26 | *Purva Phalguni* | Yoga #26 | **Makara** | `Shubha (r=0)` | `Parama Mitra (Supreme Friend)` | 8H | **`86.0`** | **Uttama (Supreme Golden Muhurta)**: Shubha Vara (Wednesday), Non-Rikta Tithi (Krishna 11), Auspicious Yoga (#26) |
+| `#15` | `2026-11-04T12:00:00Z` | Wednesday | Krishna #26 | *Purva Phalguni* | Yoga #26 | **Mesha** | `Shubha (r=0)` | `Parama Mitra (Supreme Friend)` | 8H | **`86.0`** | **Uttama (Supreme Golden Muhurta)**: Shubha Vara (Wednesday), Non-Rikta Tithi (Krishna 11), Auspicious Yoga (#26) |
+
+### 28.4 Complete `30 Tithi × 7 Vara` (`210-Row`) *Panchaka Rahita*, *Dagdha Rashi*, & *Amrita/Sarvartha Siddhi* Electional Master Table
+
+| Lunar Tithi (`1..30`) | Paksha & Tithi Group (*Nanda/Bhadra/Jaya/Rikta/Purna*) | Weekday (`Vara`) | *Dagdha Rashi* (Burnt Sign to Avoid) | *Amrita Siddhi* Star | *Sarvartha Siddhi* Stars | Safe *Panchaka Rahita* Ascendants (`Mesha..Meena` for Star #1) |
+|---|---|---|---|---|---|---|
+| **`Tithi #01`** (Shukla 01) | Nanda (Joy) | **Sunday** | `Tula, Makara` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Vrishabha, Karka, Kanya, Dhanu, Kumbha |
+| **`Tithi #01`** (Shukla 01) | Nanda (Joy) | **Monday** | `Tula, Makara` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #01`** (Shukla 01) | Nanda (Joy) | **Tuesday** | `Tula, Makara` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #01`** (Shukla 01) | Nanda (Joy) | **Wednesday** | `Tula, Makara` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #01`** (Shukla 01) | Nanda (Joy) | **Thursday** | `Tula, Makara` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #01`** (Shukla 01) | Nanda (Joy) | **Friday** | `Tula, Makara` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #01`** (Shukla 01) | Nanda (Joy) | **Saturday** | `Tula, Makara` | *Rohini* | Rohini, Swati, Shravana | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #02`** (Shukla 02) | Bhadra (Good) | **Sunday** | `Dhanu, Meena` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #02`** (Shukla 02) | Bhadra (Good) | **Monday** | `Dhanu, Meena` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #02`** (Shukla 02) | Bhadra (Good) | **Tuesday** | `Dhanu, Meena` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #02`** (Shukla 02) | Bhadra (Good) | **Wednesday** | `Dhanu, Meena` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #02`** (Shukla 02) | Bhadra (Good) | **Thursday** | `Dhanu, Meena` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #02`** (Shukla 02) | Bhadra (Good) | **Friday** | `Dhanu, Meena` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #02`** (Shukla 02) | Bhadra (Good) | **Saturday** | `Dhanu, Meena` | *Rohini* | Rohini, Swati, Shravana | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #03`** (Shukla 03) | Jaya (Victory) | **Sunday** | `Simha, Makara` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #03`** (Shukla 03) | Jaya (Victory) | **Monday** | `Simha, Makara` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #03`** (Shukla 03) | Jaya (Victory) | **Tuesday** | `Simha, Makara` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #03`** (Shukla 03) | Jaya (Victory) | **Wednesday** | `Simha, Makara` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #03`** (Shukla 03) | Jaya (Victory) | **Thursday** | `Simha, Makara` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #03`** (Shukla 03) | Jaya (Victory) | **Friday** | `Simha, Makara` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #03`** (Shukla 03) | Jaya (Victory) | **Saturday** | `Simha, Makara` | *Rohini* | Rohini, Swati, Shravana | Mesha, Mithuna, Simha, Tula, Makara, Meena |
+| **`Tithi #04`** (Shukla 04) | Rikta (Empty/Avoid) | **Sunday** | `Vrishabha, Kumbha` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #04`** (Shukla 04) | Rikta (Empty/Avoid) | **Monday** | `Vrishabha, Kumbha` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #04`** (Shukla 04) | Rikta (Empty/Avoid) | **Tuesday** | `Vrishabha, Kumbha` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #04`** (Shukla 04) | Rikta (Empty/Avoid) | **Wednesday** | `Vrishabha, Kumbha` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #04`** (Shukla 04) | Rikta (Empty/Avoid) | **Thursday** | `Vrishabha, Kumbha` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #04`** (Shukla 04) | Rikta (Empty/Avoid) | **Friday** | `Vrishabha, Kumbha` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Mesha, Mithuna, Simha, Tula, Makara, Meena |
+| **`Tithi #04`** (Shukla 04) | Rikta (Empty/Avoid) | **Saturday** | `Vrishabha, Kumbha` | *Rohini* | Rohini, Swati, Shravana | Vrishabha, Karka, Kanya, Dhanu, Kumbha |
+| **`Tithi #05`** (Shukla 05) | Purna (Fullness) | **Sunday** | `Mithuna, Kanya` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #05`** (Shukla 05) | Purna (Fullness) | **Monday** | `Mithuna, Kanya` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #05`** (Shukla 05) | Purna (Fullness) | **Tuesday** | `Mithuna, Kanya` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #05`** (Shukla 05) | Purna (Fullness) | **Wednesday** | `Mithuna, Kanya` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #05`** (Shukla 05) | Purna (Fullness) | **Thursday** | `Mithuna, Kanya` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Mesha, Mithuna, Simha, Tula, Makara, Meena |
+| **`Tithi #05`** (Shukla 05) | Purna (Fullness) | **Friday** | `Mithuna, Kanya` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Vrishabha, Karka, Kanya, Dhanu, Kumbha |
+| **`Tithi #05`** (Shukla 05) | Purna (Fullness) | **Saturday** | `Mithuna, Kanya` | *Rohini* | Rohini, Swati, Shravana | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #06`** (Shukla 06) | Nanda (Joy) | **Sunday** | `Mesha, Simha` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #06`** (Shukla 06) | Nanda (Joy) | **Monday** | `Mesha, Simha` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #06`** (Shukla 06) | Nanda (Joy) | **Tuesday** | `Mesha, Simha` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #06`** (Shukla 06) | Nanda (Joy) | **Wednesday** | `Mesha, Simha` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Mesha, Mithuna, Simha, Tula, Makara, Meena |
+| **`Tithi #06`** (Shukla 06) | Nanda (Joy) | **Thursday** | `Mesha, Simha` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Vrishabha, Karka, Kanya, Dhanu, Kumbha |
+| **`Tithi #06`** (Shukla 06) | Nanda (Joy) | **Friday** | `Mesha, Simha` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #06`** (Shukla 06) | Nanda (Joy) | **Saturday** | `Mesha, Simha` | *Rohini* | Rohini, Swati, Shravana | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #07`** (Shukla 07) | Bhadra (Good) | **Sunday** | `Karka, Dhanu` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #07`** (Shukla 07) | Bhadra (Good) | **Monday** | `Karka, Dhanu` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #07`** (Shukla 07) | Bhadra (Good) | **Tuesday** | `Karka, Dhanu` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Mesha, Mithuna, Simha, Tula, Makara, Meena |
+| **`Tithi #07`** (Shukla 07) | Bhadra (Good) | **Wednesday** | `Karka, Dhanu` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Vrishabha, Karka, Kanya, Dhanu, Kumbha |
+| **`Tithi #07`** (Shukla 07) | Bhadra (Good) | **Thursday** | `Karka, Dhanu` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #07`** (Shukla 07) | Bhadra (Good) | **Friday** | `Karka, Dhanu` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #07`** (Shukla 07) | Bhadra (Good) | **Saturday** | `Karka, Dhanu` | *Rohini* | Rohini, Swati, Shravana | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #08`** (Shukla 08) | Jaya (Victory) | **Sunday** | `Mithuna, Kanya` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #08`** (Shukla 08) | Jaya (Victory) | **Monday** | `Mithuna, Kanya` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Mesha, Mithuna, Simha, Tula, Makara, Meena |
+| **`Tithi #08`** (Shukla 08) | Jaya (Victory) | **Tuesday** | `Mithuna, Kanya` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Vrishabha, Karka, Kanya, Dhanu, Kumbha |
+| **`Tithi #08`** (Shukla 08) | Jaya (Victory) | **Wednesday** | `Mithuna, Kanya` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #08`** (Shukla 08) | Jaya (Victory) | **Thursday** | `Mithuna, Kanya` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #08`** (Shukla 08) | Jaya (Victory) | **Friday** | `Mithuna, Kanya` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #08`** (Shukla 08) | Jaya (Victory) | **Saturday** | `Mithuna, Kanya` | *Rohini* | Rohini, Swati, Shravana | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #09`** (Shukla 09) | Rikta (Empty/Avoid) | **Sunday** | `Simha, Vrishchika` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Mesha, Mithuna, Simha, Tula, Makara, Meena |
+| **`Tithi #09`** (Shukla 09) | Rikta (Empty/Avoid) | **Monday** | `Simha, Vrishchika` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Vrishabha, Karka, Kanya, Dhanu, Kumbha |
+| **`Tithi #09`** (Shukla 09) | Rikta (Empty/Avoid) | **Tuesday** | `Simha, Vrishchika` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #09`** (Shukla 09) | Rikta (Empty/Avoid) | **Wednesday** | `Simha, Vrishchika` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #09`** (Shukla 09) | Rikta (Empty/Avoid) | **Thursday** | `Simha, Vrishchika` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #09`** (Shukla 09) | Rikta (Empty/Avoid) | **Friday** | `Simha, Vrishchika` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #09`** (Shukla 09) | Rikta (Empty/Avoid) | **Saturday** | `Simha, Vrishchika` | *Rohini* | Rohini, Swati, Shravana | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #10`** (Shukla 10) | Purna (Fullness) | **Sunday** | `Simha, Vrishchika` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Vrishabha, Karka, Kanya, Dhanu, Kumbha |
+| **`Tithi #10`** (Shukla 10) | Purna (Fullness) | **Monday** | `Simha, Vrishchika` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #10`** (Shukla 10) | Purna (Fullness) | **Tuesday** | `Simha, Vrishchika` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #10`** (Shukla 10) | Purna (Fullness) | **Wednesday** | `Simha, Vrishchika` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #10`** (Shukla 10) | Purna (Fullness) | **Thursday** | `Simha, Vrishchika` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #10`** (Shukla 10) | Purna (Fullness) | **Friday** | `Simha, Vrishchika` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #10`** (Shukla 10) | Purna (Fullness) | **Saturday** | `Simha, Vrishchika` | *Rohini* | Rohini, Swati, Shravana | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #11`** (Shukla 11) | Nanda (Joy) | **Sunday** | `Dhanu, Meena` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #11`** (Shukla 11) | Nanda (Joy) | **Monday** | `Dhanu, Meena` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #11`** (Shukla 11) | Nanda (Joy) | **Tuesday** | `Dhanu, Meena` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #11`** (Shukla 11) | Nanda (Joy) | **Wednesday** | `Dhanu, Meena` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #11`** (Shukla 11) | Nanda (Joy) | **Thursday** | `Dhanu, Meena` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #11`** (Shukla 11) | Nanda (Joy) | **Friday** | `Dhanu, Meena` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #11`** (Shukla 11) | Nanda (Joy) | **Saturday** | `Dhanu, Meena` | *Rohini* | Rohini, Swati, Shravana | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #12`** (Shukla 12) | Bhadra (Good) | **Sunday** | `Tula, Makara` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #12`** (Shukla 12) | Bhadra (Good) | **Monday** | `Tula, Makara` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #12`** (Shukla 12) | Bhadra (Good) | **Tuesday** | `Tula, Makara` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #12`** (Shukla 12) | Bhadra (Good) | **Wednesday** | `Tula, Makara` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #12`** (Shukla 12) | Bhadra (Good) | **Thursday** | `Tula, Makara` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #12`** (Shukla 12) | Bhadra (Good) | **Friday** | `Tula, Makara` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #12`** (Shukla 12) | Bhadra (Good) | **Saturday** | `Tula, Makara` | *Rohini* | Rohini, Swati, Shravana | Mesha, Mithuna, Simha, Tula, Makara, Meena |
+| **`Tithi #13`** (Shukla 13) | Jaya (Victory) | **Sunday** | `Vrishabha, Simha` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #13`** (Shukla 13) | Jaya (Victory) | **Monday** | `Vrishabha, Simha` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #13`** (Shukla 13) | Jaya (Victory) | **Tuesday** | `Vrishabha, Simha` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #13`** (Shukla 13) | Jaya (Victory) | **Wednesday** | `Vrishabha, Simha` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #13`** (Shukla 13) | Jaya (Victory) | **Thursday** | `Vrishabha, Simha` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #13`** (Shukla 13) | Jaya (Victory) | **Friday** | `Vrishabha, Simha` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Mesha, Mithuna, Simha, Tula, Makara, Meena |
+| **`Tithi #13`** (Shukla 13) | Jaya (Victory) | **Saturday** | `Vrishabha, Simha` | *Rohini* | Rohini, Swati, Shravana | Vrishabha, Karka, Kanya, Dhanu, Kumbha |
+| **`Tithi #14`** (Shukla 14) | Rikta (Empty/Avoid) | **Sunday** | `Mithuna, Kanya, Dhanu, Meena` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #14`** (Shukla 14) | Rikta (Empty/Avoid) | **Monday** | `Mithuna, Kanya, Dhanu, Meena` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #14`** (Shukla 14) | Rikta (Empty/Avoid) | **Tuesday** | `Mithuna, Kanya, Dhanu, Meena` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #14`** (Shukla 14) | Rikta (Empty/Avoid) | **Wednesday** | `Mithuna, Kanya, Dhanu, Meena` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #14`** (Shukla 14) | Rikta (Empty/Avoid) | **Thursday** | `Mithuna, Kanya, Dhanu, Meena` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Mesha, Mithuna, Simha, Tula, Makara, Meena |
+| **`Tithi #14`** (Shukla 14) | Rikta (Empty/Avoid) | **Friday** | `Mithuna, Kanya, Dhanu, Meena` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Vrishabha, Karka, Kanya, Dhanu, Kumbha |
+| **`Tithi #14`** (Shukla 14) | Rikta (Empty/Avoid) | **Saturday** | `Mithuna, Kanya, Dhanu, Meena` | *Rohini* | Rohini, Swati, Shravana | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #15`** (Shukla 15) | Purna (Fullness) | **Sunday** | `None (Shubha)` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #15`** (Shukla 15) | Purna (Fullness) | **Monday** | `None (Shubha)` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #15`** (Shukla 15) | Purna (Fullness) | **Tuesday** | `None (Shubha)` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #15`** (Shukla 15) | Purna (Fullness) | **Wednesday** | `None (Shubha)` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Mesha, Mithuna, Simha, Tula, Makara, Meena |
+| **`Tithi #15`** (Shukla 15) | Purna (Fullness) | **Thursday** | `None (Shubha)` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Vrishabha, Karka, Kanya, Dhanu, Kumbha |
+| **`Tithi #15`** (Shukla 15) | Purna (Fullness) | **Friday** | `None (Shubha)` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #15`** (Shukla 15) | Purna (Fullness) | **Saturday** | `None (Shubha)` | *Rohini* | Rohini, Swati, Shravana | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #16`** (Krishna 01) | Nanda (Joy) | **Sunday** | `Tula, Makara` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #16`** (Krishna 01) | Nanda (Joy) | **Monday** | `Tula, Makara` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #16`** (Krishna 01) | Nanda (Joy) | **Tuesday** | `Tula, Makara` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Mesha, Mithuna, Simha, Tula, Makara, Meena |
+| **`Tithi #16`** (Krishna 01) | Nanda (Joy) | **Wednesday** | `Tula, Makara` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Vrishabha, Karka, Kanya, Dhanu, Kumbha |
+| **`Tithi #16`** (Krishna 01) | Nanda (Joy) | **Thursday** | `Tula, Makara` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #16`** (Krishna 01) | Nanda (Joy) | **Friday** | `Tula, Makara` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #16`** (Krishna 01) | Nanda (Joy) | **Saturday** | `Tula, Makara` | *Rohini* | Rohini, Swati, Shravana | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #17`** (Krishna 02) | Bhadra (Good) | **Sunday** | `Dhanu, Meena` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #17`** (Krishna 02) | Bhadra (Good) | **Monday** | `Dhanu, Meena` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Mesha, Mithuna, Simha, Tula, Makara, Meena |
+| **`Tithi #17`** (Krishna 02) | Bhadra (Good) | **Tuesday** | `Dhanu, Meena` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Vrishabha, Karka, Kanya, Dhanu, Kumbha |
+| **`Tithi #17`** (Krishna 02) | Bhadra (Good) | **Wednesday** | `Dhanu, Meena` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #17`** (Krishna 02) | Bhadra (Good) | **Thursday** | `Dhanu, Meena` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #17`** (Krishna 02) | Bhadra (Good) | **Friday** | `Dhanu, Meena` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #17`** (Krishna 02) | Bhadra (Good) | **Saturday** | `Dhanu, Meena` | *Rohini* | Rohini, Swati, Shravana | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #18`** (Krishna 03) | Jaya (Victory) | **Sunday** | `Simha, Makara` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Mesha, Mithuna, Simha, Tula, Makara, Meena |
+| **`Tithi #18`** (Krishna 03) | Jaya (Victory) | **Monday** | `Simha, Makara` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Vrishabha, Karka, Kanya, Dhanu, Kumbha |
+| **`Tithi #18`** (Krishna 03) | Jaya (Victory) | **Tuesday** | `Simha, Makara` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #18`** (Krishna 03) | Jaya (Victory) | **Wednesday** | `Simha, Makara` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #18`** (Krishna 03) | Jaya (Victory) | **Thursday** | `Simha, Makara` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #18`** (Krishna 03) | Jaya (Victory) | **Friday** | `Simha, Makara` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #18`** (Krishna 03) | Jaya (Victory) | **Saturday** | `Simha, Makara` | *Rohini* | Rohini, Swati, Shravana | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #19`** (Krishna 04) | Rikta (Empty/Avoid) | **Sunday** | `Vrishabha, Kumbha` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Vrishabha, Karka, Kanya, Dhanu, Kumbha |
+| **`Tithi #19`** (Krishna 04) | Rikta (Empty/Avoid) | **Monday** | `Vrishabha, Kumbha` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #19`** (Krishna 04) | Rikta (Empty/Avoid) | **Tuesday** | `Vrishabha, Kumbha` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #19`** (Krishna 04) | Rikta (Empty/Avoid) | **Wednesday** | `Vrishabha, Kumbha` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #19`** (Krishna 04) | Rikta (Empty/Avoid) | **Thursday** | `Vrishabha, Kumbha` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #19`** (Krishna 04) | Rikta (Empty/Avoid) | **Friday** | `Vrishabha, Kumbha` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #19`** (Krishna 04) | Rikta (Empty/Avoid) | **Saturday** | `Vrishabha, Kumbha` | *Rohini* | Rohini, Swati, Shravana | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #20`** (Krishna 05) | Purna (Fullness) | **Sunday** | `Mithuna, Kanya` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #20`** (Krishna 05) | Purna (Fullness) | **Monday** | `Mithuna, Kanya` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #20`** (Krishna 05) | Purna (Fullness) | **Tuesday** | `Mithuna, Kanya` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #20`** (Krishna 05) | Purna (Fullness) | **Wednesday** | `Mithuna, Kanya` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #20`** (Krishna 05) | Purna (Fullness) | **Thursday** | `Mithuna, Kanya` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #20`** (Krishna 05) | Purna (Fullness) | **Friday** | `Mithuna, Kanya` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #20`** (Krishna 05) | Purna (Fullness) | **Saturday** | `Mithuna, Kanya` | *Rohini* | Rohini, Swati, Shravana | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #21`** (Krishna 06) | Nanda (Joy) | **Sunday** | `Mesha, Simha` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #21`** (Krishna 06) | Nanda (Joy) | **Monday** | `Mesha, Simha` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #21`** (Krishna 06) | Nanda (Joy) | **Tuesday** | `Mesha, Simha` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #21`** (Krishna 06) | Nanda (Joy) | **Wednesday** | `Mesha, Simha` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #21`** (Krishna 06) | Nanda (Joy) | **Thursday** | `Mesha, Simha` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #21`** (Krishna 06) | Nanda (Joy) | **Friday** | `Mesha, Simha` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #21`** (Krishna 06) | Nanda (Joy) | **Saturday** | `Mesha, Simha` | *Rohini* | Rohini, Swati, Shravana | Mesha, Mithuna, Simha, Tula, Makara, Meena |
+| **`Tithi #22`** (Krishna 07) | Bhadra (Good) | **Sunday** | `Karka, Dhanu` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #22`** (Krishna 07) | Bhadra (Good) | **Monday** | `Karka, Dhanu` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #22`** (Krishna 07) | Bhadra (Good) | **Tuesday** | `Karka, Dhanu` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #22`** (Krishna 07) | Bhadra (Good) | **Wednesday** | `Karka, Dhanu` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #22`** (Krishna 07) | Bhadra (Good) | **Thursday** | `Karka, Dhanu` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #22`** (Krishna 07) | Bhadra (Good) | **Friday** | `Karka, Dhanu` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Mesha, Mithuna, Simha, Tula, Makara, Meena |
+| **`Tithi #22`** (Krishna 07) | Bhadra (Good) | **Saturday** | `Karka, Dhanu` | *Rohini* | Rohini, Swati, Shravana | Vrishabha, Karka, Kanya, Dhanu, Kumbha |
+| **`Tithi #23`** (Krishna 08) | Jaya (Victory) | **Sunday** | `Mithuna, Kanya` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #23`** (Krishna 08) | Jaya (Victory) | **Monday** | `Mithuna, Kanya` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #23`** (Krishna 08) | Jaya (Victory) | **Tuesday** | `Mithuna, Kanya` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #23`** (Krishna 08) | Jaya (Victory) | **Wednesday** | `Mithuna, Kanya` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #23`** (Krishna 08) | Jaya (Victory) | **Thursday** | `Mithuna, Kanya` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Mesha, Mithuna, Simha, Tula, Makara, Meena |
+| **`Tithi #23`** (Krishna 08) | Jaya (Victory) | **Friday** | `Mithuna, Kanya` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Vrishabha, Karka, Kanya, Dhanu, Kumbha |
+| **`Tithi #23`** (Krishna 08) | Jaya (Victory) | **Saturday** | `Mithuna, Kanya` | *Rohini* | Rohini, Swati, Shravana | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #24`** (Krishna 09) | Rikta (Empty/Avoid) | **Sunday** | `Simha, Vrishchika` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #24`** (Krishna 09) | Rikta (Empty/Avoid) | **Monday** | `Simha, Vrishchika` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #24`** (Krishna 09) | Rikta (Empty/Avoid) | **Tuesday** | `Simha, Vrishchika` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #24`** (Krishna 09) | Rikta (Empty/Avoid) | **Wednesday** | `Simha, Vrishchika` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Mesha, Mithuna, Simha, Tula, Makara, Meena |
+| **`Tithi #24`** (Krishna 09) | Rikta (Empty/Avoid) | **Thursday** | `Simha, Vrishchika` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Vrishabha, Karka, Kanya, Dhanu, Kumbha |
+| **`Tithi #24`** (Krishna 09) | Rikta (Empty/Avoid) | **Friday** | `Simha, Vrishchika` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #24`** (Krishna 09) | Rikta (Empty/Avoid) | **Saturday** | `Simha, Vrishchika` | *Rohini* | Rohini, Swati, Shravana | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #25`** (Krishna 10) | Purna (Fullness) | **Sunday** | `Simha, Vrishchika` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #25`** (Krishna 10) | Purna (Fullness) | **Monday** | `Simha, Vrishchika` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #25`** (Krishna 10) | Purna (Fullness) | **Tuesday** | `Simha, Vrishchika` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Mesha, Mithuna, Simha, Tula, Makara, Meena |
+| **`Tithi #25`** (Krishna 10) | Purna (Fullness) | **Wednesday** | `Simha, Vrishchika` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Vrishabha, Karka, Kanya, Dhanu, Kumbha |
+| **`Tithi #25`** (Krishna 10) | Purna (Fullness) | **Thursday** | `Simha, Vrishchika` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #25`** (Krishna 10) | Purna (Fullness) | **Friday** | `Simha, Vrishchika` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #25`** (Krishna 10) | Purna (Fullness) | **Saturday** | `Simha, Vrishchika` | *Rohini* | Rohini, Swati, Shravana | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #26`** (Krishna 11) | Nanda (Joy) | **Sunday** | `Dhanu, Meena` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #26`** (Krishna 11) | Nanda (Joy) | **Monday** | `Dhanu, Meena` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Mesha, Mithuna, Simha, Tula, Makara, Meena |
+| **`Tithi #26`** (Krishna 11) | Nanda (Joy) | **Tuesday** | `Dhanu, Meena` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Vrishabha, Karka, Kanya, Dhanu, Kumbha |
+| **`Tithi #26`** (Krishna 11) | Nanda (Joy) | **Wednesday** | `Dhanu, Meena` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #26`** (Krishna 11) | Nanda (Joy) | **Thursday** | `Dhanu, Meena` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #26`** (Krishna 11) | Nanda (Joy) | **Friday** | `Dhanu, Meena` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #26`** (Krishna 11) | Nanda (Joy) | **Saturday** | `Dhanu, Meena` | *Rohini* | Rohini, Swati, Shravana | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #27`** (Krishna 12) | Bhadra (Good) | **Sunday** | `Tula, Makara` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Mesha, Mithuna, Simha, Tula, Makara, Meena |
+| **`Tithi #27`** (Krishna 12) | Bhadra (Good) | **Monday** | `Tula, Makara` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Vrishabha, Karka, Kanya, Dhanu, Kumbha |
+| **`Tithi #27`** (Krishna 12) | Bhadra (Good) | **Tuesday** | `Tula, Makara` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #27`** (Krishna 12) | Bhadra (Good) | **Wednesday** | `Tula, Makara` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #27`** (Krishna 12) | Bhadra (Good) | **Thursday** | `Tula, Makara` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #27`** (Krishna 12) | Bhadra (Good) | **Friday** | `Tula, Makara` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #27`** (Krishna 12) | Bhadra (Good) | **Saturday** | `Tula, Makara` | *Rohini* | Rohini, Swati, Shravana | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #28`** (Krishna 13) | Jaya (Victory) | **Sunday** | `Vrishabha, Simha` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Vrishabha, Karka, Kanya, Dhanu, Kumbha |
+| **`Tithi #28`** (Krishna 13) | Jaya (Victory) | **Monday** | `Vrishabha, Simha` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #28`** (Krishna 13) | Jaya (Victory) | **Tuesday** | `Vrishabha, Simha` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #28`** (Krishna 13) | Jaya (Victory) | **Wednesday** | `Vrishabha, Simha` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #28`** (Krishna 13) | Jaya (Victory) | **Thursday** | `Vrishabha, Simha` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #28`** (Krishna 13) | Jaya (Victory) | **Friday** | `Vrishabha, Simha` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #28`** (Krishna 13) | Jaya (Victory) | **Saturday** | `Vrishabha, Simha` | *Rohini* | Rohini, Swati, Shravana | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #29`** (Krishna 14) | Rikta (Empty/Avoid) | **Sunday** | `Mithuna, Kanya, Dhanu, Meena` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Mesha, Mithuna, Simha, Vrishchika, Makara, Meena |
+| **`Tithi #29`** (Krishna 14) | Rikta (Empty/Avoid) | **Monday** | `Mithuna, Kanya, Dhanu, Meena` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #29`** (Krishna 14) | Rikta (Empty/Avoid) | **Tuesday** | `Mithuna, Kanya, Dhanu, Meena` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #29`** (Krishna 14) | Rikta (Empty/Avoid) | **Wednesday** | `Mithuna, Kanya, Dhanu, Meena` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #29`** (Krishna 14) | Rikta (Empty/Avoid) | **Thursday** | `Mithuna, Kanya, Dhanu, Meena` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #29`** (Krishna 14) | Rikta (Empty/Avoid) | **Friday** | `Mithuna, Kanya, Dhanu, Meena` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #29`** (Krishna 14) | Rikta (Empty/Avoid) | **Saturday** | `Mithuna, Kanya, Dhanu, Meena` | *Rohini* | Rohini, Swati, Shravana | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #30`** (Krishna 15) | Purna (Fullness) | **Sunday** | `None (Shubha)` | *Hasta* | Ashwini, Pushya, Uttara Phalguni, Hasta | Vrishabha, Karka, Tula, Dhanu, Kumbha |
+| **`Tithi #30`** (Krishna 15) | Purna (Fullness) | **Monday** | `None (Shubha)` | *Mrigashirsha* | Rohini, Mrigashirsha, Pushya, Anuradha | Mesha, Mithuna, Kanya, Vrishchika, Makara, Meena |
+| **`Tithi #30`** (Krishna 15) | Purna (Fullness) | **Tuesday** | `None (Shubha)` | *Ashwini* | Ashwini, Krittika, Ashlesha, Uttara Bhadrapada | Vrishabha, Simha, Tula, Dhanu, Kumbha |
+| **`Tithi #30`** (Krishna 15) | Purna (Fullness) | **Wednesday** | `None (Shubha)` | *Anuradha* | Krittika, Rohini, Mrigashirsha, Hasta | Mesha, Karka, Kanya, Vrishchika, Makara |
+| **`Tithi #30`** (Krishna 15) | Purna (Fullness) | **Thursday** | `None (Shubha)` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Mithuna, Simha, Tula, Dhanu, Meena |
+| **`Tithi #30`** (Krishna 15) | Purna (Fullness) | **Friday** | `None (Shubha)` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
+| **`Tithi #30`** (Krishna 15) | Purna (Fullness) | **Saturday** | `None (Shubha)` | *Rohini* | Rohini, Swati, Shravana | Mesha, Mithuna, Simha, Tula, Makara, Meena |

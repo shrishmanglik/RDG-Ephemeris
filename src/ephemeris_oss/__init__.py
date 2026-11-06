@@ -20,6 +20,7 @@ from . import (
     api_server,
     compact_kernel,
     fact_sheet,
+    frontier_astrodynamics,
     impossible_astrology,
     jyotish,
     jyotish_advanced,
@@ -69,6 +70,19 @@ from .engine.stellar_anchors import (
     propagate_yogatara_apparent,
 )
 from .fact_sheet import AIFactSheet, HallucinationAudit, compile_ai_fact_sheet, verify_ai_interpretation
+from .frontier_astrodynamics import (
+    EclipseCatalogItem,
+    EclipseNatalHit,
+    EclipseNatalSensitivityReport,
+    NatalTriplePassResonance,
+    RetrogradeLoopCatalogReport,
+    RetrogradeLoopEntry,
+    TopocentricAstrometryReport,
+    TopocentricBodyState,
+    compute_topocentric_relativistic_astrometry,
+    evaluate_lifetime_eclipse_natal_sensitivity,
+    solve_synodic_retrograde_loops_and_triple_passes,
+)
 from .impossible_astrology import (
     InverseChartDateSearchReport,
     InverseChartMatchWindow,
