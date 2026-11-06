@@ -170,6 +170,12 @@
       "path": "src/ephemeris_oss/jyotish/harmonic_vedha_and_pinda.py",
       "status": "FIXED_AND_VERIFIED",
       "resolution": "Evaluated both forward and backward roots at each shell k in _find_nearest_heliacal_crossing and returned the root with smaller abs(root_jd - jd_ut)."
+    },
+    {
+      "id": "round3_eclipse_observer_range_consistency",
+      "path": "src/ephemeris_oss/frontier_astrodynamics.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Padded candidate syzygy search by +/- 0.25 days around [start_jd_ut, end_jd_ut], refined syzygy via 24-step bisection, and filtered returned eclipses and natal hits strictly by start_jd_ut <= event_max_jd <= end_jd_ut; verified across all 7 assertions in test_observer_range_contracts.py."
     }
   ]
 }

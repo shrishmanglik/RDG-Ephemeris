@@ -213,3 +213,45 @@ def test_observer_visibility_accounts_for_local_eclipse_time() -> None:
     assert any(area > 0.01 and altitude > 0 for area, altitude in samples), samples
     assert event.local_visible, (event, samples)
 
+
+LOCATIONS = [(64.15, -21.94), (43.36, -5.85), (40.4168, -3.7038)]
+
+
+@pytest.fixture(scope="module", params=LOCATIONS)
+def observer_case(request: pytest.FixtureRequest) -> tuple[float, float, object]:
+    lat, lon = request.param
+    report = evaluate_lifetime_eclipse_natal_sensitivity(
+        2461262.5, 2461266.5, latitude_deg=lat, longitude_deg=lon
+    )
+    event = report.eclipses[0]
+    return lat, lon, event
+
+
+def test_broad_range_clean_control_contains_returned_local_maximum(
+    observer_case: tuple[float, float, object]
+) -> None:
+    _, _, event = observer_case
+    assert event.local_visible and 2461262.5 <= event.maximum_jd_ut <= 2461266.5
+
+
+def test_narrow_range_around_returned_local_maximum_retains_event(
+    observer_case: tuple[float, float, object]
+) -> None:
+    lat, lon, event = observer_case
+    report = evaluate_lifetime_eclipse_natal_sensitivity(
+        event.maximum_jd_ut - 5 / 1440,
+        event.maximum_jd_ut + 5 / 1440,
+        latitude_deg=lat,
+        longitude_deg=lon,
+    )
+    assert any(abs(x.maximum_jd_ut - event.maximum_jd_ut) < 1 / 1440 for x in report.eclipses)
+
+
+def test_no_returned_local_maximum_is_outside_requested_range() -> None:
+    start, end = 2461265.233848572 - 5 / 1440, 2461265.233848572 + 5 / 1440
+    report = evaluate_lifetime_eclipse_natal_sensitivity(
+        start, end, latitude_deg=40.4168, longitude_deg=-3.7038
+    )
+    assert all(start <= x.maximum_jd_ut <= end for x in report.eclipses), report.eclipses
+
+

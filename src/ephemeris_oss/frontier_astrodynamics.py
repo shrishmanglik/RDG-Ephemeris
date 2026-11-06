@@ -732,13 +732,18 @@ def evaluate_lifetime_eclipse_natal_sensitivity(
     eclipses: list[EclipseCatalogItem] = []
     hits: list[EclipseNatalHit] = []
 
-    # Step through New Moons (Solar eclipse candidates) and Full Moons (Lunar eclipse candidates)
+    # Step through New Moons (Solar eclipse candidates) and Full Moons (Lunar eclipse candidates),
+    # padding the candidate syzygy search by +/- 0.25 days (6 hours) so observer-local maxima near
+    # caller interval boundaries are discovered and then filtered strictly to [start_jd_ut, end_jd_ut].
+    pad_days = 0.25
+    scan_start_jd = float(start_jd_ut) - pad_days
+    scan_end_jd = float(end_jd_ut) + pad_days
     t_step = 4.0
-    t_curr = float(start_jd_ut)
+    t_curr = scan_start_jd
     prev_diff = None
     prev_t = t_curr
 
-    while t_curr <= float(end_jd_ut):
+    while t_curr <= scan_end_jd:
         s_vals = ad.calc_ut(t_curr, "sun", sidereal=True, ayanamsa=ayanamsa)
         m_vals = ad.calc_ut(t_curr, "moon", sidereal=True, ayanamsa=ayanamsa)
         r_vals = ad.calc_ut(t_curr, "rahu", sidereal=True, ayanamsa=ayanamsa)
@@ -750,9 +755,9 @@ def evaluate_lifetime_eclipse_natal_sensitivity(
             is_purnima = prev_diff < 180.0 and diff >= 180.0
             if is_amavasya or is_purnima:
                 target_elong = 0.0 if is_amavasya else 180.0
-                # Refine exact syzygy JD via 18-step bisection:
+                # Refine exact syzygy JD via 24-step bisection:
                 lo, hi = prev_t, t_curr
-                for _ in range(18):
+                for _ in range(24):
                     mid = 0.5 * (lo + hi)
                     sv = ad.calc_ut(mid, "sun", sidereal=True, ayanamsa=ayanamsa)
                     mv = ad.calc_ut(mid, "moon", sidereal=True, ayanamsa=ayanamsa)
@@ -910,6 +915,14 @@ def evaluate_lifetime_eclipse_natal_sensitivity(
                         loc_vis = alt_deg > 0.0
                         obsc_frac = max(0.0, min(1.0, (1.0 - node_dist / limit_deg))) if loc_vis else 0.0
 
+                    if not (float(start_jd_ut) <= event_max_jd <= float(end_jd_ut)):
+                        prev_diff = diff
+                        prev_t = t_curr
+                        if t_curr >= scan_end_jd:
+                            break
+                        t_curr = min(scan_end_jd, t_curr + t_step)
+                        continue
+
                     nak_obj = nakshatra_position(axis_lon)
                     r_idx = int(axis_lon // 30.0) % 12
                     item = EclipseCatalogItem(
@@ -950,9 +963,9 @@ def evaluate_lifetime_eclipse_natal_sensitivity(
 
         prev_diff = diff
         prev_t = t_curr
-        if t_curr >= float(end_jd_ut):
+        if t_curr >= scan_end_jd:
             break
-        t_curr = min(float(end_jd_ut), t_curr + t_step)
+        t_curr = min(scan_end_jd, t_curr + t_step)
 
     receipt = canonical_hash(
         {
