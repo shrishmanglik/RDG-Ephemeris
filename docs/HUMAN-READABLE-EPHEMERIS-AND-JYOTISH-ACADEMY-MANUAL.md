@@ -669,34 +669,34 @@
 |---|---|---|---|---|---|---|---|---|---|
 | **01** | `00°00'–00°30'` | `29°30'–30°00'` | **Ghora** | Krura (Malefic) | **31** | `15°00'–15°30'` | `14°30'–15°00'` | **Mrityu** | Krura (Malefic) |
 | **02** | `00°30'–01°00'` | `29°00'–29°30'` | **Rakshasa** | Krura (Malefic) | **32** | `15°30'–16°00'` | `14°00'–14°30'` | **Kaala** | Krura (Malefic) |
-| **03** | `01°00'–01°30'` | `28°30'–29°00'` | **Deva** | Krura (Malefic) | **33** | `16°00'–16°30'` | `13°30'–14°00'` | **Davagni** | Krura (Malefic) |
-| **04** | `01°30'–02°00'` | `28°00'–28°30'` | **Kubera** | Krura (Malefic) | **34** | `16°30'–17°00'` | `13°00'–13°30'` | **Ghora** | Krura (Malefic) |
-| **05** | `02°00'–02°30'` | `27°30'–28°00'` | **Yaksha** | Krura (Malefic) | **35** | `17°00'–17°30'` | `12°30'–13°00'` | **Yama** | Krura (Malefic) |
-| **06** | `02°30'–03°00'` | `27°00'–27°30'` | **Kinnara** | Krura (Malefic) | **36** | `17°30'–18°00'` | `12°00'–12°30'` | **Kantaka** | Krura (Malefic) |
-| **07** | `03°00'–03°30'` | `26°30'–27°00'` | **Bhrashta** | Krura (Malefic) | **37** | `18°00'–18°30'` | `11°30'–12°00'` | **Sudha** | Krura (Malefic) |
-| **08** | `03°30'–04°00'` | `26°00'–26°30'` | **Kulaghna** | Krura (Malefic) | **38** | `18°30'–19°00'` | `11°00'–11°30'` | **Amrita** | Krura (Malefic) |
-| **09** | `04°00'–04°30'` | `25°30'–26°00'` | **Garala** | Krura (Malefic) | **39** | `19°00'–19°30'` | `10°30'–11°00'` | **Purnachandra** | Krura (Malefic) |
+| **03** | `01°00'–01°30'` | `28°30'–29°00'` | **Deva** | Shubha (Benefic) | **33** | `16°00'–16°30'` | `13°30'–14°00'` | **Davagni** | Krura (Malefic) |
+| **04** | `01°30'–02°00'` | `28°00'–28°30'` | **Kubera** | Shubha (Benefic) | **34** | `16°30'–17°00'` | `13°00'–13°30'` | **Ghora** | Krura (Malefic) |
+| **05** | `02°00'–02°30'` | `27°30'–28°00'` | **Yaksha** | Shubha (Benefic) | **35** | `17°00'–17°30'` | `12°30'–13°00'` | **Yama** | Krura (Malefic) |
+| **06** | `02°30'–03°00'` | `27°00'–27°30'` | **Kinnara** | Shubha (Benefic) | **36** | `17°30'–18°00'` | `12°00'–12°30'` | **Kantaka** | Krura (Malefic) |
+| **07** | `03°00'–03°30'` | `26°30'–27°00'` | **Bhrashta** | Krura (Malefic) | **37** | `18°00'–18°30'` | `11°30'–12°00'` | **Sudha** | Shubha (Benefic) |
+| **08** | `03°30'–04°00'` | `26°00'–26°30'` | **Kulaghna** | Krura (Malefic) | **38** | `18°30'–19°00'` | `11°00'–11°30'` | **Amrita** | Shubha (Benefic) |
+| **09** | `04°00'–04°30'` | `25°30'–26°00'` | **Garala** | Krura (Malefic) | **39** | `19°00'–19°30'` | `10°30'–11°00'` | **Purnachandra** | Shubha (Benefic) |
 | **10** | `04°30'–05°00'` | `25°00'–25°30'` | **Vahni** | Krura (Malefic) | **40** | `19°30'–20°00'` | `10°00'–10°30'` | **Vishadagdha** | Krura (Malefic) |
 | **11** | `05°00'–05°30'` | `24°30'–25°00'` | **Maya** | Krura (Malefic) | **41** | `20°00'–20°30'` | `09°30'–10°00'` | **Kulanasa** | Krura (Malefic) |
 | **12** | `05°30'–06°00'` | `24°00'–24°30'` | **Purishaka** | Krura (Malefic) | **42** | `20°30'–21°00'` | `09°00'–09°30'` | **Vamshakshaya** | Krura (Malefic) |
-| **13** | `06°00'–06°30'` | `23°30'–24°00'` | **Apampati** | Krura (Malefic) | **43** | `21°00'–21°30'` | `08°30'–09°00'` | **Utpata** | Krura (Malefic) |
-| **14** | `06°30'–07°00'` | `23°00'–23°30'` | **Marutwan** | Krura (Malefic) | **44** | `21°30'–22°00'` | `08°00'–08°30'` | **Kala** | Krura (Malefic) |
-| **15** | `07°00'–07°30'` | `22°30'–23°00'` | **Kala** | Krura (Malefic) | **45** | `22°00'–22°30'` | `07°30'–08°00'` | **Saumya** | Krura (Malefic) |
-| **16** | `07°30'–08°00'` | `22°00'–22°30'` | **Sarpa** | Krura (Malefic) | **46** | `22°30'–23°00'` | `07°00'–07°30'` | **Komala** | Krura (Malefic) |
-| **17** | `08°00'–08°30'` | `21°30'–22°00'` | **Amrita** | Krura (Malefic) | **47** | `23°00'–23°30'` | `06°30'–07°00'` | **Sheetala** | Krura (Malefic) |
-| **18** | `08°30'–09°00'` | `21°00'–21°30'` | **Indu** | Krura (Malefic) | **48** | `23°30'–24°00'` | `06°00'–06°30'` | **Karaladamshtra** | Krura (Malefic) |
-| **19** | `09°00'–09°30'` | `20°30'–21°00'` | **Mridu** | Krura (Malefic) | **49** | `24°00'–24°30'` | `05°30'–06°00'` | **Chandramukhi** | Krura (Malefic) |
-| **20** | `09°30'–10°00'` | `20°00'–20°30'` | **Komala** | Krura (Malefic) | **50** | `24°30'–25°00'` | `05°00'–05°30'` | **Praveena** | Krura (Malefic) |
-| **21** | `10°00'–10°30'` | `19°30'–20°00'` | **Heramba** | Krura (Malefic) | **51** | `25°00'–25°30'` | `04°30'–05°00'` | **Kalapavaka** | Krura (Malefic) |
-| **22** | `10°30'–11°00'` | `19°00'–19°30'` | **Brahma** | Krura (Malefic) | **52** | `25°30'–26°00'` | `04°00'–04°30'` | **Dandayudha** | Krura (Malefic) |
-| **23** | `11°00'–11°30'` | `18°30'–19°00'` | **Vishnu** | Krura (Malefic) | **53** | `26°00'–26°30'` | `03°30'–04°00'` | **Nirmala** | Krura (Malefic) |
-| **24** | `11°30'–12°00'` | `18°00'–18°30'` | **Maheshwara** | Krura (Malefic) | **54** | `26°30'–27°00'` | `03°00'–03°30'` | **Saumya** | Krura (Malefic) |
-| **25** | `12°00'–12°30'` | `17°30'–18°00'` | **Deva** | Krura (Malefic) | **55** | `27°00'–27°30'` | `02°30'–03°00'` | **Krura** | Krura (Malefic) |
-| **26** | `12°30'–13°00'` | `17°00'–17°30'` | **Ardra** | Krura (Malefic) | **56** | `27°30'–28°00'` | `02°00'–02°30'` | **Atisheetala** | Krura (Malefic) |
-| **27** | `13°00'–13°30'` | `16°30'–17°00'` | **Kalinasa** | Krura (Malefic) | **57** | `28°00'–28°30'` | `01°30'–02°00'` | **Amrita** | Krura (Malefic) |
-| **28** | `13°30'–14°00'` | `16°00'–16°30'` | **Kshitishwara** | Krura (Malefic) | **58** | `28°30'–29°00'` | `01°00'–01°30'` | **Payodhi** | Krura (Malefic) |
-| **29** | `14°00'–14°30'` | `15°30'–16°00'` | **Kamalakara** | Krura (Malefic) | **59** | `29°00'–29°30'` | `00°30'–01°00'` | **Bhramana** | Krura (Malefic) |
-| **30** | `14°30'–15°00'` | `15°00'–15°30'` | **Gulika** | Krura (Malefic) | **60** | `29°30'–30°00'` | `00°00'–00°30'` | **Indurekha** | Krura (Malefic) |
+| **13** | `06°00'–06°30'` | `23°30'–24°00'` | **Apampati** | Shubha (Benefic) | **43** | `21°00'–21°30'` | `08°30'–09°00'` | **Utpata** | Krura (Malefic) |
+| **14** | `06°30'–07°00'` | `23°00'–23°30'` | **Marutwan** | Shubha (Benefic) | **44** | `21°30'–22°00'` | `08°00'–08°30'` | **Kala** | Krura (Malefic) |
+| **15** | `07°00'–07°30'` | `22°30'–23°00'` | **Kala** | Krura (Malefic) | **45** | `22°00'–22°30'` | `07°30'–08°00'` | **Saumya** | Shubha (Benefic) |
+| **16** | `07°30'–08°00'` | `22°00'–22°30'` | **Sarpa** | Krura (Malefic) | **46** | `22°30'–23°00'` | `07°00'–07°30'` | **Komala** | Shubha (Benefic) |
+| **17** | `08°00'–08°30'` | `21°30'–22°00'` | **Amrita** | Shubha (Benefic) | **47** | `23°00'–23°30'` | `06°30'–07°00'` | **Sheetala** | Shubha (Benefic) |
+| **18** | `08°30'–09°00'` | `21°00'–21°30'` | **Indu** | Shubha (Benefic) | **48** | `23°30'–24°00'` | `06°00'–06°30'` | **Karaladamshtra** | Krura (Malefic) |
+| **19** | `09°00'–09°30'` | `20°30'–21°00'` | **Mridu** | Shubha (Benefic) | **49** | `24°00'–24°30'` | `05°30'–06°00'` | **Chandramukhi** | Shubha (Benefic) |
+| **20** | `09°30'–10°00'` | `20°00'–20°30'` | **Komala** | Shubha (Benefic) | **50** | `24°30'–25°00'` | `05°00'–05°30'` | **Praveena** | Shubha (Benefic) |
+| **21** | `10°00'–10°30'` | `19°30'–20°00'` | **Heramba** | Shubha (Benefic) | **51** | `25°00'–25°30'` | `04°30'–05°00'` | **Kalapavaka** | Krura (Malefic) |
+| **22** | `10°30'–11°00'` | `19°00'–19°30'` | **Brahma** | Shubha (Benefic) | **52** | `25°30'–26°00'` | `04°00'–04°30'` | **Dandayudha** | Krura (Malefic) |
+| **23** | `11°00'–11°30'` | `18°30'–19°00'` | **Vishnu** | Shubha (Benefic) | **53** | `26°00'–26°30'` | `03°30'–04°00'` | **Nirmala** | Shubha (Benefic) |
+| **24** | `11°30'–12°00'` | `18°00'–18°30'` | **Maheshwara** | Shubha (Benefic) | **54** | `26°30'–27°00'` | `03°00'–03°30'` | **Saumya** | Shubha (Benefic) |
+| **25** | `12°00'–12°30'` | `17°30'–18°00'` | **Deva** | Shubha (Benefic) | **55** | `27°00'–27°30'` | `02°30'–03°00'` | **Krura** | Krura (Malefic) |
+| **26** | `12°30'–13°00'` | `17°00'–17°30'` | **Ardra** | Shubha (Benefic) | **56** | `27°30'–28°00'` | `02°00'–02°30'` | **Atisheetala** | Shubha (Benefic) |
+| **27** | `13°00'–13°30'` | `16°30'–17°00'` | **Kalinasa** | Shubha (Benefic) | **57** | `28°00'–28°30'` | `01°30'–02°00'` | **Amrita** | Shubha (Benefic) |
+| **28** | `13°30'–14°00'` | `16°00'–16°30'` | **Kshitishwara** | Shubha (Benefic) | **58** | `28°30'–29°00'` | `01°00'–01°30'` | **Payodhi** | Shubha (Benefic) |
+| **29** | `14°00'–14°30'` | `15°30'–16°00'` | **Kamalakara** | Shubha (Benefic) | **59** | `29°00'–29°30'` | `00°30'–01°00'` | **Bhramana** | Krura (Malefic) |
+| **30** | `14°30'–15°00'` | `15°00'–15°30'` | **Gulika** | Krura (Malefic) | **60** | `29°30'–30°00'` | `00°00'–00°30'` | **Indurekha** | Shubha (Benefic) |
 
 ## Chapter 10 — Complete 132-Cell *Mrityu Bhaga* (Fatal Degrees), 22nd *Khara Drekkana*, & 64th *Khara Navamsa* Master Vulnerability Tables
 
@@ -2989,13 +2989,13 @@
 | `#03` | `2026-11-01T10:00:00Z` | Sunday | Krishna #23 | *Pushya* | Yoga #23 | **Meena** | `Dosha (r=2)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Non-Rikta Tithi (Krishna 8) |
 | `#04` | `2026-11-01T14:00:00Z` | Sunday | Krishna #23 | *Pushya* | Yoga #23 | **Vrishabha** | `Dosha (r=1)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Non-Rikta Tithi (Krishna 8) |
 | `#05` | `2026-11-01T18:00:00Z` | Sunday | Krishna #23 | *Pushya* | Yoga #23 | **Karka** | `Shubha (r=3)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Non-Rikta Tithi (Krishna 8) |
-| `#06` | `2026-11-01T20:00:00Z` | Monday | Krishna #23 | *Pushya* | Yoga #23 | **Simha** | `Shubha (r=5)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Shubha Vara (Monday) |
-| `#07` | `2026-11-01T22:00:00Z` | Monday | Krishna #23 | *Pushya* | Yoga #23 | **Kanya** | `Dosha (r=6)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Shubha Vara (Monday) |
-| `#08` | `2026-11-01T06:00:00Z` | Sunday | Krishna #22 | *Pushya* | Yoga #22 | **Dhanu** | `Shubha (r=7)` | `Sadhana (Realization/Success)` | 7H | **`98.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Non-Rikta Tithi (Krishna 7) |
+| `#06` | `2026-11-01T20:00:00Z` | Sunday | Krishna #23 | *Pushya* | Yoga #23 | **Simha** | `Dosha (r=4)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Non-Rikta Tithi (Krishna 8) |
+| `#07` | `2026-11-01T06:00:00Z` | Sunday | Krishna #22 | *Pushya* | Yoga #22 | **Dhanu** | `Shubha (r=7)` | `Sadhana (Realization/Success)` | 7H | **`98.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Non-Rikta Tithi (Krishna 7) |
+| `#08` | `2026-11-01T22:00:00Z` | Sunday | Krishna #23 | *Pushya* | Yoga #23 | **Kanya** | `Shubha (r=5)` | `Sadhana (Realization/Success)` | 7H | **`98.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Non-Rikta Tithi (Krishna 8) |
 | `#09` | `2026-11-01T08:00:00Z` | Sunday | Krishna #22 | *Pushya* | Yoga #22 | **Makara** | `Dosha (r=8)` | `Sadhana (Realization/Success)` | 7H | **`94.0`** | **Madhyama (Auspicious)**: Free of Rahu Kalam, Non-Rikta Tithi (Krishna 7), Activity-Favored Nakshatra (Pushya) |
 | `#10` | `2026-11-01T12:00:00Z` | Sunday | Krishna #23 | *Pushya* | Yoga #23 | **Mesha** | `Shubha (r=0)` | `Sadhana (Realization/Success)` | 7H | **`93.0`** | **Madhyama (Auspicious)**: Free of Yamagandam, Non-Rikta Tithi (Krishna 8), Activity-Favored Nakshatra (Pushya) |
 | `#11` | `2026-11-01T16:00:00Z` | Sunday | Krishna #23 | *Pushya* | Yoga #23 | **Mithuna** | `Dosha (r=2)` | `Sadhana (Realization/Success)` | 7H | **`92.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Non-Rikta Tithi (Krishna 8) |
-| `#12` | `2026-11-01T00:00:00Z` | Sunday | Krishna #22 | *Punarvasu* | Yoga #22 | **Kanya** | `Shubha (r=3)` | `Pratyak (Obstacles)` | 7H | **`90.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Non-Rikta Tithi (Krishna 7) |
+| `#12` | `2026-11-01T00:00:00Z` | Saturday | Krishna #22 | *Punarvasu* | Yoga #22 | **Kanya** | `Shubha (r=0)` | `Pratyak (Obstacles)` | 7H | **`90.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Non-Rikta Tithi (Krishna 7) |
 | `#13` | `2026-11-02T04:00:00Z` | Monday | Krishna #23 | *Ashlesha* | Yoga #23 | **Vrishchika** | `Shubha (r=0)` | `Naidhana (Peril/Destruction)` | 7H | **`86.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Shubha Vara (Monday) |
 | `#14` | `2026-11-04T12:00:00Z` | Wednesday | Krishna #26 | *Purva Phalguni* | Yoga #26 | **Mesha** | `Shubha (r=0)` | `Parama Mitra (Supreme Friend)` | 8H | **`86.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Shubha Vara (Wednesday) |
 | `#15` | `2026-11-04T18:00:00Z` | Wednesday | Krishna #26 | *Purva Phalguni* | Yoga #26 | **Karka** | `Shubha (r=3)` | `Parama Mitra (Supreme Friend)` | 8H | **`86.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Shubha Vara (Wednesday) |

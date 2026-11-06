@@ -255,3 +255,142 @@ def test_no_returned_local_maximum_is_outside_requested_range() -> None:
     assert all(start <= x.maximum_jd_ut <= end for x in report.eclipses), report.eclipses
 
 
+from pathlib import Path
+from types import SimpleNamespace
+from dataclasses import replace
+import erfa
+from ephemeris_oss.impossible_astrology import (
+    solve_chart_date_from_planetary_constraints,
+    compute_triple_lock_life_event_convergence,
+)
+from ephemeris_oss.jyotish.dasha import compute_kalachakra_dasha
+from ephemeris_oss.jyotish.conditional_dashas_and_nadi import (
+    solve_golden_muhurta_electional_windows,
+    SOLAR_YEAR_DAYS,
+)
+from ephemeris_oss.jyotish.panchanga import compute_muhurta_windows
+from ephemeris_oss.engine.stellar_anchors import YOGATARA_30_CATALOG, propagate_yogatara_apparent
+from ephemeris_oss.jyotish.vargas import SHASHTIAMSA_CATALOG
+
+
+class _BirthMoonAdapter:
+    def __init__(self) -> None:
+        self.actual = EphemerisAdapter()
+
+    def __getattr__(self, name: str):
+        return getattr(self.actual, name)
+
+    def calc_ut(self, jd: float, body: str, **kwargs):
+        value = self.actual.calc_ut(jd, body, **kwargs)
+        return replace(value, longitude_deg=1.0) if body == "moon" and jd == 2451545.0 else value
+
+
+@pytest.mark.parametrize("age", [0, 100])
+def test_kalachakra_repeats_the_full_paramayus_at_natal_phase(age: int) -> None:
+    birth = 2451545.0
+    natal = compute_kalachakra_dasha(1.0, birth)
+    jd = birth + age * natal.year_days
+    report = compute_triple_lock_life_event_convergence(
+        birth, 28.6139, 77.209, jd, jd, adapter=_BirthMoonAdapter()
+    )
+    assert natal.paramayus_years == 100
+    assert report.sampled_timeline[0].kalachakra_sign == natal.mahadashas[0].sign_name
+
+
+def _circular_difference(a: float, b: float) -> float:
+    return (a - b + 180.0) % 360.0 - 180.0
+
+
+@pytest.mark.parametrize("jd", [2451545.0, 2086302.5])
+def test_physical_center_velocity_includes_its_position_correction_derivative(jd: float) -> None:
+    ad = EphemerisAdapter()
+
+    def correction(t: float) -> float:
+        p = ad.calc_ut(t, "jupiter", physical_center=True)
+        b = ad.calc_ut(t, "jupiter", physical_center=False)
+        return _circular_difference(p.longitude_deg, b.longitude_deg)
+
+    h = 0.05
+    expected = (correction(jd + h) - correction(jd - h)) / (2 * h) * 3600
+    p = ad.calc_ut(jd, "jupiter", physical_center=True)
+    b = ad.calc_ut(jd, "jupiter", physical_center=False)
+    actual = (p.longitude_speed_deg_per_day - b.longitude_speed_deg_per_day) * 3600
+    assert abs(expected) > 0.0001
+    assert actual == pytest.approx(expected, abs=0.0001)
+
+
+class _LinearAdapter:
+    def __init__(self, mercury_entry: float) -> None:
+        self.mercury_entry = mercury_entry
+
+    def calc_ut(self, jd: float, body: str, **kwargs):
+        day = jd - sum(erfa.cal2jd(2026, 1, 1))
+        lon = 29.4 + day if body == "sun" else (30 - self.mercury_entry + day if body == "mercury" else 0)
+        return SimpleNamespace(longitude_deg=lon % 360)
+
+
+@pytest.mark.parametrize("mercury_entry", [-0.2, 0.2])
+def test_inverse_solver_retains_joint_subday_sign_window(mercury_entry: float) -> None:
+    report = solve_chart_date_from_planetary_constraints(
+        2026, 2026, {"sun": "Aries", "mercury": "Taurus"}, adapter=_LinearAdapter(mercury_entry)
+    )
+    assert report.match_count > 0
+
+
+@pytest.mark.parametrize("seconds", [-1, 0, 1])
+def test_prana_mahadasha_boundary_selects_incoming_hierarchy(seconds: int) -> None:
+    jd = 2451545.0 + 7 * SOLAR_YEAR_DAYS + seconds / 86400
+    report = compute_vimshottari_5_level_prana_chronometer(0.0, 2451545.0, jd)
+    expected = "Ketu" if seconds < 0 else "Venus"
+    assert report.mahadasha_lord == expected
+
+
+def test_prana_antardasha_boundary_selects_incoming_period() -> None:
+    jd = 2451545.0 + (7 * SOLAR_YEAR_DAYS) * (7 / 120)
+    report = compute_vimshottari_5_level_prana_chronometer(0.0, 2451545.0, jd)
+    assert report.mahadasha_lord == "Ketu" and report.antardasha_lord == "Venus"
+
+
+@pytest.mark.parametrize("epoch", [1600.0, 2000.0, 2400.0])
+def test_stellar_equatorial_coordinates_are_continuous_across_date_branches(epoch: float) -> None:
+    star = YOGATARA_30_CATALOG[0]
+
+    def position(e: float):
+        return propagate_yogatara_apparent(star, tt=(2451545.0, (e - 2000) * 365.25), ayanamsa_deg=0.0)
+
+    left, right = position(epoch - 1e-6), position(epoch + 1e-6)
+    dra = abs(_circular_difference(right.ra_deg, left.ra_deg))
+    ddec = abs(right.dec_deg - left.dec_deg)
+    assert dra < 0.01 and ddec < 0.01
+
+
+@pytest.mark.parametrize("hour", [5.5, 8.0])
+def test_muhurta_uses_current_sunrise_for_early_day_exclusions(hour: float) -> None:
+    ad = EphemerisAdapter()
+    day = sum(erfa.cal2jd(2026, 6, 18))
+    candidate = day + hour / 24
+    _, (sunrise,) = ad.rise_trans(day, "sun", 1, (0.0, 45.0, 0.0))
+    _, (sunset,) = ad.rise_trans(sunrise, "sun", 2, (0.0, 45.0, 0.0))
+    _, (next_sunrise,) = ad.rise_trans(sunset, "sun", 1, (0.0, 45.0, 0.0))
+    windows = compute_muhurta_windows(sunrise, sunset, next_sunrise_jd=next_sunrise, vara_index=4)
+    expected = bool(windows.yamagandam.start_jd <= candidate < windows.yamagandam.end_jd)
+    report = solve_golden_muhurta_electional_windows(
+        candidate, candidate, latitude_deg=45.0, longitude_deg=0.0, adapter=ad
+    )
+    row = report.top_windows[0]
+    actual = any("Yamagandam" in x for x in row.warnings)
+    assert expected == (hour == 5.5)
+    assert actual == expected
+
+
+@pytest.mark.parametrize("benefic", [False, True])
+def test_printed_d60_nature_matches_the_boolean_catalog(benefic: bool) -> None:
+    _, name, flag = next(x for x in SHASHTIAMSA_CATALOG if x[2] is benefic)
+    doc_path = Path(__file__).resolve().parents[1] / "docs" / "HUMAN-READABLE-EPHEMERIS-AND-JYOTISH-ACADEMY-MANUAL.md"
+    text = doc_path.read_text(encoding="utf-8")
+    label = "Shubha (Benefic)" if flag else "Krura (Malefic)"
+    actual = [line for line in text.splitlines() if f"**{name}** | " in line and "°" in line]
+    assert actual and any(f"**{name}** | {label}" in line for line in actual)
+
+
+

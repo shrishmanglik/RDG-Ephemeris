@@ -1127,14 +1127,32 @@ class EphemerisAdapter:
             is_retro = bool(speed_deg < 0.0) if body_key not in ("sun", "moon") else False
             dist_au = float(radius_km / AU_KM)
             if use_physical_center and body_key in ("mars", "jupiter", "saturn"):
+                h_pc = 0.05
+                dist_rate_au = (
+                    float(np.dot(transformed, v_transformed)) / max(float(radius_km), 1e-12)
+                ) / AU_KM
                 dlon_center_deg, dlat_center_deg = _planet_physical_center_offset_deg(
                     body_key=body_key,
                     jd_tt=jd_tt,
                     planet_lon_deg=tropical_lon,
                     dist_au=dist_au,
                 )
+                dlon_plus, _ = _planet_physical_center_offset_deg(
+                    body_key=body_key,
+                    jd_tt=jd_tt + h_pc,
+                    planet_lon_deg=(tropical_lon + speed_deg * h_pc) % 360.0,
+                    dist_au=max(0.01, dist_au + dist_rate_au * h_pc),
+                )
+                dlon_minus, _ = _planet_physical_center_offset_deg(
+                    body_key=body_key,
+                    jd_tt=jd_tt - h_pc,
+                    planet_lon_deg=(tropical_lon - speed_deg * h_pc) % 360.0,
+                    dist_au=max(0.01, dist_au - dist_rate_au * h_pc),
+                )
                 tropical_lon = (tropical_lon + dlon_center_deg) % 360.0
                 lat_deg = float(lat_deg + dlat_center_deg)
+                speed_deg = float(speed_deg + (dlon_plus - dlon_minus) / (2.0 * h_pc))
+                is_retro = bool(speed_deg < 0.0)
             if sidereal:
                 lon_deg = (tropical_lon - ayan_deg) % 360.0
             else:
@@ -1257,7 +1275,19 @@ class EphemerisAdapter:
             lat_deg = math.degrees(math.asin(max(-1.0, min(1.0, gz / max(dist_au, 1e-12)))))
             # Precess J2000 ecliptic longitude to tropical ecliptic of date via Vondrak-2011 Lahiri differential
             precession_shift = self.get_ayanamsa_ut(jd_val, mode="lahiri") - _ANALYTICAL_AYANAMSA_J2000
-            return normalize_degrees(lam_j2000 + precession_shift), float(lat_deg), float(dist_au)
+            trop_val = normalize_degrees(lam_j2000 + precession_shift)
+            lat_val = float(lat_deg)
+            dist_val = float(dist_au)
+            if physical_center and body_key in ("mars", "jupiter", "saturn"):
+                dlon_c, dlat_c = _planet_physical_center_offset_deg(
+                    body_key=body_key,
+                    jd_tt=j_tt,
+                    planet_lon_deg=trop_val,
+                    dist_au=dist_val,
+                )
+                trop_val = normalize_degrees(trop_val + dlon_c)
+                lat_val = float(lat_val + dlat_c)
+            return trop_val, lat_val, dist_val
 
         trop_lon, lat_deg, dist_au = _eval_tropical(jd_tt)
         step = 0.05
@@ -1266,15 +1296,6 @@ class EphemerisAdapter:
         speed_deg = ((trop_after - trop_before + 180.0) % 360.0 - 180.0) / (2.0 * step)
         lat_speed = (lat_after - lat_before) / (2.0 * step)
         dist_speed = (dist_after - dist_before) / (2.0 * step)
-        if physical_center and body_key in ("mars", "jupiter", "saturn"):
-            dlon_center_deg, dlat_center_deg = _planet_physical_center_offset_deg(
-                body_key=body_key,
-                jd_tt=jd_tt,
-                planet_lon_deg=trop_lon,
-                dist_au=dist_au,
-            )
-            trop_lon = (trop_lon + dlon_center_deg) % 360.0
-            lat_deg = float(lat_deg + dlat_center_deg)
         if body_key in ("rahu", "ketu") and not true_node:
             speed_deg = -0.05295376
             is_retro = True

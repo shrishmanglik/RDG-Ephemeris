@@ -1392,7 +1392,7 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
             ev_e_m = (60 - k_60) * 30
             odd_sp = f"`{odd_s_m // 60:02d}°{odd_s_m % 60:02d}'–{odd_e_m // 60:02d}°{odd_e_m % 60:02d}'`"
             ev_sp = f"`{ev_s_m // 60:02d}°{ev_s_m % 60:02d}'–{ev_e_m // 60:02d}°{ev_e_m % 60:02d}'`"
-            nat_lbl = "Shubha (Benefic)" if s_nature == "benefic" else "Krura (Malefic)"
+            nat_lbl = "Shubha (Benefic)" if (s_nature is True or str(s_nature).lower() == "benefic") else "Krura (Malefic)"
             pair_60.append(f"**{k_60 + 1:02d}** | {odd_sp} | {ev_sp} | **{s_name}** | {nat_lbl}")
         lines.append("| " + " | ".join(pair_60) + " |")
     lines.append("")

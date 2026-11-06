@@ -285,8 +285,11 @@ def propagate_yogatara_apparent(
         ecl_dir = ecl_mat @ icrs_dir
         trop_lon = math.degrees(math.atan2(float(ecl_dir[1]), float(ecl_dir[0]))) % 360.0
         ecl_lat = math.degrees(math.asin(max(-1.0, min(1.0, float(ecl_dir[2])))))
-        ra_deg = math.degrees(float(propagated_ra)) % 360.0
-        dec_deg = math.degrees(float(propagated_dec))
+        eq_mat = np.asarray(erfa.ltp(epj), dtype=np.float64)
+        eq_dir = eq_mat @ icrs_dir
+        eq_ra, eq_dec = erfa.c2s(eq_dir)
+        ra_deg = math.degrees(float(eq_ra)) % 360.0
+        dec_deg = math.degrees(float(eq_dec))
 
     sid_lon = (trop_lon - float(ayanamsa_deg)) % 360.0
     raw_diff = abs((trop_lon - float(sun_tropical_lon_deg)) % 360.0)

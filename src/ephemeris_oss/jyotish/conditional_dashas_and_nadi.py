@@ -694,7 +694,7 @@ def compute_vimshottari_5_level_prana_chronometer(
             idx = (start_lord_idx + k) % 9
             w = float(VIMSHOTTARI_YEARS[VIMSHOTTARI_RULERS[idx]]) / VIMSHOTTARI_TOTAL_YEARS
             sub_d = span_days * w if k < 8 else (start_jd + span_days - c)
-            if c <= target_jd <= c + sub_d + 1e-9 or k == 8:
+            if (c <= target_jd < c + sub_d - 1e-12) or k == 8:
                 return idx, c, c + sub_d
             c += sub_d
         return start_lord_idx, start_jd, start_jd + span_days
@@ -707,7 +707,7 @@ def compute_vimshottari_5_level_prana_chronometer(
     for step in range(27):
         idx = (open_idx + step) % 9
         span_d = float(VIMSHOTTARI_YEARS[VIMSHOTTARI_RULERS[idx]]) * float(year_days)
-        if c_jd <= float(query_jd) <= c_jd + span_d or step == 26:
+        if (c_jd <= float(query_jd) < c_jd + span_d - 1e-12) or step == 26:
             md_idx = idx
             md_s = c_jd
             md_e = c_jd + span_d
@@ -1014,9 +1014,29 @@ def solve_golden_muhurta_electional_windows(
         asc_lon = float(houses.ascendant_deg) % 360.0
         asc_rashi = int(asc_lon // 30.0) % 12
 
-        # Local solar weekday (0 = Sunday .. 6 = Saturday):
+        # Resolve actual sunrise for the active solar day and derive its Vedic weekday (Vara):
+        from .panchanga import compute_muhurta_windows
+
         jd_local = t_curr + float(longitude_deg) / 360.0
-        vara_sun0 = int(math.floor(jd_local + 1.5)) % 7
+        local_midnight_ut = math.floor(jd_local - 0.5) + 0.5 - (float(longitude_deg) / 360.0)
+        try:
+            _, (cand_sr_jd,) = ad.rise_trans(local_midnight_ut, "sun", 1, (float(longitude_deg), float(latitude_deg), 0.0))
+            if cand_sr_jd > t_curr:
+                _, (sr_jd,) = ad.rise_trans(local_midnight_ut - 1.0, "sun", 1, (float(longitude_deg), float(latitude_deg), 0.0))
+            else:
+                sr_jd = cand_sr_jd
+            _, (ss_jd,) = ad.rise_trans(sr_jd, "sun", 2, (float(longitude_deg), float(latitude_deg), 0.0))
+            _, (next_sr_jd,) = ad.rise_trans(ss_jd, "sun", 1, (float(longitude_deg), float(latitude_deg), 0.0))
+        except Exception:
+            sr_approx = local_midnight_ut + (6.0 / 24.0)
+            if sr_approx > t_curr:
+                sr_approx -= 1.0
+            sr_jd = sr_approx
+            ss_jd = sr_approx + 0.5
+            next_sr_jd = sr_approx + 1.0
+
+        sr_local = sr_jd + float(longitude_deg) / 360.0
+        vara_sun0 = int(math.floor(sr_local + 1.5)) % 7
         vara_names_sun0 = ("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
         vara_name = vara_names_sun0[vara_sun0]
 
@@ -1057,19 +1077,6 @@ def solve_golden_muhurta_electional_windows(
         )
 
         # Daily sunrise/sunset time-window checks (Rahu Kalam, Yamagandam, Gulika Kalam, Abhijit Muhurta):
-        from .panchanga import compute_muhurta_windows
-
-        sr_approx = math.floor(jd_local - 0.5) + 0.5 + (6.0 / 24.0) - (float(longitude_deg) / 360.0)
-        if sr_approx > t_curr:
-            sr_approx -= 1.0
-        try:
-            _, (sr_jd,) = ad.rise_trans(sr_approx - 0.25, "sun", 1, (float(longitude_deg), float(latitude_deg), 0.0))
-            _, (ss_jd,) = ad.rise_trans(sr_jd, "sun", 2, (float(longitude_deg), float(latitude_deg), 0.0))
-            _, (next_sr_jd,) = ad.rise_trans(ss_jd, "sun", 1, (float(longitude_deg), float(latitude_deg), 0.0))
-        except Exception:
-            sr_jd = sr_approx
-            ss_jd = sr_approx + 0.5
-            next_sr_jd = sr_approx + 1.0
         m_wins = compute_muhurta_windows(sr_jd, ss_jd, next_sunrise_jd=next_sr_jd, vara_index=vara_sun0)
         in_rahu = m_wins.rahu_kalam.start_jd <= t_curr < m_wins.rahu_kalam.end_jd
         in_yama = m_wins.yamagandam.start_jd <= t_curr < m_wins.yamagandam.end_jd

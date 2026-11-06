@@ -2168,28 +2168,48 @@ def solve_chart_date_from_planetary_constraints(
             if not stage1_intervals:
                 break
 
-    # Stage 2: 1-day intervals inside Stage 1 where medium + slow bodies match
-    stage2_intervals: list[tuple[float, float]] = []
+    # Stage 2: 1-day conservative per-body padded intervals inside Stage 1 where medium + slow bodies match
     step2 = 1.0
-    for s1_start, s1_end in stage1_intervals:
-        t = s1_start
-        in_m2 = False
-        w2_s = s1_start
-        while t <= s1_end:
-            ok = all(_body_matches(t, b) for b in slow_bodies + med_bodies)
-            if ok and not in_m2:
-                in_m2 = True
-                w2_s = max(s1_start, t - step2)
-            elif not ok and in_m2:
+    if not med_bodies:
+        stage2_intervals: list[tuple[float, float]] = list(stage1_intervals)
+    else:
+        stage2_intervals = list(stage1_intervals)
+        for m_body in med_bodies:
+            m_intervals: list[tuple[float, float]] = []
+            for s1_start, s1_end in stage2_intervals:
+                t = s1_start
                 in_m2 = False
-                stage2_intervals.append((w2_s, min(s1_end, t + step2)))
-            t += step2
-        if in_m2:
-            stage2_intervals.append((w2_s, s1_end))
+                w2_s = s1_start
+                while True:
+                    ok = _body_matches(t, m_body)
+                    if ok and not in_m2:
+                        in_m2 = True
+                        w2_s = max(s1_start, t - step2)
+                    elif not ok and in_m2:
+                        in_m2 = False
+                        m_intervals.append((w2_s, min(s1_end, t + step2)))
+                    if t >= s1_end:
+                        break
+                    t = min(s1_end, t + step2)
+                if in_m2:
+                    m_intervals.append((w2_s, s1_end))
+            next_s2: list[tuple[float, float]] = []
+            for a0, a1 in stage2_intervals:
+                for b0, b1 in m_intervals:
+                    lo = max(a0, b0)
+                    hi = min(a1, b1)
+                    if lo <= hi:
+                        if next_s2 and lo <= next_s2[-1][1]:
+                            next_s2[-1] = (next_s2[-1][0], max(next_s2[-1][1], hi))
+                        else:
+                            next_s2.append((lo, hi))
+            stage2_intervals = next_s2
+            if not stage2_intervals:
+                break
 
-    # Stage 3: 0.125-day (3-hour) refinement for fast bodies (Moon) and exact window bounds
+    # Stage 3: 0.125-day (3-hour) refinement for fast/medium bodies and exact window bounds
     matches: list[InverseChartMatchWindow] = []
-    step3 = 0.125 if fast_bodies else 0.5
+    step3 = 0.125
     all_constrained = slow_bodies + med_bodies + fast_bodies
 
     for s2_start, s2_end in stage2_intervals:
@@ -2434,7 +2454,7 @@ def compute_triple_lock_life_event_convergence(
     vim_cycles = max(1, int(math.ceil(req_years / 120.0)) + 1)
     vim_dasha = compute_vimshottari_dasha(moon_lon, b_jd, max_level=2, cycles=vim_cycles)
     kc_dasha = compute_kalachakra_dasha(moon_lon, b_jd)
-    kc_span = (kc_dasha.mahadashas[-1].end_jd - b_jd) if kc_dasha.mahadashas else 0.0
+    kc_full_cycle_days = float(kc_dasha.paramayus_years) * float(kc_dasha.year_days)
     chara_timeline = compute_chara_dasha(asc_deg, natal_lons, b_jd, max_level=1)
     chara_periods = chara_timeline.mahadashas
     chara_span = (chara_periods[-1].end_jd - b_jd) if chara_periods else 0.0
@@ -2491,14 +2511,26 @@ def compute_triple_lock_life_event_convergence(
         kc_gati = "Mandooka_Regular"
         kc_touches_vital = False
         kc_sign_idx = kc_dasha.deha_sign_index
-        curr_kc = b_jd + ((curr - b_jd) % kc_span) if (kc_span > 0.0 and curr >= kc_dasha.mahadashas[-1].end_jd) else curr
+        curr_kc = (
+            b_jd + ((curr - b_jd) % kc_full_cycle_days)
+            if (kc_full_cycle_days > 0.0 and curr >= b_jd)
+            else curr
+        )
+        matched_kc = False
         for kp in kc_dasha.mahadashas:
             if kp.start_jd <= curr_kc < kp.end_jd:
                 kc_sign_name = kp.sign_name
                 kc_gati = kp.gati
                 kc_touches_vital = bool(kp.is_deha_sign or kp.is_jeeva_sign)
                 kc_sign_idx = kp.sign_index
+                matched_kc = True
                 break
+        if not matched_kc and kc_dasha.mahadashas:
+            kp0 = kc_dasha.mahadashas[0]
+            kc_sign_name = kp0.sign_name
+            kc_gati = kp0.gati
+            kc_touches_vital = bool(kp0.is_deha_sign or kp0.is_jeeva_sign)
+            kc_sign_idx = kp0.sign_index
 
         chara_sign_name = RASI_NAMES[lagna_sign]
         chara_sign_idx = lagna_sign

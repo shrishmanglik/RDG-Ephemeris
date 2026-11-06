@@ -176,6 +176,48 @@
       "path": "src/ephemeris_oss/frontier_astrodynamics.py",
       "status": "FIXED_AND_VERIFIED",
       "resolution": "Padded candidate syzygy search by +/- 0.25 days around [start_jd_ut, end_jd_ut], refined syzygy via 24-step bisection, and filtered returned eclipses and natal hits strictly by start_jd_ut <= event_max_jd <= end_jd_ut; verified across all 7 assertions in test_observer_range_contracts.py."
+    },
+    {
+      "id": 4496900886,
+      "path": "src/ephemeris_oss/impossible_astrology.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Wrapped Kalachakra Dasha queries by the full cycle duration float(kc_dasha.paramayus_years) * float(kc_dasha.year_days) and mapped the post-timeline remainder back to kc_dasha.mahadashas[0] so later-life scans never collapse to the final mahadasha."
+    },
+    {
+      "id": 4496900900,
+      "path": "src/ephemeris_oss/adapter.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Added the time derivative of _planet_physical_center_offset_deg (including planet_lon_deg rate and radial distance rate) to speed_deg and is_retro on both the DE440 numerical branch and _calc_ut_historical_analytical."
+    },
+    {
+      "id": 4496900911,
+      "path": "src/ephemeris_oss/jyotish/conditional_dashas_and_nadi.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Used half-open intervals c <= target_jd < c + sub_d - 1e-12 for Mahadasha and _find_sub lookups in compute_vimshottari_5_level_prana_chronometer so exact period boundaries select the incoming period."
+    },
+    {
+      "id": 4497271139,
+      "path": "src/ephemeris_oss/jyotish/conditional_dashas_and_nadi.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Resolved actual sunrise cand_sr_jd via ad.rise_trans(local_midnight_ut, 'sun', 1, ...) before deciding whether t_curr precedes sunrise in solve_golden_muhurta_electional_windows, and derived vara_sun0 from sr_jd."
+    },
+    {
+      "id": 4497485582,
+      "path": "src/ephemeris_oss/impossible_astrology.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Replaced simultaneous daily sampling in Stage 2 of solve_chart_date_from_planetary_constraints with per-body conservative padded intervals intersected across med_bodies, and refined Stage 3 with step3 = 0.125."
+    },
+    {
+      "id": 4497485591,
+      "path": "src/ephemeris_oss/engine/stellar_anchors.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Precessed icrs_dir to the true equator and equinox of date via erfa.ltp(epj) in the historical branch of propagate_yogatara_apparent before extracting ra_deg and dec_deg."
+    },
+    {
+      "id": 4497485597,
+      "path": "src/ephemeris_oss/almanac/human_ephemeris.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Evaluated s_nature is True or str(s_nature).lower() == 'benefic' when rendering Table 9E D60 Shashtyamsa nature labels and regenerated docs/HUMAN-READABLE-EPHEMERIS-AND-JYOTISH-ACADEMY-MANUAL.md and .html."
     }
   ]
 }
