@@ -416,13 +416,26 @@ def main(argv: list[str] | None = None) -> int:
     sv_api.add_argument("--port", type=int, default=8765, help="bind port (default: 8765)")
     sv_api.add_argument("--dump-openapi", action="store_true", help="print OpenAPI 3.1 JSON and exit")
 
-    imp = commands.add_parser("impossible", help="run sub-second varga cusp, Bayesian birth rectification, and Siddhanta drift solvers")
+    imp = commands.add_parser("impossible", help="run sub-second varga cusp, Bayesian birth rectification, personalized fingerprint, and Siddhanta drift solvers")
     imp.add_argument("--at", required=True, help="ISO 8601 instant with offset")
     imp.add_argument("--lat", type=float, default=28.6139)
     imp.add_argument("--lon", type=float, default=77.2090)
     imp.add_argument("--ayanamsa", default="lahiri")
     imp.add_argument("--window-minutes", type=float, default=15.0)
     imp.add_argument("--step-seconds", type=float, default=15.0)
+
+    fp = commands.add_parser("fingerprint", help="compute personalized 16-Varga harmonic phase, clock-confidence decay, and Kaksha transit resonance")
+    fp.add_argument("--at", default=None, help="natal ISO 8601 instant with offset")
+    fp.add_argument("--jd", type=float, default=None, help="natal Julian Date (UT)")
+    fp.add_argument("--query-at", default=None, help="optional transit ISO 8601 instant with offset")
+    fp.add_argument("--query-jd", type=float, default=None, help="optional transit Julian Date (UT)")
+    fp.add_argument("--lat", type=float, default=28.6139)
+    fp.add_argument("--lon", type=float, default=77.2090)
+    fp.add_argument("--uncertainty-seconds", "--uncertainty-sec", dest="uncertainty_seconds", type=float, default=60.0)
+    fp.add_argument("--ayanamsa", default="lahiri")
+    fp.add_argument("--true-node", action="store_true")
+    fp.add_argument("--compact", action="store_true")
+    fp.add_argument("--json", action="store_true")
 
     b = commands.add_parser("bench", help="measure public TT body batching")
     b.add_argument("--kernel", help="explicit DE440 file; otherwise use the verified package cache")
@@ -462,6 +475,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "impossible":
             from .impossible_astrology import (
                 analyze_siddhanta_vs_jpl_de440_drift,
+                compute_personalized_astro_fingerprint,
                 rectify_birth_time_bayesian,
                 solve_subsecond_shodashvarga_cusp_transitions,
             )
@@ -483,6 +497,12 @@ def main(argv: list[str] | None = None) -> int:
                 ayanamsa=args.ayanamsa,
             )
             drift = analyze_siddhanta_vs_jpl_de440_drift(jd_ut, ayanamsa=args.ayanamsa)
+            fp_res = compute_personalized_astro_fingerprint(
+                jd_ut,
+                args.lat,
+                args.lon,
+                ayanamsa=args.ayanamsa,
+            )
             payload = {
                 "at": t.isoformat(),
                 "jd_ut": jd_ut,
@@ -493,14 +513,60 @@ def main(argv: list[str] | None = None) -> int:
                 "best_rectification_score": rect.best_candidate.total_score,
                 "siddhanta_mean_abs_delta_deg": drift.mean_abs_delta_deg,
                 "siddhanta_max_abs_delta_deg": drift.max_abs_delta_deg,
+                "fingerprint_id_sha256": fp_res.fingerprint_id_sha256,
+                "overall_clock_confidence_score": fp_res.overall_clock_confidence_score,
+                "overall_personal_transit_resonance_score": fp_res.overall_personal_transit_resonance_score,
                 "receipts": {
                     "cusps_sha256": cusps.receipt_sha256,
                     "rectification_sha256": rect.receipt_sha256,
                     "siddhanta_drift_sha256": drift.receipt_sha256,
+                    "fingerprint_sha256": fp_res.receipt_sha256,
                 },
             }
             json.dump(_jsonable(payload), sys.stdout, indent=2, sort_keys=True, default=str)
             print()
+            return 0
+        if args.command == "fingerprint":
+            from .impossible_astrology import compute_personalized_astro_fingerprint
+
+            if args.jd is not None:
+                jd_ut = float(args.jd)
+            elif args.at is not None:
+                jd_ut = _datetime_to_jd(_instant(args.at))
+            else:
+                raise ValueError("either --at or --jd is required for fingerprint")
+
+            if args.query_jd is not None:
+                q_jd = float(args.query_jd)
+            elif args.query_at is not None:
+                q_jd = _datetime_to_jd(_instant(args.query_at))
+            else:
+                q_jd = None
+
+            fp_res = compute_personalized_astro_fingerprint(
+                jd_ut,
+                args.lat,
+                args.lon,
+                query_jd_ut=q_jd,
+                birth_time_uncertainty_seconds=args.uncertainty_seconds,
+                ayanamsa=args.ayanamsa,
+                true_node=bool(args.true_node),
+            )
+            if args.json:
+                json.dump(_jsonable(fp_res), sys.stdout, indent=2, sort_keys=True, default=str)
+                print()
+            else:
+                print(f"Fingerprint ID (SHA-256): {fp_res.fingerprint_id_sha256}")
+                print(
+                    f"Atmakaraka: {fp_res.atmakaraka_planet} | Amatyakaraka: {fp_res.amatyakaraka_planet} | "
+                    f"Dominant Vimshopaka: {fp_res.dominant_vimshopaka_planet} | Dominant Digbala: {fp_res.dominant_digbala_planet}"
+                )
+                print(
+                    f"Clock Confidence ({fp_res.birth_time_uncertainty_seconds:.1f}s uncertainty): "
+                    f"{fp_res.overall_clock_confidence_score:.4f} | Personal Transit Resonance: "
+                    f"{fp_res.overall_personal_transit_resonance_score:.2f}/100"
+                )
+                print(f"Receipt SHA-256: {fp_res.receipt_sha256}")
             return 0
         from .researcher_benchmark import measure
 

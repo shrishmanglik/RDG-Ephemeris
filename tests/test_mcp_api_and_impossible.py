@@ -13,8 +13,10 @@ import pytest
 from ephemeris_oss import (
     Engine,
     EphemerisAdapter,
+    PersonalizedAstroFingerprintReport,
     analyze_siddhanta_vs_jpl_de440_drift,
     cli,
+    compute_personalized_astro_fingerprint,
     rectify_birth_time_bayesian,
     scan_multi_century_rare_phenomena,
     solve_subsecond_shodashvarga_cusp_transitions,
@@ -110,9 +112,28 @@ def test_impossible_astrology_solvers_end_to_end() -> None:
     assert "sun" in drift.planet_comparisons
     assert "moon" in drift.planet_comparisons
 
+    fp = compute_personalized_astro_fingerprint(
+        jd_ut,
+        28.6139,
+        77.2090,
+        query_jd_ut=jd_ut + 15.0,
+        birth_time_uncertainty_seconds=60.0,
+    )
+    assert isinstance(fp, PersonalizedAstroFingerprintReport)
+    assert len(fp.fingerprint_id_sha256) == 64
+    assert len(fp.receipt_sha256) == 64
+    assert 0.0 < fp.overall_clock_confidence_score <= 1.0
+    assert 0.0 <= fp.overall_personal_transit_resonance_score <= 100.0
+    assert len(fp.harmonic_phase_matrix) == 10
+    assert len(fp.domain_clock_confidence) == 16
+    assert len(fp.topocentric_digbala_vector) == 7
+    assert len(fp.personal_transit_resonance) == 7
+    with pytest.raises(ValueError, match="birth_time_uncertainty_seconds"):
+        compute_personalized_astro_fingerprint(jd_ut, 28.6139, 77.2090, birth_time_uncertainty_seconds=-5.0)
+
 
 def test_mcp_jsonrpc_server_and_all_tools() -> None:
-    assert len(MCP_TOOLS) == 8
+    assert len(MCP_TOOLS) == 9
     init_resp = handle_jsonrpc_message(
         {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2024-11-05"}}
     )
@@ -121,7 +142,7 @@ def test_mcp_jsonrpc_server_and_all_tools() -> None:
 
     list_resp = handle_jsonrpc_message({"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}})
     assert list_resp is not None
-    assert len(list_resp["result"]["tools"]) == 8
+    assert len(list_resp["result"]["tools"]) == 9
 
     call_resp = handle_jsonrpc_message(
         {
@@ -139,6 +160,28 @@ def test_mcp_jsonrpc_server_and_all_tools() -> None:
     structured = call_resp["result"]["structuredContent"]
     assert structured["ephemeris_source"] == "de440-chebyshev"
     assert "sun" in structured["planets"]
+
+    fp_call = handle_jsonrpc_message(
+        {
+            "jsonrpc": "2.0",
+            "id": 4,
+            "method": "tools/call",
+            "params": {
+                "name": "compute_personalized_astro_fingerprint",
+                "arguments": {
+                    "iso_utc": "2026-10-06T12:00:00Z",
+                    "latitude_deg": 28.6139,
+                    "longitude_deg": 77.2090,
+                    "birth_time_uncertainty_seconds": 45.0,
+                },
+            },
+        }
+    )
+    assert fp_call is not None
+    assert fp_call["result"]["isError"] is False
+    fp_struct = fp_call["result"]["structuredContent"]
+    assert len(fp_struct["fingerprint_id_sha256"]) == 64
+    assert len(fp_struct["receipt_sha256"]) == 64
 
     # Test stdio loop
     stdin_buf = io.StringIO(
@@ -161,6 +204,7 @@ def test_rest_api_dispatcher_and_cli_subcommands() -> None:
     assert status_oa == 200
     assert oa["openapi"] == "3.1.0"
     assert "/v1/positions" in build_openapi_spec()["paths"]
+    assert "/v1/fingerprint" in build_openapi_spec()["paths"]
 
     status_pos, pos = dispatch_api_request(
         "POST",
@@ -186,9 +230,19 @@ def test_rest_api_dispatcher_and_cli_subcommands() -> None:
     assert status_fs == 200
     assert "receipt_sha256" in fs
 
+    status_fp, fp_payload = dispatch_api_request(
+        "POST",
+        "/v1/fingerprint",
+        {"jd_ut": 2461139.0, "latitude_deg": 28.6139, "longitude_deg": 77.2090, "birth_time_uncertainty_seconds": 30.0},
+    )
+    assert status_fp == 200
+    assert len(fp_payload["fingerprint_id_sha256"]) == 64
+
     assert cli.main(["mcp", "--dump-tools"]) == 0
     assert cli.main(["serve", "--dump-openapi"]) == 0
     assert cli.main(["impossible", "--at", "2026-10-06T12:00:00Z", "--step-seconds", "60"]) == 0
+    assert cli.main(["fingerprint", "--at", "2026-10-06T12:00:00Z", "--json"]) == 0
+    assert cli.main(["fingerprint", "--at", "2026-10-06T12:00:00Z"]) == 0
 
 
 def test_d30_unequal_boundaries_and_subsecond_varga_transitions_and_receipt_binding() -> None:
@@ -518,7 +572,7 @@ def test_round5_release_reconciliation_contracts(monkeypatch) -> None:  # type: 
         capture_output=True,
         check=True,
     )
-    assert len(json.loads(console.stdout)["tools"]) == 8
+    assert len(json.loads(console.stdout)["tools"]) == 9
 
     # 2. Complete Kundali exposes divisional charts and Dasha timelines
     kundali = mcp_server.execute_mcp_tool("compute_complete_kundali", {"jd_ut": 2461139.0})
@@ -729,4 +783,89 @@ def test_true_node_in_calc_ut_kundali_mcp_openapi_and_legal_docs() -> None:
     cohort_txt = (repo_root / "docs/EXPERT-TESTER-COHORT-REPORT.md").read_text(encoding="utf-8")
     assert "Internal AI Role Analysis, Not an External Human Expert Cohort" in cohort_txt
     assert "4dc841fe-b60e-4d5c-9c09-fda77e6deb80" in cohort_txt
+
+
+def test_personalized_astro_fingerprint_across_sdk_cli_mcp_and_rest_api() -> None:
+    """Verify compute_personalized_astro_fingerprint across Python SDK, CLI, MCP, and REST API."""
+    from ephemeris_oss.cli import main as cli_main
+
+    # 1. Python SDK
+    fp = compute_personalized_astro_fingerprint(
+        2461320.0,
+        latitude_deg=28.6139,
+        longitude_deg=77.2090,
+        query_jd_ut=2461350.0,
+        birth_time_uncertainty_seconds=60.0,
+        ayanamsa="lahiri",
+    )
+    assert len(fp.fingerprint_id_sha256) == 64
+    assert len(fp.receipt_sha256) == 64
+    assert 0.0 <= fp.overall_clock_confidence_score <= 1.0
+    assert 0.0 <= fp.overall_personal_transit_resonance_score <= 100.0
+    assert len(fp.domain_clock_confidence) == 16
+    assert len(fp.harmonic_phase_matrix) == 10
+    assert len(fp.topocentric_digbala_vector) == 7
+    assert len(fp.personal_transit_resonance) == 7
+
+    # 2. MCP tool execution
+    mcp_res = execute_mcp_tool(
+        "compute_personalized_astro_fingerprint",
+        {
+            "jd_ut": 2461320.0,
+            "query_jd_ut": 2461350.0,
+            "latitude_deg": 28.6139,
+            "longitude_deg": 77.2090,
+            "birth_time_uncertainty_seconds": 60.0,
+            "ayanamsa": "lahiri",
+        },
+    )
+    assert mcp_res["fingerprint_id_sha256"] == fp.fingerprint_id_sha256
+    assert mcp_res["receipt_sha256"] == fp.receipt_sha256
+
+    # 3. CLI subcommand `ephemeris-oss fingerprint`
+    rc = cli_main(
+        [
+            "fingerprint",
+            "--jd",
+            "2461320.0",
+            "--query-jd",
+            "2461350.0",
+            "--lat",
+            "28.6139",
+            "--lon",
+            "77.2090",
+            "--uncertainty-sec",
+            "60",
+            "--compact",
+        ]
+    )
+    assert rc == 0
+
+    # 4. REST API `POST /v1/fingerprint`
+    status, api_payload = dispatch_api_request(
+        "POST",
+        "/v1/fingerprint",
+        {
+            "jd_ut": 2461320.0,
+            "query_jd_ut": 2461350.0,
+            "latitude_deg": 28.6139,
+            "longitude_deg": 77.2090,
+            "birth_time_uncertainty_seconds": 60.0,
+        },
+    )
+    assert status == 200
+    assert api_payload["fingerprint_id_sha256"] == fp.fingerprint_id_sha256
+    assert api_payload["receipt_sha256"] == fp.receipt_sha256
+
+    # 5. Verify full-span 9,074-month benchmark & white paper artifacts exist and are valid
+    repo_root = Path(__file__).resolve().parents[1]
+    monthly_bench = json.loads(
+        (repo_root / "evidence/monthly-full-span-de440-benchmark.json").read_text(encoding="utf-8")
+    )
+    assert monthly_bench["monthly_embedded_de440_vs_full_de440_bsp"]["months_evaluated"] == 9074
+    assert monthly_bench["monthly_embedded_de440_vs_full_de440_bsp"]["samples_evaluated"] == 63518
+    assert monthly_bench["monthly_embedded_de440_vs_full_de440_bsp"]["failures"] == 0
+    assert (repo_root / "docs/RDG-EPHEMERIS-WHITEPAPER-AND-BENCHMARKS.md").is_file()
+    assert (repo_root / "docs/AI-MCP-AND-PLUGIN-INTEGRATION-GUIDE.md").is_file()
+
 

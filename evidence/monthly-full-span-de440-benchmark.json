@@ -1,0 +1,196 @@
+{
+  "deep_history_3102bce_to_3000ce_sweep": {
+    "benchmark_years_with_all_12_months": [
+      -3101,
+      -2500,
+      -2000,
+      -1500,
+      -1000,
+      -500,
+      1,
+      499,
+      1000,
+      1500,
+      1550,
+      1700,
+      1800,
+      1900,
+      1956,
+      2000,
+      2026,
+      2300,
+      3000
+    ],
+    "elapsed_ms": 1373.748,
+    "epochs_tested": 459,
+    "failures": 0,
+    "graha_evaluations": 4131,
+    "max_rahu_ketu_antipode_error_arcsec": 0.0,
+    "span_covered": "3102 BCE (-3101) to 3000 CE",
+    "status": "PASS_ZERO_FAILURES"
+  },
+  "monthly_embedded_de440_vs_full_de440_bsp": {
+    "cadence": "EVERY_SINGLE_CALENDAR_MONTH_1550_01_TO_2306_02",
+    "ceiling_arcsec": 0.05,
+    "core_1800_2100_max_diff_arcsec": 0.026058,
+    "core_1800_2100_median_diff_arcsec": 0.000226,
+    "epochs_evaluated": 9074,
+    "evaluation_duration_ms": 76163.013,
+    "evaluation_mode": "LIVE_REPRODUCED_AGAINST_SHA256_PINNED_DE440_BSP",
+    "failures": 0,
+    "months_evaluated": 9074,
+    "per_body_monthly_summary": {
+      "jupiter": {
+        "max_diff_arcsec": 0.000348,
+        "mean_diff_arcsec": 5.4e-05,
+        "median_diff_arcsec": 3.2e-05,
+        "months_evaluated": 9074,
+        "p95_diff_arcsec": 0.000164
+      },
+      "mars": {
+        "max_diff_arcsec": 0.002205,
+        "mean_diff_arcsec": 0.000148,
+        "median_diff_arcsec": 8.2e-05,
+        "months_evaluated": 9074,
+        "p95_diff_arcsec": 0.000503
+      },
+      "mercury": {
+        "max_diff_arcsec": 0.00194,
+        "mean_diff_arcsec": 0.000227,
+        "median_diff_arcsec": 0.000129,
+        "months_evaluated": 9074,
+        "p95_diff_arcsec": 0.000728
+      },
+      "moon": {
+        "max_diff_arcsec": 0.026058,
+        "mean_diff_arcsec": 0.005104,
+        "median_diff_arcsec": 0.004213,
+        "months_evaluated": 9074,
+        "p95_diff_arcsec": 0.012213
+      },
+      "saturn": {
+        "max_diff_arcsec": 0.000278,
+        "mean_diff_arcsec": 5e-05,
+        "median_diff_arcsec": 2.9e-05,
+        "months_evaluated": 9074,
+        "p95_diff_arcsec": 0.000151
+      },
+      "sun": {
+        "max_diff_arcsec": 0.000822,
+        "mean_diff_arcsec": 0.000156,
+        "median_diff_arcsec": 0.000105,
+        "months_evaluated": 9074,
+        "p95_diff_arcsec": 0.000436
+      },
+      "venus": {
+        "max_diff_arcsec": 0.004451,
+        "mean_diff_arcsec": 0.000236,
+        "median_diff_arcsec": 0.000123,
+        "months_evaluated": 9074,
+        "p95_diff_arcsec": 0.000828
+      }
+    },
+    "per_century_monthly_summary": {
+      "1500s_CE": {
+        "max_diff_arcsec": 0.010765,
+        "mean_diff_arcsec": 0.000557,
+        "median_diff_arcsec": 5.4e-05,
+        "p95_diff_arcsec": 0.004073,
+        "samples_evaluated": 4200
+      },
+      "1600s_CE": {
+        "max_diff_arcsec": 0.011177,
+        "mean_diff_arcsec": 0.000556,
+        "median_diff_arcsec": 5.6e-05,
+        "p95_diff_arcsec": 0.003974,
+        "samples_evaluated": 8400
+      },
+      "1700s_CE": {
+        "max_diff_arcsec": 0.01204,
+        "mean_diff_arcsec": 0.000569,
+        "median_diff_arcsec": 5.6e-05,
+        "p95_diff_arcsec": 0.004123,
+        "samples_evaluated": 8400
+      },
+      "1800s_CE": {
+        "max_diff_arcsec": 0.02354,
+        "mean_diff_arcsec": 0.001276,
+        "median_diff_arcsec": 0.000227,
+        "p95_diff_arcsec": 0.008379,
+        "samples_evaluated": 8400
+      },
+      "1900s_CE": {
+        "max_diff_arcsec": 0.025675,
+        "mean_diff_arcsec": 0.001334,
+        "median_diff_arcsec": 0.000224,
+        "p95_diff_arcsec": 0.008872,
+        "samples_evaluated": 8400
+      },
+      "2000s_CE": {
+        "max_diff_arcsec": 0.026058,
+        "mean_diff_arcsec": 0.001295,
+        "median_diff_arcsec": 0.000228,
+        "p95_diff_arcsec": 0.008485,
+        "samples_evaluated": 8400
+      },
+      "2100s_CE": {
+        "max_diff_arcsec": 0.017751,
+        "mean_diff_arcsec": 0.000563,
+        "median_diff_arcsec": 5.6e-05,
+        "p95_diff_arcsec": 0.004003,
+        "samples_evaluated": 8400
+      },
+      "2200s_CE": {
+        "max_diff_arcsec": 0.011574,
+        "mean_diff_arcsec": 0.000547,
+        "median_diff_arcsec": 5.6e-05,
+        "p95_diff_arcsec": 0.003973,
+        "samples_evaluated": 8400
+      },
+      "2300s_CE": {
+        "max_diff_arcsec": 0.010889,
+        "mean_diff_arcsec": 0.000576,
+        "median_diff_arcsec": 5.8e-05,
+        "p95_diff_arcsec": 0.004181,
+        "samples_evaluated": 518
+      }
+    },
+    "reference_kernel_sha256": "a4ce9bf9b3282becc9f4b2ac3cebe03a2ae7599981aabd7265fd8482fff7c4b5",
+    "samples_evaluated": 63518,
+    "span_ce": "1550-01-15 to 2306-02-15",
+    "wing_1550_1800_max_diff_arcsec": 0.01204,
+    "wing_1550_1800_median_diff_arcsec": 5.5e-05,
+    "wing_2101_2306_max_diff_arcsec": 0.013564,
+    "wing_2101_2306_median_diff_arcsec": 5.6e-05,
+    "worst_sample_by_region": {
+      "core_1800_2100": {
+        "body": "moon",
+        "diff_arcsec": 0.026058,
+        "embedded_chebyshev_lon_deg": 206.44856216,
+        "full_de440_bsp_lon_deg": 206.44856236,
+        "jd_tt": 2461816.5,
+        "year_month": "2028-02"
+      },
+      "wing_1550_1800": {
+        "body": "moon",
+        "diff_arcsec": 0.01204,
+        "embedded_chebyshev_lon_deg": 183.88311854,
+        "full_de440_bsp_lon_deg": 183.88312121,
+        "jd_tt": 2371052.5,
+        "year_month": "1779-08"
+      },
+      "wing_2101_2306": {
+        "body": "moon",
+        "diff_arcsec": 0.013564,
+        "embedded_chebyshev_lon_deg": 102.33972632,
+        "full_de440_bsp_lon_deg": 102.33972726,
+        "jd_tt": 2496452.5,
+        "year_month": "2122-12"
+      }
+    }
+  },
+  "package_name": "ephemeris-oss",
+  "package_version": "0.2.0.dev1",
+  "receipt_sha256": "6fcb658e81a3cd3eef67af4dce611d0ef7c578437a537225c060a652b6838104",
+  "schema": "rdg-ephemeris-monthly-full-span-benchmark-v1"
+}

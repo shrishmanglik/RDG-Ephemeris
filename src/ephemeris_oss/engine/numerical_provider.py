@@ -592,9 +592,37 @@ class JplErfaAstronomyProvider(AstronomyProvider):
                 )
         artifact = self._kernel_registry.artifact_for_tdb_jd(times.tdb_jd)
         sun_func = precomputed_sun_func or state_at("sun")
-        target_func = precomputed_target_func or (
-            sun_func if body.strip().lower() == "sun" else state_at(body)
-        )
+        if (
+            precomputed_target_func is None
+            and body.strip().lower() == "moon"
+            and artifact.identifier.startswith("COMPACT-DE440")
+        ):
+            _rec_artifact, rec_graph = self._kernel(times.tdb_jd)
+            emb_pos_rec, emb_vel_rec = rec_graph.state(3, times.tdb)
+            rec_tdb_jd = times.tdb_jd
+
+            @lru_cache(maxsize=16)
+            def _moon_state_at(jd: float) -> BarycentricState:
+                dt_days = float(jd - rec_tdb_jd)
+                em_tdb = (J2000_JD, float(jd - J2000_JD))
+                em_artifact, em_graph = self._kernel(jd)
+                moon_ssb_pos, moon_ssb_vel = em_graph.state(301, em_tdb)
+                emb_em_pos, emb_em_vel = em_graph.state(3, em_tdb)
+                rel_moon_pos = moon_ssb_pos - emb_em_pos
+                rel_moon_vel = moon_ssb_vel - emb_em_vel
+                pos = emb_pos_rec + emb_vel_rec * dt_days + rel_moon_pos
+                vel = emb_vel_rec + rel_moon_vel
+                return BarycentricState(
+                    position_km=tuple(float(v) for v in pos),
+                    velocity_km_per_day=tuple(float(v) for v in vel),
+                    source=f"{em_artifact.identifier}:{em_artifact.sha256.lower()}:301",
+                )
+
+            target_func = _moon_state_at
+        else:
+            target_func = precomputed_target_func or (
+                sun_func if body.strip().lower() == "sun" else state_at(body)
+            )
         result = apparent_place(
             target_state_at_tdb=target_func,
             sun_state_at_tdb=sun_func,

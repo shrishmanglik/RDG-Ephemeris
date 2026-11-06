@@ -169,6 +169,17 @@ def build_openapi_spec(server_url: str = "http://127.0.0.1:8765") -> dict[str, A
                     "responses": _post_responses(),
                 }
             },
+            "/v1/fingerprint": {
+                "post": {
+                    "summary": (
+                        "Compute personalized 16-Varga harmonic phase vector, domain clock-confidence "
+                        "decay, topocentric Digbala vector, and 8-Kaksha Ashtakavarga transit resonance"
+                    ),
+                    "operationId": "computePersonalizedFingerprint",
+                    "requestBody": _request_body("compute_personalized_astro_fingerprint"),
+                    "responses": _post_responses(),
+                }
+            },
         },
     }
 
@@ -182,6 +193,7 @@ _ROUTE_TO_TOOL: Mapping[str, str] = {
     "/v1/siddhanta-diff": "compare_surya_siddhanta_vs_de440",
     "/v1/fact-sheet": "compile_verified_ai_fact_sheet",
     "/v1/verify-text": "verify_ai_astrology_text",
+    "/v1/fingerprint": "compute_personalized_astro_fingerprint",
 }
 
 

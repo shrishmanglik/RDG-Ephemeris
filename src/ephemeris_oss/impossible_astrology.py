@@ -59,9 +59,18 @@ def _get_cached_compact_provider() -> Any:
         _CACHED_COMPACT_PROVIDER = Engine.load(kernels="compact-extended")._provider
     return _CACHED_COMPACT_PROVIDER
 from .engine.receipt import canonical_hash
-from .jyotish.dasha import jd_to_iso_utc
-from .jyotish.nakshatra import normalize_degrees
-from .jyotish.vargas import SHODASHVARGA_KEYS, compute_shodashvarga, varga_sign
+from .jyotish.ashtakavarga import compute_ashtakavarga, evaluate_gochara_vedha
+from .jyotish.dasha import compute_chara_karakas, jd_to_iso_utc
+from .jyotish.nakshatra import nakshatra_position, normalize_degrees
+from .jyotish.vargas import (
+    SHODASHVARGA_KEYS,
+    compute_shodashvarga,
+    compute_vimshopaka_bala,
+    is_pushkara_bhaga,
+    is_pushkara_navamsa,
+    is_vargottama,
+    varga_sign,
+)
 from .jyotish_rectification.rectify import (
     BirthTimeRectificationReport,
     LAGNA_DEG_PER_SECOND,
@@ -1138,12 +1147,385 @@ def analyze_siddhanta_vs_jpl_de440_drift(
     )
 
 
+_KAKSHA_LORDS_8: tuple[str, ...] = (
+    "Saturn",
+    "Jupiter",
+    "Mars",
+    "Sun",
+    "Venus",
+    "Mercury",
+    "Moon",
+    "Lagna",
+)
+
+_VARGA_LIFE_DOMAINS: Mapping[str, str] = {
+    "D1": "identity_and_physical_vitality",
+    "D2": "wealth_and_sustenance",
+    "D3": "courage_and_siblings",
+    "D4": "property_home_and_fortune",
+    "D7": "progeny_and_creative_legacy",
+    "D9": "dharma_marriage_and_inner_fruit",
+    "D10": "career_vocation_and_public_impact",
+    "D12": "ancestry_and_parents",
+    "D16": "conveyances_and_inner_contentment",
+    "D20": "spiritual_sadhanas_and_devotion",
+    "D24": "higher_learning_and_vidya",
+    "D27": "intrinsic_strengths_and_stamina",
+    "D30": "resilience_and_crisis_thresholds",
+    "D40": "matrilineal_auspiciousness",
+    "D45": "patrilineal_ethics_and_character",
+    "D60": "past_life_karmic_root_shashtiamsa",
+}
+
+
+@dataclass(frozen=True)
+class PersonalizedAstroFingerprintReport:
+    """Multi-dimensional, birth-clock-calibrated, topocentric personal astrological fingerprint."""
+
+    jd_ut: float
+    iso_utc: str
+    query_jd_ut: float
+    query_iso_utc: str
+    latitude_deg: float
+    longitude_deg: float
+    ayanamsa: str
+    ayanamsa_deg: float
+    true_node: bool
+    birth_time_uncertainty_seconds: float
+    ephemeris_source: str
+    fingerprint_id_sha256: str
+    atmakaraka_planet: str
+    amatyakaraka_planet: str
+    dominant_vimshopaka_planet: str
+    dominant_digbala_planet: str
+    overall_clock_confidence_score: float
+    overall_personal_transit_resonance_score: float
+    harmonic_phase_matrix: Mapping[str, Mapping[str, Any]]
+    domain_clock_confidence: Mapping[str, Mapping[str, Any]]
+    topocentric_digbala_vector: Mapping[str, Mapping[str, Any]]
+    personal_transit_resonance: Mapping[str, Mapping[str, Any]]
+    receipt: Mapping[str, Any]
+    receipt_sha256: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+def compute_personalized_astro_fingerprint(
+    jd_ut: float,
+    latitude_deg: float = 28.6139,
+    longitude_deg: float = 77.2090,
+    *,
+    query_jd_ut: float | None = None,
+    birth_time_uncertainty_seconds: float = 60.0,
+    ayanamsa: str = "lahiri",
+    true_node: bool = False,
+    adapter: EphemerisAdapter | None = None,
+) -> PersonalizedAstroFingerprintReport:
+    """Compute a personalized, non-generic astrological fingerprint combining:
+    1. Continuous 16-Varga Harmonic Phase Vector & 20-point Shodashvarga Vimshopaka alignment.
+    2. 16-Domain Birth-Clock Sensitivity & Prediction Confidence Decay ``exp(-sigma_t / tau_min)``.
+    3. Continuous Topocentric Horizon-Meridian Digbala Vector (0..60 Virupas).
+    4. Personal Natal-to-Transit 8-Kaksha (3 deg 45 arcmin) & 337-Bindu Ashtakavarga Resonance.
+    """
+    sigma_t = float(birth_time_uncertainty_seconds)
+    if not math.isfinite(sigma_t) or sigma_t < 0.0:
+        raise ValueError("birth_time_uncertainty_seconds must be a finite non-negative number")
+
+    ad = adapter if adapter is not None else EphemerisAdapter()
+    base_jd = float(jd_ut)
+    q_jd = float(query_jd_ut) if query_jd_ut is not None else base_jd
+    lat = float(latitude_deg)
+    lon = float(longitude_deg)
+
+    cusp_report = solve_subsecond_shodashvarga_cusp_transitions(
+        base_jd,
+        lat,
+        lon,
+        ayanamsa=ayanamsa,
+        adapter=ad,
+    )
+    houses_res = ad.houses_ut(base_jd, lat, lon, system="whole_sign", ayanamsa=ayanamsa)
+    asc_deg = float(houses_res.ascendant_deg)
+    mc_deg = float(houses_res.mc_deg)
+    desc_deg = normalize_degrees(asc_deg + 180.0)
+    ic_deg = normalize_degrees(mc_deg + 180.0)
+
+    natal_lons_cap: dict[str, float] = {}
+    ephemeris_source_str = (
+        "de440-chebyshev"
+        if COMPACT_EARLY_START_JD <= base_jd <= COMPACT_LATE_END_JD
+        else "vondrak2011-analytical"
+    )
+    for body_key in VEDIC_NINE_GRAHAS:
+        pos = ad.calc_ut(base_jd, body_key, sidereal=True, ayanamsa=ayanamsa, true_node=true_node)
+        natal_lons_cap[body_key.capitalize()] = float(pos.longitude_deg)
+
+    # 1. Continuous 16-Varga Harmonic Phase Matrix & Vimshopaka Bala
+    harmonic_phase_matrix: dict[str, Mapping[str, Any]] = {}
+    best_vim_planet = "Sun"
+    best_vim_score = -1.0
+
+    all_bodies_for_phase = ("Ascendant",) + tuple(b.capitalize() for b in VEDIC_NINE_GRAHAS)
+    for b_name in all_bodies_for_phase:
+        b_lon = asc_deg if b_name == "Ascendant" else natal_lons_cap[b_name]
+        b_margins = (
+            cusp_report.ascendant_margins
+            if b_name == "Ascendant"
+            else cusp_report.planet_margins[b_name]
+        )
+        varga_phases: dict[str, Mapping[str, Any]] = {}
+        phase_stability_sum = 0.0
+        for v_key in SHODASHVARGA_KEYS:
+            m = b_margins[v_key]
+            span = max(float(m.sector_span_deg), 1.0e-9)
+            phase = min(max(float(m.degrees_from_lower_cusp) / span, 0.0), 1.0)
+            center_stability = math.sin(math.pi * phase)
+            phase_stability_sum += center_stability
+            varga_phases[v_key] = {
+                "sign_name": m.sign_name,
+                "sign_lord": m.sign_lord,
+                "phase_in_sector": round(phase, 6),
+                "center_stability_index": round(center_stability, 6),
+                "seconds_to_nearest_cusp": round(
+                    min(float(m.seconds_to_previous_cusp), float(m.seconds_to_next_cusp)),
+                    4,
+                ),
+            }
+
+        vim_score_val: float | None = None
+        vim_pct_val: float | None = None
+        if b_name in ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"):
+            vim = compute_vimshopaka_bala(b_name, b_lon, natal_lons_cap, scheme="shodashvarga")
+            vim_score_val = round(float(vim.total_score), 6)
+            vim_pct_val = round(float(vim.percentage), 4)
+            if vim_score_val > best_vim_score:
+                best_vim_score = vim_score_val
+                best_vim_planet = b_name
+
+        harmonic_phase_matrix[b_name] = {
+            "sidereal_longitude_deg": round(b_lon, 8),
+            "d1_rasi": varga_sign(b_lon, "D1").sign_name,
+            "d9_navamsa": varga_sign(b_lon, "D9").sign_name,
+            "d60_shashtiamsa_name": b_margins["D60"].shashtiamsa_name,
+            "d60_shashtiamsa_is_benefic": b_margins["D60"].shashtiamsa_is_benefic,
+            "is_vargottama": is_vargottama(b_lon),
+            "is_pushkara_navamsa": is_pushkara_navamsa(b_lon),
+            "is_pushkara_bhaga": is_pushkara_bhaga(b_lon),
+            "mean_16varga_center_stability": round(phase_stability_sum / 16.0, 6),
+            "shodashvarga_vimshopaka_score_20": vim_score_val,
+            "shodashvarga_vimshopaka_pct": vim_pct_val,
+            "varga_phases": varga_phases,
+        }
+
+    # 2. 16-Domain Clock-Sensitivity & Prediction Confidence Decay
+    domain_clock_confidence: dict[str, Mapping[str, Any]] = {}
+    conf_sum = 0.0
+    for v_key in SHODASHVARGA_KEYS:
+        asc_m = cusp_report.ascendant_margins[v_key]
+        moon_m = cusp_report.planet_margins["Moon"][v_key]
+        asc_tau = min(float(asc_m.seconds_to_previous_cusp), float(asc_m.seconds_to_next_cusp))
+        moon_tau = min(float(moon_m.seconds_to_previous_cusp), float(moon_m.seconds_to_next_cusp))
+        tau_min = min(asc_tau, moon_tau)
+        conf = 1.0 if sigma_t == 0.0 else math.exp(-sigma_t / max(tau_min, 1.0e-3))
+        conf_sum += conf
+        if tau_min >= 3.0 * max(sigma_t, 1.0):
+            status = "LOCKED_INVARIANT"
+        elif tau_min >= max(sigma_t, 1.0):
+            status = "MODERATELY_SENSITIVE"
+        else:
+            status = "RECTIFICATION_REQUIRED"
+        domain_clock_confidence[v_key] = {
+            "varga": v_key,
+            "life_domain": _VARGA_LIFE_DOMAINS[v_key],
+            "ascendant_sign": asc_m.sign_name,
+            "ascendant_cusp_margin_seconds": round(asc_tau, 4),
+            "moon_cusp_margin_seconds": round(moon_tau, 4),
+            "governing_cusp_margin_seconds": round(tau_min, 4),
+            "clock_confidence_score": round(conf, 6),
+            "stability_classification": status,
+        }
+
+    overall_clock_conf = round(conf_sum / 16.0, 6)
+
+    # 3. Continuous Topocentric Horizon-Meridian Digbala Vector (0..60 Virupas)
+    # Power poles: East/Lagna (Jupiter, Mercury), South/MC (Sun, Mars), West/Desc (Saturn), North/IC (Moon, Venus)
+    digbala_poles: Mapping[str, tuple[str, float]] = {
+        "Sun": ("MC_South_Meridian", mc_deg),
+        "Moon": ("IC_North_Nadir", ic_deg),
+        "Mars": ("MC_South_Meridian", mc_deg),
+        "Mercury": ("Ascendant_East_Horizon", asc_deg),
+        "Jupiter": ("Ascendant_East_Horizon", asc_deg),
+        "Venus": ("IC_North_Nadir", ic_deg),
+        "Saturn": ("Descendant_West_Horizon", desc_deg),
+    }
+    topocentric_digbala_vector: dict[str, Mapping[str, Any]] = {}
+    best_dig_planet = "Sun"
+    best_dig_virupas = -1.0
+    for p_name, (pole_label, pole_deg) in digbala_poles.items():
+        p_lon = natal_lons_cap[p_name]
+        raw_diff = abs(normalize_degrees(p_lon - pole_deg))
+        ang_dist = 360.0 - raw_diff if raw_diff > 180.0 else raw_diff
+        cosine_idx = 0.5 * (1.0 + math.cos(math.radians(ang_dist)))
+        linear_virupas = (180.0 - ang_dist) / 3.0
+        cosine_virupas = cosine_idx * 60.0
+        if cosine_virupas > best_dig_virupas:
+            best_dig_virupas = cosine_virupas
+            best_dig_planet = p_name
+        topocentric_digbala_vector[p_name] = {
+            "power_pole": pole_label,
+            "pole_longitude_deg": round(pole_deg, 6),
+            "planet_longitude_deg": round(p_lon, 6),
+            "angular_distance_from_pole_deg": round(ang_dist, 6),
+            "continuous_cosine_index": round(cosine_idx, 6),
+            "continuous_cosine_virupas": round(cosine_virupas, 4),
+            "classical_linear_virupas": round(linear_virupas, 4),
+        }
+
+    # 4. Personal Natal-to-Transit 8-Kaksha (3 deg 45 arcmin) & 337-Bindu Ashtakavarga Resonance
+    karakas = compute_chara_karakas(natal_lons_cap, scheme="7")
+    atmakaraka_planet = karakas[0].planet
+    amatyakaraka_planet = karakas[1].planet
+    ak_lon = natal_lons_cap[atmakaraka_planet]
+    natal_moon_lon = natal_lons_cap["Moon"]
+
+    ashtaka = compute_ashtakavarga(natal_lons_cap, asc_deg)
+    transit_lons_cap: dict[str, float] = {}
+    for body_key in ("sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn"):
+        t_pos = ad.calc_ut(q_jd, body_key, sidereal=True, ayanamsa=ayanamsa, true_node=true_node)
+        transit_lons_cap[body_key.capitalize()] = float(t_pos.longitude_deg)
+
+    gochara_map = evaluate_gochara_vedha(natal_moon_lon, transit_lons_cap, ashtakavarga=ashtaka)
+    personal_transit_resonance: dict[str, Mapping[str, Any]] = {}
+    res_sum = 0.0
+
+    for p_name in ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"):
+        t_lon = transit_lons_cap[p_name]
+        s_idx = min(int(t_lon // 30.0), 11)
+        deg_in_sign = t_lon - s_idx * 30.0
+        kaksha_idx = min(int(deg_in_sign // 3.75), 7)  # 8 Kakshas of 3.75 deg (3 deg 45 arcmin) each
+        kaksha_lord = _KAKSHA_LORDS_8[kaksha_idx]
+        bav_table = ashtaka.bhinna_tables[p_name]
+        bav_bindus = int(bav_table.sign_bindus[s_idx])
+        sav_bindus = int(ashtaka.sarvashtakavarga_7[s_idx])
+        kaksha_has_bindu = bool(bav_table.contributor_matrix[kaksha_lord][s_idx] == 1)
+        goch = gochara_map[p_name]
+
+        # Angular resonance to seeker's Atmakaraka, Natal Moon, and Natal Ascendant (trine/conjunction/opposition harmonics)
+        def _harmonic_alignment(lon_a: float, lon_b: float) -> float:
+            diff = abs(normalize_degrees(lon_a - lon_b))
+            sep = 360.0 - diff if diff > 180.0 else diff
+            # Proximity to 0, 60, 120, 180 deg major harmonic angles
+            nearest_harm = min(abs(sep - h) for h in (0.0, 60.0, 120.0, 180.0))
+            return math.exp(-nearest_harm / 15.0)
+
+        ak_align = _harmonic_alignment(t_lon, ak_lon)
+        moon_align = _harmonic_alignment(t_lon, natal_moon_lon)
+        asc_align = _harmonic_alignment(t_lon, asc_deg)
+        personal_point_alignment = (0.45 * ak_align) + (0.35 * moon_align) + (0.20 * asc_align)
+
+        # Composite 0..100 score combining BAV/8, SAV/56, Kaksha bindu activation, Gochara net favorability, and personal harmonic alignment
+        bav_norm = bav_bindus / 8.0
+        sav_norm = min(sav_bindus / 40.0, 1.0)
+        kaksha_bonus = 1.0 if kaksha_has_bindu else 0.25
+        vedha_factor = 1.0 if goch.net_favorable else (0.45 if goch.is_obstructed_by_vedha else 0.70)
+        planet_res_score = 100.0 * (
+            0.30 * bav_norm
+            + 0.25 * sav_norm
+            + 0.20 * kaksha_bonus
+            + 0.15 * personal_point_alignment
+            + 0.10 * vedha_factor
+        )
+        res_sum += planet_res_score
+
+        personal_transit_resonance[p_name] = {
+            "transit_longitude_deg": round(t_lon, 6),
+            "transit_rasi": goch.transit_sign_name,
+            "transit_nakshatra": nakshatra_position(t_lon).name,
+            "house_from_natal_moon": goch.house_from_moon,
+            "kaksha_number_1_to_8": kaksha_idx + 1,
+            "kaksha_lord": kaksha_lord,
+            "kaksha_has_bindu": kaksha_has_bindu,
+            "bhinna_ashtakavarga_bindus_0_to_8": bav_bindus,
+            "sarvashtakavarga_bindus_in_sign": sav_bindus,
+            "gochara_naturally_benefic": goch.is_naturally_benefic_house,
+            "gochara_obstructed_by_vedha": goch.is_obstructed_by_vedha,
+            "gochara_net_favorable": goch.net_favorable,
+            "personal_point_harmonic_alignment": round(personal_point_alignment, 6),
+            "resonance_score_0_to_100": round(planet_res_score, 4),
+        }
+
+    overall_res_score = round(res_sum / 7.0, 4)
+
+    fingerprint_core = {
+        "jd_ut": round(base_jd, 10),
+        "latitude_deg": round(lat, 6),
+        "longitude_deg": round(lon, 6),
+        "ayanamsa": ayanamsa,
+        "true_node": bool(true_node),
+        "ascendant_deg": round(asc_deg, 8),
+        "mc_deg": round(mc_deg, 8),
+        "natal_longitudes": {k: round(v, 8) for k, v in sorted(natal_lons_cap.items())},
+    }
+    fingerprint_id = canonical_hash(fingerprint_core)
+
+    receipt = {
+        "module": "ephemeris_oss.impossible_astrology.personalized_fingerprint",
+        "version": __version__,
+        "jd_ut": round(base_jd, 10),
+        "query_jd_ut": round(q_jd, 10),
+        "latitude_deg": round(lat, 6),
+        "longitude_deg": round(lon, 6),
+        "ayanamsa": ayanamsa,
+        "true_node": bool(true_node),
+        "birth_time_uncertainty_seconds": round(sigma_t, 4),
+        "ephemeris_source": ephemeris_source_str,
+        "fingerprint_id_sha256": fingerprint_id,
+        "atmakaraka_planet": atmakaraka_planet,
+        "amatyakaraka_planet": amatyakaraka_planet,
+        "dominant_vimshopaka_planet": best_vim_planet,
+        "dominant_digbala_planet": best_dig_planet,
+        "overall_clock_confidence_score": overall_clock_conf,
+        "overall_personal_transit_resonance_score": overall_res_score,
+        "cusp_report_receipt_sha256": cusp_report.receipt_sha256,
+    }
+
+    return PersonalizedAstroFingerprintReport(
+        jd_ut=base_jd,
+        iso_utc=jd_to_iso_utc(base_jd),
+        query_jd_ut=q_jd,
+        query_iso_utc=jd_to_iso_utc(q_jd),
+        latitude_deg=lat,
+        longitude_deg=lon,
+        ayanamsa=ayanamsa,
+        ayanamsa_deg=round(float(cusp_report.ayanamsa_deg), 8),
+        true_node=bool(true_node),
+        birth_time_uncertainty_seconds=sigma_t,
+        ephemeris_source=ephemeris_source_str,
+        fingerprint_id_sha256=fingerprint_id,
+        atmakaraka_planet=atmakaraka_planet,
+        amatyakaraka_planet=amatyakaraka_planet,
+        dominant_vimshopaka_planet=best_vim_planet,
+        dominant_digbala_planet=best_dig_planet,
+        overall_clock_confidence_score=overall_clock_conf,
+        overall_personal_transit_resonance_score=overall_res_score,
+        harmonic_phase_matrix=harmonic_phase_matrix,
+        domain_clock_confidence=domain_clock_confidence,
+        topocentric_digbala_vector=topocentric_digbala_vector,
+        personal_transit_resonance=personal_transit_resonance,
+        receipt=receipt,
+        receipt_sha256=canonical_hash(receipt),
+    )
+
+
 __all__ = [
     "MultiCenturyPhenomenaReport",
+    "PersonalizedAstroFingerprintReport",
     "SiddhantaDriftAnalysisReport",
     "SubsecondShodashvargaCuspReport",
     "VargaBoundaryMargin",
     "analyze_siddhanta_vs_jpl_de440_drift",
+    "compute_personalized_astro_fingerprint",
     "rectify_birth_time_bayesian",
     "scan_multi_century_rare_phenomena",
     "solve_subsecond_shodashvarga_cusp_transitions",

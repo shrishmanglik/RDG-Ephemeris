@@ -30,9 +30,12 @@ import json
 import math
 import os
 from pathlib import Path
+import statistics
 import sys
 import time
 from typing import Any
+
+import erfa
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT / "src") not in sys.path:
@@ -44,6 +47,7 @@ from ephemeris_oss import (
     GeoCoords,
     __version__,
     analyze_siddhanta_vs_jpl_de440_drift,
+    compute_personalized_astro_fingerprint,
     kernels as _kernels,
     rectify_birth_time_bayesian,
     scan_multi_century_rare_phenomena,
@@ -81,7 +85,9 @@ def _resolve_de440_reference_kernel() -> Path | None:
     if env_path:
         candidates.append(Path(env_path))
     candidates.append(_kernels.cached_path(spec, _kernels.cache_dir()))
+    candidates.append(Path.home() / "AppData" / "Local" / "ephemeris-oss" / spec.filename)
     candidates.append(Path.home() / "AppData" / "Local" / "ephemeris-oss" / "kernels" / spec.filename)
+    candidates.append(Path("C:/Users/Shris/AppData/Local/ephemeris-oss") / spec.filename)
     candidates.append(Path("C:/Users/Shris/AppData/Local/ephemeris-oss/kernels") / spec.filename)
 
     seen: set[str] = set()
@@ -95,13 +101,22 @@ def _resolve_de440_reference_kernel() -> Path | None:
     return None
 
 
+def _percentile(sorted_vals: list[float], q: float) -> float:
+    if not sorted_vals:
+        return 0.0
+    idx = min(max(int(round((len(sorted_vals) - 1) * q)), 0), len(sorted_vals) - 1)
+    return sorted_vals[idx]
+
+
 def evaluate_extended_wings_vs_de440_reference() -> dict[str, Any]:
-    """Dynamically evaluate embedded Chebyshev kernels (1550-2306 CE) against SHA-pinned full DE440 SPK."""
+    """Dynamically evaluate one date for every single calendar month (1550-01 to 2306-02 = 9,074 months)
+    across the embedded NASA JPL DE440 Chebyshev kernels against the SHA-pinned full DE440 SPK.
+    """
     de440_path = _resolve_de440_reference_kernel()
     if de440_path is None:
         return {
             "evaluation_mode": "REFERENCE_KERNEL_NOT_PROVISIONED",
-            "span_ce": "1550-01-01 to 2305-12-31",
+            "span_ce": "1550-01-15 to 2306-02-15",
             "status": "SKIPPED_NO_LOCAL_DE440_BSP",
         }
 
@@ -109,15 +124,26 @@ def evaluate_extended_wings_vs_de440_reference() -> dict[str, Any]:
     wing_early_diffs: list[float] = []
     core_diffs: list[float] = []
     wing_late_diffs: list[float] = []
+    per_body_diffs: dict[str, list[float]] = {b: [] for b in PHYSICAL_BODIES}
+    per_century_diffs: dict[str, list[float]] = {}
     worst_samples: dict[str, dict[str, Any]] = {}
 
-    epochs_tt = [2287185.0 + 500.0 * idx for idx in range(552)]
+    monthly_schedule: list[tuple[int, int, float]] = []
+    for year in range(1550, 2307):
+        max_month = 2 if year == 2306 else 12
+        for month in range(1, max_month + 1):
+            djm0, djm = erfa.cal2jd(year, month, 15)
+            jd_tt = float(djm0 + djm)
+            if COMPACT_EARLY_START_JD <= jd_tt <= COMPACT_LATE_END_JD:
+                monthly_schedule.append((year, month, jd_tt))
+
+    failures = 0
     t0 = time.perf_counter()
     with (
         Engine.load(kernels={"DE440": de440_path}, eop=None) as eng_ref,
         Engine.load(kernels="extended", eop=None) as eng_ext,
     ):
-        for jd_tt in epochs_tt:
+        for year, month, jd_tt in monthly_schedule:
             pos_kwargs = {"jd_tdb": jd_tt, "mean_equinox": True} if jd_tt < 2305447.5 else {}
             ref_pos = eng_ref.positions_tt(jd_tt, bodies=PHYSICAL_BODIES, **pos_kwargs).value
             ext_pos = eng_ext.positions_tt(jd_tt, bodies=PHYSICAL_BODIES, **pos_kwargs).value
@@ -131,19 +157,28 @@ def evaluate_extended_wings_vs_de440_reference() -> dict[str, Any]:
                 region = "wing_2101_2306"
                 target_list = wing_late_diffs
 
+            century_bucket = f"{(year // 100) * 100}s_CE"
+            cent_list = per_century_diffs.setdefault(century_bucket, [])
+
             for body in PHYSICAL_BODIES:
                 r_lon = float(ref_pos[body]["longitude_deg"])
                 r_lat = float(ref_pos[body]["latitude_deg"])
                 e_lon = float(ext_pos[body]["longitude_deg"])
                 e_lat = float(ext_pos[body]["latitude_deg"])
+                if not (math.isfinite(r_lon) and math.isfinite(e_lon) and math.isfinite(r_lat) and math.isfinite(e_lat)):
+                    failures += 1
+                    continue
                 dlon = abs((e_lon - r_lon + 180.0) % 360.0 - 180.0) * 3600.0
                 dlat = abs(e_lat - r_lat) * 3600.0
                 sep = math.hypot(dlon, dlat)
                 target_list.append(sep)
+                per_body_diffs[body].append(sep)
+                cent_list.append(sep)
 
                 prev_worst = worst_samples.get(region)
                 if prev_worst is None or sep > float(prev_worst["diff_arcsec"]):
                     worst_samples[region] = {
+                        "year_month": f"{year:04d}-{month:02d}",
                         "jd_tt": jd_tt,
                         "body": body,
                         "embedded_chebyshev_lon_deg": round(e_lon, 8),
@@ -157,24 +192,110 @@ def evaluate_extended_wings_vs_de440_reference() -> dict[str, Any]:
     late_max = round(max(wing_late_diffs), 6)
     total_samples = len(wing_early_diffs) + len(core_diffs) + len(wing_late_diffs)
     ceiling_arcsec = 0.05
-    if max(early_max, core_max, late_max) > ceiling_arcsec:
+    if failures > 0 or max(early_max, core_max, late_max) > ceiling_arcsec:
         raise RuntimeError(
-            f"Embedded Chebyshev wing residual {max(early_max, core_max, late_max)} arcsec exceeds {ceiling_arcsec} arcsec ceiling"
+            f"Embedded Chebyshev wing evaluation failed: failures={failures}, "
+            f"max_residual={max(early_max, core_max, late_max)} arcsec (ceiling={ceiling_arcsec})"
         )
+
+    per_body_summary: dict[str, dict[str, Any]] = {}
+    for body, vals in per_body_diffs.items():
+        s_vals = sorted(vals)
+        per_body_summary[body] = {
+            "months_evaluated": len(s_vals),
+            "median_diff_arcsec": round(statistics.median(s_vals), 6),
+            "p95_diff_arcsec": round(_percentile(s_vals, 0.95), 6),
+            "mean_diff_arcsec": round(statistics.fmean(s_vals), 6),
+            "max_diff_arcsec": round(s_vals[-1], 6),
+        }
+
+    per_century_summary: dict[str, dict[str, Any]] = {}
+    for cent_key, vals in sorted(per_century_diffs.items()):
+        s_vals = sorted(vals)
+        per_century_summary[cent_key] = {
+            "samples_evaluated": len(s_vals),
+            "median_diff_arcsec": round(statistics.median(s_vals), 6),
+            "p95_diff_arcsec": round(_percentile(s_vals, 0.95), 6),
+            "mean_diff_arcsec": round(statistics.fmean(s_vals), 6),
+            "max_diff_arcsec": round(s_vals[-1], 6),
+        }
 
     return {
         "evaluation_mode": "LIVE_REPRODUCED_AGAINST_SHA256_PINNED_DE440_BSP",
+        "cadence": "EVERY_SINGLE_CALENDAR_MONTH_1550_01_TO_2306_02",
         "reference_kernel_sha256": de440_sha256,
         "samples_evaluated": total_samples,
-        "epochs_evaluated": len(epochs_tt),
-        "step_days": 500.0,
-        "span_ce": "1550-01-01 to 2305-12-31",
+        "months_evaluated": len(monthly_schedule),
+        "epochs_evaluated": len(monthly_schedule),
+        "failures": failures,
+        "span_ce": "1550-01-15 to 2306-02-15",
         "ceiling_arcsec": ceiling_arcsec,
         "wing_1550_1800_max_diff_arcsec": early_max,
         "core_1800_2100_max_diff_arcsec": core_max,
         "wing_2101_2306_max_diff_arcsec": late_max,
+        "wing_1550_1800_median_diff_arcsec": round(statistics.median(wing_early_diffs), 6),
+        "core_1800_2100_median_diff_arcsec": round(statistics.median(core_diffs), 6),
+        "wing_2101_2306_median_diff_arcsec": round(statistics.median(wing_late_diffs), 6),
+        "per_body_monthly_summary": per_body_summary,
+        "per_century_monthly_summary": per_century_summary,
         "worst_sample_by_region": worst_samples,
         "evaluation_duration_ms": round(elapsed_ms, 3),
+    }
+
+
+def evaluate_deep_history_3102bce_to_3000ce_sweep() -> dict[str, Any]:
+    """Sweep all 12 calendar months across 19 benchmark years from 3102 BCE (-3101) to 3000 CE
+    plus decadal steps across the entire 6,102-year span, verifying 0 failures, 100% finite
+    coordinates, and exact Rahu/Ketu 180-degree antipodal invariants.
+    """
+    adapter = EphemerisAdapter()
+    benchmark_years = (
+        -3101, -2500, -2000, -1500, -1000, -500, 1, 499, 1000,
+        1500, 1550, 1700, 1800, 1900, 1956, 2000, 2026, 2300, 3000,
+    )
+    epochs_jd: list[float] = []
+    for y in benchmark_years:
+        for m in range(1, 13):
+            djm0, djm = erfa.cal2jd(y, m, 15)
+            epochs_jd.append(float(djm0 + djm))
+
+    # Also add every 25-year July midpoint from -3100 to 3000 CE
+    for y in range(-3100, 3001, 25):
+        djm0, djm = erfa.cal2jd(y, 7, 15)
+        epochs_jd.append(float(djm0 + djm))
+
+    unique_epochs = sorted(set(epochs_jd))
+    bodies = ("sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn", "rahu", "ketu")
+    failures = 0
+    max_node_antipode_err_arcsec = 0.0
+    t0 = time.perf_counter()
+
+    for jd_ut in unique_epochs:
+        lons: dict[str, float] = {}
+        for b in bodies:
+            pos = adapter.calc_ut(jd_ut, b, sidereal=True, ayanamsa="lahiri")
+            if not (math.isfinite(pos.longitude_deg) and 0.0 <= pos.longitude_deg < 360.0):
+                failures += 1
+            lons[b] = pos.longitude_deg
+        antipode_diff = abs(((lons["ketu"] - lons["rahu"] - 180.0 + 180.0) % 360.0) - 180.0) * 3600.0
+        if antipode_diff > max_node_antipode_err_arcsec:
+            max_node_antipode_err_arcsec = antipode_diff
+        if antipode_diff > 1.0e-6:
+            failures += 1
+
+    elapsed_ms = (time.perf_counter() - t0) * 1000.0
+    if failures > 0:
+        raise RuntimeError(f"Deep-history 3102 BCE to 3000 CE sweep encountered {failures} failures")
+
+    return {
+        "span_covered": "3102 BCE (-3101) to 3000 CE",
+        "benchmark_years_with_all_12_months": list(benchmark_years),
+        "epochs_tested": len(unique_epochs),
+        "graha_evaluations": len(unique_epochs) * len(bodies),
+        "failures": failures,
+        "max_rahu_ketu_antipode_error_arcsec": round(max_node_antipode_err_arcsec, 9),
+        "elapsed_ms": round(elapsed_ms, 3),
+        "status": "PASS_ZERO_FAILURES",
     }
 
 
@@ -285,6 +406,16 @@ def evaluate_impossible_astrology_and_surfaces() -> dict[str, Any]:
     drift = analyze_siddhanta_vs_jpl_de440_drift(jd_sample)
     drift_ms = (time.perf_counter() - t3) * 1000.0
 
+    t4 = time.perf_counter()
+    fp = compute_personalized_astro_fingerprint(
+        jd_sample,
+        28.6139,
+        77.2090,
+        query_jd_ut=jd_sample + 30.0,
+        birth_time_uncertainty_seconds=60.0,
+    )
+    fp_ms = (time.perf_counter() - t4) * 1000.0
+
     # MCP JSON-RPC 2.0 round-trip
     mcp_init = handle_jsonrpc_message({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}})
     mcp_tools = handle_jsonrpc_message({"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}})
@@ -361,6 +492,17 @@ def evaluate_impossible_astrology_and_surfaces() -> dict[str, Any]:
             "max_abs_delta_deg": drift.max_abs_delta_deg,
             "latency_ms": round(drift_ms, 3),
             "receipt_sha256": drift.receipt_sha256,
+        },
+        "personalized_astro_fingerprint_solver": {
+            "fingerprint_id_sha256": fp.fingerprint_id_sha256,
+            "atmakaraka_planet": fp.atmakaraka_planet,
+            "amatyakaraka_planet": fp.amatyakaraka_planet,
+            "dominant_vimshopaka_planet": fp.dominant_vimshopaka_planet,
+            "dominant_digbala_planet": fp.dominant_digbala_planet,
+            "overall_clock_confidence_score": fp.overall_clock_confidence_score,
+            "overall_personal_transit_resonance_score": fp.overall_personal_transit_resonance_score,
+            "latency_ms": round(fp_ms, 3),
+            "receipt_sha256": fp.receipt_sha256,
         },
         "mcp_server_verification": {
             "initialized": bool(mcp_init and "result" in mcp_init),
@@ -465,14 +607,14 @@ def build_feature_comparison_matrix(wing_eval: dict[str, Any]) -> list[dict[str,
         },
         {
             "parameter": "Built-in Model Context Protocol (MCP) Server for LLMs",
-            "rdg_ephemeris_oss": "Built-in (rdg-ephemeris-mcp / ephemeris-oss mcp) with 8 deterministic tools + AI hallucination auditor",
+            "rdg_ephemeris_oss": "Built-in (rdg-ephemeris-mcp / ephemeris-oss mcp) with 9 deterministic tools + AI hallucination auditor",
             "legacy_c_ephemeris_se_2_10": "None",
             "skyfield_1_55": "None",
             "astropy_6_x": "None",
         },
         {
             "parameter": "Built-in HTTP REST JSON API & OpenAPI 3.1 Server",
-            "rdg_ephemeris_oss": "Built-in zero-dependency server (rdg-ephemeris-api / ephemeris-oss serve)",
+            "rdg_ephemeris_oss": "Built-in zero-dependency server (rdg-ephemeris-api / ephemeris-oss serve) with 12 endpoints",
             "legacy_c_ephemeris_se_2_10": "None (C shared library only)",
             "skyfield_1_55": "None (Python library only)",
             "astropy_6_x": "None (Python library only)",
@@ -485,8 +627,8 @@ def build_feature_comparison_matrix(wing_eval: dict[str, Any]) -> list[dict[str,
             "astropy_6_x": "None",
         },
         {
-            "parameter": "Inverse & Previously Unsolved Astrological Solvers",
-            "rdg_ephemeris_oss": "Built-in sub-second 16-Varga cusp transition solver, Kunda 81x / Pranapada / Tattwa Bayesian birth-time rectification, Graha Yuddha disc-diameter adjudicator, and Surya Siddhanta vs DE440 drift analyzer",
+            "parameter": "Inverse & Personalized Astrological Solvers",
+            "rdg_ephemeris_oss": "Built-in 5-solver suite: sub-second 16-Varga cusp transition solver, Kunda 81x / Pranapada / Tattwa Bayesian birth-time rectification, Graha Yuddha disc-diameter adjudicator, Surya Siddhanta vs DE440 drift analyzer, and personalized 16-Varga harmonic phase + 8-Kaksha transit resonance fingerprint",
             "legacy_c_ephemeris_se_2_10": "None",
             "skyfield_1_55": "None",
             "astropy_6_x": "None",
@@ -504,6 +646,7 @@ def build_feature_comparison_matrix(wing_eval: dict[str, Any]) -> list[dict[str,
 def main() -> int:
     claims_data = json.loads((ROOT / "docs" / "claims.yaml").read_text(encoding="utf-8"))
     wing_eval = evaluate_extended_wings_vs_de440_reference()
+    deep_sweep = evaluate_deep_history_3102bce_to_3000ce_sweep()
     report = {
         "schema": "rdg-ephemeris-sota-evaluation-v1",
         "package_name": "ephemeris-oss",
@@ -511,6 +654,7 @@ def main() -> int:
         "license": "Apache-2.0",
         "embedded_kernel_inventory": evaluate_embedded_kernel_inventory(),
         "multi_millennium_epoch_verification": evaluate_multi_millennium_epochs(),
+        "deep_history_3102bce_to_3000ce_monthly_and_decadal_sweep": deep_sweep,
         "de440_and_horizons_de441_accuracy_summary": {
             "study_parameters": claims_data["study_parameters"],
             "physical_grahas": claims_data["physical_grahas"],
@@ -526,7 +670,21 @@ def main() -> int:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with out_path.open("w", encoding="utf-8", newline="\n") as fh:
         fh.write(json.dumps(report, indent=2, sort_keys=True) + "\n")
+
+    monthly_path = ROOT / "evidence" / "monthly-full-span-de440-benchmark.json"
+    monthly_payload = {
+        "schema": "rdg-ephemeris-monthly-full-span-benchmark-v1",
+        "package_name": "ephemeris-oss",
+        "package_version": __version__,
+        "monthly_embedded_de440_vs_full_de440_bsp": wing_eval,
+        "deep_history_3102bce_to_3000ce_sweep": deep_sweep,
+    }
+    monthly_payload["receipt_sha256"] = canonical_hash(monthly_payload)
+    with monthly_path.open("w", encoding="utf-8", newline="\n") as fh:
+        fh.write(json.dumps(monthly_payload, indent=2, sort_keys=True) + "\n")
+
     print(f"Wrote {out_path} (receipt_sha256={report['receipt_sha256']})")
+    print(f"Wrote {monthly_path} (receipt_sha256={monthly_payload['receipt_sha256']})")
     return 0
 
 
