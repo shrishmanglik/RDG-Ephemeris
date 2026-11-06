@@ -1294,25 +1294,39 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     lines.append("")
     lines.append("| Varga | Sanskrit Name | Slice Size | Classical Manual Counting Rule | Primary Life Domain | *Shadvarga* Wt | *Saptavarga* Wt | *Dashavarga* Wt | *Shodashvarga* Wt |")
     lines.append("|---|---|---|---|---|---|---|---|---|")
+    from ..jyotish.vargas import VIMSHOPAKA_WEIGHTS
+
     varga_specs = (
-        ("D1", "Rashi", "30° 00'", "1st sign itself (`0°–30°`)", "Physical body, general fortune & identity", "6", "5", "3", "3.5"),
-        ("D2", "Hora", "15° 00'", "Odd signs: `0°–15°` Simha (Sun), `15°–30°` Karka (Moon); Even signs: reversed", "Wealth, family sustenance & speech", "2", "2", "1.5", "1.0"),
-        ("D3", "Drekkana", "10° 00'", "`0°–10°` 1st sign; `10°–20°` 5th sign; `20°–30°` 9th sign", "Siblings, courage, enterprise & co-born", "4", "3", "1.5", "1.0"),
-        ("D4", "Chaturthamsa", "07° 30'", "4 slices of `7°30'`: 1st, 4th, 7th, and 10th (Kendra) signs from the Rashi", "Real estate, homes, fixed assets & happiness", "—", "—", "—", "0.5"),
-        ("D7", "Saptamsa", "04° 17' 08.6\"", "7 slices: Odd signs count from same sign; Even signs count from 7th sign", "Children, grandchildren & creative legacy", "—", "1", "1.5", "0.5"),
-        ("D9", "Navamsa", "03° 20'", "9 slices: Fire from Mesha, Earth from Makara, Air from Tula, Water from Karka", "Marriage, spouse, Dharma & inner fruit of planets", "5", "2.5", "1.5", "3.0"),
-        ("D10", "Dasamsa", "03° 00'", "10 slices of `3°`: Odd signs count from same sign; Even signs count from 9th sign", "Career, profession, authority, fame & karma", "—", "—", "1.5", "1.5"),
-        ("D12", "Dwadasamsa", "02° 30'", "12 slices of `2°30'`: Always count consecutively starting from the same sign", "Parents, ancestral lineage & hereditary karma", "2", "4.5", "1.5", "0.5"),
-        ("D16", "Shodasamsa", "01° 52' 30\"", "16 slices: Movable from Mesha, Fixed from Simha, Dual from Dhanu", "Vehicles, luxury, conveyances & inner contentment", "—", "—", "1.5", "2.0"),
-        ("D20", "Vimsamsa", "01° 30'", "20 slices: Movable from Mesha, Fixed from Dhanu, Dual from Simha", "Spiritual sadhana, Upasana, mantra & devotion", "—", "—", "—", "0.5"),
-        ("D24", "Chaturvimsamsa", "01° 15'", "24 slices: Odd signs count from Simha (`04`); Even signs count from Karka (`03`)", "Higher learning, scholarship, Vidya & wisdom", "—", "—", "—", "0.5"),
-        ("D27", "Saptavimsamsa", "01° 06' 40\"", "27 slices: Fire from Mesha, Earth from Karka, Air from Tula, Water from Makara", "Physical stamina, bodily strength & vitality", "—", "—", "—", "0.5"),
-        ("D30", "Trimsamsa", "Unequal (5/5/8/7/5°)", "Odd: Mars 5°, Sat 5°, Jup 8°, Mer 7°, Ven 5°; Even: Ven 5°, Mer 7°, Jup 8°, Sat 5°, Mars 5°", "Arishta, misfortune, character & crisis resilience", "1", "2", "1.5", "1.0"),
-        ("D40", "Khavedamsa", "00° 45'", "40 slices: Odd signs count from Mesha (`00`); Even signs count from Tula (`06`)", "Matrilineal karma & auspicious/inauspicious habits", "—", "—", "—", "0.5"),
-        ("D45", "Akshavedamsa", "00° 40'", "45 slices: Movable from Mesha, Fixed from Simha, Dual from Dhanu", "Patrilineal karma, ethical conduct & royal character", "—", "—", "—", "0.5"),
-        ("D60", "Shashtiamsa", "00° 30'", "60 slices of `30'`: Count `⌊deg × 2⌋` from the same sign; 60 named Sanskrit deities", "Past-life Sanchita Karma & twin birth differentiation", "—", "—", "5.0", "4.0"),
+        ("D1", "Rashi", "30° 00'", "1st sign itself (`0°–30°`)", "Physical body, general fortune & identity"),
+        ("D2", "Hora", "15° 00'", "Odd signs: `0°–15°` Simha (Sun), `15°–30°` Karka (Moon); Even signs: reversed", "Wealth, family sustenance & speech"),
+        ("D3", "Drekkana", "10° 00'", "`0°–10°` 1st sign; `10°–20°` 5th sign; `20°–30°` 9th sign", "Siblings, courage, enterprise & co-born"),
+        ("D4", "Chaturthamsa", "07° 30'", "4 slices of `7°30'`: 1st, 4th, 7th, and 10th (Kendra) signs from the Rashi", "Real estate, homes, fixed assets & happiness"),
+        ("D7", "Saptamsa", "04° 17' 08.6\"", "7 slices: Odd signs count from same sign; Even signs count from 7th sign", "Children, grandchildren & creative legacy"),
+        ("D9", "Navamsa", "03° 20'", "9 slices: Fire from Mesha, Earth from Makara, Air from Tula, Water from Karka", "Marriage, spouse, Dharma & inner fruit of planets"),
+        ("D10", "Dasamsa", "03° 00'", "10 slices of `3°`: Odd signs count from same sign; Even signs count from 9th sign", "Career, profession, authority, fame & karma"),
+        ("D12", "Dwadasamsa", "02° 30'", "12 slices of `2°30'`: Always count consecutively starting from the same sign", "Parents, ancestral lineage & hereditary karma"),
+        ("D16", "Shodasamsa", "01° 52' 30\"", "16 slices: Movable from Mesha, Fixed from Simha, Dual from Dhanu", "Vehicles, luxury, conveyances & inner contentment"),
+        ("D20", "Vimsamsa", "01° 30'", "20 slices: Movable from Mesha, Fixed from Dhanu, Dual from Simha", "Spiritual sadhana, Upasana, mantra & devotion"),
+        ("D24", "Chaturvimsamsa", "01° 15'", "24 slices: Odd signs count from Simha (`04`); Even signs count from Karka (`03`)", "Higher learning, scholarship, Vidya & wisdom"),
+        ("D27", "Saptavimsamsa", "01° 06' 40\"", "27 slices: Fire from Mesha, Earth from Karka, Air from Tula, Water from Makara", "Physical stamina, bodily strength & vitality"),
+        ("D30", "Trimsamsa", "Unequal (5/5/8/7/5°)", "Odd: Mars 5°, Sat 5°, Jup 8°, Mer 7°, Ven 5°; Even: Ven 5°, Mer 7°, Jup 8°, Sat 5°, Mars 5°", "Arishta, misfortune, character & crisis resilience"),
+        ("D40", "Khavedamsa", "00° 45'", "40 slices: Odd signs count from Mesha (`00`); Even signs count from Tula (`06`)", "Matrilineal karma & auspicious/inauspicious habits"),
+        ("D45", "Akshavedamsa", "00° 40'", "45 slices: Movable from Mesha, Fixed from Simha, Dual from Dhanu", "Patrilineal karma, ethical conduct & royal character"),
+        ("D60", "Shashtiamsa", "00° 30'", "60 slices of `30'`: Count `⌊deg × 2⌋` from the same sign; 60 named Sanskrit deities", "Past-life Sanchita Karma & twin birth differentiation"),
     )
-    for vc, vn, vs, vr, vd, w6, w7, w10, w16 in varga_specs:
+
+    def _fmt_vw(scheme_key: str, v_code: str) -> str:
+        val = VIMSHOPAKA_WEIGHTS[scheme_key].get(v_code)
+        if val is None:
+            return "—"
+        return f"{int(val)}" if float(val).is_integer() else f"{val:g}"
+
+    scheme_keys = tuple(VIMSHOPAKA_WEIGHTS.keys())
+    for vc, vn, vs, vr, vd in varga_specs:
+        w6 = _fmt_vw(scheme_keys[0], vc)
+        w7 = _fmt_vw(scheme_keys[1], vc)
+        w10 = _fmt_vw(scheme_keys[2], vc)
+        w16 = _fmt_vw(scheme_keys[3], vc)
         lines.append(f"| **{vc}** | *{vn}* | `{vs}` | {vr} | {vd} | `{w6}` | `{w7}` | `{w10}` | **`{w16}`** |")
     lines.append("")
 

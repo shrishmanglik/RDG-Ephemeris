@@ -580,6 +580,8 @@ def compute_vishesha_lagnas_and_special_points(
     )
 
     # Planetary longitudes for Arudha Padas & Chara Karakas
+    from .vargas import resolve_jaimini_sign_lord
+
     planet_lons: dict[str, float] = {
         "Sun": sun_birth,
         "Moon": moon_birth,
@@ -591,15 +593,16 @@ def compute_vishesha_lagnas_and_special_points(
         ("venus", "Venus"),
         ("saturn", "Saturn"),
         ("rahu", "Rahu"),
+        ("ketu", "Ketu"),
     ):
         planet_lons[p_cap] = ad.calc_ut(jd_ut, p_key, sidereal=True, ayanamsa=ayanamsa).longitude_deg % 360.0
 
-    # 12 Arudha Padas (A1..A12) with Jaimini Swastha Dasha 1st/7th house exception
+    # 12 Arudha Padas (A1..A12) with Jaimini co-lord resolution and Swastha Dasha 1st/7th house exception
     arudha_list: list[ArudhaPadaEntry] = []
     for h_idx in range(12):
         code, title = ARUDHA_HOUSE_NAMES[h_idx]
         base_sign = (lagna_sign_idx + h_idx) % 12
-        lord = RASI_LORDS[base_sign]
+        lord = resolve_jaimini_sign_lord(base_sign, planet_lons)
         lord_lon = planet_lons[lord]
         lord_sign = int(lord_lon // 30.0) % 12
         dist = (lord_sign - base_sign) % 12  # 0 means 1st from house, 6 means 7th from house
@@ -772,6 +775,7 @@ def compute_full_astronomical_sky_ephemeris(
 
     sun_sid = ad.calc_ut(jd_ut, "sun", sidereal=True, ayanamsa=ayanamsa)
     sun_lon_sid = sun_sid.longitude_deg % 360.0
+    sun_lat_deg = float(getattr(sun_sid, "latitude_deg", 0.0))
     sun_dist_au = max(0.001, sun_sid.distance_au)
 
     bodies = (
@@ -829,10 +833,11 @@ def compute_full_astronomical_sky_ephemeris(
             second_diff_arcsec = 0.0
 
         dist_km = dist_au * AU_IN_KM
+        lon_elong_deg = abs(((lon_sid - sun_lon_sid + 180.0) % 360.0) - 180.0)
         if b_query in ("rahu", "true_rahu", "ketu"):
             hp_arcsec = 0.0
             sd_arcsec = 0.0
-            elong_deg = abs(((lon_sid - sun_lon_sid + 180.0) % 360.0) - 180.0)
+            elong_deg = lon_elong_deg
             phase_ang = 0.0
             illum_pct = 0.0
             v_mag = 99.0
@@ -841,7 +846,18 @@ def compute_full_astronomical_sky_ephemeris(
             hp_arcsec = math.degrees(math.asin(sin_hp)) * 3600.0
             r_body_km = BODY_EQUATORIAL_RADIUS_KM.get(b_query, 1000.0)
             sd_arcsec = math.degrees(math.asin(min(1.0, r_body_km / max(r_body_km + 1.0, dist_km)))) * 3600.0
-            elong_deg = abs(((lon_sid - sun_lon_sid + 180.0) % 360.0) - 180.0)
+            d_lon_rad = math.radians(lon_sid - sun_lon_sid)
+            b_lat_rad = math.radians(lat_deg)
+            s_lat_rad = math.radians(sun_lat_deg)
+            cos_e = max(
+                -1.0,
+                min(
+                    1.0,
+                    math.cos(b_lat_rad) * math.cos(s_lat_rad) * math.cos(d_lon_rad)
+                    + math.sin(b_lat_rad) * math.sin(s_lat_rad),
+                ),
+            )
+            elong_deg = 0.0 if b_query == "sun" else math.degrees(math.acos(cos_e))
             if b_query == "sun":
                 phase_ang = 0.0
                 illum_pct = 100.0
@@ -851,10 +867,9 @@ def compute_full_astronomical_sky_ephemeris(
                 illum_pct = 50.0 * (1.0 + math.cos(math.radians(phase_ang)))
                 helio_r = sun_dist_au
             else:
-                # Law of cosines for heliocentric distance r
-                cos_e = math.cos(math.radians(elong_deg))
-                helio_r = math.sqrt(max(0.01, dist_au ** 2 + sun_dist_au ** 2 - 2.0 * dist_au * sun_dist_au * cos_e))
-                cos_i = (helio_r ** 2 + dist_au ** 2 - sun_dist_au ** 2) / max(1e-6, 2.0 * helio_r * dist_au)
+                # 3D law of cosines for heliocentric distance r and phase angle
+                helio_r = math.sqrt(max(1e-12, dist_au ** 2 + sun_dist_au ** 2 - 2.0 * dist_au * sun_dist_au * cos_e))
+                cos_i = (helio_r ** 2 + dist_au ** 2 - sun_dist_au ** 2) / max(1e-9, 2.0 * helio_r * dist_au)
                 phase_ang = math.degrees(math.acos(max(-1.0, min(1.0, cos_i))))
                 illum_pct = 50.0 * (1.0 + math.cos(math.radians(phase_ang)))
             v_mag = _estimate_visual_magnitude(b_query, dist_au, helio_r, phase_ang)
@@ -873,7 +888,7 @@ def compute_full_astronomical_sky_ephemeris(
         comb_orbs = {"moon": (12.0, 12.0), "mars": (17.0, 17.0), "mercury": (14.0, 12.0), "jupiter": (11.0, 11.0), "venus": (10.0, 8.0), "saturn": (15.0, 15.0)}
         if b_query in comb_orbs:
             orb = comb_orbs[b_query][1] if is_retro else comb_orbs[b_query][0]
-            is_combust = elong_deg <= orb
+            is_combust = lon_elong_deg <= orb
 
         is_vargottama = (d9_place.sign_index == rashi_idx)
         is_pushkara_nav = d9_place.sign_index in PUSHKARA_NAVAMSA_RASHI_INDICES.get(rashi_idx, ())

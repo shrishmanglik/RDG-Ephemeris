@@ -2241,7 +2241,7 @@ def solve_chart_date_from_planetary_constraints(
             def _dist_to_mid(lon_val: float) -> float:
                 return abs(((lon_val - arc_mid + 180.0) % 360.0) - 180.0)
 
-            grid_n = 8
+            grid_n = 16
             grid_t: list[float] = [t_a]
             grid_d: list[float] = [_dist_to_mid(lon_a)]
             for k_idx in range(1, grid_n):
@@ -2258,11 +2258,23 @@ def solve_chart_date_from_planetary_constraints(
             grid_d.append(_dist_to_mid(lon_b))
 
             best_k = min(range(1, grid_n), key=lambda idx: grid_d[idx])
-            if grid_d[best_k] < min(grid_d[0], grid_d[-1]):
-                g_lo = grid_t[best_k - 1]
-                g_hi = grid_t[best_k + 1]
-                inv_phi = (math.sqrt(5.0) - 1.0) * 0.5
-                inv_phi2 = (3.0 - math.sqrt(5.0)) * 0.5
+            if max(grid_d) - min(grid_d) <= 1e-12:
+                return None
+
+            cand_brackets: list[tuple[float, float]] = [(grid_t[best_k - 1], grid_t[best_k + 1])]
+            if grid_d[best_k] >= min(grid_d[0], grid_d[-1]) - 1e-12:
+                cand_brackets.extend(
+                    [
+                        (grid_t[0], grid_t[2]),
+                        (grid_t[-3], grid_t[-1]),
+                    ]
+                )
+
+            inv_phi = (math.sqrt(5.0) - 1.0) * 0.5
+            inv_phi2 = (3.0 - math.sqrt(5.0)) * 0.5
+            for b_lo, b_hi in cand_brackets:
+                g_lo = b_lo
+                g_hi = b_hi
                 span_g = g_hi - g_lo
                 c_t = g_lo + inv_phi2 * span_g
                 d_t = g_lo + inv_phi * span_g

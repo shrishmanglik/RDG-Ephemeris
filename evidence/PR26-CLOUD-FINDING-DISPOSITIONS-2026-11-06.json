@@ -260,6 +260,24 @@
       "path": "src/ephemeris_oss/jyotish/conditional_dashas_and_nadi.py",
       "status": "FIXED_AND_VERIFIED",
       "resolution": "Normalized planet_longitudes_deg once via _normalize_planet_longitudes across lowercase, title-case, uppercase, and Sanskrit planet keys in compute_all_10_parashari_nakshatra_dashas and compute_nadi_amsa_and_sudarshana_chakra, and raised ValueError when required planet longitudes are missing."
+    },
+    {
+      "id": 4498677978,
+      "path": "src/ephemeris_oss/jyotish/vishesha_lagnas.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Computed physical solar_elongation_deg, heliocentric distance, phase_angle_deg, illuminated_fraction_pct, and visual_magnitude in compute_full_astronomical_sky_ephemeris from full 3D spherical ecliptic coordinates (including planet and solar ecliptic latitudes) while retaining longitudinal separation for traditional Vedic combustion checks."
+    },
+    {
+      "id": 4498677984,
+      "path": "src/ephemeris_oss/jyotish/vishesha_lagnas.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Included Ketu in planet_lons and called resolve_jaimini_sign_lord(base_sign, planet_lons) in compute_vishesha_lagnas_and_special_points so Scorpio (Mars/Ketu) and Aquarius (Saturn/Rahu) co-lord Arudha Padas match vargas.py::arudha_padas."
+    },
+    {
+      "id": 4498677990,
+      "path": "src/ephemeris_oss/almanac/human_ephemeris.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Populated Table 9A Vimshopaka Bala weights (shadvarga, saptavarga, dasavarga, shodashvarga) directly from vargas.py::VIMSHOPAKA_WEIGHTS and regenerated docs/HUMAN-READABLE-EPHEMERIS-AND-JYOTISH-ACADEMY-MANUAL.md and .html."
     }
   ]
 }

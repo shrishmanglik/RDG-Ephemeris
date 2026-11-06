@@ -754,3 +754,223 @@ def test_generated_stationary_excursion_and_planet_key_matrix() -> None:
             70.0, 5.0, 10.0, {"sun": 10.0, "moon": 70.0}, 2451545.0, query_jd=2461350.0, is_day_birth=True
         )
 
+
+def test_round8_skewed_station_phase_spherical_geometry_arudha_and_vimshopaka_parity() -> None:
+    """Generated regression suite for skewed edge-phase stations, 3D spherical elongation/phase, Jaimini Arudhas, and Table 9A Vimshopaka weights."""
+    import math
+    import re
+    from html.parser import HTMLParser
+    from pathlib import Path
+    from types import SimpleNamespace
+
+    from ephemeris_oss.almanac.human_ephemeris import generate_human_manual_ephemeris_compendium
+    from ephemeris_oss.impossible_astrology import solve_chart_date_from_planetary_constraints
+    from ephemeris_oss.jyotish.vargas import VIMSHOPAKA_WEIGHTS, arudha_padas, resolve_jaimini_sign_lord
+    from ephemeris_oss.jyotish.vishesha_lagnas import (
+        compute_full_astronomical_sky_ephemeris,
+        compute_vishesha_lagnas_and_special_points,
+    )
+    jd_0 = sum(erfa.cal2jd(2026, 1, 1))
+
+    class _SkewedOracle:
+        def __init__(self, body: str, step_days: float, center_fraction: float, is_peak: bool) -> None:
+            self.body = body
+            self.step_days = step_days
+            self.center = center_fraction * step_days
+            self.half_width = 0.04 * step_days
+            self.is_peak = is_peak
+            self.sign = 1 if is_peak else 0
+
+        def longitude(self, day_offset: float, body: str) -> float:
+            if body.lower() != self.body:
+                return 0.0
+            t = min(max(day_offset, 0.0), self.step_days)
+            delta = 0.002 * (1.0 - ((t - self.center) / self.half_width) ** 2)
+            delta = max(delta, -0.5)
+            return 30.0 + delta if self.is_peak else 30.0 - delta
+
+        def calc_ut(self, jd_ut: float, body: str, **kwargs: object) -> SimpleNamespace:
+            t = jd_ut - jd_0
+            eps = 1e-4
+            lon = self.longitude(t, body) % 360.0
+            speed = (self.longitude(t + eps, body) - self.longitude(t - eps, body)) / (2.0 * eps)
+            return SimpleNamespace(
+                longitude_deg=lon,
+                latitude_deg=0.0,
+                distance_au=1.0,
+                longitude_speed_deg_per_day=speed,
+                latitude_speed_deg_per_day=0.0,
+                distance_speed_au_per_day=0.0,
+            )
+
+    # 1. All 48 skewed/edge-phase station cases (4 bodies x 6 center fractions x 2 peak/trough):
+    skewed_cases = 0
+    for body, step_days in (("moon", 0.25), ("mercury", 1.0), ("mars", 2.0), ("saturn", 10.0)):
+        for center_fraction in (0.06, 0.125, 0.37, 0.63, 0.875, 0.94):
+            for is_peak in (True, False):
+                skewed_cases += 1
+                oracle = _SkewedOracle(body, step_days, center_fraction, is_peak)
+                rep = solve_chart_date_from_planetary_constraints(
+                    2026, 2026, {body: oracle.sign}, max_results=5, adapter=oracle
+                )
+                assert rep.match_count == 1, f"Missed skewed station: {body} cf={center_fraction} peak={is_peak}"
+                expected_start = oracle.center - oracle.half_width
+                expected_end = oracle.center + oracle.half_width
+                actual_start = rep.matches[0].window_start_jd_ut - jd_0
+                actual_end = rep.matches[0].window_end_jd_ut - jd_0
+                assert abs(actual_start - expected_start) <= 1e-3
+                assert abs(actual_end - expected_end) <= 1e-3
+    assert skewed_cases == 48
+
+    # 2. 3D spherical ecliptic elongation, phase angle, and illumination (6 cases) + combustion control (1 case):
+    class _GeomAdapter:
+        def __init__(self, body: str, lat: float, lon: float = 0.0) -> None:
+            self.body = body
+            self.lat = lat
+            self.lon = lon
+
+        def get_ayanamsa_ut(self, jd: float, **kwargs: object) -> float:
+            return 0.0
+
+        def calc_ut(self, jd: float, body: str, **kwargs: object) -> SimpleNamespace:
+            sel = body.lower() == self.body
+            return SimpleNamespace(
+                longitude_deg=self.lon if sel else (0.0 if body.lower() == "sun" else 120.0),
+                latitude_deg=self.lat if sel else 0.0,
+                distance_au=0.3 if sel else 1.0,
+                longitude_speed_deg_per_day=1.0,
+                latitude_speed_deg_per_day=0.0,
+                distance_speed_au_per_day=0.0,
+            )
+
+    for body in ("venus", "mercury"):
+        for lat in (0.0, 8.0, -8.0):
+            row = compute_full_astronomical_sky_ephemeris(2451545.0, adapter=_GeomAdapter(body, lat))[body]
+            beta = math.radians(lat)
+            p_vec = (0.3 * math.cos(beta), 0.0, 0.3 * math.sin(beta))
+            s_vec = (1.0, 0.0, 0.0)
+            r_helio = math.sqrt(sum((a - b) ** 2 for a, b in zip(s_vec, p_vec)))
+            cos_phase = sum((-v) * (a - v) for a, v in zip(s_vec, p_vec)) / (0.3 * r_helio)
+            exp_phase = math.degrees(math.acos(max(-1.0, min(1.0, cos_phase))))
+            exp_elong = abs(lat)
+            exp_illum = 50.0 * (1.0 + math.cos(math.radians(exp_phase)))
+            assert row.solar_elongation_deg == pytest.approx(exp_elong, abs=5.1e-5)
+            assert row.phase_angle_deg == pytest.approx(exp_phase, abs=0.0051)
+            assert row.illuminated_fraction_pct == pytest.approx(exp_illum, abs=0.0051)
+
+    combust_row = compute_full_astronomical_sky_ephemeris(2451545.0, adapter=_GeomAdapter("venus", 8.0, 9.0))["venus"]
+    assert combust_row.is_combust is True
+
+    # 3. Scorpio (Mars/Ketu) and Aquarius (Saturn/Rahu) Jaimini co-lord Arudha parity (4 cases):
+    class _ChartAdapter:
+        def __init__(self, asc: float, lons: dict[str, float]) -> None:
+            self.asc = asc
+            self.lons = lons
+
+        def houses_ut(self, *args: object, **kwargs: object) -> SimpleNamespace:
+            return SimpleNamespace(ascendant_deg=self.asc)
+
+        def calc_ut(self, jd: float, body: str, **kwargs: object) -> SimpleNamespace:
+            return SimpleNamespace(longitude_deg=self.lons[body.capitalize()])
+
+    for sign in (7, 10):
+        for node_wins in (False, True):
+            lons = {
+                "Sun": 10.0,
+                "Moon": 70.0,
+                "Mars": 215.0,
+                "Mercury": 90.0,
+                "Jupiter": 120.0,
+                "Venus": 180.0,
+                "Saturn": 305.0,
+                "Rahu": 60.0,
+                "Ketu": 240.0,
+            }
+            classical, node = ("Mars", "Ketu") if sign == 7 else ("Saturn", "Rahu")
+            lons[classical] = sign * 30.0 + 5.0 if node_wins else 60.0
+            lons[node] = 60.0 if node_wins else sign * 30.0 + 5.0
+            lons["Rahu" if node == "Ketu" else "Ketu"] = (lons[node] + 180.0) % 360.0
+            asc = sign * 30.0 + 5.0
+            expected_arudha = arudha_padas(asc, lons)
+            selected_lord = resolve_jaimini_sign_lord(sign, lons)
+            report = compute_vishesha_lagnas_and_special_points(
+                2451545.0, 0.0, 0.0, sunrise_jd_ut=2451544.75, adapter=_ChartAdapter(asc, lons)
+            )
+            first = next(x for x in report.arudha_padas if x.house_number == 1)
+            assert selected_lord == (node if node_wins else classical)
+            assert first.lord_planet == selected_lord
+            assert first.arudha_sign_index == expected_arudha.arudha_lagna_sign
+            for item in report.arudha_padas:
+                assert item.arudha_sign_index == expected_arudha.padas[f"A{item.house_number}"]
+
+    # 4. Table 9A Vimshopaka weight parity across fresh/stored Markdown and HTML (16 cases):
+    class _TableParser(HTMLParser):
+        def __init__(self) -> None:
+            super().__init__()
+            self.tables: list[list[list[str]]] = []
+            self.table: list[list[str]] | None = None
+            self.row: list[str] | None = None
+            self.cell: list[str] | None = None
+
+        def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+            if tag == "table":
+                self.table = []
+            elif tag == "tr" and self.table is not None:
+                self.row = []
+            elif tag in ("td", "th") and self.row is not None:
+                self.cell = []
+
+        def handle_data(self, data: str) -> None:
+            if self.cell is not None:
+                self.cell.append(data)
+
+        def handle_endtag(self, tag: str) -> None:
+            if tag in ("td", "th") and self.cell is not None and self.row is not None:
+                self.row.append("".join(self.cell).strip())
+                self.cell = None
+            elif tag == "tr" and self.row is not None and self.table is not None:
+                self.table.append(self.row)
+                self.row = None
+            elif tag == "table" and self.table is not None:
+                self.tables.append(self.table)
+                self.table = None
+
+    def _extract_weights(text: str, is_html: bool) -> dict[str, list[float]]:
+        if is_html:
+            parser = _TableParser()
+            parser.feed(text)
+            rows = next(t for t in parser.tables if t and len(t[0]) == 9 and t[0][0] == "Varga")
+        else:
+            sec = text.split("### Table 9A", 1)[1].split("### Table 9B", 1)[0]
+            rows = [[c.strip() for c in ln.strip().strip("|").split("|")] for ln in sec.splitlines() if ln.startswith("|")]
+        out: dict[str, list[float]] = {}
+        for cells in rows:
+            k = cells[0].replace("*", "").strip()
+            if not re.fullmatch(r"D\d+", k):
+                continue
+            vals: list[float] = []
+            for c in cells[-4:]:
+                cl = c.replace("*", "").replace("`", "").strip()
+                vals.append(0.0 if cl == "—" else float(cl))
+            out[k] = vals
+        assert len(out) == 16
+        return out
+
+    comp = generate_human_manual_ephemeris_compendium(2026, 11)
+    repo_root = Path(__file__).resolve().parents[1]
+    docs_base = repo_root / "docs" / "HUMAN-READABLE-EPHEMERIS-AND-JYOTISH-ACADEMY-MANUAL"
+    representations = {
+        "fresh_md": _extract_weights(comp.to_markdown(), False),
+        "fresh_html": _extract_weights(comp.to_html(), True),
+        "stored_md": _extract_weights(docs_base.with_suffix(".md").read_text(encoding="utf-8"), False),
+        "stored_html": _extract_weights(docs_base.with_suffix(".html").read_text(encoding="utf-8"), True),
+    }
+    scheme_names = list(VIMSHOPAKA_WEIGHTS.keys())
+    for rep_name, table_map in representations.items():
+        for col_idx, scheme in enumerate(scheme_names):
+            actual = {k: row[col_idx] for k, row in table_map.items()}
+            expected = {k: float(VIMSHOPAKA_WEIGHTS[scheme].get(k, 0.0)) for k in actual}
+            assert actual == expected, f"Vimshopaka mismatch in {rep_name} for {scheme}"
+            assert sum(actual.values()) == pytest.approx(sum(expected.values()))
+
+
