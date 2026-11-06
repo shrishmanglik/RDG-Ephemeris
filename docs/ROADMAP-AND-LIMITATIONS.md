@@ -37,17 +37,26 @@ Users and researchers should distinguish the three distinct calculation regimes 
 
 ---
 
-## 3. Honest Engineering Roadmap (Missing or Upcoming Features)
+## 3. Recently Completed Next-Level Capabilities & Remaining Roadmap
 
-The following capabilities are not yet bundled in the default wheel and are scheduled on the public engineering roadmap:
+### Shipped in Current Release (`ephemeris-oss` v0.2 SOTA Suite)
+1. **BPHS Kalachakra Dasha Engine (`jyotish/dasha.py` -> `compute_kalachakra_dasha`):**
+   - Full implementation of the classical *Brihat Parashara Hora Shastra* "Wheel of Time" Dasha across all 27 Nakshatras x 4 Padas (*Savya* and *Apasavya* 9-sign progressions, Paramayus `83/85/86/100` years, *Deha* and *Jeeva* vitality signs, and *Mandooka / Markata / Simhavalokana Gati* sign jumps).
+2. **30-Star Gaia/Hipparcos ICRS Yogatara Catalog, Stellar Piercing (`Rohini Shakata Bheda`) & Heliacal Visibility (`engine/stellar_anchors.py` & `impossible_astrology.py`):**
+   - Complete 6-parameter ICRS J2000 astrometry (RA, Dec, proper motion $\mu_\alpha^*, \mu_\delta$, parallax $\pi$, radial velocity $v_r$) for all 27 Nakshatra Yogataras + 28th *Abhijit* (Vega) + *Agastya* (Canopus) + *Lubdhaka* (Sirius), propagated via `erfa.pmsafe` and `erfa.apci13` with *Tara Bheda*, *Rohini Shakata Bheda*, and *Kalansha* heliacal visibility (*Udaya/Asta*).
+3. **Planetary Satellite-to-Physical-Centre Offset Corrections (`NAIF 499 / 599 / 699` via `physical_center=True`):**
+   - `EphemerisAdapter.calc_ut(..., physical_center=True)` (or body aliases `"mars_center"`, `"jupiter_center"`, `"saturn_center"`, `"499"`, `"599"`, `"699"`) applies satellite-barycentre recoil corrections for the Galilean moons (Io, Europa, Ganymede, Callisto) on Jupiter (`NAIF 599`), Titan/Rhea/Iapetus on Saturn (`NAIF 699`), and Phobos on Mars (`NAIF 499`), while keeping `physical_center=False` (`NAIF 4/5/6` system barycentres) as the default for exact NASA JPL `DE440` SPK regression parity.
+4. **Exact `Krantisamya` (`Vyatipata` & `Vaidhriti Mahapata`) Declination-Equality Solver (`solve_krantisamya_mahapata_windows`):**
+   - Sub-second root solver for classical *Surya Siddhanta* (*Pata Adhikara*) solar-lunar equatorial declination equality ($\delta_{\text{Sun}} = \pm \delta_{\text{Moon}}$).
+5. **Inverse Sky-to-Date "Astronomical Time-Machine" Solver (`solve_chart_date_from_planetary_constraints`):**
+   - Hierarchical orbital-period sieve (`3102 BCE` to `3000 CE`) that dates undated historical horoscopes, manuscripts, and inscriptions from planetary sign and Nakshatra constraints.
+6. **Triple-Lock Life-Event Peak Window Convergence Solver (`compute_triple_lock_life_event_convergence`):**
+   - Synthesizes Lock 1 (Multi-Dasha Natal Promise: Vimshottari + Kalachakra Deha/Jeeva + Jaimini Chara) + Lock 2 (Guru-Shani Double Transit Gochara Lock) + Lock 3 (Ashtakavarga 8-Kakshya Bindu & Bhrigu Bindu Trigger) into ranked `0..100` peak manifestation windows.
 
-1. **Kalachakra Dasha Engine (`jyotish/dasha.py`):**
-   - While 8 Dasha systems (*Vimshottari, Ashtottari, Yogini, Jaimini Chara, Sthira, Shoola, Mandooka, and Tajika Mudda*) are fully implemented and tested, the full *BPHS Kalachakra Dasha* (*Savya/Apasavya* quarter-pada progressions, *Deha/Jeeva* signs, and *Mandooka/Markata/Simhavalokana Gati* jumps) is planned for an upcoming minor release.
-2. **Embedded Ancient Chebyshev Wing Kernels (`3102 BCE to 1550 CE` from NASA JPL `DE441`):**
+### Remaining Engineering Roadmap (Upcoming Releases)
+1. **Embedded Ancient Chebyshev Wing Kernels (`3102 BCE to 1550 CE` from NASA JPL `DE441`):**
    - Currently, sub-arcsecond numerical integration prior to `1550 CE` requires provisioning the external `de441.bsp` kernel. We plan to publish an optional `ephemeris-oss-ancient-wings` data package containing compressed Chebyshev polynomial fits covering `3102 BCE to 1550 CE` so deep-antiquity numerical precision works without a 3.3 GB SPK download.
-3. **Planetary Satellite-to-Centre Offset Corrections (`NAIF 499 / 599 / 699`):**
-   - Optional satellite-barycentre correction polynomials (`MAR097`, `JUP365`, `SAT441`) for applications requiring sub-arcsecond physical disk-centre coordinates of Jupiter and Saturn in addition to their `DE440` system barycentres.
-4. **Minor Planets, Asteroids & Additional Upagrahas:**
+2. **Minor Planets, Asteroids & Additional Upagrahas:**
    - Support for user-supplied NASA JPL small-body SPK files (Chiron, Ceres, Pallas, Juno, Vesta) in the high-level `EphemerisAdapter` and MCP/REST tools.
-5. **Production Multi-Tenant Deployment Reference for `rdg-ephemeris-api`:**
+3. **Production Multi-Tenant Deployment Reference for `rdg-ephemeris-api`:**
    - `rdg-ephemeris-api` uses Python's standard-library `ThreadingHTTPServer` for zero-dependency portability (`1 MB` request body limit, full OpenAPI 3.1 schema). For high-concurrency public internet deployment, it should be run behind a reverse proxy or ASGI worker pool (e.g., Nginx / Envoy / Gunicorn).

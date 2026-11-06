@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+import math
 from typing import Final, Mapping, Sequence
 
 import erfa
@@ -868,3 +869,331 @@ def compute_chara_karakas(
             )
         )
     return tuple(out)
+
+
+# ============================================================================
+# BPHS Kalachakra Dasha ("The Wheel of Time", Brihat Parashara Hora Shastra Ch. 46)
+# ============================================================================
+
+KALACHAKRA_SIGN_YEARS: Final[Mapping[int, float]] = {
+    0: 7.0,   # Mesha (Mars)
+    1: 16.0,  # Vrishabha (Venus)
+    2: 9.0,   # Mithuna (Mercury)
+    3: 21.0,  # Karka (Moon)
+    4: 5.0,   # Simha (Sun)
+    5: 9.0,   # Kanya (Mercury)
+    6: 16.0,  # Tula (Venus)
+    7: 7.0,   # Vrishchika (Mars)
+    8: 10.0,  # Dhanu (Jupiter)
+    9: 4.0,   # Makara (Saturn)
+    10: 4.0,  # Kumbha (Saturn)
+    11: 10.0, # Meena (Jupiter)
+}
+
+# Savya (clockwise) Nakshatra indices (0..26):
+# Triads 0 (Ashwini..Krittika), 2 (Punarvasu..Ashlesha), 4 (Hasta..Swati),
+# 6 (Mula..Uttara Ashadha), 8 (Purva Bhadrapada..Revati)
+KALACHAKRA_SAVYA_NAKSHATRAS: Final[frozenset[int]] = frozenset(
+    {0, 1, 2, 6, 7, 8, 12, 13, 14, 18, 19, 20, 24, 25, 26}
+)
+
+# Canonical 12 Savya Pada 9-sign sequences (indexed by (pos_in_triad 0..2, pada 1..4))
+# per Brihat Parashara Hora Shastra Chapter 46:
+# Paramayus totals: 100, 85, 83, 86 years.
+KALACHAKRA_SAVYA_SEQUENCES: Final[Mapping[tuple[int, int], tuple[int, ...]]] = {
+    # Savya Star 1 in triad (Ashwini, Punarvasu, Hasta, Mula, Purva Bhadrapada)
+    (0, 1): (0, 1, 2, 3, 4, 5, 6, 7, 8),       # Mesha Amsa (100y): Aries..Sagittarius
+    (0, 2): (9, 10, 11, 7, 6, 5, 3, 4, 2),     # Vrishabha Amsa (85y): Capricorn..Gemini
+    (0, 3): (1, 0, 11, 10, 9, 8, 0, 1, 2),     # Mithuna Amsa (83y): Taurus..Gemini
+    (0, 4): (3, 4, 5, 6, 7, 8, 9, 10, 11),     # Karka Amsa (86y): Cancer..Pisces
+    # Savya Star 2 in triad (Bharani, Pushya, Chitra, Purva Ashadha, Uttara Bhadrapada)
+    (1, 1): (7, 6, 5, 3, 4, 2, 1, 0, 11),      # Simha Amsa (100y): Scorpio..Pisces
+    (1, 2): (10, 9, 8, 0, 1, 2, 3, 4, 5),      # Kanya Amsa (85y): Aquarius..Virgo
+    (1, 3): (6, 7, 8, 9, 10, 11, 7, 6, 5),     # Tula Amsa (83y): Libra..Virgo
+    (1, 4): (3, 4, 2, 1, 0, 11, 10, 9, 8),     # Vrishchika Amsa (86y): Cancer..Sagittarius
+    # Savya Star 3 in triad (Krittika, Ashlesha, Swati, Uttara Ashadha, Revati)
+    (2, 1): (8, 9, 10, 11, 0, 1, 2, 4, 3),     # Dhanu Amsa (86y): Sagittarius..Cancer
+    (2, 2): (5, 6, 7, 8, 9, 10, 11, 7, 6),     # Makara Amsa (83y): Virgo..Libra
+    (2, 3): (5, 4, 3, 2, 1, 0, 8, 9, 10),      # Kumbha Amsa (85y): Virgo..Aquarius
+    (2, 4): (11, 0, 1, 2, 4, 3, 5, 6, 7),      # Meena Amsa (100y): Pisces..Scorpio
+}
+
+# Canonical 12 Apasavya Pada 9-sign sequences (mirror reversal of Savya triads)
+# In Apasavya triads (Rohini..Ardra, Magha..U.Phalguni, Vishakha..Jyeshtha, Shravana..Shatabhisha):
+# Star 1 (Rohini/Magha/Vishakha/Shravana) reverses Savya Star 3 (Padas 4, 3, 2, 1)
+# Star 2 (Mrigashirsha/P.Phalguni/Anuradha/Dhanishta) reverses Savya Star 2 (Padas 4, 3, 2, 1)
+# Star 3 (Ardra/U.Phalguni/Jyeshtha/Shatabhisha) reverses Savya Star 1 (Padas 4, 3, 2, 1)
+KALACHAKRA_APASAVYA_SEQUENCES: Final[Mapping[tuple[int, int], tuple[int, ...]]] = {
+    (0, 1): tuple(reversed(KALACHAKRA_SAVYA_SEQUENCES[(2, 4)])),  # Dhanu Amsa (100y)
+    (0, 2): tuple(reversed(KALACHAKRA_SAVYA_SEQUENCES[(2, 3)])),  # Makara Amsa (85y)
+    (0, 3): tuple(reversed(KALACHAKRA_SAVYA_SEQUENCES[(2, 2)])),  # Kumbha Amsa (83y)
+    (0, 4): tuple(reversed(KALACHAKRA_SAVYA_SEQUENCES[(2, 1)])),  # Meena Amsa (86y)
+    (1, 1): tuple(reversed(KALACHAKRA_SAVYA_SEQUENCES[(1, 4)])),  # Vrishchika Amsa (86y)
+    (1, 2): tuple(reversed(KALACHAKRA_SAVYA_SEQUENCES[(1, 3)])),  # Tula Amsa (83y)
+    (1, 3): tuple(reversed(KALACHAKRA_SAVYA_SEQUENCES[(1, 2)])),  # Kanya Amsa (85y)
+    (1, 4): tuple(reversed(KALACHAKRA_SAVYA_SEQUENCES[(1, 1)])),  # Simha Amsa (100y)
+    (2, 1): tuple(reversed(KALACHAKRA_SAVYA_SEQUENCES[(0, 4)])),  # Karka Amsa (86y)
+    (2, 2): tuple(reversed(KALACHAKRA_SAVYA_SEQUENCES[(0, 3)])),  # Mithuna Amsa (83y)
+    (2, 3): tuple(reversed(KALACHAKRA_SAVYA_SEQUENCES[(0, 2)])),  # Vrishabha Amsa (85y)
+    (2, 4): tuple(reversed(KALACHAKRA_SAVYA_SEQUENCES[(0, 1)])),  # Mesha Amsa (100y)
+}
+
+
+@dataclass(frozen=True)
+class KalachakraDashaPeriod:
+    """A single BPHS Kalachakra Dasha or Antardasha sign period with Gati and Deha/Jeeva flags."""
+
+    level: int
+    level_name: str
+    sign_index: int
+    sign_name: str
+    sign_lord: str
+    start_jd: float
+    end_jd: float
+    start_iso_utc: str
+    end_iso_utc: str
+    duration_days: float
+    duration_years: float
+    gati: str
+    gati_description: str
+    is_deha_sign: bool
+    is_jeeva_sign: bool
+    sub_periods: tuple["KalachakraDashaPeriod", ...] = ()
+
+
+@dataclass(frozen=True)
+class KalachakraDashaTimeline:
+    """Complete BPHS Kalachakra Dasha calculation with Savya/Apasavya chakra, Deha/Jeeva, and Gati jumps."""
+
+    system: str
+    birth_jd: float
+    birth_iso_utc: str
+    year_days: float
+    moon_sidereal_lon_deg: float
+    nakshatra_index: int
+    nakshatra_name: str
+    pada: int
+    chakra_group: str
+    paramayus_years: float
+    deha_sign_index: int
+    deha_sign_name: str
+    jeeva_sign_index: int
+    jeeva_sign_name: str
+    nine_sign_sequence: tuple[int, ...]
+    nine_sign_names: tuple[str, ...]
+    opening_sign_index: int
+    opening_sign_name: str
+    birth_balance_years: float
+    birth_balance_days: float
+    gati_jumps_detected: tuple[str, ...]
+    mahadashas: tuple[KalachakraDashaPeriod, ...]
+
+
+def classify_kalachakra_gati(prev_sign_idx: int | None, curr_sign_idx: int) -> tuple[str, str]:
+    """Classify the classical BPHS Kalachakra Gati (planetary motion jump) between consecutive signs.
+
+    Classical Gatis (*Brihat Parashara Hora Shastra* Ch. 46):
+    - ``Simhavalokana Gati`` (Lion's Gaze): Trinal jump of 4 or 8 signs (e.g., Meena -> Vrishchika or Dhanu -> Mesha).
+    - ``Mandooka Gati`` (Frog Jump): Skipping one intermediate sign (`Virgo -> Cancer` or `Leo -> Gemini`, delta 2 or 10).
+    - ``Markata Gati`` (Monkey Jump): Stepping backward by 1 sign after a frog jump (`Cancer -> Leo` or `Leo -> Cancer`).
+    - ``Krama Gati`` (Regular Step): Normal sequential progression to an adjacent sign.
+    """
+    if prev_sign_idx is None:
+        return ("Prarambha", "Opening birth Dasha sign of the Kalachakra sequence")
+    p = int(prev_sign_idx) % 12
+    c = int(curr_sign_idx) % 12
+    forward_diff = (c - p) % 12
+    if forward_diff in (4, 8):
+        return (
+            "Simhavalokana Gati",
+            f"Lion's gaze trinal jump from {RASI_NAMES[p]} to {RASI_NAMES[c]} (major life direction shift)",
+        )
+    if forward_diff in (2, 10):
+        return (
+            "Mandooka Gati",
+            f"Frog jump skipping one sign from {RASI_NAMES[p]} to {RASI_NAMES[c]} (sudden leap or transition)",
+        )
+    if (p == 3 and c == 4) or (p == 4 and c == 3):
+        return (
+            "Markata Gati",
+            f"Monkey reversal step between {RASI_NAMES[p]} and {RASI_NAMES[c]} (restless reversal of fortune)",
+        )
+    return ("Krama Gati", f"Sequential zodiacal step from {RASI_NAMES[p]} to {RASI_NAMES[c]}")
+
+
+def compute_kalachakra_dasha(
+    moon_sidereal_lon_deg: float,
+    birth_jd: float,
+    *,
+    year_days: float = SOLAR_YEAR_DAYS,
+    include_antardashas: bool = True,
+) -> KalachakraDashaTimeline:
+    """Compute the classical BPHS Kalachakra Dasha ('Wheel of Time') from Moon's sidereal longitude.
+
+    Implements the full 27-Nakshatra x 4-Pada Savya and Apasavya 9-sign progressions,
+    exact Paramayus (83, 85, 86, or 100 years), Deha (Body) and Jeeva (Soul) Rashi
+    identification, proportional birth-pada balance across the 9 signs, Antardasha
+    sub-periods, and Mandooka / Markata / Simhavalokana Gati jump classification.
+    """
+    from .vargas import RASI_LORDS
+
+    if not math.isfinite(float(moon_sidereal_lon_deg)) or not math.isfinite(float(birth_jd)):
+        raise ValueError("moon_sidereal_lon_deg and birth_jd must be finite numbers")
+
+    nak = nakshatra_position(moon_sidereal_lon_deg)
+    nak_idx = int(nak.index)
+    pada = int(nak.pada)
+    pos_in_triad = nak_idx % 3
+    is_savya = nak_idx in KALACHAKRA_SAVYA_NAKSHATRAS
+    chakra_group = "Savya" if is_savya else "Apasavya"
+
+    seq = (
+        KALACHAKRA_SAVYA_SEQUENCES[(pos_in_triad, pada)]
+        if is_savya
+        else KALACHAKRA_APASAVYA_SEQUENCES[(pos_in_triad, pada)]
+    )
+    paramayus = float(sum(KALACHAKRA_SIGN_YEARS[s] for s in seq))
+
+    # In Savya, first sign is Deha and last (9th) sign is Jeeva.
+    # In Apasavya, first sign is Jeeva and last (9th) sign is Deha (BPHS Ch. 46).
+    if is_savya:
+        deha_sign = seq[0]
+        jeeva_sign = seq[-1]
+    else:
+        jeeva_sign = seq[0]
+        deha_sign = seq[-1]
+
+    # Fraction elapsed within the active Pada (each Pada spans 3 deg 20 min = 10/3 deg)
+    pada_span = NAKSHATRA_SPAN_DEG / 4.0
+    offset_in_pada = max(0.0, min(pada_span, float(nak.degree_in_pada)))
+    fraction_elapsed_in_pada = offset_in_pada / pada_span
+    years_elapsed_in_cycle = fraction_elapsed_in_pada * paramayus
+    years_remaining_in_cycle = max(0.0, paramayus - years_elapsed_in_cycle)
+
+    # Locate which of the 9 signs in `seq` is active at birth_jd, and build 2 full cycles
+    # (18 sign periods) so the timeline comfortably covers >100 years from birth.
+    unclipped_start_jd = float(birth_jd) - (years_elapsed_in_cycle * float(year_days))
+    cursor_jd = unclipped_start_jd
+
+    extended_seq = seq + seq
+    mahadashas: list[KalachakraDashaPeriod] = []
+    gati_jumps: list[str] = []
+    opening_sign_idx: int | None = None
+    birth_balance_years: float = 0.0
+
+    for idx_in_ext, s_idx in enumerate(extended_seq):
+        full_sign_years = float(KALACHAKRA_SIGN_YEARS[s_idx])
+        full_sign_days = full_sign_years * float(year_days)
+        s_start_jd = cursor_jd
+        s_end_jd = cursor_jd + full_sign_days
+        cursor_jd = s_end_jd
+
+        prev_s = extended_seq[idx_in_ext - 1] if idx_in_ext > 0 else None
+        gati_name, gati_desc = classify_kalachakra_gati(prev_s, s_idx)
+        if idx_in_ext < len(seq) and gati_name not in ("Prarambha", "Krama Gati"):
+            gati_jumps.append(f"{RASI_NAMES[prev_s]}->{RASI_NAMES[s_idx]} ({gati_name})")
+
+        if s_end_jd <= float(birth_jd) + 1e-9:
+            continue
+
+        eff_start_jd = max(float(birth_jd), s_start_jd)
+        eff_days = s_end_jd - eff_start_jd
+        eff_years = eff_days / float(year_days)
+
+        if opening_sign_idx is None:
+            opening_sign_idx = s_idx
+            birth_balance_years = eff_years
+
+        # Build proportional Antardashas across the 9 signs starting from the active sign position in `seq`
+        sub_periods: list[KalachakraDashaPeriod] = []
+        if include_antardashas:
+            seq_pos = idx_in_ext % len(seq)
+            ordered_sub_seq = seq[seq_pos:] + seq[:seq_pos]
+            sub_cursor = s_start_jd
+            for sub_i, sub_s_idx in enumerate(ordered_sub_seq):
+                sub_w = float(KALACHAKRA_SIGN_YEARS[sub_s_idx])
+                sub_full_days = (
+                    full_sign_days * (sub_w / paramayus)
+                    if sub_i < len(ordered_sub_seq) - 1
+                    else (s_end_jd - sub_cursor)
+                )
+                sub_s = sub_cursor
+                sub_e = sub_cursor + sub_full_days
+                sub_cursor = sub_e
+                if sub_e <= float(birth_jd) + 1e-9:
+                    continue
+                eff_sub_s = max(float(birth_jd), sub_s)
+                eff_sub_days = sub_e - eff_sub_s
+                prev_sub_s = ordered_sub_seq[sub_i - 1] if sub_i > 0 else None
+                sub_gati, sub_gati_desc = classify_kalachakra_gati(prev_sub_s, sub_s_idx)
+                sub_periods.append(
+                    KalachakraDashaPeriod(
+                        level=2,
+                        level_name="Antardasha",
+                        sign_index=sub_s_idx,
+                        sign_name=RASI_NAMES[sub_s_idx],
+                        sign_lord=RASI_LORDS[sub_s_idx],
+                        start_jd=eff_sub_s,
+                        end_jd=sub_e,
+                        start_iso_utc=jd_to_iso_utc(eff_sub_s),
+                        end_iso_utc=jd_to_iso_utc(sub_e),
+                        duration_days=eff_sub_days,
+                        duration_years=eff_sub_days / float(year_days),
+                        gati=sub_gati,
+                        gati_description=sub_gati_desc,
+                        is_deha_sign=(sub_s_idx == deha_sign),
+                        is_jeeva_sign=(sub_s_idx == jeeva_sign),
+                    )
+                )
+
+        mahadashas.append(
+            KalachakraDashaPeriod(
+                level=1,
+                level_name="Mahadasha",
+                sign_index=s_idx,
+                sign_name=RASI_NAMES[s_idx],
+                sign_lord=RASI_LORDS[s_idx],
+                start_jd=eff_start_jd,
+                end_jd=s_end_jd,
+                start_iso_utc=jd_to_iso_utc(eff_start_jd),
+                end_iso_utc=jd_to_iso_utc(s_end_jd),
+                duration_days=eff_days,
+                duration_years=eff_years,
+                gati=gati_name,
+                gati_description=gati_desc,
+                is_deha_sign=(s_idx == deha_sign),
+                is_jeeva_sign=(s_idx == jeeva_sign),
+                sub_periods=tuple(sub_periods),
+            )
+        )
+        if len(mahadashas) >= 9:
+            break
+
+    if opening_sign_idx is None:
+        opening_sign_idx = seq[0]
+
+    return KalachakraDashaTimeline(
+        system="Kalachakra",
+        birth_jd=float(birth_jd),
+        birth_iso_utc=jd_to_iso_utc(birth_jd),
+        year_days=float(year_days),
+        moon_sidereal_lon_deg=normalize_degrees(moon_sidereal_lon_deg),
+        nakshatra_index=nak_idx,
+        nakshatra_name=nak.name,
+        pada=pada,
+        chakra_group=chakra_group,
+        paramayus_years=paramayus,
+        deha_sign_index=deha_sign,
+        deha_sign_name=RASI_NAMES[deha_sign],
+        jeeva_sign_index=jeeva_sign,
+        jeeva_sign_name=RASI_NAMES[jeeva_sign],
+        nine_sign_sequence=seq,
+        nine_sign_names=tuple(RASI_NAMES[s] for s in seq),
+        opening_sign_index=opening_sign_idx,
+        opening_sign_name=RASI_NAMES[opening_sign_idx],
+        birth_balance_years=birth_balance_years,
+        birth_balance_days=birth_balance_years * float(year_days),
+        gati_jumps_detected=tuple(gati_jumps),
+        mahadashas=tuple(mahadashas),
+    )
+

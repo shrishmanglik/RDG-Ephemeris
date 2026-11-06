@@ -180,6 +180,49 @@ def build_openapi_spec(server_url: str = "http://127.0.0.1:8765") -> dict[str, A
                     "responses": _post_responses(),
                 }
             },
+            "/v1/yogatara": {
+                "post": {
+                    "summary": (
+                        "Propagate 30 Gaia/Hipparcos Yogataras and detect Tara Bheda, "
+                        "Rohini Shakata Bheda, and Kalansha heliacal visibility"
+                    ),
+                    "operationId": "evaluateYogataraStellarBheda",
+                    "requestBody": _request_body("evaluate_yogatara_stellar_bheda"),
+                    "responses": _post_responses(),
+                }
+            },
+            "/v1/mahapata": {
+                "post": {
+                    "summary": (
+                        "Solve exact Surya Siddhanta Vyatipata and Vaidhriti Mahapata "
+                        "solar-lunar declination equality windows"
+                    ),
+                    "operationId": "solveKrantisamyaMahapata",
+                    "requestBody": _request_body("solve_krantisamya_mahapata"),
+                    "responses": _post_responses(),
+                }
+            },
+            "/v1/inverse-date": {
+                "post": {
+                    "summary": (
+                        "Inverse Sky-to-Date 'Astronomical Time-Machine' solver across 3102 BCE to 3000 CE"
+                    ),
+                    "operationId": "solveInverseChartDate",
+                    "requestBody": _request_body("solve_inverse_chart_date"),
+                    "responses": _post_responses(),
+                }
+            },
+            "/v1/triple-lock": {
+                "post": {
+                    "summary": (
+                        "Compute Triple-Lock Life-Event Convergence (Multi-Dasha + Guru-Shani Double Transit "
+                        "+ Ashtakavarga 8-Kakshya & Bhrigu Bindu)"
+                    ),
+                    "operationId": "computeTripleLockConvergence",
+                    "requestBody": _request_body("compute_triple_lock_convergence"),
+                    "responses": _post_responses(),
+                }
+            },
         },
     }
 
@@ -194,6 +237,10 @@ _ROUTE_TO_TOOL: Mapping[str, str] = {
     "/v1/fact-sheet": "compile_verified_ai_fact_sheet",
     "/v1/verify-text": "verify_ai_astrology_text",
     "/v1/fingerprint": "compute_personalized_astro_fingerprint",
+    "/v1/yogatara": "evaluate_yogatara_stellar_bheda",
+    "/v1/mahapata": "solve_krantisamya_mahapata",
+    "/v1/inverse-date": "solve_inverse_chart_date",
+    "/v1/triple-lock": "compute_triple_lock_convergence",
 }
 
 

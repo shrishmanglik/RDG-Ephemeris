@@ -131,19 +131,28 @@ BODY_NAME_ALIASES: Mapping[str, str] = {
     "mars": "mars",
     "mangala": "mars",
     "kuja": "mars",
+    "mars_center": "mars",
+    "499": "mars",
     "4": "mars",
     "jupiter": "jupiter",
     "guru": "jupiter",
     "brihaspati": "jupiter",
+    "jupiter_center": "jupiter",
+    "599": "jupiter",
     "5": "jupiter",
     "saturn": "saturn",
     "shani": "saturn",
+    "saturn_center": "saturn",
+    "699": "saturn",
     "6": "saturn",
     "uranus": "uranus",
+    "aruna": "uranus",
     "7": "uranus",
     "neptune": "neptune",
+    "varuna": "neptune",
     "8": "neptune",
     "pluto": "pluto",
+    "yama": "pluto",
     "9": "pluto",
     "rahu": "rahu",
     "mean_node": "rahu",
@@ -182,6 +191,66 @@ def _resolve_body_name(body: str | int) -> str:
     if key in BODY_NAME_ALIASES:
         return BODY_NAME_ALIASES[key]
     raise EphemerisError(f"unsupported astronomical body {body!r}")
+
+
+def _planet_physical_center_offset_deg(
+    *,
+    body_key: str,
+    jd_tt: float,
+    planet_lon_deg: float,
+    dist_au: float,
+) -> tuple[float, float]:
+    """Compute physical disk-centre (NAIF 499/599/699) minus system-barycentre (NAIF 4/5/6) offset in degrees.
+
+    Models the centre-of-mass recoil caused by the Galilean moons (Io, Europa,
+    Ganymede, Callisto) for Jupiter (NAIF 599), Titan/Rhea/Iapetus for Saturn
+    (NAIF 699), and Phobos/Deimos for Mars (NAIF 499).
+    """
+    d_j2000 = float(jd_tt) - J2000_JD
+    dist_km = max(float(dist_au) * AU_KM, 1.0e5)
+    p_rad = math.radians(float(planet_lon_deg))
+
+    if body_key == "jupiter":
+        # Galilean satellites (mu_i * a_i in km, L0_deg, n_deg_per_day, inc_deg)
+        # Io: 19.837 km, Europa: 16.964 km, Ganymede: 83.546 km, Callisto: 106.693 km
+        sats = (
+            (19.837, 106.077, 203.48895579, 0.05),
+            (16.964, 175.731, 101.37472473, 0.47),
+            (83.546, 120.558, 50.31760920, 0.20),
+            (106.693, 84.444, 21.57107117, 0.20),
+        )
+        eq_inc_rad = math.radians(3.13)
+    elif body_key == "saturn":
+        # Titan: mu*a = 289.09 km, Rhea: 2.14 km, Iapetus: 11.33 km
+        sats = (
+            (289.090, 15.485, 22.57697680, 0.35),
+            (2.140, 290.120, 79.69004780, 0.35),
+            (11.330, 76.230, 4.53795720, 15.47),
+        )
+        eq_inc_rad = math.radians(26.73)
+    elif body_key == "mars":
+        # Phobos: mu*a = 0.000155 km
+        sats = ((0.000155, 92.470, 1128.8445850, 1.09),)
+        eq_inc_rad = math.radians(25.19)
+    else:
+        return 0.0, 0.0
+
+    dx_km = 0.0
+    dy_km = 0.0
+    dz_km = 0.0
+    for recoil_km, l0_deg, rate_deg_day, sat_inc_deg in sats:
+        lam_rad = math.radians((l0_deg + rate_deg_day * d_j2000) % 360.0)
+        inc_rad = eq_inc_rad + math.radians(sat_inc_deg)
+        # Planet physical centre is opposite to satellite displacement (-mu * r_sat)
+        dx_km -= recoil_km * math.cos(lam_rad)
+        dy_km -= recoil_km * math.sin(lam_rad) * math.cos(inc_rad)
+        dz_km -= recoil_km * math.sin(lam_rad) * math.sin(inc_rad)
+
+    # Project transverse displacement onto the geocentric line of sight
+    transverse_lon_km = -dx_km * math.sin(p_rad) + dy_km * math.cos(p_rad)
+    dlon_deg = math.degrees(transverse_lon_km / dist_km)
+    dlat_deg = math.degrees(dz_km / dist_km)
+    return float(dlon_deg), float(dlat_deg)
 
 
 @dataclass(frozen=True)
@@ -894,6 +963,7 @@ class EphemerisAdapter:
         sidereal: bool = True,
         ayanamsa: str = "lahiri",
         true_node: bool = False,
+        physical_center: bool = False,
     ) -> PlanetCoordinateResult:
         """Compute apparent geocentric coordinates, speed, retrograde flag, and receipt for ``body``."""
         jd_val = self._coerce_jd_ut(jd_ut)
@@ -905,6 +975,9 @@ class EphemerisAdapter:
         use_true_node = bool(true_node) or (
             raw_body_str in {"true_node", "osculating_node", "true_rahu", "true_ketu"}
         )
+        use_physical_center = bool(physical_center) or (
+            raw_body_str in {"mars_center", "jupiter_center", "saturn_center", "499", "599", "699"}
+        )
         body_key = _resolve_body_name(body)
         jd_tt = self._jd_ut_to_jd_tt(jd_val)
         tt = (J2000_JD, jd_tt - J2000_JD)
@@ -915,6 +988,16 @@ class EphemerisAdapter:
 
         provider = self._engine._provider
         ayan_deg = self.get_ayanamsa_ut(jd_val, mode=ayanamsa) if sidereal else 0.0
+        if body_key in ("uranus", "neptune", "pluto"):
+            return self._calc_ut_historical_analytical(
+                jd_val=jd_val,
+                jd_tt=jd_tt,
+                body_key=body_key,
+                sidereal=sidereal,
+                ayanamsa=ayanamsa,
+                ayan_deg=ayan_deg,
+                true_node=use_true_node,
+            )
         try:
             artifact = provider._kernel_registry.artifact_for_tdb_jd(times.tdb_jd)
         except AstronomyDataUnavailable:
@@ -1040,13 +1123,22 @@ class EphemerisAdapter:
             )
             is_retro = bool(speed_deg < 0.0) if body_key not in ("sun", "moon") else False
             dist_au = float(radius_km / AU_KM)
+            if use_physical_center and body_key in ("mars", "jupiter", "saturn"):
+                dlon_center_deg, dlat_center_deg = _planet_physical_center_offset_deg(
+                    body_key=body_key,
+                    jd_tt=jd_tt,
+                    planet_lon_deg=tropical_lon,
+                    dist_au=dist_au,
+                )
+                tropical_lon = (tropical_lon + dlon_center_deg) % 360.0
+                lat_deg = float(lat_deg + dlat_center_deg)
             if sidereal:
                 lon_deg = (tropical_lon - ayan_deg) % 360.0
             else:
                 nutation_deg = math.degrees(float(erfa.nut06a(*tt)[0]))
                 lon_deg = (tropical_lon + nutation_deg) % 360.0
 
-        receipt_payload = {
+        receipt_payload: dict[str, Any] = {
             "schema": "ephemeris-oss.adapter.calc_ut.v1",
             "version": __version__,
             "jd_ut": round(jd_val, 9),
@@ -1063,6 +1155,8 @@ class EphemerisAdapter:
             "longitude_speed_deg_per_day": round(speed_deg, 9),
             "is_retrograde": is_retro,
         }
+        if use_physical_center:
+            receipt_payload["physical_center"] = True
         return PlanetCoordinateResult(
             longitude_deg=float(lon_deg),
             latitude_deg=float(lat_deg),
