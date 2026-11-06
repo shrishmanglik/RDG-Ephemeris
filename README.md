@@ -3,6 +3,7 @@
 An independently built, permissively licensed (`Apache-2.0`) planetary ephemeris and classical Indian astronomy (Jyotish) engine designed for real Jyotish applications with **40 years of lived traditional Jyotish practice** (in tribute to **Raj Dulari Gupta  -  RDG**) and modern clean-room software engineering. Derived directly from NASA JPL DE440/DE441 Chebyshev polynomials, IAU 2006/2000A precession-nutation, Vondrák-2011 long-term precession, and primary astronomical and Jyotish treatises, every calculation carries explicit conventions, transparent accuracy and limitation disclosures, and a deterministic SHA-256 cryptographic receipt.
 
 - **Technical White Paper & 9,074-Month Full-Span DE440 Benchmark:** [`docs/RDG-EPHEMERIS-WHITEPAPER-AND-BENCHMARKS.md`](docs/RDG-EPHEMERIS-WHITEPAPER-AND-BENCHMARKS.md)
+- **Human-Readable Classical Ephemeris & Pt. Maheshji's Jyotish Academy Manual Calculation Compendium:** [`docs/HUMAN-READABLE-EPHEMERIS-AND-JYOTISH-ACADEMY-MANUAL.md`](docs/HUMAN-READABLE-EPHEMERIS-AND-JYOTISH-ACADEMY-MANUAL.md)
 - **AI Agent, MCP Server, CLI & REST Plugin Integration Guide:** [`docs/AI-MCP-AND-PLUGIN-INTEGRATION-GUIDE.md`](docs/AI-MCP-AND-PLUGIN-INTEGRATION-GUIDE.md)
 - **Jyotish Capabilities & Lineage Conventions:** [`docs/JYOTISH-CAPABILITIES-AND-CONVENTIONS.md`](docs/JYOTISH-CAPABILITIES-AND-CONVENTIONS.md)
 - **Scientific Limitations, Precision Regimes & Honest Roadmap:** [`docs/ROADMAP-AND-LIMITATIONS.md`](docs/ROADMAP-AND-LIMITATIONS.md)
@@ -122,6 +123,9 @@ ephemeris-oss impossible --at 2026-10-06T12:00:00Z --lat 28.6139 --lon 77.2090
 
 # Compute the Personalized Astrological Fingerprint (16-domain clock confidence decay, 16-Varga phase stability, Digbala, 8-Kaksha transit resonance)
 ephemeris-oss fingerprint --at 2026-10-06T12:00:00Z --lat 28.6139 --lon 77.2090 --uncertainty-sec 60
+
+# Generate the Human-Readable Classical Ephemeris & Pt. Maheshji's Jyotish Academy Manual Calculation Compendium
+ephemeris-oss human-ephemeris --year 2026 --month 11 --format markdown --out docs/HUMAN-READABLE-EPHEMERIS-AND-JYOTISH-ACADEMY-MANUAL.md
 ```
 
 ### 3. Model Context Protocol (MCP) Server for LLMs (`rdg-ephemeris-mcp`)

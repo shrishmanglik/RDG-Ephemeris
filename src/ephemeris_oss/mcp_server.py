@@ -24,7 +24,7 @@ from typing import Any, Mapping, TextIO
 
 from ._version import __version__
 from .adapter import EphemerisAdapter, VEDIC_NINE_GRAHAS
-from .almanac import compute_regional_panchang
+from .almanac import compute_regional_panchang, generate_human_manual_ephemeris_compendium
 from .fact_sheet import compile_ai_fact_sheet, verify_ai_interpretation
 from .impossible_astrology import (
     analyze_siddhanta_vs_jpl_de440_drift,
@@ -335,6 +335,28 @@ MCP_TOOLS: tuple[dict[str, Any], ...] = (
             "required": ["birth_jd_ut", "start_jd_ut", "end_jd_ut"],
         },
     },
+    {
+        "name": "generate_human_manual_ephemeris",
+        "description": (
+            "Generate the Human-Readable Classical Ephemeris & Pt. Maheshji's Jyotish Academy "
+            "Manual Calculation Compendium (daily Rashi-DMS positions, Nakshatra-Pada, daily motion "
+            "for Trairashika interpolation, sunrise Drik Panchang in Ghati-Pala, manual Lagna/Rasimana "
+            "tables, Shodashvarga D1-D60 lookup tables, Vimshottari/Kalachakra Dasha balance tables, "
+            "337-Bindu Ashtakavarga matrix, and a step-by-step worked manual Kundali worksheet)."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "year": {"type": "integer", "default": 2026},
+                "month": {"type": "integer", "default": 11},
+                "latitude_deg": {"type": "number", "default": 28.6139},
+                "longitude_deg": {"type": "number", "default": 77.2090},
+                "tz_offset_hours": {"type": "number", "default": 5.5},
+                "ayanamsa": {"type": "string", "default": "lahiri"},
+                "include_markdown": {"type": "boolean", "default": False},
+            },
+        },
+    },
 )
 
 
@@ -631,6 +653,28 @@ def execute_mcp_tool(name: str, arguments: Mapping[str, Any] | None = None) -> d
             adapter=adapter,
         )
         return _to_jsonable(tl_report.to_dict())
+
+    if name == "generate_human_manual_ephemeris":
+        year = int(args.get("year", 2026))
+        month = int(args.get("month", 11))
+        lat = float(args.get("latitude_deg", 28.6139))
+        lon = float(args.get("longitude_deg", 77.2090))
+        tz_off = float(args.get("tz_offset_hours", 5.5))
+        ayanamsa = str(args.get("ayanamsa", "lahiri"))
+        inc_md = bool(args.get("include_markdown", False))
+        comp = generate_human_manual_ephemeris_compendium(
+            year,
+            month,
+            latitude_deg=lat,
+            longitude_deg=lon,
+            tz_offset_hours=tz_off,
+            ayanamsa=ayanamsa,
+            adapter=adapter,
+        )
+        res_dict = comp.to_dict()
+        if inc_md:
+            res_dict["markdown"] = comp.to_markdown()
+        return _to_jsonable(res_dict)
 
     raise ValueError(f"Unknown MCP tool: {name!r}")
 

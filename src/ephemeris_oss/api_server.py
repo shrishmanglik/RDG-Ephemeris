@@ -223,6 +223,16 @@ def build_openapi_spec(server_url: str = "http://127.0.0.1:8765") -> dict[str, A
                     "responses": _post_responses(),
                 }
             },
+            "/v1/human-ephemeris": {
+                "post": {
+                    "summary": (
+                        "Generate Human-Readable Classical Ephemeris & Jyotish Academy Manual Calculation Compendium"
+                    ),
+                    "operationId": "generateHumanManualEphemeris",
+                    "requestBody": _request_body("generate_human_manual_ephemeris"),
+                    "responses": _post_responses(),
+                }
+            },
         },
     }
 
@@ -241,6 +251,7 @@ _ROUTE_TO_TOOL: Mapping[str, str] = {
     "/v1/mahapata": "solve_krantisamya_mahapata",
     "/v1/inverse-date": "solve_inverse_chart_date",
     "/v1/triple-lock": "compute_triple_lock_convergence",
+    "/v1/human-ephemeris": "generate_human_manual_ephemeris",
 }
 
 

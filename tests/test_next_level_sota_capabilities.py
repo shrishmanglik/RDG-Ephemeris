@@ -25,6 +25,10 @@ from ephemeris_oss import (
     dispatch_api_request,
     evaluate_yogatara_stellar_bheda_and_visibility,
     execute_mcp_tool,
+    format_classical_rashi_dms,
+    format_daily_motion_dms,
+    format_ghati_pala,
+    generate_human_manual_ephemeris_compendium,
     propagate_yogatara_apparent,
     solve_chart_date_from_planetary_constraints,
     solve_krantisamya_mahapata_windows,
@@ -265,3 +269,50 @@ def test_mcp_and_rest_api_endpoints_for_next_level_solvers() -> None:
 
     mcp_res = execute_mcp_tool("evaluate_yogatara_stellar_bheda", {"jd_ut": 2461350.0})
     assert mcp_res["yogatara_count"] == 30
+
+    assert "/v1/human-ephemeris" in paths
+    st5, p5 = dispatch_api_request(
+        "POST",
+        "/v1/human-ephemeris",
+        {"year": 2026, "month": 11, "include_markdown": True},
+    )
+    assert st5 == 200
+    assert p5["year"] == 2026
+    assert p5["month"] == 11
+    assert len(p5["daily_rows"]) == 30
+    assert "Section 7 — Pt. Maheshji's Jyotish Academy Step-by-Step Worked Manual Kundali Worksheet" in p5["markdown"]
+
+
+def test_human_readable_classical_ephemeris_and_jyotish_academy_compendium() -> None:
+    """Verify the Human-Readable Classical Ephemeris & Jyotish Academy Manual Compendium."""
+    assert format_classical_rashi_dms(137.0230556) == 'Simha 17° 01\' 23"'
+    assert format_classical_rashi_dms(137.0230556, compact_sign_number=True) == '04s 17° 01\' 23"'
+    assert format_daily_motion_dms(-0.2122223) == '-00° 12\' 44"'
+    assert format_ghati_pala(5.2) == "13 Gh 00 Pa"
+
+    comp = generate_human_manual_ephemeris_compendium(2026, 11, latitude_deg=28.6139, longitude_deg=77.2090)
+    assert comp.year == 2026
+    assert comp.month == 11
+    assert len(comp.daily_rows) == 30
+    assert len(comp.receipt_sha256) == 64
+
+    first_day = comp.daily_rows[0]
+    assert "sun" in first_day.planets
+    assert "moon" in first_day.planets
+    assert "true_rahu" in first_day.planets
+    assert "uranus" in first_day.planets
+    assert "Gh" in first_day.dinamana_ghati_pala
+
+    md = comp.to_markdown()
+    assert "Section 1 — Daily Sidereal (*Nirayana*) Planetary Ephemeris Table" in md
+    assert "Section 2 — Daily Sunrise-Anchored *Drik Panchanga* & *Muhurta* Table" in md
+    assert "Section 3 — Manual *Spashta Graha* (Planetary Interpolation) & *Lagna / Bhava* Tables" in md
+    assert "Section 4 — Complete Manual Divisional Chart (*Shodashvarga D1–D60*) Reckoning Tables" in md
+    assert "Section 5 — Complete Manual *Dasha* Balance (*Bhogyamsha*) & Progression Tables" in md
+    assert "Section 6 — Manual *Ashtakavarga* (337-Bindu Matrix), *Shadbala*, & 30-Star *Yogatara* Tables" in md
+    assert "Section 7 — Pt. Maheshji's Jyotish Academy Step-by-Step Worked Manual Kundali Worksheet" in md
+
+    html_doc = comp.to_html()
+    assert "<!DOCTYPE html>" in html_doc
+    assert "RDG Human-Readable Ephemeris" in html_doc
+

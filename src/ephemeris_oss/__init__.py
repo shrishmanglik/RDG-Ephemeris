@@ -48,10 +48,17 @@ from .adapter import (
     sign_from_longitude,
 )
 from .almanac import (
+    HumanDailyEphemerisRow,
+    HumanDailyPlanetCell,
+    HumanManualEphemerisCompendium,
     RegionalPanchangReport,
     compute_lunar_month_amanta_purnimanta,
     compute_regional_panchang,
     compute_regional_solar_calendar,
+    format_classical_rashi_dms,
+    format_daily_motion_dms,
+    format_ghati_pala,
+    generate_human_manual_ephemeris_compendium,
 )
 from .api_server import build_openapi_spec, dispatch_api_request
 from .engine import phenomena, stellar_anchors, uncertainty_envelope
@@ -108,6 +115,9 @@ __all__ = [
     "HallucinationAudit",
     "HouseSystemResult",
     "Houses",
+    "HumanDailyEphemerisRow",
+    "HumanDailyPlanetCell",
+    "HumanManualEphemerisCompendium",
     "InverseChartDateSearchReport",
     "InverseChartMatchWindow",
     "KalachakraDashaPeriod",
@@ -153,6 +163,10 @@ __all__ = [
     "evaluate_yogatara_stellar_bheda_and_visibility",
     "execute_mcp_tool",
     "fact_sheet",
+    "format_classical_rashi_dms",
+    "format_daily_motion_dms",
+    "format_ghati_pala",
+    "generate_human_manual_ephemeris_compendium",
     "impossible_astrology",
     "jyotish",
     "jyotish_advanced",
