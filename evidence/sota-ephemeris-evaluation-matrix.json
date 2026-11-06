@@ -3,10 +3,10 @@
     "extended_wings_1550_2306_vs_full_de440": {
       "cadence": "EVERY_SINGLE_CALENDAR_MONTH_1550_01_TO_2306_02",
       "ceiling_arcsec": 0.05,
-      "core_1800_2100_max_diff_arcsec": 0.026058,
-      "core_1800_2100_median_diff_arcsec": 0.000226,
+      "core_1800_2100_max_diff_arcsec": 0.026041,
+      "core_1800_2100_median_diff_arcsec": 0.000227,
       "epochs_evaluated": 9074,
-      "evaluation_duration_ms": 76163.013,
+      "evaluation_duration_ms": 63397.58,
       "evaluation_mode": "LIVE_REPRODUCED_AGAINST_SHA256_PINNED_DE440_BSP",
       "failures": 0,
       "months_evaluated": 9074,
@@ -33,11 +33,11 @@
           "p95_diff_arcsec": 0.000728
         },
         "moon": {
-          "max_diff_arcsec": 0.026058,
+          "max_diff_arcsec": 0.026041,
           "mean_diff_arcsec": 0.005104,
-          "median_diff_arcsec": 0.004213,
+          "median_diff_arcsec": 0.004207,
           "months_evaluated": 9074,
-          "p95_diff_arcsec": 0.012213
+          "p95_diff_arcsec": 0.012198
         },
         "saturn": {
           "max_diff_arcsec": 0.000278,
@@ -63,97 +63,97 @@
       },
       "per_century_monthly_summary": {
         "1500s_CE": {
-          "max_diff_arcsec": 0.010765,
+          "max_diff_arcsec": 0.010767,
           "mean_diff_arcsec": 0.000557,
           "median_diff_arcsec": 5.4e-05,
-          "p95_diff_arcsec": 0.004073,
+          "p95_diff_arcsec": 0.004071,
           "samples_evaluated": 4200
         },
         "1600s_CE": {
-          "max_diff_arcsec": 0.011177,
-          "mean_diff_arcsec": 0.000556,
+          "max_diff_arcsec": 0.011296,
+          "mean_diff_arcsec": 0.000555,
           "median_diff_arcsec": 5.6e-05,
-          "p95_diff_arcsec": 0.003974,
+          "p95_diff_arcsec": 0.003966,
           "samples_evaluated": 8400
         },
         "1700s_CE": {
-          "max_diff_arcsec": 0.01204,
+          "max_diff_arcsec": 0.011989,
           "mean_diff_arcsec": 0.000569,
           "median_diff_arcsec": 5.6e-05,
-          "p95_diff_arcsec": 0.004123,
+          "p95_diff_arcsec": 0.004128,
           "samples_evaluated": 8400
         },
         "1800s_CE": {
-          "max_diff_arcsec": 0.02354,
+          "max_diff_arcsec": 0.023514,
           "mean_diff_arcsec": 0.001276,
           "median_diff_arcsec": 0.000227,
-          "p95_diff_arcsec": 0.008379,
+          "p95_diff_arcsec": 0.008408,
           "samples_evaluated": 8400
         },
         "1900s_CE": {
-          "max_diff_arcsec": 0.025675,
-          "mean_diff_arcsec": 0.001334,
+          "max_diff_arcsec": 0.025741,
+          "mean_diff_arcsec": 0.001335,
           "median_diff_arcsec": 0.000224,
-          "p95_diff_arcsec": 0.008872,
+          "p95_diff_arcsec": 0.008905,
           "samples_evaluated": 8400
         },
         "2000s_CE": {
-          "max_diff_arcsec": 0.026058,
-          "mean_diff_arcsec": 0.001295,
+          "max_diff_arcsec": 0.026041,
+          "mean_diff_arcsec": 0.001296,
           "median_diff_arcsec": 0.000228,
-          "p95_diff_arcsec": 0.008485,
+          "p95_diff_arcsec": 0.008475,
           "samples_evaluated": 8400
         },
         "2100s_CE": {
-          "max_diff_arcsec": 0.017751,
-          "mean_diff_arcsec": 0.000563,
+          "max_diff_arcsec": 0.017761,
+          "mean_diff_arcsec": 0.000564,
           "median_diff_arcsec": 5.6e-05,
-          "p95_diff_arcsec": 0.004003,
+          "p95_diff_arcsec": 0.00399,
           "samples_evaluated": 8400
         },
         "2200s_CE": {
           "max_diff_arcsec": 0.011574,
           "mean_diff_arcsec": 0.000547,
           "median_diff_arcsec": 5.6e-05,
-          "p95_diff_arcsec": 0.003973,
+          "p95_diff_arcsec": 0.003961,
           "samples_evaluated": 8400
         },
         "2300s_CE": {
-          "max_diff_arcsec": 0.010889,
+          "max_diff_arcsec": 0.010836,
           "mean_diff_arcsec": 0.000576,
           "median_diff_arcsec": 5.8e-05,
-          "p95_diff_arcsec": 0.004181,
+          "p95_diff_arcsec": 0.004183,
           "samples_evaluated": 518
         }
       },
       "reference_kernel_sha256": "a4ce9bf9b3282becc9f4b2ac3cebe03a2ae7599981aabd7265fd8482fff7c4b5",
       "samples_evaluated": 63518,
       "span_ce": "1550-01-15 to 2306-02-15",
-      "wing_1550_1800_max_diff_arcsec": 0.01204,
+      "wing_1550_1800_max_diff_arcsec": 0.011989,
       "wing_1550_1800_median_diff_arcsec": 5.5e-05,
-      "wing_2101_2306_max_diff_arcsec": 0.013564,
+      "wing_2101_2306_max_diff_arcsec": 0.013609,
       "wing_2101_2306_median_diff_arcsec": 5.6e-05,
       "worst_sample_by_region": {
         "core_1800_2100": {
           "body": "moon",
-          "diff_arcsec": 0.026058,
-          "embedded_chebyshev_lon_deg": 206.44856216,
+          "diff_arcsec": 0.026041,
+          "embedded_chebyshev_lon_deg": 206.44856213,
           "full_de440_bsp_lon_deg": 206.44856236,
           "jd_tt": 2461816.5,
           "year_month": "2028-02"
         },
         "wing_1550_1800": {
           "body": "moon",
-          "diff_arcsec": 0.01204,
-          "embedded_chebyshev_lon_deg": 183.88311854,
+          "diff_arcsec": 0.011989,
+          "embedded_chebyshev_lon_deg": 183.88311855,
           "full_de440_bsp_lon_deg": 183.88312121,
           "jd_tt": 2371052.5,
           "year_month": "1779-08"
         },
         "wing_2101_2306": {
           "body": "moon",
-          "diff_arcsec": 0.013564,
-          "embedded_chebyshev_lon_deg": 102.33972632,
+          "diff_arcsec": 0.013609,
+          "embedded_chebyshev_lon_deg": 102.33972628,
           "full_de440_bsp_lon_deg": 102.33972726,
           "jd_tt": 2496452.5,
           "year_month": "2122-12"
@@ -294,7 +294,7 @@
       2300,
       3000
     ],
-    "elapsed_ms": 1373.748,
+    "elapsed_ms": 1152.953,
     "epochs_tested": 459,
     "failures": 0,
     "graha_evaluations": 4131,
@@ -366,7 +366,7 @@
       "astropy_6_x": "UNKNOWN (third-party engine not executed in this clean-room repository; requires external SPK kernel)",
       "legacy_c_ephemeris_se_2_10": "UNKNOWN (third-party engine not executed in this clean-room repository; depends on external .se1 files)",
       "parameter": "Reproduced Fidelity vs NASA JPL DE440 (1550-2306 CE Extended Embedded Span)",
-      "rdg_ephemeris_oss": "<= 0.026058 arcsec worst error across 63,518 live body-epoch evaluations from embedded Chebyshev wings",
+      "rdg_ephemeris_oss": "<= 0.026041 arcsec worst error across 63,518 live body-epoch evaluations from embedded Chebyshev wings",
       "skyfield_1_55": "UNKNOWN (third-party engine not executed in this clean-room repository; requires external 114 MB de440.bsp)"
     },
     {
@@ -416,8 +416,8 @@
     "bayesian_birth_time_rectification": {
       "best_total_score": 84.5,
       "candidate_count": 61,
-      "latency_ms": 84.603,
-      "receipt_sha256": "f575fd027e4d4a98e6d6906fd97770ae73aafc00eb0b5d848cf9376b3b3a8735",
+      "latency_ms": 83.768,
+      "receipt_sha256": "fbe50ae2887fa49fb4aeb319f7e86ad7a5b1a29c83a1431c5e75b4b4c90613a9",
       "rectified_offset_seconds": -180.0,
       "varga_transitions_detected": 20
     },
@@ -454,16 +454,16 @@
       "atmakaraka_planet": "Mercury",
       "dominant_digbala_planet": "Saturn",
       "dominant_vimshopaka_planet": "Mercury",
-      "fingerprint_id_sha256": "0b5c5facb749fb682ab1775faa009bcebb9aba5c9ff5b74a74c924dde7e7fe6a",
-      "latency_ms": 3935.828,
+      "fingerprint_id_sha256": "01abe5b895f7b9113b61354270a653b5fc5a3d940c19b28115545ee1f0fb0aee",
+      "latency_ms": 3232.106,
       "overall_clock_confidence_score": 0.609865,
       "overall_personal_transit_resonance_score": 61.4522,
-      "receipt_sha256": "633b36dea3cbf801b9dc8bef9cb3ffc4ce1025948eb3f98f50e5a6b6f1e76a05"
+      "receipt_sha256": "f7245f4d78f48cbfd40ceded88280b08dc7af7c3422432a2a12b28374e6e430f"
     },
     "rare_phenomena_scanner": {
       "combustion_window_count": 6,
       "graha_yuddha_count": 10,
-      "latency_ms": 5954.174,
+      "latency_ms": 5264.551,
       "receipt_sha256": "edef8aba3fa94a2c863ad997c06f9cfec3b6347a181bc48a259375ba6debdf17",
       "retrograde_station_count": 4
     },
@@ -476,16 +476,16 @@
     },
     "siddhanta_vs_de440_drift_analyzer": {
       "ahargana_days": 1872673.5,
-      "latency_ms": 82.161,
+      "latency_ms": 74.97,
       "max_abs_delta_deg": 176.036154,
       "mean_abs_delta_deg": 41.55173,
-      "receipt_sha256": "e8f9352c40b91faaf182967b098a8fba839bd965b822fdf35432a6e9397f1640"
+      "receipt_sha256": "cef6f9f7196ddf72eb6359c372cfa9b098af5d5b2d77d4c9cb112a536154c83d"
     },
     "subsecond_varga_cusp_solver": {
-      "latency_ms": 3626.68,
+      "latency_ms": 3501.42,
       "minimum_ascendant_cusp_margin_seconds": 15.8172,
       "most_sensitive_varga": "D45",
-      "receipt_sha256": "813dc66962c39366a65031f918dbd6b238c90b790a018c8fc73937a3e1f03809"
+      "receipt_sha256": "1d98abfcb42e0ed6e4d768c407c600a24cd79b7a5856ba593b2e0089f74851b6"
     }
   },
   "license": "Apache-2.0",
@@ -493,7 +493,7 @@
     {
       "ascendant_deg": 321.60009,
       "ayanamsa_deg": 313.357426,
-      "complete_kundali_latency_ms": 25.947,
+      "complete_kundali_latency_ms": 21.854,
       "ephemeris_source": "vondrak2011-analytical",
       "epoch_label": "3102 BCE (Kali Yuga Epoch)",
       "jd_ut": 588465.5,
@@ -504,7 +504,7 @@
     {
       "ascendant_deg": 338.06747,
       "ayanamsa_deg": 2.962144,
-      "complete_kundali_latency_ms": 26.435,
+      "complete_kundali_latency_ms": 23.774,
       "ephemeris_source": "vondrak2011-analytical",
       "epoch_label": "499 CE (Aryabhata Epoch)",
       "jd_ut": 1903396.5,
@@ -515,51 +515,51 @@
     {
       "ascendant_deg": 236.890307,
       "ayanamsa_deg": 18.274548,
-      "complete_kundali_latency_ms": 36.633,
+      "complete_kundali_latency_ms": 33.675,
       "ephemeris_source": "de440-chebyshev",
       "epoch_label": "1600 CE (Early DE440 Chebyshev)",
       "jd_ut": 2305447.5,
       "moon_sidereal_lon_deg": 86.510952,
-      "receipt_sha256": "7691bd37a2e8415f5d70c8b488ec5acec8a7b9e3d6751ffd08d3134eee2640ec",
+      "receipt_sha256": "4bf06c0c15e62eb329301a68331133329385ffd92b3b0a5baf8beaf87ba605ab",
       "sun_sidereal_lon_deg": 261.706806
     },
     {
       "ascendant_deg": 232.155896,
       "ayanamsa_deg": 23.703448,
-      "complete_kundali_latency_ms": 35.729,
+      "complete_kundali_latency_ms": 35.484,
       "ephemeris_source": "de440-chebyshev",
       "epoch_label": "1989 CE (IAE Rashtriya Panchang)",
       "jd_ut": 2447527.5,
       "moon_sidereal_lon_deg": 175.478732,
-      "receipt_sha256": "bab7740202c42a4c82ee4b70351a8e84c92a44b59ae3fbf65a23e7aba7bd0a12",
+      "receipt_sha256": "a14445d2902eb1e4cc6fadd427694d67df3c995ae3735e14c118cc360913db2c",
       "sun_sidereal_lon_deg": 256.844337
     },
     {
       "ascendant_deg": 159.2751,
       "ayanamsa_deg": 24.224033,
-      "complete_kundali_latency_ms": 31.404,
+      "complete_kundali_latency_ms": 29.901,
       "ephemeris_source": "de440-chebyshev",
       "epoch_label": "2026 CE (Modern DE440 Chebyshev)",
       "jd_ut": 2461139.0,
       "moon_sidereal_lon_deg": 245.738613,
-      "receipt_sha256": "2174378847c423247800409acaa12a3724e05ed3d503b4aa93ff90a8bacd7bb7",
+      "receipt_sha256": "73d7931b7226890bef35c3cb2b47f12267be83f7cf64073053eaf7f25e8c0ff6",
       "sun_sidereal_lon_deg": 354.436415
     },
     {
       "ascendant_deg": 227.557254,
       "ayanamsa_deg": 28.050424,
-      "complete_kundali_latency_ms": 38.091,
+      "complete_kundali_latency_ms": 33.529,
       "ephemeris_source": "de440-chebyshev",
       "epoch_label": "2300 CE (Future DE440 Chebyshev)",
       "jd_ut": 2561117.5,
       "moon_sidereal_lon_deg": 357.164147,
-      "receipt_sha256": "d434a4c186dcc54549ac04f66357070fad94bf05470957cac98d1749bfcece3b",
+      "receipt_sha256": "a2020c1e7c0e911c189b60ee9538b530bf14b41b614ea8361f733896952cc6b9",
       "sun_sidereal_lon_deg": 252.00254
     },
     {
       "ascendant_deg": 218.225365,
       "ayanamsa_deg": 37.856338,
-      "complete_kundali_latency_ms": 26.103,
+      "complete_kundali_latency_ms": 23.919,
       "ephemeris_source": "vondrak2011-analytical",
       "epoch_label": "3000 CE (Far Future Vondrak-2011)",
       "jd_ut": 2816787.5,
@@ -570,6 +570,6 @@
   ],
   "package_name": "ephemeris-oss",
   "package_version": "0.2.0.dev1",
-  "receipt_sha256": "c2a81e6567531c50a5d6d1bc56e5e3a4ec4957489990aee3b5a7fd0cc606ae07",
+  "receipt_sha256": "d16e56575b44b5f2ade050f6a26865903247d70190f3ce2116e0cf6da13db297",
   "schema": "rdg-ephemeris-sota-evaluation-v1"
 }

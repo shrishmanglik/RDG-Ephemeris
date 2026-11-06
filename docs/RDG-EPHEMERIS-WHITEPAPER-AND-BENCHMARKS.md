@@ -4,8 +4,8 @@
 **Package Version:** `ephemeris-oss 0.2.0.dev1`  
 **Open-Source License:** `Apache-2.0` (with explicit trademark reservation under Section 6 for `RDG™` / `Raj Dulari Gupta™`)  
 **Reproducible Evidence Artifacts:**
-- [`evidence/monthly-full-span-de440-benchmark.json`](../evidence/monthly-full-span-de440-benchmark.json) (`receipt_sha256: 6fcb658e81a3cd3eef67af4dce611d0ef7c578437a537225c060a652b6838104`)
-- [`evidence/sota-ephemeris-evaluation-matrix.json`](../evidence/sota-ephemeris-evaluation-matrix.json) (`receipt_sha256: c2a81e6567531c50a5d6d1bc56e5e3a4ec4957489990aee3b5a7fd0cc606ae07`)
+- [`evidence/monthly-full-span-de440-benchmark.json`](../evidence/monthly-full-span-de440-benchmark.json) (`receipt_sha256: 23e263384dd4499fedaa859b72d442fd92eee3090aede11a33d80e755505cd34`)
+- [`evidence/sota-ephemeris-evaluation-matrix.json`](../evidence/sota-ephemeris-evaluation-matrix.json) (`receipt_sha256: d16e56575b44b5f2ade050f6a26865903247d70190f3ce2116e0cf6da13db297`)
 - [`evidence/horizons-iae-benchmark.json`](../evidence/horizons-iae-benchmark.json)
 - [`docs/ACCURACY.md`](ACCURACY.md)
 
@@ -35,7 +35,7 @@ To verify that the embedded Chebyshev kernels (`COMPACT-DE440-EARLY`, `COMPACT-D
 | Physical Body | NAIF Target ID | Months Evaluated | Failures | Median Error (arcsec) | Mean Error (arcsec) | P95 Error (arcsec) | Worst Error Across 756 Years (arcsec) |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | **Sun** | `10` | `9,074` | `0` | `0.000105"` | `0.000156"` | `0.000436"` | **`0.000822"`** |
-| **Moon** | `301` | `9,074` | `0` | `0.004213"` | `0.005104"` | `0.012213"` | **`0.026058"`** |
+| **Moon** | `301` | `9,074` | `0` | `0.004207"` | `0.005104"` | `0.012198"` | **`0.026041"`** |
 | **Mercury** | `199` | `9,074` | `0` | `0.000129"` | `0.000227"` | `0.000728"` | **`0.001940"`** |
 | **Venus** | `299` | `9,074` | `0` | `0.000123"` | `0.000236"` | `0.000828"` | **`0.004451"`** |
 | **Mars (system barycentre)** | `4` | `9,074` | `0` | `0.000082"` | `0.000148"` | `0.000503"` | **`0.002205"`** |
@@ -46,16 +46,16 @@ To verify that the embedded Chebyshev kernels (`COMPACT-DE440-EARLY`, `COMPACT-D
 
 | Century Bucket | Body-Month Evaluations | Median Error (arcsec) | Mean Error (arcsec) | P95 Error (arcsec) | Worst Error (arcsec) |
 |---|---:|---:|---:|---:|---:|
-| **`1550–1599 CE` (`1500s_CE`)** | `4,200` | `0.000054"` | `0.000557"` | `0.004073"` | `0.010765"` |
-| **`1600–1699 CE` (`1600s_CE`)** | `8,400` | `0.000056"` | `0.000556"` | `0.003974"` | `0.011177"` |
-| **`1700–1799 CE` (`1700s_CE`)** | `8,400` | `0.000056"` | `0.000569"` | `0.004123"` | `0.012040"` |
-| **`1800–1899 CE` (`1800s_CE`)** | `8,400` | `0.000227"` | `0.001276"` | `0.008379"` | `0.023540"` |
-| **`1900–1999 CE` (`1900s_CE`)** | `8,400` | `0.000224"` | `0.001334"` | `0.008872"` | `0.025675"` |
-| **`2000–2099 CE` (`2000s_CE`)** | `8,400` | `0.000228"` | `0.001295"` | `0.008485"` | `0.026058"` |
-| **`2100–2199 CE` (`2100s_CE`)** | `8,400` | `0.000056"` | `0.000563"` | `0.004003"` | `0.017751"` |
-| **`2200–2299 CE` (`2200s_CE`)** | `8,400` | `0.000056"` | `0.000547"` | `0.003973"` | `0.011574"` |
-| **`2300–2306 CE` (`2300s_CE`)** | `518` | `0.000058"` | `0.000576"` | `0.004181"` | `0.010889"` |
-| **Total (`1550-01` to `2306-02`)** | **`63,518`** | **`0.000105"` (Sun) / `0.004213"` (Moon)** | **`0.000854"` overall** | **`<= 0.012213"`** | **`0.026058"` (`0` failures)** |
+| **`1550–1599 CE` (`1500s_CE`)** | `4,200` | `0.000054"` | `0.000557"` | `0.004071"` | `0.010767"` |
+| **`1600–1699 CE` (`1600s_CE`)** | `8,400` | `0.000056"` | `0.000555"` | `0.003966"` | `0.011296"` |
+| **`1700–1799 CE` (`1700s_CE`)** | `8,400` | `0.000056"` | `0.000569"` | `0.004128"` | `0.011989"` |
+| **`1800–1899 CE` (`1800s_CE`)** | `8,400` | `0.000227"` | `0.001276"` | `0.008408"` | `0.023514"` |
+| **`1900–1999 CE` (`1900s_CE`)** | `8,400` | `0.000224"` | `0.001335"` | `0.008905"` | `0.025741"` |
+| **`2000–2099 CE` (`2000s_CE`)** | `8,400` | `0.000228"` | `0.001296"` | `0.008475"` | `0.026041"` |
+| **`2100–2199 CE` (`2100s_CE`)** | `8,400` | `0.000056"` | `0.000564"` | `0.003990"` | `0.017761"` |
+| **`2200–2299 CE` (`2200s_CE`)** | `8,400` | `0.000056"` | `0.000547"` | `0.003961"` | `0.011574"` |
+| **`2300–2306 CE` (`2300s_CE`)** | `518` | `0.000058"` | `0.000576"` | `0.004183"` | `0.010836"` |
+| **Total (`1550-01` to `2306-02`)** | **`63,518`** | **`0.000105"` (Sun) / `0.004207"` (Moon)** | **`0.000854"` overall** | **`<= 0.012198"`** | **`0.026041"` (`0` failures)** |
 
 > **Numerical Note on `.5` JD Chebyshev Interval Boundaries:** During light-time retardation for the Moon ($\tau \approx 1.28\text{ s}$), reception time $t_{\text{rec}}$ and emission time $t_{\text{em}} = t_{\text{rec}} - \tau$ can straddle a `.5` JD interval boundary of the Earth-Moon Barycenter `(0, 3)` Chebyshev segment. `JplErfaAstronomyProvider._apparent_state` anchors the Earth-Moon Barycenter propagation over $\Delta t = t_{\text{em}} - t_{\text{rec}}$ to the reception-epoch EMB state ($\mathbf{r}_{0 \to 3}(t_{\text{em}}) = \mathbf{r}_{0 \to 3}(t_{\text{rec}}) + \mathbf{v}_{0 \to 3}(t_{\text{rec}})\,\Delta t$, whose neglected $\frac{1}{2}\mathbf{a}_{0 \to 3}\Delta t^2$ heliocentric acceleration term over $1.28\text{ s}$ is $4.8\text{ mm}$ or $0.0000025\text{ arcsec}$), guaranteeing 100% cancellation of `(0, 3)` quantization offsets across `.5` JD segment and kernel boundaries.
 
@@ -133,7 +133,7 @@ Third-party engines are not executed inside this clean-room repository; their nu
 | **Offline Embedded NASA JPL DE440 Span** | **`1550 CE` to `2306 CE`** bundled in wheel (~6.68 MB Chebyshev polynomials, `9,074` months) | Requires external `.se1` or `.bsp` files on disk | Requires external 114 MB `de440.bsp` download | Built-in approximation or external SPK download |
 | **Multi-Millennium Span** | **`3102 BCE` to `3000 CE`** offline (`Vondrak-2011` + analytical) + optional `DE441` (`-13200..+17191`) | Requires multi-file `.se1` archive across centuries | Requires 3.3 GB `DE441` SPK download outside `1550..2650` | Requires external SPK download |
 | **Reproduced Fidelity vs Full NASA JPL DE440 (`1800..2100 CE`, `12:00 TT`)** | **`<= 0.000717 arcsec` max** (`0.000019 arcsec` median across 3,612 monthly TT epochs/planet) | UNKNOWN (not executed in this clean-room repository) | UNKNOWN (not executed in this clean-room repository) | UNKNOWN (not executed in this clean-room repository) |
-| **Reproduced Month-by-Month Fidelity vs Full DE440 (`1550-01` to `2306-02`, `63,518` evaluations)** | **`<= 0.026058 arcsec` max** (`0` failures across all `9,074` calendar months; Sun `<= 0.000822"`, Planets `<= 0.004451"`, Moon `<= 0.026058"`) | UNKNOWN (not executed in this clean-room repository) | UNKNOWN (not executed in this clean-room repository) | UNKNOWN (not executed in this clean-room repository) |
+| **Reproduced Month-by-Month Fidelity vs Full DE440 (`1550-01` to `2306-02`, `63,518` evaluations)** | **`<= 0.026041 arcsec` max** (`0` failures across all `9,074` calendar months; Sun `<= 0.000822"`, Planets `<= 0.004451"`, Moon `<= 0.026041"`) | UNKNOWN (not executed in this clean-room repository) | UNKNOWN (not executed in this clean-room repository) | UNKNOWN (not executed in this clean-room repository) |
 | **Cryptographic Calculation Receipts (`SHA-256`)** | **Built-in on every result** | None | None | None |
 | **Built-in LLM MCP Server (`stdio`)** | **Built-in (`rdg-ephemeris-mcp`)** with **9 deterministic tools** + AI hallucination auditor | None | None | None |
 | **Built-in HTTP REST API (`OpenAPI 3.1`)** | **Built-in (`rdg-ephemeris-api`)** with **12 endpoints** | None | None | None |

@@ -600,9 +600,13 @@ class JplErfaAstronomyProvider(AstronomyProvider):
             _rec_artifact, rec_graph = self._kernel(times.tdb_jd)
             emb_pos_rec, emb_vel_rec = rec_graph.state(3, times.tdb)
             rec_tdb_jd = times.tdb_jd
+            rec_block_16 = int(math.floor((rec_tdb_jd - 2287184.5) / 16.0))
+            raw_moon_at = state_at("moon")
 
             @lru_cache(maxsize=16)
             def _moon_state_at(jd: float) -> BarycentricState:
+                if int(math.floor((float(jd) - 2287184.5) / 16.0)) == rec_block_16:
+                    return raw_moon_at(jd)
                 dt_days = float(jd - rec_tdb_jd)
                 em_tdb = (J2000_JD, float(jd - J2000_JD))
                 em_artifact, em_graph = self._kernel(jd)
