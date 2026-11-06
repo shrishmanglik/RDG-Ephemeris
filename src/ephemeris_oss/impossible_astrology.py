@@ -2184,7 +2184,7 @@ def solve_chart_date_from_planetary_constraints(
         return None
 
     def _substep_interior_sample(b_key: str, t_a: float, t_b: float) -> float | None:
-        """If body crosses into and out of its target arc strictly inside (t_a, t_b), return an interior matching JD."""
+        """If body crosses into and out of its target arc strictly inside (t_a, t_b), including stationary turnarounds, return an interior matching JD."""
         bounds = _target_arc_bounds(b_key)
         if bounds is None or t_b <= t_a:
             return None
@@ -2192,9 +2192,7 @@ def solve_chart_date_from_planetary_constraints(
         lon_a = _body_lon(t_a, b_key)
         lon_b = _body_lon(t_b, b_key)
         delta = ((lon_b - lon_a + 180.0) % 360.0) - 180.0
-        if abs(delta) < 1e-9:
-            return None
-        if delta > 0.0:
+        if delta > 1e-9:
             dist_lo = (arc_lo - lon_a) % 360.0
             dist_hi = (arc_hi - lon_a) % 360.0
             if 0.0 < dist_lo <= delta:
@@ -2203,7 +2201,7 @@ def solve_chart_date_from_planetary_constraints(
                 t_cand = t_a + frac * (t_b - t_a)
                 if _body_matches(t_cand, b_key):
                     return t_cand
-        else:
+        elif delta < -1e-9:
             abs_d = -delta
             dist_hi = (lon_a - arc_hi) % 360.0
             dist_lo = (lon_a - arc_lo) % 360.0
@@ -2213,6 +2211,86 @@ def solve_chart_date_from_planetary_constraints(
                 t_cand = t_a + frac * (t_b - t_a)
                 if _body_matches(t_cand, b_key):
                     return t_cand
+
+        # Non-monotonic / stationary excursion discovery: when endpoints lie within 30 deg of target arc,
+        # probe the midpoint, 3-point quadratic station vertex, an 8-subinterval bracket grid,
+        # and golden-section minimization of angular distance to the target arc midpoint.
+        min_edge_dist = min(
+            abs(((lon_a - arc_lo + 180.0) % 360.0) - 180.0),
+            abs(((lon_a - arc_hi + 180.0) % 360.0) - 180.0),
+            abs(((lon_b - arc_lo + 180.0) % 360.0) - 180.0),
+            abs(((lon_b - arc_hi + 180.0) % 360.0) - 180.0),
+        )
+        if min_edge_dist <= 30.0:
+            t_mid = 0.5 * (t_a + t_b)
+            if _body_matches(t_mid, b_key):
+                return t_mid
+            lon_m = _body_lon(t_mid, b_key)
+            y_m = ((lon_m - lon_a + 180.0) % 360.0) - 180.0
+            denom = 4.0 * (2.0 * y_m - delta)
+            if abs(denom) > 1e-12:
+                u_v = (4.0 * y_m - delta) / denom
+                if 0.0 < u_v < 1.0:
+                    t_v = t_a + u_v * (t_b - t_a)
+                    if _body_matches(t_v, b_key):
+                        return t_v
+
+            arc_span = (arc_hi - arc_lo) % 360.0 or (arc_hi - arc_lo)
+            arc_mid = (arc_lo + 0.5 * arc_span) % 360.0
+
+            def _dist_to_mid(lon_val: float) -> float:
+                return abs(((lon_val - arc_mid + 180.0) % 360.0) - 180.0)
+
+            grid_n = 8
+            grid_t: list[float] = [t_a]
+            grid_d: list[float] = [_dist_to_mid(lon_a)]
+            for k_idx in range(1, grid_n):
+                t_k = t_a + (k_idx / grid_n) * (t_b - t_a)
+                if k_idx * 2 == grid_n:
+                    lon_k = lon_m
+                else:
+                    lon_k = _body_lon(t_k, b_key)
+                    if _body_matches(t_k, b_key):
+                        return t_k
+                grid_t.append(t_k)
+                grid_d.append(_dist_to_mid(lon_k))
+            grid_t.append(t_b)
+            grid_d.append(_dist_to_mid(lon_b))
+
+            best_k = min(range(1, grid_n), key=lambda idx: grid_d[idx])
+            if grid_d[best_k] < min(grid_d[0], grid_d[-1]):
+                g_lo = grid_t[best_k - 1]
+                g_hi = grid_t[best_k + 1]
+                inv_phi = (math.sqrt(5.0) - 1.0) * 0.5
+                inv_phi2 = (3.0 - math.sqrt(5.0)) * 0.5
+                span_g = g_hi - g_lo
+                c_t = g_lo + inv_phi2 * span_g
+                d_t = g_lo + inv_phi * span_g
+                if _body_matches(c_t, b_key):
+                    return c_t
+                if _body_matches(d_t, b_key):
+                    return d_t
+                f_c = _dist_to_mid(_body_lon(c_t, b_key))
+                f_d = _dist_to_mid(_body_lon(d_t, b_key))
+                for _ in range(12):
+                    if f_c < f_d:
+                        g_hi = d_t
+                        d_t = c_t
+                        f_d = f_c
+                        span_g = inv_phi * span_g
+                        c_t = g_lo + inv_phi2 * span_g
+                        if _body_matches(c_t, b_key):
+                            return c_t
+                        f_c = _dist_to_mid(_body_lon(c_t, b_key))
+                    else:
+                        g_lo = c_t
+                        c_t = d_t
+                        f_c = f_d
+                        span_g = inv_phi * span_g
+                        d_t = g_lo + inv_phi * span_g
+                        if _body_matches(d_t, b_key):
+                            return d_t
+                        f_d = _dist_to_mid(_body_lon(d_t, b_key))
         return None
 
     def _intersect_interval_lists(

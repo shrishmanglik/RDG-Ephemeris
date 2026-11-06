@@ -248,6 +248,18 @@
       "path": "src/ephemeris_oss/almanac/human_ephemeris.py",
       "status": "FIXED_AND_VERIFIED",
       "resolution": "Extended _make_evaluator and scan_ingresses_and_aspects in ephemeris_tables.py to accept ayanamsa and forwarded ayanamsa=ayanamsa from generate_human_manual_ephemeris_compendium so monthly ingress scans match the requested ayanamsa convention."
+    },
+    {
+      "id": 4498437509,
+      "path": "src/ephemeris_oss/impossible_astrology.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Added non-monotonic stationary excursion discovery in _substep_interior_sample (midpoint, 3-point quadratic station vertex, 8-subinterval bracket grid, and 12-step golden-section angular-distance minimization) so Stage 1, Stage 2, and Stage 3 preserve intervals where a body enters a sign/nakshatra around a station and turns back before the next coarse sample."
+    },
+    {
+      "id": 4498437518,
+      "path": "src/ephemeris_oss/jyotish/conditional_dashas_and_nadi.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Normalized planet_longitudes_deg once via _normalize_planet_longitudes across lowercase, title-case, uppercase, and Sanskrit planet keys in compute_all_10_parashari_nakshatra_dashas and compute_nadi_amsa_and_sudarshana_chakra, and raised ValueError when required planet longitudes are missing."
     }
   ]
 }

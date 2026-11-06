@@ -626,6 +626,131 @@ def test_compendium_phenomena_respect_the_selected_convention(mode: str, monkeyp
     assert residual < 0.001
 
 
+class _CurveOracleAdapter:
+    def __init__(self, curves: dict[str, object], jd_0: float) -> None:
+        self.curves = curves
+        self.jd_0 = jd_0
+
+    def longitude(self, day: float, body: str) -> float:
+        fn = self.curves.get(body.lower(), lambda _t: 15.0)
+        return float(fn(day)) % 360.0
+
+    def calc_ut(self, jd: float, body: str, **kwargs):
+        return SimpleNamespace(longitude_deg=self.longitude(jd - self.jd_0, body))
 
 
+def test_generated_stationary_excursion_and_planet_key_matrix() -> None:
+    """Generated Round-8 matrix covering non-monotonic stationary excursions against a dense reference oracle and planet-key casing/alias normalization."""
+    from ephemeris_oss.jyotish.conditional_dashas_and_nadi import (
+        compute_all_10_parashari_nakshatra_dashas,
+        compute_nadi_amsa_and_sudarshana_chakra,
+    )
+
+    jd_0 = sum(erfa.cal2jd(2026, 1, 1))
+    station_specs = []
+    # 12 symmetric + 6 asymmetric stationary excursions + 2 live Saturn station controls = 20 curve cases
+    for body, center, accel, radius, end_day in (
+        ("mercury", 0.5, 0.001, 0.1, 1.0),
+        ("saturn", 5.0, 0.0001, 1.0, 10.0),
+    ):
+        for sign_idx in (0, 1, 11):
+            for is_peak in (True, False):
+                station_specs.append((body, center, accel, radius, end_day, sign_idx, is_peak))
+    for center_asym in (0.23, 0.77, 3.15):
+        end_d = 1.0 if center_asym < 1.0 else 10.0
+        rad_d = 0.08 if center_asym < 1.0 else 0.9
+        acc_d = 0.001 if center_asym < 1.0 else 0.0001
+        b_name = "mercury" if center_asym < 1.0 else "saturn"
+        for is_peak in (True, False):
+            station_specs.append((b_name, center_asym, acc_d, rad_d, end_d, 1, is_peak))
+
+    station_count = 0
+    for body, center, accel, radius, end_day, sign_idx, is_peak in station_specs:
+        station_count += 1
+        boundary = sign_idx * 30.0 if is_peak else (sign_idx + 1) * 30.0
+        direction = 1.0 if is_peak else -1.0
+
+        def _curve(t: float, c=center, a=accel, r=radius, e=end_day, b=boundary, d=direction) -> float:
+            t_clamped = min(max(t, 0.0), e)
+            return b + d * a * (r * r - (t_clamped - c) ** 2)
+
+        ad = _CurveOracleAdapter({body: _curve}, jd_0)
+        step = end_day / 20000.0
+        dense_in = [i * step for i in range(20001) if int(ad.longitude(i * step, body) // 30.0) == sign_idx]
+        assert dense_in, f"Invalid oracle fixture for {body} sign={sign_idx}"
+        want_start, want_end = min(dense_in), max(dense_in)
+
+        rep = solve_chart_date_from_planetary_constraints(2026, 2026, {body: sign_idx}, max_results=5, adapter=ad)
+        assert rep.match_count == 1, f"Missed stationary excursion for {body} center={center} sign={sign_idx} peak={is_peak}"
+        got_start = rep.matches[0].window_start_jd_ut - jd_0
+        got_end = rep.matches[0].window_end_jd_ut - jd_0
+        assert abs(got_start - want_start) <= step + 2e-4
+        assert abs(got_end - want_end) <= step + 2e-4
+        mid_lon = ad.longitude(0.5 * (got_start + got_end), body)
+        assert int(mid_lon // 30.0) == sign_idx
+    assert station_count == 18
+
+    # Live Saturn turning vs linear control (2 cases -> 20 total trajectory cases):
+    for turning in (False, True):
+        def _sat_curve(t: float, turn=turning) -> float:
+            tc = min(t, 10.0)
+            return 29.99 + 0.0008 * tc * (10.0 - tc) if turn else 29.99 + 0.008 * tc
+
+        ad_sat = _CurveOracleAdapter({"saturn": _sat_curve}, jd_0)
+        rep_sat = solve_chart_date_from_planetary_constraints(2026, 2026, {"saturn": "Taurus"}, max_results=1, adapter=ad_sat)
+        assert rep_sat.match_count == 1
+        mid_jd = 0.5 * (rep_sat.matches[0].window_start_jd_ut + rep_sat.matches[0].window_end_jd_ut)
+        assert 30.0 <= ad_sat.calc_ut(mid_jd, "saturn").longitude_deg < 60.0
+
+    # 12 planet-key-variant equivalence cases (2 Rahu longitudes x 6 key variants) + missing-key guard:
+    for rahu_lon in (150.0, 270.0):
+        base_map = {
+            "sun": 10.0,
+            "moon": 70.0,
+            "mars": 60.0,
+            "mercury": 90.0,
+            "jupiter": 120.0,
+            "venus": 180.0,
+            "saturn": 210.0,
+            "rahu": rahu_lon,
+            "ketu": (rahu_lon + 180.0) % 360.0,
+        }
+        expected_dasha = compute_all_10_parashari_nakshatra_dashas(
+            70.0, 5.0, 10.0, base_map, 2451545.0, query_jd=2461350.0, is_day_birth=True
+        )
+        expected_nadi = compute_nadi_amsa_and_sudarshana_chakra(5.0, base_map, 2451545.0, query_jd=2461350.0)
+
+        variants = [
+            base_map,
+            {k.title(): v for k, v in base_map.items()},
+            {k.upper(): v for k, v in base_map.items()},
+            {("Rahu" if k == "rahu" else k): v for k, v in base_map.items()},
+            {(k.title() if k != "rahu" else "rahu"): v for k, v in base_map.items()},
+            {
+                "Surya": 10.0,
+                "Chandra": 70.0,
+                "Mangala": 60.0,
+                "Budha": 90.0,
+                "Guru": 120.0,
+                "Shukra": 180.0,
+                "Shani": 210.0,
+                "True_Rahu": rahu_lon,
+                "True_Ketu": (rahu_lon + 180.0) % 360.0,
+            },
+        ]
+        for var_map in variants:
+            actual_dasha = compute_all_10_parashari_nakshatra_dashas(
+                70.0, 5.0, 10.0, var_map, 2451545.0, query_jd=2461350.0, is_day_birth=True
+            )
+            assert [(s.system_key, s.is_conditionally_eligible, s.eligibility_reason) for s in actual_dasha.systems] == [
+                (s.system_key, s.is_conditionally_eligible, s.eligibility_reason) for s in expected_dasha.systems
+            ]
+            assert actual_dasha.consensus_ranking == expected_dasha.consensus_ranking
+            actual_nadi = compute_nadi_amsa_and_sudarshana_chakra(5.0, var_map, 2451545.0, query_jd=2461350.0)
+            assert actual_nadi.receipt_sha256 == expected_nadi.receipt_sha256
+
+    with pytest.raises(ValueError, match="Missing required planet longitude"):
+        compute_all_10_parashari_nakshatra_dashas(
+            70.0, 5.0, 10.0, {"sun": 10.0, "moon": 70.0}, 2451545.0, query_jd=2461350.0, is_day_birth=True
+        )
 

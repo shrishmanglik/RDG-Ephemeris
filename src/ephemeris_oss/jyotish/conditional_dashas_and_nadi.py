@@ -416,6 +416,63 @@ class GoldenMuhurtaOptimizationReport:
     receipt_sha256: str
 
 
+_CANONICAL_PLANET_ALIASES: dict[str, str] = {
+    "sun": "sun",
+    "surya": "sun",
+    "moon": "moon",
+    "chandra": "moon",
+    "mars": "mars",
+    "mangala": "mars",
+    "kuja": "mars",
+    "mercury": "mercury",
+    "budha": "mercury",
+    "jupiter": "jupiter",
+    "guru": "jupiter",
+    "brihaspati": "jupiter",
+    "venus": "venus",
+    "shukra": "venus",
+    "saturn": "saturn",
+    "shani": "saturn",
+    "rahu": "rahu",
+    "true_rahu": "rahu",
+    "mean_rahu": "rahu",
+    "true_node": "rahu",
+    "mean_node": "rahu",
+    "north_node": "rahu",
+    "ketu": "ketu",
+    "true_ketu": "ketu",
+    "mean_ketu": "ketu",
+    "south_node": "ketu",
+}
+
+
+def _canonical_planet_key(name: str) -> str:
+    raw = str(name).strip().lower().replace("-", "_").replace(" ", "_")
+    return _CANONICAL_PLANET_ALIASES.get(raw, raw)
+
+
+def _normalize_planet_longitudes(
+    planet_longitudes_deg: Mapping[str, float],
+    *,
+    fallback_sun: float | None = None,
+    fallback_moon: float | None = None,
+) -> dict[str, float]:
+    norm: dict[str, float] = {}
+    for k, v in planet_longitudes_deg.items():
+        if v is None:
+            continue
+        norm[_canonical_planet_key(k)] = float(v) % 360.0
+    if "sun" not in norm and fallback_sun is not None:
+        norm["sun"] = float(fallback_sun) % 360.0
+    if "moon" not in norm and fallback_moon is not None:
+        norm["moon"] = float(fallback_moon) % 360.0
+    if "rahu" in norm and "ketu" not in norm:
+        norm["ketu"] = (norm["rahu"] + 180.0) % 360.0
+    elif "ketu" in norm and "rahu" not in norm:
+        norm["rahu"] = (norm["ketu"] + 180.0) % 360.0
+    return norm
+
+
 def compute_all_10_parashari_nakshatra_dashas(
     moon_sidereal_lon_deg: float,
     asc_sidereal_lon_deg: float,
@@ -444,9 +501,18 @@ def compute_all_10_parashari_nakshatra_dashas(
     elong = (float(moon_sidereal_lon_deg) - float(sun_sidereal_lon_deg)) % 360.0
     is_shukla = elong < 180.0
 
+    norm_planet_longitudes = _normalize_planet_longitudes(
+        planet_longitudes_deg,
+        fallback_sun=sun_sidereal_lon_deg,
+        fallback_moon=moon_sidereal_lon_deg,
+    )
+
     # House positions of lords relative to Ascendant:
     def _planet_rashi(p_name: str) -> int:
-        val = planet_longitudes_deg.get(p_name.lower(), planet_longitudes_deg.get(p_name, 0.0))
+        c_key = _canonical_planet_key(p_name)
+        if c_key not in norm_planet_longitudes:
+            raise ValueError(f"Missing required planet longitude for {p_name!r}")
+        val = norm_planet_longitudes[c_key]
         return int((float(val) % 360.0) // 30.0) % 12
 
     lagna_lord = RASI_LORDS[asc_rashi]
@@ -866,9 +932,12 @@ def compute_nadi_amsa_and_sudarshana_chakra(
     }
     planet_nadis: dict[str, NadiAmsaCoordinate] = {}
     rashi_occupants: dict[int, list[str]] = {i: [] for i in range(12)}
+    norm_planet_longitudes = _normalize_planet_longitudes(planet_longitudes_deg)
 
     for p_key in ("sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn", "rahu", "ketu"):
-        lon = float(planet_longitudes_deg.get(p_key, planet_longitudes_deg.get(p_key.capitalize(), 0.0))) % 360.0
+        if p_key not in norm_planet_longitudes:
+            raise ValueError(f"Missing required planet longitude for {p_key!r}")
+        lon = float(norm_planet_longitudes[p_key]) % 360.0
         sp_sec = mean_speeds_deg_day[p_key] / 86400.0
         planet_nadis[p_key] = _compute_single_nadi_amsa(p_key.capitalize(), lon, sp_sec)
         rashi_occupants[int(lon // 30.0) % 12].append(p_key.capitalize())
