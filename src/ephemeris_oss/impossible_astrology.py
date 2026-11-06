@@ -1349,9 +1349,9 @@ def compute_personalized_astro_fingerprint(
         tau_min = min(asc_tau, moon_tau)
         conf = 1.0 if sigma_t == 0.0 else math.exp(-sigma_t / max(tau_min, 1.0e-3))
         conf_sum += conf
-        if tau_min >= 3.0 * max(sigma_t, 1.0):
+        if tau_min >= 3.0 * sigma_t:
             status = "LOCKED_INVARIANT"
-        elif tau_min >= max(sigma_t, 1.0):
+        elif tau_min >= sigma_t:
             status = "MODERATELY_SENSITIVE"
         else:
             status = "RECTIFICATION_REQUIRED"

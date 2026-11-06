@@ -934,4 +934,27 @@ def test_public_utc_and_supplied_callback_lunar_interval_straddle() -> None:
         assert res_default.apparent_vector_km == res_cb.apparent_vector_km
 
 
+@pytest.mark.parametrize("sigma", [0.0, 0.1, 2.0], ids=["exact-clock", "subsecond-clock", "two-second-control"])
+def test_actual_uncertainty_sets_near_cusp_status(sigma: float) -> None:
+    """Verify subsecond and zero birth_time_uncertainty_seconds govern stability_classification without a 1s floor."""
+    from ephemeris_oss import compute_personalized_astro_fingerprint, solve_subsecond_shodashvarga_cusp_transitions
+
+    base = 2461139.0
+    margins = solve_subsecond_shodashvarga_cusp_transitions(base, 28.6139, 77.2090)
+    near_cusp_jd = base + (margins.ascendant_margins["D60"].seconds_to_next_cusp - 0.5) / 86400.0
+    report = compute_personalized_astro_fingerprint(near_cusp_jd, birth_time_uncertainty_seconds=sigma)
+    domain = report.domain_clock_confidence["D60"]
+    tau = domain["governing_cusp_margin_seconds"]
+    assert 0.45 < tau < 0.55
+    expected = (
+        "LOCKED_INVARIANT"
+        if tau >= 3.0 * sigma
+        else "MODERATELY_SENSITIVE"
+        if tau >= sigma
+        else "RECTIFICATION_REQUIRED"
+    )
+    assert domain["stability_classification"] == expected
+
+
+
 
