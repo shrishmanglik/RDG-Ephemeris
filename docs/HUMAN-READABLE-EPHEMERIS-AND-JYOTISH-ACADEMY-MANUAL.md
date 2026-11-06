@@ -1,17 +1,17 @@
 # RDG Ephemeris — Human-Readable Classical *Nirayana* & *Sayana* Ephemeris & Pt. Maheshji's Jyotish Academy Manual Calculation Compendium (2026-11)
 
 > **For Practising Jyotishis, Positional Astronomers, Classical Researchers, and Students of Pt. Maheshji's Jyotish Academy:**
-> Before computers existed, every master astrologer cast a *Kundali* (natal chart), *Shodashvarga* (16 divisional charts), *Panchanga* (5-limb daily almanac), *Vishesha Lagnas* (8 special ascendants), *Upagrahas* (11 shadow planets), *KP 249 Sub-Lords*, *Jaimini Arudha Padas & Chara Karakas*, *Vimshottari/Yogini/Ashtottari/Kalachakra Dashas*, *Shadbala* (6-fold planetary strength), *Ashtakavarga* (337-bindu transit grid), *Ayurdaya* (longevity), and *Tajika Varshphal* (annual solar return with 36 Sahams) **entirely by hand** using printed ephemeris tables. This 20-chapter master volume restores that unbroken lineage with sub-arcsecond NASA JPL DE440/DE441 astronomical precision.
+> Before computers existed, every master astrologer cast a *Kundali* (natal chart), *Shodashvarga* (16 divisional charts), *Panchanga* (5-limb daily almanac), *Vishesha Lagnas* (8 special ascendants), *Upagrahas* (11 shadow planets), *KP 249 Sub-Lords*, *Jaimini Arudha Padas & Chara Karakas*, *Vimshottari/Yogini/Ashtottari/Kalachakra Dashas*, *Shadbala* (6-fold planetary strength), *Ashtakavarga* (337-bindu transit grid), *Ayurdaya* (longevity), and *Tajika Varshphal* (annual solar return with 36 Sahams) **entirely by hand** using printed ephemeris tables. This 30-chapter master volume restores that unbroken lineage with sub-arcsecond NASA JPL DE440/DE441 astronomical precision.
 
-## Master Document Metadata & Cryptographic Provenance Receipt
-- **Ephemeris Month & Year:** `2026-11` (`20 Complete Chapters`)
+### Master Document Metadata & Cryptographic Provenance Receipt
+- **Ephemeris Month & Year:** `2026-11` (`30 Complete Chapters`)
 - **Daily Tabular Reference Epoch:** `05:30:00 IST (00:00:00 UTC)`
 - **Reference Meridian / Location:** Latitude `23.1765°`, Longitude `75.7885°` (UTC`+5.50h` — Ujjain Mahakaleshwar Prime Meridian)
 - **Primary Sidereal Ayanamsha:** `lahiri` (Chitrapaksha / IAE 1989 Lahiri Standard + 25-Ayanamsha Conversion Table in Chapter 1)
 - **Astronomical Kernel Backbone:** NASA JPL DE440 / DE441 + IAU 2006/2000A Precession-Nutation (`ephemeris-oss v0.2.0.dev1`)
 - **Cryptographic SHA-256 Receipt:** `sha256:1c1f878f6ea66828da96dc3f58231bf3ee2d3bbf46555ec21fcaf60640ce11de`
 
-## Chapter 1 — Fundamental Astronomical Constants, Julian Day Tables (`1900–2050`), $\Delta T$, & 25-Ayanamsha Master Conversion Table
+## Chapter 1 — Fundamental Astronomical Constants, Julian Day Tables (`1900–2050`), ΔT, & 25-Ayanamsha Master Conversion Table
 
 ### Table 1A — Fundamental Astronomical & Vedic Siddhantic Constants
 
@@ -19,22 +19,22 @@
 |---|---|---|
 | **J2000.0 Fundamental Epoch** | `JD 2451545.0 TT` (`2000-01-01 12:00:00 TT`) | IAU 2006 / 2000A Standard Epoch |
 | **Kali Yuga Fundamental Epoch** | `JD 588465.5 UT` (`3102 BCE Feb 18 00:00 Ujjain`) | *Surya Siddhanta* & *Aryabhatiya* |
-| **Astronomical Unit ($1\text{ AU}$)** | `149,597,870.700 km` (exact) | IAU 2012 Resolution B2 |
-| **Speed of Light ($c$)** | `299,792.458 km/s` (`173.144632674 AU/day`) | IAU / SI Exact Constant |
-| **Mean Obliquity at J2000.0 ($\varepsilon_0$)** | `23° 26' 21.406"` (`84381.406"`) | Capitaine et al. (2003) / IAU 2006 |
-| **General Precession Rate ($p_A$ at J2000)** | `50.28796195" / Julian year` (`1° in 71.5877 years`) | IAU 2006 Precession Model |
-| **Mean Tropical Year ($Y_{\text{trop}}$)** | `365.24218967 days` (`365d 05h 48m 45.2s`) | Simon et al. (1994) |
-| **Mean Sidereal Year ($Y_{\text{sid}}$)** | `365.256363004 days` (`365d 06h 09m 09.8s`) | IAU Standard Sidereal Year |
+| **Astronomical Unit (`1 AU`)** | `149,597,870.700 km` (exact) | IAU 2012 Resolution B2 |
+| **Speed of Light (`c`)** | `299,792.458 km/s` (`173.144632674 AU/day`) | IAU / SI Exact Constant |
+| **Mean Obliquity at J2000.0 (`ε₀`)** | `23° 26' 21.406"` (`84381.406"`) | Capitaine et al. (2003) / IAU 2006 |
+| **General Precession Rate (`p_A` at J2000)** | `50.28796195" / Julian year` (`1° in 71.5877 years`) | IAU 2006 Precession Model |
+| **Mean Tropical Year (`Y_trop`)** | `365.24218967 days` (`365d 05h 48m 45.2s`) | Simon et al. (1994) |
+| **Mean Sidereal Year (`Y_sid`)** | `365.256363004 days` (`365d 06h 09m 09.8s`) | IAU Standard Sidereal Year |
 | **Surya Siddhanta Sidereal Year** | `365.25875648 days` (`365d 15g 31p 31.4v`) | `1,577,917,828 / 4,320,000` Savana days |
 | **Mean Synodic Lunar Month** | `29.530588853 days` (`29d 12h 44m 02.9s`) | Mean New Moon to New Moon |
-| **Mean Sidereal Lunar Month** | `27.321661547 days` (`27d 07h 43m 11.6s`) | `1 Nakshatra` $\approx 24\text{h } 18\text{m}$ |
+| **Mean Sidereal Lunar Month** | `27.321661547 days` (`27d 07h 43m 11.6s`) | `1 Nakshatra ≈ 24h 18m` |
 | **Vedic Time Units (*Ghati / Pala / Vipala*)** | `1 Day = 60 Ghatis = 3,600 Palas = 216,000 Vipalas` | `1 Ghati = 24 min`, `1 Pala = 24 sec`, `1 Vipala = 0.4 sec` |
 
 ### Table 1B — Master 25-Ayanamsha Reference & Conversion Table (Evaluated at Epoch `2026-11-01 00:00 UTC`)
 
-**How to Convert Any Position in This Compendium to Another Ayanamsha:** Every sidereal table in this book is printed in **Chitrapaksha / Lahiri (`IAE 1989`)**. To convert any longitude to another Ayanamsha, simply **subtract $\Delta = (\text{Target Ayanamsha} - \text{Lahiri Ayanamsha})$** listed in the column below:
+**How to Convert Any Position in This Compendium to Another Ayanamsha:** Every sidereal table in this book is printed in **Chitrapaksha / Lahiri (`IAE 1989`)**. To convert any longitude to another Ayanamsha, simply **subtract `Δ = (Target Ayanamsha − Lahiri Ayanamsha)`** listed in the column below:
 
-| # | Ayanamsha Key | Canonical Name & Lineage | Value on `2026-11-01` (`DD° MM' SS"`) | Decimal (`deg`) | Offset vs Lahiri ($\Delta = A - A_{\text{Lahiri}}$) | Precession / Anchor Model |
+| # | Ayanamsha Key | Canonical Name & Lineage | Value on `2026-11-01` (`DD° MM' SS"`) | Decimal (`deg`) | Offset vs Lahiri (`Δ = A − A_Lahiri`) | Precession / Anchor Model |
 |---|---|---|---|---|---|---|
 | **01** | `lahiri` | **Lahiri / Chitra Paksha (mean)** | `24° 13' 55"` | `24.231932°` | `+00° 00' 00"` | published_lahiri_anchor |
 | **02** | `raman` | **Raman (Hand/NOVA modern realization)** | `22° 47' 08"` | `22.785630°` | `-01° 26' 47"` | modern_reference_ecliptic |
@@ -61,7 +61,7 @@
 ### Table 1C — Manual Julian Day Number (`JDN`) Lookup Table for Years `1900` to `2050` (`Jan 0.0 UTC`)
 
 **How to Compute Any Julian Date (`JD`) by Hand:**
-$$\text{JD} = \text{JD}_{\text{Jan 0.0}}(\text{Year}) + \text{Month Offset (Table 1D)} + \text{Day of Month} + \frac{\text{UTC Hours}}{24}$$
+`JD = JD_Jan0.0(Year) + Month Offset (Table 1D) + Day of Month + (UTC Hours / 24)`
 
 | Year | `JD (Jan 0.0)` | Year | `JD (Jan 0.0)` | Year | `JD (Jan 0.0)` | Year | `JD (Jan 0.0)` | Year | `JD (Jan 0.0)` |
 |---|---|---|---|---|---|---|---|---|---|
@@ -96,9 +96,9 @@ $$\text{JD} = \text{JD}_{\text{Jan 0.0}}(\text{Year}) + \text{Month Offset (Tabl
 | **1928*** | `2425245.5` | **1958** | `2436203.5` | **1988*** | `2447160.5` | **2018** | `2458118.5` | **2048*** | `2469075.5` |
 | **1929** | `2425611.5` | **1959** | `2436568.5` | **1989** | `2447526.5` | **2019** | `2458483.5` | **2049** | `2469441.5` |
 
-### Table 1D — Cumulative Month Day-Offsets & Historical $\Delta T = \text{TT} - \text{UT1}$ Table
+### Table 1D — Cumulative Month Day-Offsets & Historical `ΔT = TT − UT1` Table
 
-| Month | Regular Year Offset | Leap Year (`*`) Offset | Historical Epoch | $\Delta T = \text{TT} - \text{UT1}$ (Seconds) | $\Delta T$ (Minutes) |
+| Month | Regular Year Offset | Leap Year (`*`) Offset | Historical Epoch | `ΔT = TT − UT1` (Seconds) | `ΔT` (Minutes) |
 |---|---|---|---|---|---|
 | **January** | `+0 days` | `+0 days` | **500 BCE** | `+17203.7 s` | `+286.73 min` |
 | **February** | `+31 days` | `+31 days` | **1 BCE / 0** | `+10583.6 s` | `+176.39 min` |
@@ -130,10 +130,10 @@ $$\text{JD} = \text{JD}_{\text{Jan 0.0}}(\text{Year}) + \text{Month Offset (Tabl
 | `2026-11-07` | Shanivara | `24° 13' 56"` | `08h 08m 00s` | **Tula 20° 21' 11"**<br/>Vishakha P1 (D)<br/>`+01° 00' 12"/d` | **Kanya 23° 44' 48"**<br/>Chitra P1 (D)<br/>`+12° 48' 38"/d` | **Karka 27° 20' 54"**<br/>Ashlesha P4 (D)<br/>`+00° 28' 58"/d` | **Tula 14° 56' 26"**<br/>Swati P3 (R/C)<br/>`-01° 09' 35"/d` | **Simha 00° 46' 30"**<br/>Magha P1 (D)<br/>`+00° 06' 25"/d` | **Kanya 29° 38' 03"**<br/>Chitra P2 (R/V)<br/>`-00° 17' 09"/d` | **Meena 14° 41' 43"**<br/>Uttara Bhadrapada P4 (R/MB)<br/>`-00° 03' 21"/d` | **Kumbha 01° 31' 17"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Kumbha 02° 26' 10"**<br/>Dhanishta P3 (R)<br/>`-00° 09' 36"/d` | **Simha 01° 31' 17"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
 | `2026-11-08` | Ravivara | `24° 13' 56"` | `08h 11m 57s` | **Tula 21° 21' 24"**<br/>Vishakha P1 (D)<br/>`+01° 00' 14"/d` | **Tula 06° 28' 05"**<br/>Chitra P4 (D)<br/>`+12° 37' 59"/d` | **Karka 27° 49' 45"**<br/>Ashlesha P4 (D)<br/>`+00° 28' 45"/d` | **Tula 13° 50' 27"**<br/>Swati P3 (R/C)<br/>`-01° 02' 03"/d` | **Simha 00° 52' 51"**<br/>Magha P1 (D)<br/>`+00° 06' 16"/d` | **Kanya 29° 22' 06"**<br/>Chitra P2 (R/V)<br/>`-00° 14' 45"/d` | **Meena 14° 38' 24"**<br/>Uttara Bhadrapada P4 (R/MB)<br/>`-00° 03' 16"/d` | **Kumbha 01° 28' 06"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Kumbha 02° 15' 14"**<br/>Dhanishta P3 (D)<br/>`+00° 12' 46"/d` | **Simha 01° 28' 06"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
 | `2026-11-09` | Somavara | `24° 13' 56"` | `08h 15m 54s` | **Tula 22° 21' 39"**<br/>Vishakha P1 (D)<br/>`+01° 00' 16"/d` | **Tula 19° 00' 43"**<br/>Swati P4 (D/C/PN)<br/>`+12° 27' 18"/d` | **Karka 28° 18' 23"**<br/>Ashlesha P4 (D)<br/>`+00° 28' 31"/d` | **Tula 12° 52' 55"**<br/>Swati P2 (R/C)<br/>`-00° 52' 47"/d` | **Simha 00° 59' 02"**<br/>Magha P1 (D)<br/>`+00° 06' 06"/d` | **Kanya 29° 08' 34"**<br/>Chitra P2 (R/V)<br/>`-00° 12' 19"/d` | **Meena 14° 35' 10"**<br/>Uttara Bhadrapada P4 (R/MB)<br/>`-00° 03' 11"/d` | **Kumbha 01° 24' 55"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Kumbha 02° 02' 03"**<br/>Dhanishta P3 (R)<br/>`-00° 13' 54"/d` | **Simha 01° 24' 55"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
-| `2026-11-10` | Mangalavara | `24° 13' 56"` | `08h 19m 50s` | **Tula 23° 21' 56"**<br/>Vishakha P2 (D)<br/>`+01° 00' 18"/d` | **Vrishchika 01° 22' 43"**<br/>Vishakha P4 (D/C/PN)<br/>`+12° 16' 44"/d` | **Karka 28° 46' 47"**<br/>Ashlesha P4 (D)<br/>`+00° 28' 17"/d` | **Tula 12° 05' 19"**<br/>Swati P2 (R/C)<br/>`-00° 42' 13"/d` | **Simha 01° 05' 04"**<br/>Magha P1 (D)<br/>`+00° 05' 57"/d` | **Kanya 28° 57' 29"**<br/>Chitra P2 (R/V)<br/>`-00° 09' 51"/d` | **Meena 14° 32' 01"**<br/>Uttara Bhadrapada P4 (R/MB)<br/>`-00° 03' 06"/d` | **Kumbha 01° 21' 45"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Kumbha 01° 47' 46"**<br/>Dhanishta P3 (R)<br/>`-00° 14' 27"/d` | **Simha 01° 21' 45"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
-| `2026-11-11` | Budhavara | `24° 13' 56"` | `08h 23m 47s` | **Tula 24° 22' 15"**<br/>Vishakha P2 (D)<br/>`+01° 00' 19"/d` | **Vrishchika 13° 34' 23"**<br/>Anuradha P4 (D/V/MB)<br/>`+12° 06' 43"/d` | **Karka 29° 14' 57"**<br/>Ashlesha P4 (D)<br/>`+00° 28' 03"/d` | **Tula 11° 28' 44"**<br/>Swati P2 (R)<br/>`-00° 30' 52"/d` | **Simha 01° 10' 57"**<br/>Magha P1 (D)<br/>`+00° 05' 48"/d` | **Kanya 28° 48' 51"**<br/>Chitra P2 (R/V)<br/>`-00° 07' 24"/d` | **Meena 14° 28' 57"**<br/>Uttara Bhadrapada P4 (R)<br/>`-00° 03' 01"/d` | **Kumbha 01° 18' 34"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Kumbha 01° 33' 36"**<br/>Dhanishta P3 (R)<br/>`-00° 13' 42"/d` | **Simha 01° 18' 34"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
-| `2026-11-12` | Guruvara | `24° 13' 56"` | `08h 27m 43s` | **Tula 25° 22' 35"**<br/>Vishakha P2 (D)<br/>`+01° 00' 21"/d` | **Vrishchika 25° 36' 37"**<br/>Jyeshtha P3 (D)<br/>`+11° 57' 58"/d` | **Karka 29° 42' 53"**<br/>Ashlesha P4 (D)<br/>`+00° 27' 48"/d` | **Tula 11° 03' 43"**<br/>Swati P2 (R)<br/>`-00° 19' 10"/d` | **Simha 01° 16' 40"**<br/>Magha P1 (D)<br/>`+00° 05' 38"/d` | **Kanya 28° 42' 42"**<br/>Chitra P2 (R/V)<br/>`-00° 04' 56"/d` | **Meena 14° 25' 58"**<br/>Uttara Bhadrapada P4 (R)<br/>`-00° 02' 56"/d` | **Kumbha 01° 15' 23"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Kumbha 01° 20' 45"**<br/>Dhanishta P3 (R)<br/>`-00° 11' 50"/d` | **Simha 01° 15' 23"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
-| `2026-11-13` | Shukravara | `24° 13' 57"` | `08h 31m 40s` | **Tula 26° 22' 57"**<br/>Vishakha P2 (D)<br/>`+01° 00' 23"/d` | **Dhanu 07° 31' 05"**<br/>Mula P3 (D)<br/>`+11° 51' 21"/d` | **Simha 00° 10' 34"**<br/>Magha P1 (D)<br/>`+00° 27' 33"/d` | **Tula 10° 50' 24"**<br/>Swati P2 (R)<br/>`-00° 07' 31"/d` | **Simha 01° 22' 14"**<br/>Magha P1 (D)<br/>`+00° 05' 28"/d` | **Kanya 28° 39' 00"**<br/>Chitra P2 (R/V)<br/>`-00° 02' 29"/d` | **Meena 14° 23' 05"**<br/>Uttara Bhadrapada P4 (R)<br/>`-00° 02' 51"/d` | **Kumbha 01° 12' 12"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Kumbha 01° 10' 10"**<br/>Dhanishta P3 (R)<br/>`-00° 09' 13"/d` | **Simha 01° 12' 12"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
+| `2026-11-10` | Mangalavara | `24° 13' 56"` | `08h 19m 50s` | **Tula 23° 21' 56"**<br/>Vishakha P2 (D/PN)<br/>`+01° 00' 18"/d` | **Vrishchika 01° 22' 43"**<br/>Vishakha P4 (D/C/PN)<br/>`+12° 16' 44"/d` | **Karka 28° 46' 47"**<br/>Ashlesha P4 (D)<br/>`+00° 28' 17"/d` | **Tula 12° 05' 19"**<br/>Swati P2 (R/C)<br/>`-00° 42' 13"/d` | **Simha 01° 05' 04"**<br/>Magha P1 (D)<br/>`+00° 05' 57"/d` | **Kanya 28° 57' 29"**<br/>Chitra P2 (R/V)<br/>`-00° 09' 51"/d` | **Meena 14° 32' 01"**<br/>Uttara Bhadrapada P4 (R/MB)<br/>`-00° 03' 06"/d` | **Kumbha 01° 21' 45"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Kumbha 01° 47' 46"**<br/>Dhanishta P3 (R)<br/>`-00° 14' 27"/d` | **Simha 01° 21' 45"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
+| `2026-11-11` | Budhavara | `24° 13' 56"` | `08h 23m 47s` | **Tula 24° 22' 15"**<br/>Vishakha P2 (D/PN)<br/>`+01° 00' 19"/d` | **Vrishchika 13° 34' 23"**<br/>Anuradha P4 (D/V/MB)<br/>`+12° 06' 43"/d` | **Karka 29° 14' 57"**<br/>Ashlesha P4 (D)<br/>`+00° 28' 03"/d` | **Tula 11° 28' 44"**<br/>Swati P2 (R)<br/>`-00° 30' 52"/d` | **Simha 01° 10' 57"**<br/>Magha P1 (D)<br/>`+00° 05' 48"/d` | **Kanya 28° 48' 51"**<br/>Chitra P2 (R/V)<br/>`-00° 07' 24"/d` | **Meena 14° 28' 57"**<br/>Uttara Bhadrapada P4 (R)<br/>`-00° 03' 01"/d` | **Kumbha 01° 18' 34"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Kumbha 01° 33' 36"**<br/>Dhanishta P3 (R)<br/>`-00° 13' 42"/d` | **Simha 01° 18' 34"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
+| `2026-11-12` | Guruvara | `24° 13' 56"` | `08h 27m 43s` | **Tula 25° 22' 35"**<br/>Vishakha P2 (D/PN)<br/>`+01° 00' 21"/d` | **Vrishchika 25° 36' 37"**<br/>Jyeshtha P3 (D)<br/>`+11° 57' 58"/d` | **Karka 29° 42' 53"**<br/>Ashlesha P4 (D)<br/>`+00° 27' 48"/d` | **Tula 11° 03' 43"**<br/>Swati P2 (R)<br/>`-00° 19' 10"/d` | **Simha 01° 16' 40"**<br/>Magha P1 (D)<br/>`+00° 05' 38"/d` | **Kanya 28° 42' 42"**<br/>Chitra P2 (R/V)<br/>`-00° 04' 56"/d` | **Meena 14° 25' 58"**<br/>Uttara Bhadrapada P4 (R)<br/>`-00° 02' 56"/d` | **Kumbha 01° 15' 23"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Kumbha 01° 20' 45"**<br/>Dhanishta P3 (R)<br/>`-00° 11' 50"/d` | **Simha 01° 15' 23"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
+| `2026-11-13` | Shukravara | `24° 13' 57"` | `08h 31m 40s` | **Tula 26° 22' 57"**<br/>Vishakha P2 (D/PN)<br/>`+01° 00' 23"/d` | **Dhanu 07° 31' 05"**<br/>Mula P3 (D)<br/>`+11° 51' 21"/d` | **Simha 00° 10' 34"**<br/>Magha P1 (D)<br/>`+00° 27' 33"/d` | **Tula 10° 50' 24"**<br/>Swati P2 (R)<br/>`-00° 07' 31"/d` | **Simha 01° 22' 14"**<br/>Magha P1 (D)<br/>`+00° 05' 28"/d` | **Kanya 28° 39' 00"**<br/>Chitra P2 (R/V)<br/>`-00° 02' 29"/d` | **Meena 14° 23' 05"**<br/>Uttara Bhadrapada P4 (R)<br/>`-00° 02' 51"/d` | **Kumbha 01° 12' 12"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Kumbha 01° 10' 10"**<br/>Dhanishta P3 (R)<br/>`-00° 09' 13"/d` | **Simha 01° 12' 12"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
 | `2026-11-14` | Shanivara | `24° 13' 57"` | `08h 35m 36s` | **Tula 27° 23' 20"**<br/>Vishakha P3 (D)<br/>`+01° 00' 24"/d` | **Dhanu 19° 20' 25"**<br/>Purva Ashadha P2 (D)<br/>`+11° 47' 48"/d` | **Simha 00° 38' 01"**<br/>Magha P1 (D)<br/>`+00° 27' 18"/d` | **Tula 10° 48' 34"**<br/>Swati P2 (D)<br/>`+00° 03' 44"/d` | **Simha 01° 27' 38"**<br/>Magha P1 (D)<br/>`+00° 05' 19"/d` | **Kanya 28° 37' 44"**<br/>Chitra P2 (S/V)<br/>`-00° 00' 03"/d` | **Meena 14° 20' 16"**<br/>Uttara Bhadrapada P4 (R)<br/>`-00° 02' 45"/d` | **Kumbha 01° 09' 02"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Kumbha 01° 02' 24"**<br/>Dhanishta P3 (R)<br/>`-00° 06' 17"/d` | **Simha 01° 09' 02"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
 | `2026-11-15` | Ravivara | `24° 13' 57"` | `08h 39m 33s` | **Tula 28° 23' 45"**<br/>Vishakha P3 (D)<br/>`+01° 00' 25"/d` | **Makara 01° 08' 07"**<br/>Uttara Ashadha P2 (D/V)<br/>`+11° 48' 14"/d` | **Simha 01° 05' 12"**<br/>Magha P1 (D)<br/>`+00° 27' 03"/d` | **Tula 10° 57' 40"**<br/>Swati P2 (D)<br/>`+00° 14' 22"/d` | **Simha 01° 32' 52"**<br/>Magha P1 (D)<br/>`+00° 05' 09"/d` | **Kanya 28° 38' 53"**<br/>Chitra P2 (D/V)<br/>`+00° 02' 21"/d` | **Meena 14° 17' 33"**<br/>Uttara Bhadrapada P4 (R)<br/>`-00° 02' 40"/d` | **Kumbha 01° 05' 51"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Kumbha 00° 57' 33"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 29"/d` | **Simha 01° 05' 51"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
 | `2026-11-16` | Somavara | `24° 13' 57"` | `08h 43m 30s` | **Tula 29° 24' 11"**<br/>Vishakha P3 (D)<br/>`+01° 00' 27"/d` | **Makara 12° 58' 35"**<br/>Shravana P1 (D)<br/>`+11° 53' 24"/d` | **Simha 01° 32' 08"**<br/>Magha P1 (D)<br/>`+00° 26' 48"/d` | **Tula 11° 17' 02"**<br/>Swati P2 (D)<br/>`+00° 24' 14"/d` | **Simha 01° 37' 56"**<br/>Magha P1 (D)<br/>`+00° 04' 59"/d` | **Kanya 28° 42' 25"**<br/>Chitra P2 (D/V)<br/>`+00° 04' 42"/d` | **Meena 14° 14' 56"**<br/>Uttara Bhadrapada P4 (R)<br/>`-00° 02' 35"/d` | **Kumbha 01° 02' 40"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Kumbha 00° 55' 14"**<br/>Dhanishta P3 (R)<br/>`-00° 09' 10"/d` | **Simha 01° 02' 40"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
@@ -148,55 +148,55 @@ $$\text{JD} = \text{JD}_{\text{Jan 0.0}}(\text{Year}) + \text{Month Offset (Tabl
 | `2026-11-25` | Budhavara | `24° 13' 58"` | `09h 18m 59s` | **Vrishchika 08° 29' 04"**<br/>Anuradha P2 (D/PN)<br/>`+01° 00' 38"/d` | **Vrishabha 13° 49' 06"**<br/>Rohini P2 (D/V/PN)<br/>`+15° 05' 32"/d` | **Simha 05° 22' 10"**<br/>Magha P2 (D)<br/>`+00° 24' 15"/d` | **Tula 19° 33' 52"**<br/>Swati P4 (D/PN/MB)<br/>`+01° 16' 08"/d` | **Simha 02° 15' 53"**<br/>Magha P1 (D)<br/>`+00° 03' 25"/d` | **Tula 00° 53' 14"**<br/>Chitra P3 (D/V)<br/>`+00° 23' 36"/d` | **Meena 13° 55' 35"**<br/>Uttara Bhadrapada P4 (R)<br/>`-00° 01' 42"/d` | **Kumbha 00° 34' 03"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Kumbha 00° 05' 42"**<br/>Dhanishta P3 (R)<br/>`-00° 11' 22"/d` | **Simha 00° 34' 03"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
 | `2026-11-26` | Guruvara | `24° 13' 58"` | `09h 22m 55s` | **Vrishchika 09° 29' 43"**<br/>Anuradha P2 (D/PN)<br/>`+01° 00' 40"/d` | **Vrishabha 28° 56' 15"**<br/>Mrigashirsha P2 (D)<br/>`+15° 07' 05"/d` | **Simha 05° 46' 16"**<br/>Magha P2 (D)<br/>`+00° 23' 56"/d` | **Tula 20° 51' 20"**<br/>Vishakha P1 (D)<br/>`+01° 18' 46"/d` | **Simha 02° 19' 14"**<br/>Magha P1 (D)<br/>`+00° 03' 15"/d` | **Tula 01° 17' 45"**<br/>Chitra P3 (D/V)<br/>`+00° 25' 25"/d` | **Meena 13° 53' 55"**<br/>Uttara Bhadrapada P4 (R)<br/>`-00° 01' 36"/d` | **Kumbha 00° 30' 52"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Makara 29° 55' 00"**<br/>Dhanishta P2 (R)<br/>`-00° 09' 47"/d` | **Simha 00° 30' 52"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
 | `2026-11-27` | Shukravara | `24° 13' 59"` | `09h 26m 52s` | **Vrishchika 10° 30' 24"**<br/>Anuradha P3 (D)<br/>`+01° 00' 41"/d` | **Mithuna 13° 59' 53"**<br/>Ardra P3 (D)<br/>`+14° 58' 43"/d` | **Simha 06° 10' 03"**<br/>Magha P2 (D)<br/>`+00° 23' 37"/d` | **Tula 22° 11' 14"**<br/>Vishakha P1 (D)<br/>`+01° 21' 00"/d` | **Simha 02° 22' 23"**<br/>Magha P1 (D)<br/>`+00° 03' 04"/d` | **Tula 01° 44' 03"**<br/>Chitra P3 (D/V)<br/>`+00° 27' 10"/d` | **Meena 13° 52' 22"**<br/>Uttara Bhadrapada P4 (R)<br/>`-00° 01' 30"/d` | **Kumbha 00° 27' 42"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Makara 29° 46' 30"**<br/>Dhanishta P2 (R)<br/>`-00° 07' 06"/d` | **Simha 00° 27' 42"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
-| `2026-11-28` | Shanivara | `24° 13' 59"` | `09h 30m 48s` | **Vrishchika 11° 31' 06"**<br/>Anuradha P3 (D)<br/>`+01° 00' 43"/d` | **Mithuna 28° 50' 59"**<br/>Punarvasu P3 (D/V)<br/>`+14° 42' 32"/d` | **Simha 06° 33' 31"**<br/>Magha P2 (D)<br/>`+00° 23' 18"/d` | **Tula 23° 33' 12"**<br/>Vishakha P2 (D)<br/>`+01° 22' 54"/d` | **Simha 02° 25' 22"**<br/>Magha P1 (D)<br/>`+00° 02' 53"/d` | **Tula 02° 12' 04"**<br/>Chitra P3 (D/V)<br/>`+00° 28' 51"/d` | **Meena 13° 50' 55"**<br/>Uttara Bhadrapada P4 (R)<br/>`-00° 01' 24"/d` | **Kumbha 00° 24' 31"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Makara 29° 40' 52"**<br/>Dhanishta P2 (R)<br/>`-00° 04' 12"/d` | **Simha 00° 24' 31"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
-| `2026-11-29` | Ravivara | `24° 13' 59"` | `09h 34m 45s` | **Vrishchika 12° 31' 50"**<br/>Anuradha P3 (D)<br/>`+01° 00' 45"/d` | **Karka 13° 23' 13"**<br/>Pushya P4 (D)<br/>`+14° 21' 32"/d` | **Simha 06° 56' 39"**<br/>Magha P3 (D)<br/>`+00° 22' 58"/d` | **Tula 24° 56' 55"**<br/>Vishakha P2 (D)<br/>`+01° 24' 31"/d` | **Simha 02° 28' 10"**<br/>Magha P1 (D)<br/>`+00° 02' 42"/d` | **Tula 02° 41' 44"**<br/>Chitra P3 (D/V)<br/>`+00° 30' 29"/d` | **Meena 13° 49' 34"**<br/>Uttara Bhadrapada P4 (R)<br/>`-00° 01' 17"/d` | **Kumbha 00° 21' 20"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Makara 29° 37' 59"**<br/>Dhanishta P2 (R)<br/>`-00° 01' 41"/d` | **Simha 00° 21' 20"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
-| `2026-11-30` | Somavara | `24° 13' 59"` | `09h 38m 41s` | **Vrishchika 13° 32' 35"**<br/>Anuradha P4 (D/V)<br/>`+01° 00' 46"/d` | **Karka 27° 33' 17"**<br/>Ashlesha P4 (D)<br/>`+13° 58' 42"/d` | **Simha 07° 19' 27"**<br/>Magha P3 (D)<br/>`+00° 22' 37"/d` | **Tula 26° 22' 07"**<br/>Vishakha P2 (D)<br/>`+01° 25' 52"/d` | **Simha 02° 30' 46"**<br/>Magha P1 (D)<br/>`+00° 02' 31"/d` | **Tula 03° 13' 01"**<br/>Chitra P3 (D/V)<br/>`+00° 32' 03"/d` | **Meena 13° 48' 19"**<br/>Uttara Bhadrapada P4 (R)<br/>`-00° 01' 11"/d` | **Kumbha 00° 18' 09"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Makara 29° 37' 10"**<br/>Dhanishta P2 (S)<br/>`-00° 00' 08"/d` | **Simha 00° 18' 09"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
+| `2026-11-28` | Shanivara | `24° 13' 59"` | `09h 30m 48s` | **Vrishchika 11° 31' 06"**<br/>Anuradha P3 (D)<br/>`+01° 00' 43"/d` | **Mithuna 28° 50' 59"**<br/>Punarvasu P3 (D/V)<br/>`+14° 42' 32"/d` | **Simha 06° 33' 31"**<br/>Magha P2 (D)<br/>`+00° 23' 18"/d` | **Tula 23° 33' 12"**<br/>Vishakha P2 (D/PN)<br/>`+01° 22' 54"/d` | **Simha 02° 25' 22"**<br/>Magha P1 (D)<br/>`+00° 02' 53"/d` | **Tula 02° 12' 04"**<br/>Chitra P3 (D/V)<br/>`+00° 28' 51"/d` | **Meena 13° 50' 55"**<br/>Uttara Bhadrapada P4 (R)<br/>`-00° 01' 24"/d` | **Kumbha 00° 24' 31"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Makara 29° 40' 52"**<br/>Dhanishta P2 (R)<br/>`-00° 04' 12"/d` | **Simha 00° 24' 31"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
+| `2026-11-29` | Ravivara | `24° 13' 59"` | `09h 34m 45s` | **Vrishchika 12° 31' 50"**<br/>Anuradha P3 (D)<br/>`+01° 00' 45"/d` | **Karka 13° 23' 13"**<br/>Pushya P4 (D)<br/>`+14° 21' 32"/d` | **Simha 06° 56' 39"**<br/>Magha P3 (D)<br/>`+00° 22' 58"/d` | **Tula 24° 56' 55"**<br/>Vishakha P2 (D/PN)<br/>`+01° 24' 31"/d` | **Simha 02° 28' 10"**<br/>Magha P1 (D)<br/>`+00° 02' 42"/d` | **Tula 02° 41' 44"**<br/>Chitra P3 (D/V)<br/>`+00° 30' 29"/d` | **Meena 13° 49' 34"**<br/>Uttara Bhadrapada P4 (R)<br/>`-00° 01' 17"/d` | **Kumbha 00° 21' 20"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Makara 29° 37' 59"**<br/>Dhanishta P2 (R)<br/>`-00° 01' 41"/d` | **Simha 00° 21' 20"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
+| `2026-11-30` | Somavara | `24° 13' 59"` | `09h 38m 41s` | **Vrishchika 13° 32' 35"**<br/>Anuradha P4 (D/V)<br/>`+01° 00' 46"/d` | **Karka 27° 33' 17"**<br/>Ashlesha P4 (D)<br/>`+13° 58' 42"/d` | **Simha 07° 19' 27"**<br/>Magha P3 (D)<br/>`+00° 22' 37"/d` | **Tula 26° 22' 07"**<br/>Vishakha P2 (D/PN)<br/>`+01° 25' 52"/d` | **Simha 02° 30' 46"**<br/>Magha P1 (D)<br/>`+00° 02' 31"/d` | **Tula 03° 13' 01"**<br/>Chitra P3 (D/V)<br/>`+00° 32' 03"/d` | **Meena 13° 48' 19"**<br/>Uttara Bhadrapada P4 (R)<br/>`-00° 01' 11"/d` | **Kumbha 00° 18' 09"**<br/>Dhanishta P3 (R)<br/>`-00° 03' 11"/d` | **Makara 29° 37' 10"**<br/>Dhanishta P2 (S)<br/>`-00° 00' 08"/d` | **Simha 00° 18' 09"**<br/>Magha P1 (R)<br/>`-00° 03' 11"/d` |
 
-### Table 2B — Daily Outer Planets (*Aruna / Uranus, Varuna / Neptune, Yama / Pluto*), Tropical (*Sayana*) Luminaries, & Second-Order Tabular Differences ($\Delta^2 \lambda$)
+### Table 2B — Daily Outer Planets (*Aruna / Uranus, Varuna / Neptune, Yama / Pluto*), Tropical (*Sayana*) Luminaries, & Second-Order Tabular Differences (`Δ²λ`)
 
-| Date | Kali *Ahargana* | Tropical Sun ($\lambda_{\text{trop}}$) | Tropical Moon ($\lambda_{\text{trop}}$) | Uranus (*Aruna*) Sidereal | Neptune (*Varuna*) Sidereal | Pluto (*Yama*) Sidereal | Moon $\Delta^2 \lambda$ (`"/d²`) | Mercury $\Delta^2 \lambda$ (`"/d²`) | Venus $\Delta^2 \lambda$ (`"/d²`) | Mars $\Delta^2 \lambda$ (`"/d²`) |
+| Date | Kali *Ahargana* | Tropical Sun (`λ_trop`) | Tropical Moon (`λ_trop`) | Uranus (*Aruna*) Sidereal | Neptune (*Varuna*) Sidereal | Pluto (*Yama*) Sidereal | Moon `Δ²λ` (`"/d²`) | Mercury `Δ²λ` (`"/d²`) | Venus `Δ²λ` (`"/d²`) | Mars `Δ²λ` (`"/d²`) |
 |---|---|---|---|---|---|---|---|---|---|---|
-| `2026-11-01` | `1872880.0` | `Vrishchika 08° 34' 29"` | `Karka 27° 28' 06"` | **Vrishabha 10° 26' 33"** (`-00° 02' 11"/d`) | **Meena 07° 50' 28"** (`-00° 01' 15"/d`) | **Makara 08° 53' 37"** (`+00° 00' 27"/d`) | `-924.2"` | `-403.1"` | `+103.2"` | `-11.7"` |
-| `2026-11-02` | `1872881.0` | `Vrishchika 09° 34' 30"` | `Simha 11° 28' 06"` | **Vrishabha 10° 24' 21"** (`-00° 02' 13"/d`) | **Meena 07° 49' 14"** (`-00° 01' 14"/d`) | **Makara 08° 54' 05"** (`+00° 00' 29"/d`) | `-926.8"` | `-304.8"` | `+112.7"` | `-11.9"` |
-| `2026-11-03` | `1872882.0` | `Vrishchika 10° 34' 33"` | `Simha 25° 12' 39"` | **Vrishabha 10° 22' 07"** (`-00° 02' 14"/d`) | **Meena 07° 48' 00"** (`-00° 01' 13"/d`) | **Makara 08° 54' 35"** (`+00° 00' 31"/d`) | `-868.2"` | `-183.4"` | `+120.9"` | `-12.2"` |
-| `2026-11-04` | `1872883.0` | `Vrishchika 11° 34' 38"` | `Kanya 08° 42' 43"` | **Vrishabha 10° 19' 52"** (`-00° 02' 16"/d`) | **Meena 07° 46' 48"** (`-00° 01' 11"/d`) | **Makara 08° 55' 07"** (`+00° 00' 33"/d`) | `-787.2"` | `-44.5"` | `+128.0"` | `-12.5"` |
-| `2026-11-05` | `1872884.0` | `Vrishchika 12° 34' 46"` | `Kanya 21° 59' 41"` | **Vrishabha 10° 17' 36"** (`-00° 02' 17"/d`) | **Meena 07° 45' 38"** (`-00° 01' 10"/d`) | **Makara 08° 55' 41"** (`+00° 00' 34"/d`) | `-713.6"` | `+103.9"` | `+133.9"` | `-12.7"` |
-| `2026-11-06` | `1872885.0` | `Vrishchika 13° 34' 55"` | `Tula 05° 04' 45"` | **Vrishabha 10° 15' 18"** (`-00° 02' 18"/d`) | **Meena 07° 44' 29"** (`-00° 01' 08"/d`) | **Makara 08° 56' 16"** (`+00° 00' 36"/d`) | `-664.4"` | `+251.7"` | `+138.7"` | `-13.0"` |
-| `2026-11-07` | `1872886.0` | `Vrishchika 14° 35' 07"` | `Tula 17° 58' 44"` | **Vrishabha 10° 12' 59"** (`-00° 02' 20"/d`) | **Meena 07° 43' 21"** (`-00° 01' 07"/d`) | **Makara 08° 56' 52"** (`+00° 00' 38"/d`) | `-642.4"` | `+388.7"` | `+142.4"` | `-13.3"` |
-| `2026-11-08` | `1872887.0` | `Vrishchika 15° 35' 20"` | `Vrishchika 00° 42' 01"` | **Vrishabha 10° 10' 39"** (`-00° 02' 21"/d`) | **Meena 07° 42' 15"** (`-00° 01' 05"/d`) | **Makara 08° 57' 31"** (`+00° 00' 39"/d`) | `-639.0"` | `+506.0"` | `+145.1"` | `-13.6"` |
-| `2026-11-09` | `1872888.0` | `Vrishchika 16° 35' 35"` | `Vrishchika 13° 14' 39"` | **Vrishabha 10° 08' 17"** (`-00° 02' 22"/d`) | **Meena 07° 41' 11"** (`-00° 01' 04"/d`) | **Makara 08° 58' 11"** (`+00° 00' 41"/d`) | `-638.0"` | `+597.4"` | `+146.8"` | `-13.8"` |
-| `2026-11-10` | `1872889.0` | `Vrishchika 17° 35' 52"` | `Vrishchika 25° 36' 39"` | **Vrishabha 10° 05' 55"** (`-00° 02' 23"/d`) | **Meena 07° 40' 08"** (`-00° 01' 02"/d`) | **Makara 08° 58' 53"** (`+00° 00' 43"/d`) | `-619.8"` | `+660.1"` | `+147.8"` | `-14.1"` |
-| `2026-11-11` | `1872890.0` | `Vrishchika 18° 36' 11"` | `Dhanu 07° 48' 20"` | **Vrishabha 10° 03' 31"** (`-00° 02' 24"/d`) | **Meena 07° 39' 06"** (`-00° 01' 01"/d`) | **Makara 08° 59' 36"** (`+00° 00' 44"/d`) | `-566.5"` | `+694.0"` | `+147.9"` | `-14.3"` |
-| `2026-11-12` | `1872891.0` | `Vrishchika 19° 36' 31"` | `Dhanu 19° 50' 33"` | **Vrishabha 10° 01' 06"** (`-00° 02' 25"/d`) | **Meena 07° 38' 06"** (`-00° 00' 59"/d`) | **Makara 09° 00' 21"** (`+00° 00' 46"/d`) | `-465.1"` | `+702.0"` | `+147.4"` | `-14.6"` |
-| `2026-11-13` | `1872892.0` | `Vrishchika 20° 36' 53"` | `Makara 01° 45' 02"` | **Vrishabha 09° 58' 41"** (`-00° 02' 26"/d`) | **Meena 07° 37' 08"** (`-00° 00' 57"/d`) | **Makara 09° 01' 08"** (`+00° 00' 47"/d`) | `-308.8"` | `+688.2"` | `+146.3"` | `-14.9"` |
-| `2026-11-14` | `1872893.0` | `Vrishchika 21° 37' 17"` | `Makara 13° 34' 22"` | **Vrishabha 09° 56' 14"** (`-00° 02' 27"/d`) | **Meena 07° 36' 12"** (`-00° 00' 56"/d`) | **Makara 09° 01' 56"** (`+00° 00' 49"/d`) | `-97.2"` | `+657.6"` | `+144.7"` | `-15.1"` |
-| `2026-11-15` | `1872894.0` | `Vrishchika 22° 37' 42"` | `Makara 25° 22' 04"` | **Vrishabha 09° 53' 47"** (`-00° 02' 28"/d`) | **Meena 07° 35' 17"** (`-00° 00' 54"/d`) | **Makara 09° 02' 46"** (`+00° 00' 51"/d`) | `+164.7"` | `+615.3"` | `+142.7"` | `-15.4"` |
-| `2026-11-16` | `1872895.0` | `Vrishchika 23° 38' 08"` | `Kumbha 07° 12' 32"` | **Vrishabha 09° 51' 19"** (`-00° 02' 28"/d`) | **Meena 07° 34' 24"** (`-00° 00' 52"/d`) | **Makara 09° 03' 37"** (`+00° 00' 52"/d`) | `+466.9"` | `+565.7"` | `+140.2"` | `-15.7"` |
-| `2026-11-17` | `1872896.0` | `Vrishchika 24° 38' 35"` | `Kumbha 19° 10' 46"` | **Vrishabha 09° 48' 51"** (`-00° 02' 29"/d`) | **Meena 07° 33' 32"** (`-00° 00' 51"/d`) | **Makara 09° 04' 30"** (`+00° 00' 54"/d`) | `+794.2"` | `+512.6"` | `+137.5"` | `-15.9"` |
-| `2026-11-18` | `1872897.0` | `Vrishchika 25° 39' 04"` | `Meena 01° 22' 14"` | **Vrishabha 09° 46' 22"** (`-00° 02' 29"/d`) | **Meena 07° 32' 42"** (`-00° 00' 49"/d`) | **Makara 09° 05' 25"** (`+00° 00' 55"/d`) | `+1124.4"` | `+458.8"` | `+134.5"` | `-16.2"` |
-| `2026-11-19` | `1872898.0` | `Vrishchika 26° 39' 35"` | `Meena 13° 52' 27"` | **Vrishabha 09° 43' 52"** (`-00° 02' 30"/d`) | **Meena 07° 31' 55"** (`-00° 00' 47"/d`) | **Makara 09° 06' 21"** (`+00° 00' 57"/d`) | `+1426.4"` | `+406.6"` | `+131.3"` | `-16.5"` |
-| `2026-11-20` | `1872899.0` | `Vrishchika 27° 40' 06"` | `Meena 26° 46' 26"` | **Vrishabha 09° 41' 22"** (`-00° 02' 30"/d`) | **Meena 07° 31' 08"** (`-00° 00' 45"/d`) | **Makara 09° 07' 18"** (`+00° 00' 58"/d`) | `+1658.4"` | `+357.1"` | `+128.0"` | `-16.8"` |
-| `2026-11-21` | `1872900.0` | `Vrishchika 28° 40' 39"` | `Mesha 10° 08' 04"` | **Vrishabha 09° 38' 51"** (`-00° 02' 31"/d`) | **Meena 07° 30' 24"** (`-00° 00' 43"/d`) | **Makara 09° 08' 18"** (`+00° 01' 00"/d`) | `+1770.1"` | `+311.5"` | `+124.6"` | `-17.1"` |
-| `2026-11-22` | `1872901.0` | `Vrishchika 29° 41' 13"` | `Mesha 23° 59' 12"` | **Vrishabha 09° 36' 20"** (`-00° 02' 31"/d`) | **Meena 07° 29' 42"** (`-00° 00' 42"/d`) | **Makara 09° 09' 18"** (`+00° 01' 01"/d`) | `+1711.3"` | `+270.0"` | `+121.1"` | `-17.4"` |
-| `2026-11-23` | `1872902.0` | `Dhanu 00° 41' 48"` | `Vrishabha 08° 18' 51"` | **Vrishabha 09° 33' 49"** (`-00° 02' 31"/d`) | **Meena 07° 29' 01"** (`-00° 00' 40"/d`) | **Makara 09° 10' 21"** (`+00° 01' 03"/d`) | `+1450.1"` | `+232.9"` | `+117.6"` | `-17.7"` |
-| `2026-11-24` | `1872903.0` | `Dhanu 01° 42' 25"` | `Vrishabha 23° 02' 40"` | **Vrishabha 09° 31' 18"** (`-00° 02' 31"/d`) | **Meena 07° 28' 22"** (`-00° 00' 38"/d`) | **Makara 09° 11' 24"** (`+00° 01' 04"/d`) | `+994.7"` | `+199.9"` | `+114.0"` | `-18.1"` |
-| `2026-11-25` | `1872904.0` | `Dhanu 02° 43' 03"` | `Mithuna 08° 03' 04"` | **Vrishabha 09° 28' 46"** (`-00° 02' 32"/d`) | **Meena 07° 27' 45"** (`-00° 00' 36"/d`) | **Makara 09° 12' 30"** (`+00° 01' 06"/d`) | `+406.1"` | `+171.0"` | `+110.4"` | `-18.4"` |
-| `2026-11-26` | `1872905.0` | `Dhanu 03° 43' 42"` | `Mithuna 23° 10' 14"` | **Vrishabha 09° 26' 15"** (`-00° 02' 32"/d`) | **Meena 07° 27' 10"** (`-00° 00' 34"/d`) | **Makara 09° 13' 36"** (`+00° 01' 07"/d`) | `-212.5"` | `+145.8"` | `+106.8"` | `-18.8"` |
-| `2026-11-27` | `1872906.0` | `Dhanu 04° 44' 23"` | `Karka 08° 13' 51"` | **Vrishabha 09° 23' 43"** (`-00° 02' 32"/d`) | **Meena 07° 26' 37"** (`-00° 00' 32"/d`) | **Makara 09° 14' 44"** (`+00° 01' 09"/d`) | `-751.2"` | `+123.9"` | `+103.1"` | `-19.3"` |
-| `2026-11-28` | `1872907.0` | `Dhanu 05° 45' 05"` | `Karka 23° 04' 57"` | **Vrishabha 09° 21' 12"** (`-00° 02' 31"/d`) | **Meena 07° 26' 06"** (`-00° 00' 30"/d`) | **Makara 09° 15' 54"** (`+00° 01' 10"/d`) | `-1132.0"` | `+105.0"` | `+99.5"` | `-19.7"` |
-| `2026-11-29` | `1872908.0` | `Dhanu 06° 45' 49"` | `Simha 07° 37' 11"` | **Vrishabha 09° 18' 40"** (`-00° 02' 31"/d`) | **Meena 07° 25' 37"** (`-00° 00' 28"/d`) | **Makara 09° 17' 05"** (`+00° 01' 12"/d`) | `-1329.3"` | `+88.8"` | `+95.8"` | `-20.2"` |
-| `2026-11-30` | `1872909.0` | `Dhanu 07° 46' 34"` | `Simha 21° 47' 16"` | **Vrishabha 09° 16' 09"** (`-00° 02' 31"/d`) | **Meena 07° 25' 10"** (`-00° 00' 26"/d`) | **Makara 09° 18' 17"** (`+00° 01' 13"/d`) | `-1363.7"` | `+74.9"` | `+92.2"` | `-20.7"` |
+| `2026-11-01` | `1872880.0` | `Vrishchika 08° 34' 29"` | `Karka 27° 28' 06"` | **Vrishabha 10° 26' 30"** (`-00° 02' 11"/d`) | **Meena 07° 50' 59"** (`-00° 01' 15"/d`) | **Makara 08° 53' 39"** (`+00° 00' 27"/d`) | `-924.2"` | `-403.1"` | `+103.2"` | `-11.7"` |
+| `2026-11-02` | `1872881.0` | `Vrishchika 09° 34' 30"` | `Simha 11° 28' 06"` | **Vrishabha 10° 24' 19"** (`-00° 02' 13"/d`) | **Meena 07° 49' 44"** (`-00° 01' 14"/d`) | **Makara 08° 54' 07"** (`+00° 00' 29"/d`) | `-926.8"` | `-304.8"` | `+112.7"` | `-11.9"` |
+| `2026-11-03` | `1872882.0` | `Vrishchika 10° 34' 33"` | `Simha 25° 12' 39"` | **Vrishabha 10° 22' 05"** (`-00° 02' 14"/d`) | **Meena 07° 48' 31"** (`-00° 01' 13"/d`) | **Makara 08° 54' 37"** (`+00° 00' 31"/d`) | `-868.2"` | `-183.4"` | `+120.9"` | `-12.2"` |
+| `2026-11-04` | `1872883.0` | `Vrishchika 11° 34' 38"` | `Kanya 08° 42' 43"` | **Vrishabha 10° 19' 51"** (`-00° 02' 16"/d`) | **Meena 07° 47' 18"** (`-00° 01' 11"/d`) | **Makara 08° 55' 08"** (`+00° 00' 32"/d`) | `-787.2"` | `-44.5"` | `+128.0"` | `-12.5"` |
+| `2026-11-05` | `1872884.0` | `Vrishchika 12° 34' 46"` | `Kanya 21° 59' 41"` | **Vrishabha 10° 17' 34"** (`-00° 02' 17"/d`) | **Meena 07° 46' 08"** (`-00° 01' 10"/d`) | **Makara 08° 55' 41"** (`+00° 00' 34"/d`) | `-713.6"` | `+103.9"` | `+133.9"` | `-12.7"` |
+| `2026-11-06` | `1872885.0` | `Vrishchika 13° 34' 55"` | `Tula 05° 04' 45"` | **Vrishabha 10° 15' 17"** (`-00° 02' 18"/d`) | **Meena 07° 44' 58"** (`-00° 01' 08"/d`) | **Makara 08° 56' 16"** (`+00° 00' 36"/d`) | `-664.4"` | `+251.7"` | `+138.7"` | `-13.0"` |
+| `2026-11-07` | `1872886.0` | `Vrishchika 14° 35' 07"` | `Tula 17° 58' 44"` | **Vrishabha 10° 12' 58"** (`-00° 02' 20"/d`) | **Meena 07° 43' 50"** (`-00° 01' 07"/d`) | **Makara 08° 56' 52"** (`+00° 00' 38"/d`) | `-642.4"` | `+388.7"` | `+142.4"` | `-13.3"` |
+| `2026-11-08` | `1872887.0` | `Vrishchika 15° 35' 20"` | `Vrishchika 00° 42' 01"` | **Vrishabha 10° 10' 38"** (`-00° 02' 21"/d`) | **Meena 07° 42' 44"** (`-00° 01' 05"/d`) | **Makara 08° 57' 30"** (`+00° 00' 39"/d`) | `-639.0"` | `+506.0"` | `+145.1"` | `-13.6"` |
+| `2026-11-09` | `1872888.0` | `Vrishchika 16° 35' 35"` | `Vrishchika 13° 14' 39"` | **Vrishabha 10° 08' 16"** (`-00° 02' 22"/d`) | **Meena 07° 41' 39"** (`-00° 01' 04"/d`) | **Makara 08° 58' 10"** (`+00° 00' 41"/d`) | `-638.0"` | `+597.4"` | `+146.8"` | `-13.8"` |
+| `2026-11-10` | `1872889.0` | `Vrishchika 17° 35' 52"` | `Vrishchika 25° 36' 39"` | **Vrishabha 10° 05' 54"** (`-00° 02' 23"/d`) | **Meena 07° 40' 36"** (`-00° 01' 02"/d`) | **Makara 08° 58' 51"** (`+00° 00' 43"/d`) | `-619.8"` | `+660.1"` | `+147.8"` | `-14.1"` |
+| `2026-11-11` | `1872890.0` | `Vrishchika 18° 36' 11"` | `Dhanu 07° 48' 20"` | **Vrishabha 10° 03' 30"** (`-00° 02' 24"/d`) | **Meena 07° 39' 34"** (`-00° 01' 01"/d`) | **Makara 08° 59' 34"** (`+00° 00' 44"/d`) | `-566.5"` | `+694.0"` | `+147.9"` | `-14.3"` |
+| `2026-11-12` | `1872891.0` | `Vrishchika 19° 36' 31"` | `Dhanu 19° 50' 33"` | **Vrishabha 10° 01' 06"** (`-00° 02' 25"/d`) | **Meena 07° 38' 34"** (`-00° 00' 59"/d`) | **Makara 09° 00' 19"** (`+00° 00' 46"/d`) | `-465.1"` | `+702.0"` | `+147.4"` | `-14.6"` |
+| `2026-11-13` | `1872892.0` | `Vrishchika 20° 36' 53"` | `Makara 01° 45' 02"` | **Vrishabha 09° 58' 40"** (`-00° 02' 26"/d`) | **Meena 07° 37' 35"** (`-00° 00' 57"/d`) | **Makara 09° 01' 05"** (`+00° 00' 47"/d`) | `-308.8"` | `+688.2"` | `+146.3"` | `-14.9"` |
+| `2026-11-14` | `1872893.0` | `Vrishchika 21° 37' 17"` | `Makara 13° 34' 22"` | **Vrishabha 09° 56' 14"** (`-00° 02' 27"/d`) | **Meena 07° 36' 38"** (`-00° 00' 56"/d`) | **Makara 09° 01' 53"** (`+00° 00' 49"/d`) | `-97.2"` | `+657.6"` | `+144.7"` | `-15.1"` |
+| `2026-11-15` | `1872894.0` | `Vrishchika 22° 37' 42"` | `Makara 25° 22' 04"` | **Vrishabha 09° 53' 47"** (`-00° 02' 28"/d`) | **Meena 07° 35' 43"** (`-00° 00' 54"/d`) | **Makara 09° 02' 42"** (`+00° 00' 51"/d`) | `+164.7"` | `+615.3"` | `+142.7"` | `-15.4"` |
+| `2026-11-16` | `1872895.0` | `Vrishchika 23° 38' 08"` | `Kumbha 07° 12' 32"` | **Vrishabha 09° 51' 19"** (`-00° 02' 28"/d`) | **Meena 07° 34' 50"** (`-00° 00' 52"/d`) | **Makara 09° 03' 34"** (`+00° 00' 52"/d`) | `+466.9"` | `+565.7"` | `+140.2"` | `-15.7"` |
+| `2026-11-17` | `1872896.0` | `Vrishchika 24° 38' 35"` | `Kumbha 19° 10' 46"` | **Vrishabha 09° 48' 51"** (`-00° 02' 29"/d`) | **Meena 07° 33' 58"** (`-00° 00' 51"/d`) | **Makara 09° 04' 26"** (`+00° 00' 54"/d`) | `+794.2"` | `+512.6"` | `+137.5"` | `-15.9"` |
+| `2026-11-18` | `1872897.0` | `Vrishchika 25° 39' 04"` | `Meena 01° 22' 14"` | **Vrishabha 09° 46' 22"** (`-00° 02' 29"/d`) | **Meena 07° 33' 08"** (`-00° 00' 49"/d`) | **Makara 09° 05' 20"** (`+00° 00' 55"/d`) | `+1124.4"` | `+458.8"` | `+134.5"` | `-16.2"` |
+| `2026-11-19` | `1872898.0` | `Vrishchika 26° 39' 35"` | `Meena 13° 52' 27"` | **Vrishabha 09° 43' 52"** (`-00° 02' 30"/d`) | **Meena 07° 32' 20"** (`-00° 00' 47"/d`) | **Makara 09° 06' 16"** (`+00° 00' 57"/d`) | `+1426.4"` | `+406.6"` | `+131.3"` | `-16.5"` |
+| `2026-11-20` | `1872899.0` | `Vrishchika 27° 40' 06"` | `Meena 26° 46' 26"` | **Vrishabha 09° 41' 22"** (`-00° 02' 30"/d`) | **Meena 07° 31' 33"** (`-00° 00' 45"/d`) | **Makara 09° 07' 14"** (`+00° 00' 58"/d`) | `+1658.4"` | `+357.1"` | `+128.0"` | `-16.8"` |
+| `2026-11-21` | `1872900.0` | `Vrishchika 28° 40' 39"` | `Mesha 10° 08' 04"` | **Vrishabha 09° 38' 52"** (`-00° 02' 31"/d`) | **Meena 07° 30' 49"** (`-00° 00' 43"/d`) | **Makara 09° 08' 13"** (`+00° 01' 00"/d`) | `+1770.1"` | `+311.5"` | `+124.6"` | `-17.1"` |
+| `2026-11-22` | `1872901.0` | `Vrishchika 29° 41' 13"` | `Mesha 23° 59' 12"` | **Vrishabha 09° 36' 21"** (`-00° 02' 31"/d`) | **Meena 07° 30' 06"** (`-00° 00' 42"/d`) | **Makara 09° 09' 13"** (`+00° 01' 01"/d`) | `+1711.3"` | `+270.0"` | `+121.1"` | `-17.4"` |
+| `2026-11-23` | `1872902.0` | `Dhanu 00° 41' 48"` | `Vrishabha 08° 18' 51"` | **Vrishabha 09° 33' 50"** (`-00° 02' 31"/d`) | **Meena 07° 29' 25"** (`-00° 00' 40"/d`) | **Makara 09° 10' 15"** (`+00° 01' 03"/d`) | `+1450.1"` | `+232.9"` | `+117.6"` | `-17.7"` |
+| `2026-11-24` | `1872903.0` | `Dhanu 01° 42' 25"` | `Vrishabha 23° 02' 40"` | **Vrishabha 09° 31' 19"** (`-00° 02' 31"/d`) | **Meena 07° 28' 46"** (`-00° 00' 38"/d`) | **Makara 09° 11' 18"** (`+00° 01' 04"/d`) | `+994.7"` | `+199.9"` | `+114.0"` | `-18.1"` |
+| `2026-11-25` | `1872904.0` | `Dhanu 02° 43' 03"` | `Mithuna 08° 03' 04"` | **Vrishabha 09° 28' 48"** (`-00° 02' 31"/d`) | **Meena 07° 28' 09"** (`-00° 00' 36"/d`) | **Makara 09° 12' 23"** (`+00° 01' 06"/d`) | `+406.1"` | `+171.0"` | `+110.4"` | `-18.4"` |
+| `2026-11-26` | `1872905.0` | `Dhanu 03° 43' 42"` | `Mithuna 23° 10' 14"` | **Vrishabha 09° 26' 16"** (`-00° 02' 31"/d`) | **Meena 07° 27' 34"** (`-00° 00' 34"/d`) | **Makara 09° 13' 29"** (`+00° 01' 07"/d`) | `-212.5"` | `+145.8"` | `+106.8"` | `-18.8"` |
+| `2026-11-27` | `1872906.0` | `Dhanu 04° 44' 23"` | `Karka 08° 13' 51"` | **Vrishabha 09° 23' 45"** (`-00° 02' 31"/d`) | **Meena 07° 27' 00"** (`-00° 00' 32"/d`) | **Makara 09° 14' 37"** (`+00° 01' 09"/d`) | `-751.2"` | `+123.9"` | `+103.1"` | `-19.3"` |
+| `2026-11-28` | `1872907.0` | `Dhanu 05° 45' 05"` | `Karka 23° 04' 57"` | **Vrishabha 09° 21' 14"** (`-00° 02' 31"/d`) | **Meena 07° 26' 29"** (`-00° 00' 30"/d`) | **Makara 09° 15' 46"** (`+00° 01' 10"/d`) | `-1132.0"` | `+105.0"` | `+99.5"` | `-19.7"` |
+| `2026-11-29` | `1872908.0` | `Dhanu 06° 45' 49"` | `Simha 07° 37' 11"` | **Vrishabha 09° 18' 42"** (`-00° 02' 31"/d`) | **Meena 07° 25' 59"** (`-00° 00' 28"/d`) | **Makara 09° 16' 57"** (`+00° 01' 12"/d`) | `-1329.3"` | `+88.8"` | `+95.8"` | `-20.2"` |
+| `2026-11-30` | `1872909.0` | `Dhanu 07° 46' 34"` | `Simha 21° 47' 16"` | **Vrishabha 09° 16' 11"** (`-00° 02' 31"/d`) | **Meena 07° 25' 31"** (`-00° 00' 26"/d`) | **Makara 09° 18' 09"** (`+00° 01' 13"/d`) | `-1363.7"` | `+74.9"` | `+92.2"` | `-20.7"` |
 
-## Chapter 3 — Daily Spherical & Physical Ephemeris Grid (Declination $\delta$, Right Ascension $\alpha$, Ecliptic Latitude $\beta$, Distance $R$, Parallax, Diameter, Phase & Magnitude)
+## Chapter 3 — Daily Spherical & Physical Ephemeris Grid (Declination `δ`, Right Ascension `α`, Ecliptic Latitude `β`, Distance `R`, Parallax, Diameter, Phase & Magnitude)
 
 **Why Spherical & Physical Coordinates Are Essential for Manual Jyotish:**
-- **Declination ($\delta$ / *Kranti*):** Required to compute *Ayana Bala* in *Shadbala*, Parallel/Contra-Parallel Declination aspects (*Kranti Yoga*), and *Vyatipata / Vaidhriti Mahapata*.
-- **Ecliptic Latitude ($\beta$ / *Shara / Vikshepa*):** Required to adjudicate the winner of a *Graha Yuddha* (Planetary War — the planet with the more northern latitude wins) and *Nakshatra Tara Bheda*.
-- **True Distance ($R$ in AU), Horizontal Parallax (`HP`), Apparent Diameter (`"`), & Visual Magnitude ($V_{\text{mag}}$):** Required for topocentric Moon correction, eclipse contact sizing, and *Cheshta / Brihat Samhita* brightness diagnostics.
+- **Declination (`δ` / *Kranti*):** Required to compute *Ayana Bala* in *Shadbala*, Parallel/Contra-Parallel Declination aspects (*Kranti Yoga*), and *Vyatipata / Vaidhriti Mahapata*.
+- **Ecliptic Latitude (`β` / *Shara / Vikshepa*):** Required to adjudicate the winner of a *Graha Yuddha* (Planetary War — the planet with the more northern latitude wins) and *Nakshatra Tara Bheda*.
+- **True Distance (`R` in AU), Horizontal Parallax (`HP`), Apparent Diameter (`"`), & Visual Magnitude (`V_mag`):** Required for topocentric Moon correction, eclipse contact sizing, and *Cheshta / Brihat Samhita* brightness diagnostics.
 
-### Table 3A — Daily Declination ($\delta$ / *Kranti*) & Right Ascension ($\alpha$) Across the *Navagrahas* (`05:30 IST`)
+### Table 3A — Daily Declination (`δ` / *Kranti*) & Right Ascension (`α`) Across the *Navagrahas* (`05:30 IST`)
 
-| Date | Sun $\delta$ / $\alpha$ | Moon $\delta$ / $\alpha$ | Mars $\delta$ / $\alpha$ | Mercury $\delta$ / $\alpha$ | Jupiter $\delta$ / $\alpha$ | Venus $\delta$ / $\alpha$ | Saturn $\delta$ / $\alpha$ | Rahu $\delta$ |
+| Date | Sun `δ / α` | Moon `δ / α` | Mars `δ / α` | Mercury `δ / α` | Jupiter `δ / α` | Venus `δ / α` | Saturn `δ / α` | Rahu `δ` |
 |---|---|---|---|---|---|---|---|---|
 | `2026-11-01` | `-14° 21' 31"`<br/>`14h 24m 47s` | `+23° 06' 22"`<br/>`08h 00m 16s` | `+16° 45' 52"`<br/>`09h 26m 16s` | `-18° 17' 51"`<br/>`14h 54m 55s` | `+14° 03' 50"`<br/>`09h 47m 26s` | `-14° 39' 36"`<br/>`13h 30m 05s` | `+01° 12' 36"`<br/>`00h 38m 21s` | `-12° 49' 34"` |
 | `2026-11-02` | `-14° 40' 40"`<br/>`14h 28m 42s` | `+18° 38' 13"`<br/>`08h 57m 17s` | `+16° 37' 39"`<br/>`09h 28m 17s` | `-17° 40' 09"`<br/>`14h 50m 38s` | `+14° 01' 37"`<br/>`09h 47m 55s` | `-14° 15' 26"`<br/>`13h 28m 36s` | `+01° 11' 16"`<br/>`00h 38m 07s` | `-12° 50' 38"` |
@@ -229,9 +229,9 @@ $$\text{JD} = \text{JD}_{\text{Jan 0.0}}(\text{Year}) + \text{Month Offset (Tabl
 | `2026-11-29` | `-21° 26' 09"`<br/>`16h 19m 41s` | `+19° 43' 44"`<br/>`08h 41m 39s` | `+13° 09' 55"`<br/>`10h 16m 08s` | `-15° 49' 12"`<br/>`15h 08m 55s` | `+13° 21' 31"`<br/>`09h 56m 49s` | `-09° 16' 58"`<br/>`13h 41m 40s` | `+00° 48' 43"`<br/>`00h 33m 42s` | `-13° 19' 26"` |
 | `2026-11-30` | `-21° 36' 11"`<br/>`16h 23m 59s` | `+14° 24' 53"`<br/>`09h 36m 53s` | `+13° 03' 15"`<br/>`10h 17m 38s` | `-16° 18' 05"`<br/>`15h 14m 29s` | `+13° 20' 51"`<br/>`09h 56m 59s` | `-09° 20' 14"`<br/>`13h 43m 51s` | `+00° 48' 26"`<br/>`00h 33m 37s` | `-13° 20' 30"` |
 
-### Table 3B — Daily Ecliptic Latitude ($\beta$ / *Shara*), Geocentric Distance ($R$ in AU), Lunar Parallax (`HP`), Disk Illumination (`%`), & Visual Magnitude ($V_{\text{mag}}$)
+### Table 3B — Daily Ecliptic Latitude (`β` / *Shara*), Geocentric Distance (`R` in AU), Lunar Parallax (`HP`), Disk Illumination (`%`), & Visual Magnitude (`V_mag`)
 
-| Date | Moon $\beta$ (`DMS`) | Moon `HP` / Diam | Moon Illum `%` | Mars $\beta$ / Dist (`AU`) / $V_{\text{mag}}$ | Mercury $\beta$ / Dist (`AU`) / $V_{\text{mag}}$ | Jupiter $\beta$ / Dist (`AU`) / $V_{\text{mag}}$ | Venus $\beta$ / Dist (`AU`) / $V_{\text{mag}}$ | Saturn $\beta$ / Dist (`AU`) / $V_{\text{mag}}$ |
+| Date | Moon `β` (`DMS`) | Moon `HP` / Diam | Moon Illum `%` | Mars `β` / Dist (`AU`) / `V_mag` | Mercury `β` / Dist (`AU`) / `V_mag` | Jupiter `β` / Dist (`AU`) / `V_mag` | Venus `β` / Dist (`AU`) / `V_mag` | Saturn `β` / Dist (`AU`) / `V_mag` |
 |---|---|---|---|---|---|---|---|---|
 | `2026-11-01` | `+02° 29' 29"` | `3556.7"` / `1937.6"` | **`59.6%`** | `+01° 36' 02"`<br/>`1.4325 AU` (`+1.05m`) | `-01° 32' 56"`<br/>`0.6816 AU` (`+92.27m`) | `+00° 41' 24"`<br/>`5.4996 AU` (`-2.01m`) | `-04° 52' 00"`<br/>`0.2798 AU` (`+2.10m`) | `-02° 41' 05"`<br/>`8.5479 AU` (`+0.69m`) |
 | `2026-11-02` | `+01° 21' 04"` | `3526.6"` / `1921.2"` | **`48.4%`** | `+01° 37' 17"`<br/>`1.4244 AU` (`+1.04m`) | `-01° 14' 36"`<br/>`0.6760 AU` (`+106.03m`) | `+00° 41' 37"`<br/>`5.4845 AU` (`-2.02m`) | `-04° 37' 26"`<br/>`0.2819 AU` (`+1.86m`) | `-02° 40' 57"`<br/>`8.5561 AU` (`+0.70m`) |
@@ -298,15 +298,15 @@ $$\text{JD} = \text{JD}_{\text{Jan 0.0}}(\text{Year}) + \text{Month Offset (Tabl
 
 ### Table 4D — Exact *Surya Siddhanta Krantisamya* (*Vyatipata* & *Vaidhriti Mahapata*) Declination-Equality Windows
 
-| Mahapata Type | Classical Condition | Peak Exact JD (`UT`) | Window Start (`JD UT`) | Window End (`JD UT`) | Sun Declination ($\delta_\odot$) | Moon Declination ($\delta_{\mathbb{C}}$) |
+| Mahapata Type | Classical Condition | Peak Exact JD (`UT`) | Window Start (`JD UT`) | Window End (`JD UT`) | Sun Declination (`δ_Sun`) | Moon Declination (`δ_Moon`) |
 |---|---|---|---|---|---|---|
-| **Vaidhriti Mahapata** | $\delta_\odot = -\delta_{\mathbb{C}}$ (Opposite Hemisphere) | `2461347.20768` | `2461347.11724` | `2461347.29811` | `-14.9018°` | `+14.9018°` |
-| **Vyatipata Mahapata** | $\delta_\odot = +\delta_{\mathbb{C}}$ (Same Hemisphere) | `2461360.79495` | `2461360.67755` | `2461360.91234` | `-18.7535°` | `-18.7535°` |
-| **Vaidhriti Mahapata** | $\delta_\odot = -\delta_{\mathbb{C}}$ (Opposite Hemisphere) | `2461373.14836` | `2461373.03515` | `2461373.26156` | `-21.3758°` | `+21.3758°` |
+| **Vaidhriti Mahapata** | `δ_Sun = -δ_Moon` (Opposite Hemisphere) | `2461347.20768` | `2461347.11724` | `2461347.29811` | `-14.9018°` | `+14.9018°` |
+| **Vyatipata Mahapata** | `δ_Sun = +δ_Moon` (Same Hemisphere) | `2461360.79495` | `2461360.67755` | `2461360.91234` | `-18.7535°` | `-18.7535°` |
+| **Vaidhriti Mahapata** | `δ_Sun = -δ_Moon` (Opposite Hemisphere) | `2461373.14836` | `2461373.03515` | `2461373.26156` | `-21.3758°` | `+21.3758°` |
 
 ## Chapter 5 — Section 2 — Daily Sunrise-Anchored *Drik Panchanga*, *Ghati-Pala* Almanac, & *Muhurta* Table
 
-**Vedic Timekeeping Conversion:** $1\text{ Solar Day} = 24\text{ Hours} = 60\text{ Ghatis (Nadis)}$; $1\text{ Hour} = 2.5\text{ Ghatis}$; $1\text{ Ghati} = 24\text{ Minutes} = 60\text{ Palas (Vinadis)}$; $1\text{ Pala} = 24\text{ Seconds}$.
+**Vedic Timekeeping Conversion:** `1 Solar Day = 24 Hours = 60 Ghatis (Nadis)`; `1 Hour = 2.5 Ghatis`; `1 Ghati = 24 Minutes = 60 Palas (Vinadis)`; `1 Pala = 24 Seconds`.
 
 | Date | Vara | Sunrise | Sunset | *Dinamana* (`Hours / Ghatis`) | Sunrise Tithi | Tithi Ends (`Clock / Ghati-Pala`) | Sunrise Nakshatra | Sunrise Yoga | Sunrise Karana | *Rahu Kala* | *Abhijit Muhurta* | Observances (*Vratas*) |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -345,68 +345,68 @@ $$\text{JD} = \text{JD}_{\text{Jan 0.0}}(\text{Year}) + \text{Month Offset (Tabl
 
 ### 6.1 First-Order *Trairashika* (Rule of Three) & Second-Order Bessel Formula
 - **First-Order Formula (Sufficient for Sun, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu to `< 0.5"`):**
-  $$\lambda_1(t) = \lambda(05\text{:}30\text{ IST}) + f \times v_{\text{day}}, \quad f = \frac{\Delta t_{\text{hours}}}{24} = \frac{\Delta G_{\text{ghatis}}}{60}$$
-- **Second-Order Bessel Formula (For Sub-Arcsecond Manual Interpolation of the Fast-Moving Moon):**
-  $$\lambda_2(t) = \lambda_1(t) + \frac{f(f - 1)}{4} \times \Delta^2 \lambda$$
-  where $\Delta^2 \lambda$ is printed in **Table 2B** and the Bessel multiplier $B_2(f) = \frac{f(f-1)}{4}$ is printed in **Table 6A** below.
+  `λ₁(t) = λ(05:30 IST) + f × v_day`, where `f = Δt_hours / 24 = ΔG_ghatis / 60`
+- **Second-Order Quadratic Formula (For Sub-Arcsecond Manual Interpolation of the Fast-Moving Moon using Instantaneous Velocity `v_day`):**
+  `λ₂(t) = λ₁(t) + (f² / 2) × Δ²λ`
+  where `Δ²λ` is printed in **Table 2B** and the quadratic multiplier `B₂(f) = f² / 2` is printed in **Table 6A** below.
 
-### Table 6A — Complete 96-Row 15-Minute (`00:00` to `24:00`) *Trairashika* Fraction ($f$), *Ghati-Pala*, & Bessel 2nd-Difference Coefficient ($B_2(f)$) Table
+### Table 6A — Complete 96-Row 15-Minute (`00:00` to `24:00`) *Trairashika* Fraction (`f`), *Ghati-Pala*, & 2nd-Difference Coefficient (`B₂(f)`) Table
 
-| Elapsed Time (`HH:MM`) | Elapsed *Ghati-Pala* | Fraction $f = \Delta t / 24$ | Bessel $B_2(f)$ | Sun Incr (`+59'08"/d`) | Mean Moon Incr (`+13°10'35"/d`) | Elapsed Time (`HH:MM`) | Elapsed *Ghati-Pala* | Fraction $f = \Delta t / 24$ | Bessel $B_2(f)$ | Sun Incr (`+59'08"/d`) | Mean Moon Incr (`+13°10'35"/d`) |
+| Elapsed Time (`HH:MM`) | Elapsed *Ghati-Pala* | Fraction `f = Δt / 24` | Quadratic `B₂(f) = f² / 2` | Sun Incr (`+59'08"/d`) | Mean Moon Incr (`+13°10'35"/d`) | Elapsed Time (`HH:MM`) | Elapsed *Ghati-Pala* | Fraction `f = Δt / 24` | Quadratic `B₂(f) = f² / 2` | Sun Incr (`+59'08"/d`) | Mean Moon Incr (`+13°10'35"/d`) |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| `00:15` | `00g 38p` | **`0.01042`** | `-0.00258` | `+00° 00' 37"` | `+00° 08' 14"` | `12:15` | `30g 38p` | **`0.51042`** | `-0.06247` | `+00° 30' 11"` | `+06° 43' 32"` |
-| `00:30` | `01g 15p` | **`0.02083`** | `-0.00510` | `+00° 01' 14"` | `+00° 16' 28"` | `12:30` | `31g 15p` | **`0.52083`** | `-0.06239` | `+00° 30' 48"` | `+06° 51' 46"` |
-| `00:45` | `01g 52p` | **`0.03125`** | `-0.00757` | `+00° 01' 51"` | `+00° 24' 42"` | `12:45` | `31g 52p` | **`0.53125`** | `-0.06226` | `+00° 31' 25"` | `+07° 00' 00"` |
-| `01:00` | `02g 30p` | **`0.04167`** | `-0.00998` | `+00° 02' 28"` | `+00° 32' 56"` | `13:00` | `32g 30p` | **`0.54167`** | `-0.06207` | `+00° 32' 02"` | `+07° 08' 14"` |
-| `01:15` | `03g 08p` | **`0.05208`** | `-0.01234` | `+00° 03' 05"` | `+00° 41' 11"` | `13:15` | `33g 08p` | **`0.55208`** | `-0.06182` | `+00° 32' 39"` | `+07° 16' 28"` |
-| `01:30` | `03g 45p` | **`0.06250`** | `-0.01465` | `+00° 03' 42"` | `+00° 49' 25"` | `13:30` | `33g 45p` | **`0.56250`** | `-0.06152` | `+00° 33' 16"` | `+07° 24' 42"` |
-| `01:45` | `04g 22p` | **`0.07292`** | `-0.01690` | `+00° 04' 19"` | `+00° 57' 39"` | `13:45` | `34g 22p` | **`0.57292`** | `-0.06117` | `+00° 33' 53"` | `+07° 32' 56"` |
-| `02:00` | `05g 00p` | **`0.08333`** | `-0.01910` | `+00° 04' 56"` | `+01° 05' 53"` | `14:00` | `35g 00p` | **`0.58333`** | `-0.06076` | `+00° 34' 30"` | `+07° 41' 10"` |
-| `02:15` | `05g 38p` | **`0.09375`** | `-0.02124` | `+00° 05' 33"` | `+01° 14' 07"` | `14:15` | `35g 38p` | **`0.59375`** | `-0.06030` | `+00° 35' 07"` | `+07° 49' 25"` |
-| `02:30` | `06g 15p` | **`0.10417`** | `-0.02333` | `+00° 06' 10"` | `+01° 22' 21"` | `14:30` | `36g 15p` | **`0.60417`** | `-0.05979` | `+00° 35' 44"` | `+07° 57' 39"` |
-| `02:45` | `06g 52p` | **`0.11458`** | `-0.02536` | `+00° 06' 47"` | `+01° 30' 35"` | `14:45` | `36g 52p` | **`0.61458`** | `-0.05922` | `+00° 36' 21"` | `+08° 05' 53"` |
-| `03:00` | `07g 30p` | **`0.12500`** | `-0.02734` | `+00° 07' 23"` | `+01° 38' 49"` | `15:00` | `37g 30p` | **`0.62500`** | `-0.05859` | `+00° 36' 57"` | `+08° 14' 07"` |
-| `03:15` | `08g 08p` | **`0.13542`** | `-0.02927` | `+00° 08' 00"` | `+01° 47' 03"` | `15:15` | `38g 08p` | **`0.63542`** | `-0.05792` | `+00° 37' 34"` | `+08° 22' 21"` |
-| `03:30` | `08g 45p` | **`0.14583`** | `-0.03114` | `+00° 08' 37"` | `+01° 55' 18"` | `15:30` | `38g 45p` | **`0.64583`** | `-0.05718` | `+00° 38' 11"` | `+08° 30' 35"` |
-| `03:45` | `09g 22p` | **`0.15625`** | `-0.03296` | `+00° 09' 14"` | `+02° 03' 32"` | `15:45` | `39g 22p` | **`0.65625`** | `-0.05640` | `+00° 38' 48"` | `+08° 38' 49"` |
-| `04:00` | `10g 00p` | **`0.16667`** | `-0.03472` | `+00° 09' 51"` | `+02° 11' 46"` | `16:00` | `40g 00p` | **`0.66667`** | `-0.05556` | `+00° 39' 25"` | `+08° 47' 03"` |
-| `04:15` | `10g 38p` | **`0.17708`** | `-0.03643` | `+00° 10' 28"` | `+02° 20' 00"` | `16:15` | `40g 38p` | **`0.67708`** | `-0.05466` | `+00° 40' 02"` | `+08° 55' 17"` |
-| `04:30` | `11g 15p` | **`0.18750`** | `-0.03809` | `+00° 11' 05"` | `+02° 28' 14"` | `16:30` | `41g 15p` | **`0.68750`** | `-0.05371` | `+00° 40' 39"` | `+09° 03' 32"` |
-| `04:45` | `11g 52p` | **`0.19792`** | `-0.03969` | `+00° 11' 42"` | `+02° 36' 28"` | `16:45` | `41g 52p` | **`0.69792`** | `-0.05271` | `+00° 41' 16"` | `+09° 11' 46"` |
-| `05:00` | `12g 30p` | **`0.20833`** | `-0.04123` | `+00° 12' 19"` | `+02° 44' 42"` | `17:00` | `42g 30p` | **`0.70833`** | `-0.05165` | `+00° 41' 53"` | `+09° 20' 00"` |
-| `05:15` | `13g 08p` | **`0.21875`** | `-0.04272` | `+00° 12' 56"` | `+02° 52' 56"` | `17:15` | `43g 08p` | **`0.71875`** | `-0.05054` | `+00° 42' 30"` | `+09° 28' 14"` |
-| `05:30` | `13g 45p` | **`0.22917`** | `-0.04416` | `+00° 13' 33"` | `+03° 01' 11"` | `17:30` | `43g 45p` | **`0.72917`** | `-0.04937` | `+00° 43' 07"` | `+09° 36' 28"` |
-| `05:45` | `14g 22p` | **`0.23958`** | `-0.04555` | `+00° 14' 10"` | `+03° 09' 25"` | `17:45` | `44g 22p` | **`0.73958`** | `-0.04815` | `+00° 43' 44"` | `+09° 44' 42"` |
-| `06:00` | `15g 00p` | **`0.25000`** | `-0.04688` | `+00° 14' 47"` | `+03° 17' 39"` | `18:00` | `45g 00p` | **`0.75000`** | `-0.04688` | `+00° 44' 21"` | `+09° 52' 56"` |
-| `06:15` | `15g 38p` | **`0.26042`** | `-0.04815` | `+00° 15' 24"` | `+03° 25' 53"` | `18:15` | `45g 38p` | **`0.76042`** | `-0.04555` | `+00° 44' 58"` | `+10° 01' 10"` |
-| `06:30` | `16g 15p` | **`0.27083`** | `-0.04937` | `+00° 16' 01"` | `+03° 34' 07"` | `18:30` | `46g 15p` | **`0.77083`** | `-0.04416` | `+00° 45' 35"` | `+10° 09' 24"` |
-| `06:45` | `16g 52p` | **`0.28125`** | `-0.05054` | `+00° 16' 38"` | `+03° 42' 21"` | `18:45` | `46g 52p` | **`0.78125`** | `-0.04272` | `+00° 46' 12"` | `+10° 17' 39"` |
-| `07:00` | `17g 30p` | **`0.29167`** | `-0.05165` | `+00° 17' 15"` | `+03° 50' 35"` | `19:00` | `47g 30p` | **`0.79167`** | `-0.04123` | `+00° 46' 49"` | `+10° 25' 53"` |
-| `07:15` | `18g 08p` | **`0.30208`** | `-0.05271` | `+00° 17' 52"` | `+03° 58' 49"` | `19:15` | `48g 08p` | **`0.80208`** | `-0.03969` | `+00° 47' 26"` | `+10° 34' 07"` |
-| `07:30` | `18g 45p` | **`0.31250`** | `-0.05371` | `+00° 18' 29"` | `+04° 07' 03"` | `19:30` | `48g 45p` | **`0.81250`** | `-0.03809` | `+00° 48' 03"` | `+10° 42' 21"` |
-| `07:45` | `19g 22p` | **`0.32292`** | `-0.05466` | `+00° 19' 06"` | `+04° 15' 18"` | `19:45` | `49g 22p` | **`0.82292`** | `-0.03643` | `+00° 48' 40"` | `+10° 50' 35"` |
-| `08:00` | `20g 00p` | **`0.33333`** | `-0.05556` | `+00° 19' 43"` | `+04° 23' 32"` | `20:00` | `50g 00p` | **`0.83333`** | `-0.03472` | `+00° 49' 17"` | `+10° 58' 49"` |
-| `08:15` | `20g 38p` | **`0.34375`** | `-0.05640` | `+00° 20' 20"` | `+04° 31' 46"` | `20:15` | `50g 38p` | **`0.84375`** | `-0.03296` | `+00° 49' 54"` | `+11° 07' 03"` |
-| `08:30` | `21g 15p` | **`0.35417`** | `-0.05718` | `+00° 20' 57"` | `+04° 40' 00"` | `20:30` | `51g 15p` | **`0.85417`** | `-0.03114` | `+00° 50' 31"` | `+11° 15' 17"` |
-| `08:45` | `21g 52p` | **`0.36458`** | `-0.05792` | `+00° 21' 34"` | `+04° 48' 14"` | `20:45` | `51g 52p` | **`0.86458`** | `-0.02927` | `+00° 51' 08"` | `+11° 23' 32"` |
-| `09:00` | `22g 30p` | **`0.37500`** | `-0.05859` | `+00° 22' 10"` | `+04° 56' 28"` | `21:00` | `52g 30p` | **`0.87500`** | `-0.02734` | `+00° 51' 44"` | `+11° 31' 46"` |
-| `09:15` | `23g 08p` | **`0.38542`** | `-0.05922` | `+00° 22' 47"` | `+05° 04' 42"` | `21:15` | `53g 08p` | **`0.88542`** | `-0.02536` | `+00° 52' 21"` | `+11° 40' 00"` |
-| `09:30` | `23g 45p` | **`0.39583`** | `-0.05979` | `+00° 23' 24"` | `+05° 12' 56"` | `21:30` | `53g 45p` | **`0.89583`** | `-0.02333` | `+00° 52' 58"` | `+11° 48' 14"` |
-| `09:45` | `24g 22p` | **`0.40625`** | `-0.06030` | `+00° 24' 01"` | `+05° 21' 10"` | `21:45` | `54g 22p` | **`0.90625`** | `-0.02124` | `+00° 53' 35"` | `+11° 56' 28"` |
-| `10:00` | `25g 00p` | **`0.41667`** | `-0.06076` | `+00° 24' 38"` | `+05° 29' 25"` | `22:00` | `55g 00p` | **`0.91667`** | `-0.01910` | `+00° 54' 12"` | `+12° 04' 42"` |
-| `10:15` | `25g 38p` | **`0.42708`** | `-0.06117` | `+00° 25' 15"` | `+05° 37' 39"` | `22:15` | `55g 38p` | **`0.92708`** | `-0.01690` | `+00° 54' 49"` | `+12° 12' 56"` |
-| `10:30` | `26g 15p` | **`0.43750`** | `-0.06152` | `+00° 25' 52"` | `+05° 45' 53"` | `22:30` | `56g 15p` | **`0.93750`** | `-0.01465` | `+00° 55' 26"` | `+12° 21' 10"` |
-| `10:45` | `26g 52p` | **`0.44792`** | `-0.06182` | `+00° 26' 29"` | `+05° 54' 07"` | `22:45` | `56g 52p` | **`0.94792`** | `-0.01234` | `+00° 56' 03"` | `+12° 29' 24"` |
-| `11:00` | `27g 30p` | **`0.45833`** | `-0.06207` | `+00° 27' 06"` | `+06° 02' 21"` | `23:00` | `57g 30p` | **`0.95833`** | `-0.00998` | `+00° 56' 40"` | `+12° 37' 39"` |
-| `11:15` | `28g 08p` | **`0.46875`** | `-0.06226` | `+00° 27' 43"` | `+06° 10' 35"` | `23:15` | `58g 08p` | **`0.96875`** | `-0.00757` | `+00° 57' 17"` | `+12° 45' 53"` |
-| `11:30` | `28g 45p` | **`0.47917`** | `-0.06239` | `+00° 28' 20"` | `+06° 18' 49"` | `23:30` | `58g 45p` | **`0.97917`** | `-0.00510` | `+00° 57' 54"` | `+12° 54' 07"` |
-| `11:45` | `29g 22p` | **`0.48958`** | `-0.06247` | `+00° 28' 57"` | `+06° 27' 03"` | `23:45` | `59g 22p` | **`0.98958`** | `-0.00258` | `+00° 58' 31"` | `+13° 02' 21"` |
-| `12:00` | `30g 00p` | **`0.50000`** | `-0.06250` | `+00° 29' 34"` | `+06° 35' 18"` | `24:00` | `60g 00p` | **`1.00000`** | `+0.00000` | `+00° 59' 08"` | `+13° 10' 35"` |
+| `00:15` | `00g 38p` | **`0.01042`** | `+0.00005` | `+00° 00' 37"` | `+00° 08' 14"` | `12:15` | `30g 38p` | **`0.51042`** | `+0.13026` | `+00° 30' 11"` | `+06° 43' 32"` |
+| `00:30` | `01g 15p` | **`0.02083`** | `+0.00022` | `+00° 01' 14"` | `+00° 16' 28"` | `12:30` | `31g 15p` | **`0.52083`** | `+0.13563` | `+00° 30' 48"` | `+06° 51' 46"` |
+| `00:45` | `01g 52p` | **`0.03125`** | `+0.00049` | `+00° 01' 51"` | `+00° 24' 42"` | `12:45` | `31g 52p` | **`0.53125`** | `+0.14111` | `+00° 31' 25"` | `+07° 00' 00"` |
+| `01:00` | `02g 30p` | **`0.04167`** | `+0.00087` | `+00° 02' 28"` | `+00° 32' 56"` | `13:00` | `32g 30p` | **`0.54167`** | `+0.14670` | `+00° 32' 02"` | `+07° 08' 14"` |
+| `01:15` | `03g 08p` | **`0.05208`** | `+0.00136` | `+00° 03' 05"` | `+00° 41' 11"` | `13:15` | `33g 08p` | **`0.55208`** | `+0.15240` | `+00° 32' 39"` | `+07° 16' 28"` |
+| `01:30` | `03g 45p` | **`0.06250`** | `+0.00195` | `+00° 03' 42"` | `+00° 49' 25"` | `13:30` | `33g 45p` | **`0.56250`** | `+0.15820` | `+00° 33' 16"` | `+07° 24' 42"` |
+| `01:45` | `04g 22p` | **`0.07292`** | `+0.00266` | `+00° 04' 19"` | `+00° 57' 39"` | `13:45` | `34g 22p` | **`0.57292`** | `+0.16412` | `+00° 33' 53"` | `+07° 32' 56"` |
+| `02:00` | `05g 00p` | **`0.08333`** | `+0.00347` | `+00° 04' 56"` | `+01° 05' 53"` | `14:00` | `35g 00p` | **`0.58333`** | `+0.17014` | `+00° 34' 30"` | `+07° 41' 10"` |
+| `02:15` | `05g 38p` | **`0.09375`** | `+0.00439` | `+00° 05' 33"` | `+01° 14' 07"` | `14:15` | `35g 38p` | **`0.59375`** | `+0.17627` | `+00° 35' 07"` | `+07° 49' 25"` |
+| `02:30` | `06g 15p` | **`0.10417`** | `+0.00543` | `+00° 06' 10"` | `+01° 22' 21"` | `14:30` | `36g 15p` | **`0.60417`** | `+0.18251` | `+00° 35' 44"` | `+07° 57' 39"` |
+| `02:45` | `06g 52p` | **`0.11458`** | `+0.00656` | `+00° 06' 47"` | `+01° 30' 35"` | `14:45` | `36g 52p` | **`0.61458`** | `+0.18886` | `+00° 36' 21"` | `+08° 05' 53"` |
+| `03:00` | `07g 30p` | **`0.12500`** | `+0.00781` | `+00° 07' 23"` | `+01° 38' 49"` | `15:00` | `37g 30p` | **`0.62500`** | `+0.19531` | `+00° 36' 57"` | `+08° 14' 07"` |
+| `03:15` | `08g 08p` | **`0.13542`** | `+0.00917` | `+00° 08' 00"` | `+01° 47' 03"` | `15:15` | `38g 08p` | **`0.63542`** | `+0.20188` | `+00° 37' 34"` | `+08° 22' 21"` |
+| `03:30` | `08g 45p` | **`0.14583`** | `+0.01063` | `+00° 08' 37"` | `+01° 55' 18"` | `15:30` | `38g 45p` | **`0.64583`** | `+0.20855` | `+00° 38' 11"` | `+08° 30' 35"` |
+| `03:45` | `09g 22p` | **`0.15625`** | `+0.01221` | `+00° 09' 14"` | `+02° 03' 32"` | `15:45` | `39g 22p` | **`0.65625`** | `+0.21533` | `+00° 38' 48"` | `+08° 38' 49"` |
+| `04:00` | `10g 00p` | **`0.16667`** | `+0.01389` | `+00° 09' 51"` | `+02° 11' 46"` | `16:00` | `40g 00p` | **`0.66667`** | `+0.22222` | `+00° 39' 25"` | `+08° 47' 03"` |
+| `04:15` | `10g 38p` | **`0.17708`** | `+0.01568` | `+00° 10' 28"` | `+02° 20' 00"` | `16:15` | `40g 38p` | **`0.67708`** | `+0.22922` | `+00° 40' 02"` | `+08° 55' 17"` |
+| `04:30` | `11g 15p` | **`0.18750`** | `+0.01758` | `+00° 11' 05"` | `+02° 28' 14"` | `16:30` | `41g 15p` | **`0.68750`** | `+0.23633` | `+00° 40' 39"` | `+09° 03' 32"` |
+| `04:45` | `11g 52p` | **`0.19792`** | `+0.01959` | `+00° 11' 42"` | `+02° 36' 28"` | `16:45` | `41g 52p` | **`0.69792`** | `+0.24354` | `+00° 41' 16"` | `+09° 11' 46"` |
+| `05:00` | `12g 30p` | **`0.20833`** | `+0.02170` | `+00° 12' 19"` | `+02° 44' 42"` | `17:00` | `42g 30p` | **`0.70833`** | `+0.25087` | `+00° 41' 53"` | `+09° 20' 00"` |
+| `05:15` | `13g 08p` | **`0.21875`** | `+0.02393` | `+00° 12' 56"` | `+02° 52' 56"` | `17:15` | `43g 08p` | **`0.71875`** | `+0.25830` | `+00° 42' 30"` | `+09° 28' 14"` |
+| `05:30` | `13g 45p` | **`0.22917`** | `+0.02626` | `+00° 13' 33"` | `+03° 01' 11"` | `17:30` | `43g 45p` | **`0.72917`** | `+0.26584` | `+00° 43' 07"` | `+09° 36' 28"` |
+| `05:45` | `14g 22p` | **`0.23958`** | `+0.02870` | `+00° 14' 10"` | `+03° 09' 25"` | `17:45` | `44g 22p` | **`0.73958`** | `+0.27349` | `+00° 43' 44"` | `+09° 44' 42"` |
+| `06:00` | `15g 00p` | **`0.25000`** | `+0.03125` | `+00° 14' 47"` | `+03° 17' 39"` | `18:00` | `45g 00p` | **`0.75000`** | `+0.28125` | `+00° 44' 21"` | `+09° 52' 56"` |
+| `06:15` | `15g 38p` | **`0.26042`** | `+0.03391` | `+00° 15' 24"` | `+03° 25' 53"` | `18:15` | `45g 38p` | **`0.76042`** | `+0.28912` | `+00° 44' 58"` | `+10° 01' 10"` |
+| `06:30` | `16g 15p` | **`0.27083`** | `+0.03668` | `+00° 16' 01"` | `+03° 34' 07"` | `18:30` | `46g 15p` | **`0.77083`** | `+0.29709` | `+00° 45' 35"` | `+10° 09' 24"` |
+| `06:45` | `16g 52p` | **`0.28125`** | `+0.03955` | `+00° 16' 38"` | `+03° 42' 21"` | `18:45` | `46g 52p` | **`0.78125`** | `+0.30518` | `+00° 46' 12"` | `+10° 17' 39"` |
+| `07:00` | `17g 30p` | **`0.29167`** | `+0.04253` | `+00° 17' 15"` | `+03° 50' 35"` | `19:00` | `47g 30p` | **`0.79167`** | `+0.31337` | `+00° 46' 49"` | `+10° 25' 53"` |
+| `07:15` | `18g 08p` | **`0.30208`** | `+0.04563` | `+00° 17' 52"` | `+03° 58' 49"` | `19:15` | `48g 08p` | **`0.80208`** | `+0.32167` | `+00° 47' 26"` | `+10° 34' 07"` |
+| `07:30` | `18g 45p` | **`0.31250`** | `+0.04883` | `+00° 18' 29"` | `+04° 07' 03"` | `19:30` | `48g 45p` | **`0.81250`** | `+0.33008` | `+00° 48' 03"` | `+10° 42' 21"` |
+| `07:45` | `19g 22p` | **`0.32292`** | `+0.05214` | `+00° 19' 06"` | `+04° 15' 18"` | `19:45` | `49g 22p` | **`0.82292`** | `+0.33860` | `+00° 48' 40"` | `+10° 50' 35"` |
+| `08:00` | `20g 00p` | **`0.33333`** | `+0.05556` | `+00° 19' 43"` | `+04° 23' 32"` | `20:00` | `50g 00p` | **`0.83333`** | `+0.34722` | `+00° 49' 17"` | `+10° 58' 49"` |
+| `08:15` | `20g 38p` | **`0.34375`** | `+0.05908` | `+00° 20' 20"` | `+04° 31' 46"` | `20:15` | `50g 38p` | **`0.84375`** | `+0.35596` | `+00° 49' 54"` | `+11° 07' 03"` |
+| `08:30` | `21g 15p` | **`0.35417`** | `+0.06272` | `+00° 20' 57"` | `+04° 40' 00"` | `20:30` | `51g 15p` | **`0.85417`** | `+0.36480` | `+00° 50' 31"` | `+11° 15' 17"` |
+| `08:45` | `21g 52p` | **`0.36458`** | `+0.06646` | `+00° 21' 34"` | `+04° 48' 14"` | `20:45` | `51g 52p` | **`0.86458`** | `+0.37375` | `+00° 51' 08"` | `+11° 23' 32"` |
+| `09:00` | `22g 30p` | **`0.37500`** | `+0.07031` | `+00° 22' 10"` | `+04° 56' 28"` | `21:00` | `52g 30p` | **`0.87500`** | `+0.38281` | `+00° 51' 44"` | `+11° 31' 46"` |
+| `09:15` | `23g 08p` | **`0.38542`** | `+0.07427` | `+00° 22' 47"` | `+05° 04' 42"` | `21:15` | `53g 08p` | **`0.88542`** | `+0.39198` | `+00° 52' 21"` | `+11° 40' 00"` |
+| `09:30` | `23g 45p` | **`0.39583`** | `+0.07834` | `+00° 23' 24"` | `+05° 12' 56"` | `21:30` | `53g 45p` | **`0.89583`** | `+0.40126` | `+00° 52' 58"` | `+11° 48' 14"` |
+| `09:45` | `24g 22p` | **`0.40625`** | `+0.08252` | `+00° 24' 01"` | `+05° 21' 10"` | `21:45` | `54g 22p` | **`0.90625`** | `+0.41064` | `+00° 53' 35"` | `+11° 56' 28"` |
+| `10:00` | `25g 00p` | **`0.41667`** | `+0.08681` | `+00° 24' 38"` | `+05° 29' 25"` | `22:00` | `55g 00p` | **`0.91667`** | `+0.42014` | `+00° 54' 12"` | `+12° 04' 42"` |
+| `10:15` | `25g 38p` | **`0.42708`** | `+0.09120` | `+00° 25' 15"` | `+05° 37' 39"` | `22:15` | `55g 38p` | **`0.92708`** | `+0.42974` | `+00° 54' 49"` | `+12° 12' 56"` |
+| `10:30` | `26g 15p` | **`0.43750`** | `+0.09570` | `+00° 25' 52"` | `+05° 45' 53"` | `22:30` | `56g 15p` | **`0.93750`** | `+0.43945` | `+00° 55' 26"` | `+12° 21' 10"` |
+| `10:45` | `26g 52p` | **`0.44792`** | `+0.10031` | `+00° 26' 29"` | `+05° 54' 07"` | `22:45` | `56g 52p` | **`0.94792`** | `+0.44927` | `+00° 56' 03"` | `+12° 29' 24"` |
+| `11:00` | `27g 30p` | **`0.45833`** | `+0.10503` | `+00° 27' 06"` | `+06° 02' 21"` | `23:00` | `57g 30p` | **`0.95833`** | `+0.45920` | `+00° 56' 40"` | `+12° 37' 39"` |
+| `11:15` | `28g 08p` | **`0.46875`** | `+0.10986` | `+00° 27' 43"` | `+06° 10' 35"` | `23:15` | `58g 08p` | **`0.96875`** | `+0.46924` | `+00° 57' 17"` | `+12° 45' 53"` |
+| `11:30` | `28g 45p` | **`0.47917`** | `+0.11480` | `+00° 28' 20"` | `+06° 18' 49"` | `23:30` | `58g 45p` | **`0.97917`** | `+0.47938` | `+00° 57' 54"` | `+12° 54' 07"` |
+| `11:45` | `29g 22p` | **`0.48958`** | `+0.11985` | `+00° 28' 57"` | `+06° 27' 03"` | `23:45` | `59g 22p` | **`0.98958`** | `+0.48964` | `+00° 58' 31"` | `+13° 02' 21"` |
+| `12:00` | `30g 00p` | **`0.50000`** | `+0.12500` | `+00° 29' 34"` | `+06° 35' 18"` | `24:00` | `60g 00p` | **`1.00000`** | `+0.50000` | `+00° 59' 08"` | `+13° 10' 35"` |
 
 ## Chapter 7 — Master Tables of Ascendants (*Udaya Lagna*), 10th House Midheaven (*Madhya Lagna*), & *Sripathi Bhava Chalit* Across World Latitudes
 
 **How to Find the Exact Sidereal Ascendant (*Udaya Lagna*) and 10th Cusp (*Madhya Lagna*) from Table 7A:**
-1. Take the **Local Sidereal Time (LST)** at `05:30 IST` from **Table 2A**.
+1. Take the **Local Sidereal Time (LST)** at `05:30 IST` from **Table 2A** (already computed for the compendium reference meridian `75.7885°`).
 2. Add the time elapsed from `05:30 IST` to Birth Time, plus `10 seconds per hour` of elapsed solar time (`+3m 56.56s` per 24h), and adjust by `(Observer Longitude - 75.7885°) × 4 minutes/degree` to get **Birth Local Sidereal Time (RAMC)**.
 3. Look up the Birth LST row in **Table 7A** under your city's latitude column and subtract `(Current Lahiri Ayanamsha - 24° 13' 55")` if casting for another century.
 
@@ -529,23 +529,23 @@ $$\text{JD} = \text{JD}_{\text{Jan 0.0}}(\text{Year}) + \text{Month Offset (Tabl
 | # | Special Lagna (*Vishesha Lagna*) | Rate of Motion | Exact Classical Manual Formula (*Brihat Parashara Hora Shastra* & *Uttara Kalamrita*) | Primary Predictive Domain |
 |---|---|---|---|---|
 | **1** | **Udaya Lagna (Birth Ascendant)** | `~1° per 4 min` (`12 signs / 24h`) | Eastern horizon intersection with the sidereal ecliptic at birth (Table 7A) | Physical body, vitality, self, overall life trajectory |
-| **2** | **Hora Lagna (HL)** | `1° per 2.5 min` (`24 signs / 24h`) | $\text{HL} = \lambda_\odot(\text{Sunrise}) + \frac{\text{Elapsed Minutes since Sunrise}}{2.5}$ | Personal wealth, sustenance, liquid resources, financial inflow |
-| **3** | **Ghati Lagna (GL)** | `1.25° per min` (`1 sign per Ghati`) | $\text{GL} = \lambda_\odot(\text{Sunrise}) + (\text{Elapsed Ghatis since Sunrise} \times 30^\circ)$ | Power, royal authority, political/executive rank, fame |
-| **4** | **Bhava Lagna (BL)** | `0.25° per min` (`1 sign per 5 Ghatis`) | $\text{BL} = \lambda_\odot(\text{Sunrise}) + (\text{Elapsed Ghatis since Sunrise} \times 6^\circ)$ | Inner psychological disposition and bodily constitution |
-| **5** | **Sree Lagna (SL)** | Linked to Moon's Pada | $\text{SL} = \lambda_{\text{Udaya Lagna}} + \left(\frac{\lambda_{\mathbb{C}} \bmod 13^\circ 20'}{13^\circ 20'} \times 360^\circ\right)$ | Goddess Lakshmi's grace, prosperity, marriage fortune |
-| **6** | **Indu Lagna (IL)** | Planetary *Kala* Sum | Sum *Kalas* (`Sun 30, Moon 16, Mars 6, Mercury 8, Jupiter 10, Venus 12, Saturn 1`) of 9th Lord from Lagna + 9th Lord from Moon; take $\text{Sum} \bmod 12$ (`0 -> 12`) and count that many signs from Natal Moon | Millionaire/billionaire *Dhana Yogas* and windfall wealth Dasha triggers |
-| **7** | **Pranapada Lagna (PL)** | `4° per minute` (`1° per 15 Palas`) | $\text{PL} = \lambda_\odot + \frac{\text{Elapsed Palas since Sunrise}}{15} + \begin{cases} 0^\circ & \text{Sun in Movable Sign} \\ 240^\circ & \text{Sun in Fixed Sign} \\ 120^\circ & \text{Sun in Dual Sign} \end{cases}$ | Birth-time rectification (must fall in trine/10th to Moon or Lagna) |
+| **2** | **Hora Lagna (HL)** | `0.5° per min` (`1 sign per Hora`) | `HL = λ_Sun(Sunrise) + (Elapsed Minutes since Sunrise / 2.0)` | Personal wealth, sustenance, liquid resources, financial inflow |
+| **3** | **Ghati Lagna (GL)** | `1.25° per min` (`1 sign per Ghati`) | `GL = λ_Sun(Sunrise) + (Elapsed Ghatis since Sunrise × 30°)` | Power, royal authority, political/executive rank, fame |
+| **4** | **Bhava Lagna (BL)** | `0.25° per min` (`1 sign per 5 Ghatis`) | `BL = λ_Sun(Sunrise) + (Elapsed Ghatis since Sunrise × 6°)` | Inner psychological disposition and bodily constitution |
+| **5** | **Sree Lagna (SL)** | Linked to Moon's Pada | `SL = λ_Udaya_Lagna + ((λ_Moon mod 13°20') / 13°20') × 360°` | Goddess Lakshmi's grace, prosperity, marriage fortune |
+| **6** | **Indu Lagna (IL)** | Planetary *Kala* Sum | Sum *Kalas* (`Sun 30, Moon 16, Mars 6, Mercury 8, Jupiter 10, Venus 12, Saturn 1`) of 9th Lord from Lagna + 9th Lord from Moon; take `Sum mod 12` (`0 -> 12`) and count that many signs from Natal Moon | Millionaire/billionaire *Dhana Yogas* and windfall wealth Dasha triggers |
+| **7** | **Pranapada Lagna (PL)** | `2° per Pala` (`1 sign per 15 Palas`) | `PL = λ_Sun + ((Elapsed Palas since Sunrise / 15) × 30°) + Offset` (`0°` Movable, `240°` Fixed, `120°` Dual Solar Sign) | Birth-time rectification (must fall in trine/10th to Moon or Lagna) |
 | **8** | **Varnada Lagna (VL)** | Sign-Parity Vector | Count Udaya Lagna & Hora Lagna from Mesha (if Odd) or Meena backwards (if Even); add if same parity, subtract if opposite parity | Social class, vocational calling, and public duty |
 
 ### Table 8B — Complete Manual Formulas for the 5 Solar *Upagrahas* & 6 *Kalavela* Time-of-Day *Upagrahas* (*Gulika/Mandi*)
 
 | Category | Upagraha Name | Ruling Planet | Exact Manual Calculation Formula | Daytime Octant (`Sun..Sat`, out of 8) | Nighttime Octant (`Sun..Sat`, out of 8) |
 |---|---|---|---|---|---|
-| **Solar Upagraha 1** | **Dhuma** | Mars (Fiery Smoke) | $\lambda_{\text{Dhuma}} = (\lambda_\odot + 133^\circ 20') \bmod 360^\circ$ | Instantaneous from $\lambda_\odot$ | Instantaneous from $\lambda_\odot$ |
-| **Solar Upagraha 2** | **Vyatipata** | Rahu (Calamity) | $\lambda_{\text{Vyatipata}} = (360^\circ - \lambda_{\text{Dhuma}}) \bmod 360^\circ$ | Instantaneous from $\lambda_\odot$ | Instantaneous from $\lambda_\odot$ |
-| **Solar Upagraha 3** | **Parivesha** | Moon (Halo) | $\lambda_{\text{Parivesha}} = (\lambda_{\text{Vyatipata}} + 180^\circ) \bmod 360^\circ$ | Instantaneous from $\lambda_\odot$ | Instantaneous from $\lambda_\odot$ |
-| **Solar Upagraha 4** | **Indrachapa (Kodanda)** | Venus (Rainbow Bow) | $\lambda_{\text{Indrachapa}} = (360^\circ - \lambda_{\text{Parivesha}}) \bmod 360^\circ$ | Instantaneous from $\lambda_\odot$ | Instantaneous from $\lambda_\odot$ |
-| **Solar Upagraha 5** | **Upaketu (Sikhi)** | Ketu (Comet Crest) | $\lambda_{\text{Upaketu}} = (\lambda_{\text{Indrachapa}} + 16^\circ 40') \bmod 360^\circ = (\lambda_\odot - 30^\circ)$ | Instantaneous from $\lambda_\odot$ | Instantaneous from $\lambda_\odot$ |
+| **Solar Upagraha 1** | **Dhuma** | Mars (Fiery Smoke) | `λ_Dhuma = (λ_Sun + 133° 20') mod 360°` | Instantaneous from `λ_Sun` | Instantaneous from `λ_Sun` |
+| **Solar Upagraha 2** | **Vyatipata** | Rahu (Calamity) | `λ_Vyatipata = (360° - λ_Dhuma) mod 360°` | Instantaneous from `λ_Sun` | Instantaneous from `λ_Sun` |
+| **Solar Upagraha 3** | **Parivesha** | Moon (Halo) | `λ_Parivesha = (λ_Vyatipata + 180°) mod 360°` | Instantaneous from `λ_Sun` | Instantaneous from `λ_Sun` |
+| **Solar Upagraha 4** | **Indrachapa (Kodanda)** | Venus (Rainbow Bow) | `λ_Indrachapa = (360° - λ_Parivesha) mod 360°` | Instantaneous from `λ_Sun` | Instantaneous from `λ_Sun` |
+| **Solar Upagraha 5** | **Upaketu (Sikhi)** | Ketu (Comet Crest) | `λ_Upaketu = (λ_Indrachapa + 16° 40') mod 360° = (λ_Sun - 30°)` | Instantaneous from `λ_Sun` | Instantaneous from `λ_Sun` |
 | **Kalavela 1** | **Gulika (Mandi)** | Saturn's Son | Ascendant rising at start of Saturn's 1/8th portion of *Dinamana* / *Ratrimana* | `Sun:7, Mon:6, Tue:5, Wed:4, Thu:3, Fri:2, Sat:1` | `Sun:3, Mon:2, Tue:1, Wed:7, Thu:6, Fri:5, Sat:4` |
 | **Kalavela 2** | **Kala** | Sun's Portion | Ascendant rising at start of Sun's 1/8th portion | `Sun:1, Mon:7, Tue:6, Wed:5, Thu:4, Fri:3, Sat:2` | `Sun:4, Mon:3, Tue:2, Wed:1, Thu:7, Fri:6, Sat:5` |
 | **Kalavela 3** | **Mrityu** | Mars's Portion | Ascendant rising at start of Mars's 1/8th portion | `Sun:3, Mon:2, Tue:1, Wed:7, Thu:6, Fri:5, Sat:4` | `Sun:6, Mon:5, Tue:4, Wed:3, Thu:2, Fri:1, Sat:7` |
@@ -556,17 +556,17 @@ $$\text{JD} = \text{JD}_{\text{Jan 0.0}}(\text{Year}) + \text{Month Offset (Tabl
 
 | Sensitive Point (*Sphuta*) | Exact Mathematical Formula (`Mod 360°`) | Classical Interpretation Rule (*Prashna Marga* & *BPHS*) |
 |---|---|---|
-| **Yogi Point & Yogi Planet** | $\lambda_{\text{Yogi}} = (\lambda_\odot + \lambda_{\mathbb{C}} + 93^\circ 20') \bmod 360^\circ$ | Nakshatra Lord of $\lambda_{\text{Yogi}}$ is **Yogi Planet** (supreme prosperity significator); Sign Lord is **Sahayogi** |
-| **Avayogi Point & Planet** | $\lambda_{\text{Avayogi}} = (\lambda_{\text{Yogi}} + 186^\circ 40') \bmod 360^\circ$ | Nakshatra Lord of $\lambda_{\text{Avayogi}}$ is **Avayogi Planet** (obstruction/drain significator) |
-| **1. Trisphuta** | $(\lambda_{\text{Lagna}} + \lambda_{\mathbb{C}} + \lambda_{\text{Gulika}}) \bmod 360^\circ$ | Core vitality, health, and immediate horary crisis indicator |
-| **2. Chatusphuta** | $(\lambda_{\text{Trisphuta}} + \lambda_\odot) \bmod 360^\circ$ | Soul-level endurance and royal/spiritual support |
-| **3. Panchasphuta** | $(\lambda_{\text{Chatusphuta}} + \lambda_{\text{Rahu}}) \bmod 360^\circ$ | Karmic destiny and hidden snakes/curses in Prashna |
-| **4. Prana Sphuta** | $(5 \times \lambda_{\text{Lagna}} + \lambda_{\text{Gulika}}) \bmod 360^\circ$ | Vital breath (*Prana*) — conjunction with Mrityu Sphuta indicates acute danger |
-| **5. Deha Sphuta** | $(8 \times \lambda_{\mathbb{C}} + \lambda_{\text{Gulika}}) \bmod 360^\circ$ | Physical body resilience and recovery capacity |
-| **6. Mrityu Sphuta** | $(7 \times \lambda_{\text{Gulika}} + \lambda_\odot) \bmod 360^\circ$ | Mortality / critical vulnerability point |
-| **7. Tithi Sphuta** | $\left(\lambda_{\text{Lagna}} + (\lambda_{\mathbb{C}} - \lambda_\odot)\right) \bmod 360^\circ$ | Lunar-phase harmony in relationships and undertakings |
-| **8. Beeja Sphuta (Male)** | $(\lambda_\odot + \lambda_{\text{Venus}} + \lambda_{\text{Jupiter}}) \bmod 360^\circ$ | Male virility and progeny seed strength (must occupy odd signs/navamsas with benefic aspect) |
-| **9. Kshetra Sphuta (Female)** | $(\lambda_{\mathbb{C}} + \lambda_{\text{Mars}} + \lambda_{\text{Jupiter}}) \bmod 360^\circ$ | Female fertility and womb strength (must occupy even signs/navamsas with benefic aspect) |
+| **Yogi Point & Yogi Planet** | `λ_Yogi = (λ_Sun + λ_Moon + 93° 20') mod 360°` | Nakshatra Lord of `λ_Yogi` is **Yogi Planet** (supreme prosperity significator); Sign Lord is **Sahayogi** |
+| **Avayogi Point & Planet** | `λ_Avayogi = (λ_Yogi + 186° 40') mod 360°` | Nakshatra Lord of `λ_Avayogi` is **Avayogi Planet** (obstruction/drain significator) |
+| **1. Trisphuta** | `(λ_Lagna + λ_Moon + λ_Gulika) mod 360°` | Core vitality, health, and immediate horary crisis indicator |
+| **2. Chatusphuta** | `(λ_Trisphuta + λ_Sun) mod 360°` | Soul-level endurance and royal/spiritual support |
+| **3. Panchasphuta** | `(λ_Chatusphuta + λ_Rahu) mod 360°` | Karmic destiny and hidden snakes/curses in Prashna |
+| **4. Prana Sphuta** | `(5 × λ_Lagna + λ_Gulika) mod 360°` | Vital breath (*Prana*) — conjunction with Mrityu Sphuta indicates acute danger |
+| **5. Deha Sphuta** | `(8 × λ_Moon + λ_Gulika) mod 360°` | Physical body resilience and recovery capacity |
+| **6. Mrityu Sphuta** | `(7 × λ_Gulika + λ_Sun) mod 360°` | Mortality / critical vulnerability point |
+| **7. Tithi Sphuta** | `(λ_Lagna + (λ_Moon - λ_Sun)) mod 360°` | Lunar-phase harmony in relationships and undertakings |
+| **8. Beeja Sphuta (Male)** | `(λ_Sun + λ_Venus + λ_Jupiter) mod 360°` | Male virility and progeny seed strength (must occupy odd signs/navamsas with benefic aspect) |
+| **9. Kshetra Sphuta (Female)** | `(λ_Moon + λ_Mars + λ_Jupiter) mod 360°` | Female fertility and womb strength (must occupy even signs/navamsas with benefic aspect) |
 
 ## Chapter 9 — Section 4 — Complete Manual Divisional Chart (*Shodashvarga D1–D60*) Master Lookup Tables, 36 *Drekkana Swarupas*, & *Vimsopaka Bala*
 
@@ -602,7 +602,7 @@ $$\text{JD} = \text{JD}_{\text{Jan 0.0}}(\text{Year}) + \text{Month Offset (Tabl
 | **Navamsa 5** | `13° 20' – 16° 40'` | `800'–1000'` | **Simha** | **Vrishabha** *PN* | **Kumbha** | **Vrishchika** |
 | **Navamsa 6** | `16° 40' – 20° 00'` | `1000'–1200'` | **Kanya** | **Mithuna** | **Meena** *PN* | **Dhanu** |
 | **Navamsa 7** | `20° 00' – 23° 20'` | `1200'–1400'` | **Tula** *PN* | **Karka** | **Mesha** | **Makara** |
-| **Navamsa 8** | `23° 20' – 26° 40'` | `1400'–1600'` | **Vrishchika** | **Simha** | **Vrishabha** | **Kumbha** |
+| **Navamsa 8** | `23° 20' – 26° 40'` | `1400'–1600'` | **Vrishchika** | **Simha** | **Vrishabha** *PN* | **Kumbha** |
 | **Navamsa 9** | `26° 40' – 30° 00'` | `1600'–1800'` | **Dhanu** *PN* | **Kanya** | **Mithuna** | **Meena** |
 
 ### Table 9C — Complete *Dasamsa* (`D10` — `3° 00'` per Slice) & *Dwadasamsa* (`D12` — `2° 30'` per Slice) Lookup Grid
@@ -994,18 +994,18 @@ $$\text{JD} = \text{JD}_{\text{Jan 0.0}}(\text{Year}) + \text{Month Offset (Tabl
 
 | Significator Level | Priority | Classical *KP* Definition | Predictive Rule |
 |---|---|---|---|
-| **Level A (1st Order)** | Highest (`4x`) | Planet(s) occupying the **Nakshatra (Star)** of the Occupants of House $H$ | Strongest driver of the event when its Dasha/Bhukti/Antara runs |
-| **Level B (2nd Order)** | High (`3x`) | Planet(s) directly **occupying** House $H$ in the *Placidus Bhava Chalit* chart | Delivers the house result directly unless vacated by Star tenants |
-| **Level C (3rd Order)** | Moderate (`2x`) | Planet(s) occupying the **Nakshatra (Star)** of the Cusp Sign Lord of House $H$ | Activates the house promise through stellar rulership over the cusp lord |
-| **Level D (4th Order)** | Baseline (`1x`) | The **Sign Lord** of the Cusp of House $H$ itself | Background significator; strong when untenanted in both house and star |
-| **Cuspal Sub-Lord Gate** | **Decider** | The **Sub-Lord (`#001–#249`)** of Cusp $H$ | **The Star Lord shows the nature of the involvement; the Sub-Lord decides YES or NO** |
+| **Level A (1st Order)** | Highest (`4x`) | Planet(s) occupying the **Nakshatra (Star)** of the Occupants of House `H` | Strongest driver of the event when its Dasha/Bhukti/Antara runs |
+| **Level B (2nd Order)** | High (`3x`) | Planet(s) directly **occupying** House `H` in the *Placidus Bhava Chalit* chart | Delivers the house result directly unless vacated by Star tenants |
+| **Level C (3rd Order)** | Moderate (`2x`) | Planet(s) occupying the **Nakshatra (Star)** of the Cusp Sign Lord of House `H` | Activates the house promise through stellar rulership over the cusp lord |
+| **Level D (4th Order)** | Baseline (`1x`) | The **Sign Lord** of the Cusp of House `H` itself | Background significator; strong when untenanted in both house and star |
+| **Cuspal Sub-Lord Gate** | **Decider** | The **Sub-Lord (`#001–#249`)** of Cusp `H` | **The Star Lord shows the nature of the involvement; the Sub-Lord decides YES or NO** |
 
 ## Chapter 12 — Section 5 — Complete Manual Dasha Balance & Multi-System *Dasha* Compendium (*Vimshottari, Yogini, Ashtottari, & Kalachakra*)
 
 **Classical Formula for Balance of Dasha at Birth (*Bhogyamsha*):**
-- Each Nakshatra spans $13^\circ 20' = 800\text{ arcminutes}$ ($4\text{ Padas} \times 200' = 800'$).
-- If the Natal Moon is at $\lambda_{\mathbb{C}}$, find its elapsed arcminutes inside the current Nakshatra ($G_{\text{elapsed}}$) and the remaining arcminutes to complete the Nakshatra ($B_{\text{rem}} = 800' - G_{\text{elapsed}}$).
-$$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \frac{800' - G_{\text{elapsed}}}{800'}$$
+- Each Nakshatra spans `13° 20' = 800 arcminutes` (`4 Padas × 200' = 800'`).
+- If the Natal Moon is at `λ_Moon`, find its elapsed arcminutes inside the current Nakshatra (`G_elapsed`) and the remaining arcminutes to complete the Nakshatra (`B_rem = 800' - G_elapsed`).
+- `Balance of Mahadasha at Birth (Years) = Y_Mahadasha × (800' - G_elapsed) / 800'`
 
 ### Table 12A — 80-Row *Vimshottari Dasha* Balance Ready Reckoner (For Every `10'` of Remaining Lunar Arc `800'` down to `10'`)
 
@@ -1094,6 +1094,8 @@ $$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \fr
 
 ### Table 12B — Complete 81-Cell *Vimshottari Mahadasha × Antardasha (Bhukti)* Exact Duration Matrix (`Years-Months-Days`)
 
+**Manual Antardasha (Bhukti) Formula:** Multiply the Mahadasha years by the Antardasha years and divide by 10 to obtain total months (`Total Months = (Y_MD × Y_AD) / 10`); divide integer months by 12 for years and remaining months, and multiply any fractional month by **30** (`Days = Fractional Month × 30`) to obtain days.
+
 | Mahadasha \ Antardasha | Ketu (`7y`) | Venus (`20y`) | Sun (`6y`) | Moon (`10y`) | Mars (`7y`) | Rahu (`18y`) | Jupiter (`16y`) | Saturn (`19y`) | Mercury (`17y`) |
 |---|---|---|---|---|---|---|---|---|---|
 | **Ketu (7y)** | `0y 04m 27d` | `1y 02m 00d` | `0y 04m 06d` | `0y 07m 00d` | `0y 04m 27d` | `1y 00m 18d` | `0y 11m 06d` | `1y 01m 09d` | `0y 11m 27d` |
@@ -1108,7 +1110,7 @@ $$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \fr
 
 ### Table 12C — Complete 36-Year *Yogini Dasha* (`8 Yoginis`) & 108-Year *Ashtottari Dasha* (`8 Grahas`) Reference Tables
 
-| Yogini # | Yogini Name | Planetary Ruler | Duration (`Years`) | Starting Nakshatra Rule $(N + 3) \bmod 8$ | Ashtottari # | Ashtottari Lord | Duration (`Years`) | Assigned 28-Nakshatra Group |
+| Yogini # | Yogini Name | Planetary Ruler | Duration (`Years`) | Starting Nakshatra Rule `(N + 3) mod 8` | Ashtottari # | Ashtottari Lord | Duration (`Years`) | Assigned 28-Nakshatra Group |
 |---|---|---|---|---|---|---|---|---|
 | **1** | **Mangala** | Moon | `1 Years` | Remainder `1` | **1** | **Sun** | `6 Years` | Ardra, Punarvasu, Pushya, Ashlesha (4) |
 | **2** | **Pingala** | Sun | `2 Years` | Remainder `2` | **2** | **Moon** | `15 Years` | Magha, P.Phalguni, U.Phalguni (3) |
@@ -1123,7 +1125,7 @@ $$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \fr
 
 **Sign Durations in *Kalachakra Dasha*:** Mesha/Vrishchika (`7y`), Vrishabha/Tula (`16y`), Mithuna/Kanya (`9y`), Karka (`21y`), Simha (`5y`), Dhanu/Meena (`10y`), Makara/Kumbha (`4y`).
 
-| Cycle Group | Nakshatra Triad | Pada | *Dehamsha* (First Sign) | *Jeevamsha* (Last Sign) | Total Cycle (`Paramayus`) | 9-Sign *Kalachakra* Progression Sequence |
+| Cycle Group | Nakshatra Triad | Pada | *Dehamsha* (Body Sign) | *Jeevamsha* (Soul Sign) | Total Cycle (`Paramayus`) | 9-Sign *Kalachakra* Progression Sequence |
 |---|---|---|---|---|---|---|
 | **Savya 1** | Ashwini, Punarvasu, Hasta, Mula, P.Bhadra (I) | **Pada 1** | **Mesha** | **Dhanu** | `100 Years` | Mesha → Vrishabha → Mithuna → Karka → Simha → Kanya → Tula → Vrishchika → Dhanu |
 | **Savya 1** | Ashwini, Punarvasu, Hasta, Mula, P.Bhadra (I) | **Pada 2** | **Makara** | **Mithuna** | `85 Years` | Makara → Kumbha → Meena → Vrishchika → Tula → Kanya → Karka → Simha → Mithuna |
@@ -1137,39 +1139,39 @@ $$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \fr
 | **Savya 3** | Krittika, Ashlesha, Swati, U.Ashadha, Revati (III) | **Pada 2** | **Kanya** | **Tula** | `83 Years` | Kanya → Tula → Vrishchika → Dhanu → Makara → Kumbha → Meena → Vrishchika → Tula |
 | **Savya 3** | Krittika, Ashlesha, Swati, U.Ashadha, Revati (III) | **Pada 3** | **Kanya** | **Kumbha** | `85 Years` | Kanya → Simha → Karka → Mithuna → Vrishabha → Mesha → Dhanu → Makara → Kumbha |
 | **Savya 3** | Krittika, Ashlesha, Swati, U.Ashadha, Revati (III) | **Pada 4** | **Meena** | **Vrishchika** | `100 Years` | Meena → Mesha → Vrishabha → Mithuna → Simha → Karka → Kanya → Tula → Vrishchika |
-| **Apasavya 1** | Rohini, Magha, Vishakha, Shravana (I) | **Pada 1** | **Vrishchika** | **Meena** | `100 Years` | Vrishchika → Tula → Kanya → Karka → Simha → Mithuna → Vrishabha → Mesha → Meena |
-| **Apasavya 1** | Rohini, Magha, Vishakha, Shravana (I) | **Pada 2** | **Kumbha** | **Kanya** | `85 Years` | Kumbha → Makara → Dhanu → Mesha → Vrishabha → Mithuna → Karka → Simha → Kanya |
-| **Apasavya 1** | Rohini, Magha, Vishakha, Shravana (I) | **Pada 3** | **Tula** | **Kanya** | `83 Years` | Tula → Vrishchika → Meena → Kumbha → Makara → Dhanu → Vrishchika → Tula → Kanya |
-| **Apasavya 1** | Rohini, Magha, Vishakha, Shravana (I) | **Pada 4** | **Karka** | **Dhanu** | `86 Years` | Karka → Simha → Mithuna → Vrishabha → Mesha → Meena → Kumbha → Makara → Dhanu |
-| **Apasavya 2** | Mrigashirsha, P.Phalguni, Anuradha, Dhanishta (II) | **Pada 1** | **Dhanu** | **Karka** | `86 Years` | Dhanu → Makara → Kumbha → Meena → Mesha → Vrishabha → Mithuna → Simha → Karka |
-| **Apasavya 2** | Mrigashirsha, P.Phalguni, Anuradha, Dhanishta (II) | **Pada 2** | **Kanya** | **Tula** | `83 Years` | Kanya → Tula → Vrishchika → Meena → Kumbha → Makara → Dhanu → Vrishchika → Tula |
-| **Apasavya 2** | Mrigashirsha, P.Phalguni, Anuradha, Dhanishta (II) | **Pada 3** | **Kanya** | **Kumbha** | `85 Years` | Kanya → Simha → Karka → Mithuna → Vrishabha → Mesha → Dhanu → Makara → Kumbha |
-| **Apasavya 2** | Mrigashirsha, P.Phalguni, Anuradha, Dhanishta (II) | **Pada 4** | **Meena** | **Vrishchika** | `100 Years` | Meena → Mesha → Vrishabha → Mithuna → Simha → Karka → Kanya → Tula → Vrishchika |
-| **Apasavya 3** | Ardra, U.Phalguni, Jyeshtha, Shatabhisha (III) | **Pada 1** | **Meena** | **Karka** | `86 Years` | Meena → Kumbha → Makara → Dhanu → Vrishchika → Tula → Kanya → Simha → Karka |
-| **Apasavya 3** | Ardra, U.Phalguni, Jyeshtha, Shatabhisha (III) | **Pada 2** | **Mithuna** | **Vrishabha** | `83 Years` | Mithuna → Vrishabha → Mesha → Dhanu → Makara → Kumbha → Meena → Mesha → Vrishabha |
-| **Apasavya 3** | Ardra, U.Phalguni, Jyeshtha, Shatabhisha (III) | **Pada 3** | **Mithuna** | **Makara** | `85 Years` | Mithuna → Simha → Karka → Kanya → Tula → Vrishchika → Meena → Kumbha → Makara |
-| **Apasavya 3** | Ardra, U.Phalguni, Jyeshtha, Shatabhisha (III) | **Pada 4** | **Dhanu** | **Mesha** | `100 Years` | Dhanu → Vrishchika → Tula → Kanya → Simha → Karka → Mithuna → Vrishabha → Mesha |
+| **Apasavya 1** | Rohini, Magha, Vishakha, Shravana (I) | **Pada 1** | **Meena** | **Vrishchika** | `100 Years` | Vrishchika → Tula → Kanya → Karka → Simha → Mithuna → Vrishabha → Mesha → Meena |
+| **Apasavya 1** | Rohini, Magha, Vishakha, Shravana (I) | **Pada 2** | **Kanya** | **Kumbha** | `85 Years` | Kumbha → Makara → Dhanu → Mesha → Vrishabha → Mithuna → Karka → Simha → Kanya |
+| **Apasavya 1** | Rohini, Magha, Vishakha, Shravana (I) | **Pada 3** | **Kanya** | **Tula** | `83 Years` | Tula → Vrishchika → Meena → Kumbha → Makara → Dhanu → Vrishchika → Tula → Kanya |
+| **Apasavya 1** | Rohini, Magha, Vishakha, Shravana (I) | **Pada 4** | **Dhanu** | **Karka** | `86 Years` | Karka → Simha → Mithuna → Vrishabha → Mesha → Meena → Kumbha → Makara → Dhanu |
+| **Apasavya 2** | Mrigashirsha, P.Phalguni, Anuradha, Dhanishta (II) | **Pada 1** | **Karka** | **Dhanu** | `86 Years` | Dhanu → Makara → Kumbha → Meena → Mesha → Vrishabha → Mithuna → Simha → Karka |
+| **Apasavya 2** | Mrigashirsha, P.Phalguni, Anuradha, Dhanishta (II) | **Pada 2** | **Tula** | **Kanya** | `83 Years` | Kanya → Tula → Vrishchika → Meena → Kumbha → Makara → Dhanu → Vrishchika → Tula |
+| **Apasavya 2** | Mrigashirsha, P.Phalguni, Anuradha, Dhanishta (II) | **Pada 3** | **Kumbha** | **Kanya** | `85 Years` | Kanya → Simha → Karka → Mithuna → Vrishabha → Mesha → Dhanu → Makara → Kumbha |
+| **Apasavya 2** | Mrigashirsha, P.Phalguni, Anuradha, Dhanishta (II) | **Pada 4** | **Vrishchika** | **Meena** | `100 Years` | Meena → Mesha → Vrishabha → Mithuna → Simha → Karka → Kanya → Tula → Vrishchika |
+| **Apasavya 3** | Ardra, U.Phalguni, Jyeshtha, Shatabhisha (III) | **Pada 1** | **Karka** | **Meena** | `86 Years` | Meena → Kumbha → Makara → Dhanu → Vrishchika → Tula → Kanya → Simha → Karka |
+| **Apasavya 3** | Ardra, U.Phalguni, Jyeshtha, Shatabhisha (III) | **Pada 2** | **Vrishabha** | **Mithuna** | `83 Years` | Mithuna → Vrishabha → Mesha → Dhanu → Makara → Kumbha → Meena → Mesha → Vrishabha |
+| **Apasavya 3** | Ardra, U.Phalguni, Jyeshtha, Shatabhisha (III) | **Pada 3** | **Makara** | **Mithuna** | `85 Years` | Mithuna → Simha → Karka → Kanya → Tula → Vrishchika → Meena → Kumbha → Makara |
+| **Apasavya 3** | Ardra, U.Phalguni, Jyeshtha, Shatabhisha (III) | **Pada 4** | **Mesha** | **Dhanu** | `100 Years` | Dhanu → Vrishchika → Tula → Kanya → Simha → Karka → Mithuna → Vrishabha → Mesha |
 
 ## Chapter 13 — Complete *Jaimini Upadesha Sutras* Manual Compendium (*Chara Karakas*, *Arudha Padas*, *Rashi Drishti*, *Argala*, & *Jaimini Ayurdaya*)
 
 ### Table 13A — Complete 144-Cell `12 × 12` *Jaimini Arudha Pada* (*Swastha* 1st/7th Exception Included) Master Lookup Matrix
 
-**How to Read This Table:** Find the **Sign of the House ($H$)** in the left column, and the **Sign Occupied by Its Lord ($L$)** across the top row. The cell gives the **exact Arudha Pada Sign** (automatically applying the Jaimini *Swastha* rule: when the Lord is in the 1st or 7th from the house, the Arudha jumps 10 signs from the raw position).
+**How to Read This Table:** Find the **Sign of the House (`H`)** in the left column, and the **Sign Occupied by Its Lord (`L`)** across the top row. The cell gives the **exact Arudha Pada Sign** (automatically applying the Jaimini *Swastha* rule: when the projected Arudha lands in the 1st or 7th from the house, the Arudha jumps 10 signs from the raw position).
 
 | House Sign \ Lord Sign | **Mesha** | **Vrish** | **Mithu** | **Karka** | **Simha** | **Kanya** | **Tula** | **Vrish** | **Dhanu** | **Makar** | **Kumbh** | **Meena** |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **01 Mesha** | **Makar*** | Mithu | Simha | Tula | Dhanu | Kumbh | **Makar*** | Mithu | Simha | Tula | Dhanu | Kumbh |
-| **02 Vrishabha** | Meena | **Kumbh*** | Karka | Kanya | Vrish | Makar | Meena | **Kumbh*** | Karka | Kanya | Vrish | Makar |
-| **03 Mithuna** | Kumbh | Mesha | **Meena*** | Simha | Tula | Dhanu | Kumbh | Mesha | **Meena*** | Simha | Tula | Dhanu |
-| **04 Karka** | Makar | Meena | Vrish | **Mesha*** | Kanya | Vrish | Makar | Meena | Vrish | **Mesha*** | Kanya | Vrish |
-| **05 Simha** | Dhanu | Kumbh | Mesha | Mithu | **Vrish*** | Tula | Dhanu | Kumbh | Mesha | Mithu | **Vrish*** | Tula |
-| **06 Kanya** | Vrish | Makar | Meena | Vrish | Karka | **Mithu*** | Vrish | Makar | Meena | Vrish | Karka | **Mithu*** |
-| **07 Tula** | **Karka*** | Dhanu | Kumbh | Mesha | Mithu | Simha | **Karka*** | Dhanu | Kumbh | Mesha | Mithu | Simha |
-| **08 Vrishchika** | Kanya | **Simha*** | Makar | Meena | Vrish | Karka | Kanya | **Simha*** | Makar | Meena | Vrish | Karka |
-| **09 Dhanu** | Simha | Tula | **Kanya*** | Kumbh | Mesha | Mithu | Simha | Tula | **Kanya*** | Kumbh | Mesha | Mithu |
-| **10 Makara** | Karka | Kanya | Vrish | **Tula*** | Meena | Vrish | Karka | Kanya | Vrish | **Tula*** | Meena | Vrish |
-| **11 Kumbha** | Mithu | Simha | Tula | Dhanu | **Vrish*** | Mesha | Mithu | Simha | Tula | Dhanu | **Vrish*** | Mesha |
-| **12 Meena** | Vrish | Karka | Kanya | Vrish | Makar | **Dhanu*** | Vrish | Karka | Kanya | Vrish | Makar | **Dhanu*** |
+| **01 Mesha** | **Makar*** | Mithu | Simha | **Karka*** | Dhanu | Kumbh | **Makar*** | Mithu | Simha | **Karka*** | Dhanu | Kumbh |
+| **02 Vrishabha** | Meena | **Kumbh*** | Karka | Kanya | **Simha*** | Makar | Meena | **Kumbh*** | Karka | Kanya | **Simha*** | Makar |
+| **03 Mithuna** | Kumbh | Mesha | **Meena*** | Simha | Tula | **Kanya*** | Kumbh | Mesha | **Meena*** | Simha | Tula | **Kanya*** |
+| **04 Karka** | **Tula*** | Meena | Vrish | **Mesha*** | Kanya | Vrish | **Tula*** | Meena | Vrish | **Mesha*** | Kanya | Vrish |
+| **05 Simha** | Dhanu | **Vrish*** | Mesha | Mithu | **Vrish*** | Tula | Dhanu | **Vrish*** | Mesha | Mithu | **Vrish*** | Tula |
+| **06 Kanya** | Vrish | Makar | **Dhanu*** | Vrish | Karka | **Mithu*** | Vrish | Makar | **Dhanu*** | Vrish | Karka | **Mithu*** |
+| **07 Tula** | **Karka*** | Dhanu | Kumbh | **Makar*** | Mithu | Simha | **Karka*** | Dhanu | Kumbh | **Makar*** | Mithu | Simha |
+| **08 Vrishchika** | Kanya | **Simha*** | Makar | Meena | **Kumbh*** | Karka | Kanya | **Simha*** | Makar | Meena | **Kumbh*** | Karka |
+| **09 Dhanu** | Simha | Tula | **Kanya*** | Kumbh | Mesha | **Meena*** | Simha | Tula | **Kanya*** | Kumbh | Mesha | **Meena*** |
+| **10 Makara** | **Mesha*** | Kanya | Vrish | **Tula*** | Meena | Vrish | **Mesha*** | Kanya | Vrish | **Tula*** | Meena | Vrish |
+| **11 Kumbha** | Mithu | **Vrish*** | Tula | Dhanu | **Vrish*** | Mesha | Mithu | **Vrish*** | Tula | Dhanu | **Vrish*** | Mesha |
+| **12 Meena** | Vrish | Karka | **Mithu*** | Vrish | Makar | **Dhanu*** | Vrish | Karka | **Mithu*** | Vrish | Makar | **Dhanu*** |
 
 ### Table 13B — Complete `12 × 12` *Jaimini Rashi Drishti* (Sign Aspect) Matrix & *Argala / Virodhargala* Rules
 
@@ -1199,7 +1201,7 @@ $$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \fr
 | **Jupiter** | **Sada Shiva** | Movable + Dual | Fixed + Fixed | Movable + Fixed | **Purnayu** (with Jupiter in Lagna/7th: *Kakshya Vriddhi* +1 tier) |
 | **Venus** | **Lakshmi** | Fixed + Dual | Dual + Dual | Fixed + Dual | **Purnayu** (`66–100 Years`) |
 | **Saturn** | **Narayana** | Malefic in 8th/Lagna | Afflicted Rudra | Saturn un-elevated | **Kakshya Hrasa** (-1 tier reduction when unassisted) |
-| **Rahu / Ketu** | **Durga / Ganesha** | 8-Karaka Scheme (`Rahu` at $30^\circ - d$) | *Moksha Karaka* (`Ketu` in 12th from *Karakamsa*) | — | Ketu in 4th/8th/12th from *Karakamsa* grants final liberation |
+| **Rahu / Ketu** | **Durga / Ganesha** | 8-Karaka Scheme (`Rahu` at `30° - d`) | *Moksha Karaka* (`Ketu` in 12th from *Karakamsa*) | — | Ketu in 4th/8th/12th from *Karakamsa* grants final liberation |
 
 ## Chapter 14 — Complete Six-Fold *Shadbala*, 36-Row Continuous Parashari *Sphuta Drishti* Table, *Ishta/Kashta Phala*, & *Bhava Bala*
 
@@ -1217,9 +1219,9 @@ $$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \fr
 
 ### Table 14B — Complete 36-Row Continuous Parashari *Sphuta Drishti* (Aspectual Strength in *Virupas* `0v–60v`) Lookup Table
 
-**Classical Piecewise Formula (*Brihat Parashara Hora Shastra*):** Let $\Delta = (\lambda_{\text{Target}} - \lambda_{\text{Aspecting}}) \bmod 360^\circ$. Base *Drishti* is `0v` for $0^\circ..30^\circ$ and $300^\circ..360^\circ$; rises from $30^\circ..60^\circ$ (`(Δ-30)/2`); rises from $60^\circ..90^\circ$ (`(Δ-60)+15`); drops from $90^\circ..120^\circ$ (`45-(Δ-90)/2`); drops from $120^\circ..150^\circ$ (`30-(Δ-120)`); rises sharply from $150^\circ..180^\circ$ (`2*(Δ-150)` peaking at `60v` at $180^\circ$); and decreases linearly from $180^\circ..300^\circ$ (`(300-Δ)/2`). **Special Vishesha Drishti:** Mars gets `60v` across $90^\circ..120^\circ$ & $210^\circ..240^\circ$; Jupiter gets `60v` across $120^\circ..150^\circ$ & $240^\circ..270^\circ$; Saturn gets `60v` across $60^\circ..90^\circ$ & $270^\circ..300^\circ$.
+**Classical Piecewise Formula (*Brihat Parashara Hora Shastra*):** Let `Δ = (λ_Target - λ_Aspecting) mod 360°`. Base *Drishti* is `0v` for `0°..30°` and `300°..360°`; rises from `30°..60°` (`(Δ-30)/2`); rises from `60°..90°` (`(Δ-60)+15`); drops from `90°..120°` (`45-(Δ-90)/2`); drops from `120°..150°` (`30-(Δ-120)`); rises sharply from `150°..180°` (`2*(Δ-150)` peaking at `60v` at `180°`); and decreases linearly from `180°..300°` (`(300-Δ)/2`). **Special Vishesha Drishti:** Mars gets `60v` across `90°..120°` & `210°..240°`; Jupiter gets `60v` across `120°..150°` & `240°..270°`; Saturn gets `60v` across `60°..90°` & `270°..300°`.
 
-| Separation $\Delta$ | House Span | Standard (*Sun, Moon, Mer, Ven*) | Mars (*4th & 8th Vishesha*) | Jupiter (*5th & 9th Vishesha*) | Saturn (*3rd & 10th Vishesha*) |
+| Separation `Δ` | House Span | Standard (*Sun, Moon, Mer, Ven*) | Mars (*4th & 8th Vishesha*) | Jupiter (*5th & 9th Vishesha*) | Saturn (*3rd & 10th Vishesha*) |
 |---|---|---|---|---|---|
 | **`000°`** | House 01 | `00.00v` | **`00.00v`** | **`00.00v`** | **`00.00v`** |
 | **`010°`** | House 01 | `00.00v` | **`00.00v`** | **`00.00v`** | **`00.00v`** |
@@ -1297,7 +1299,7 @@ $$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \fr
 | **Mercury** | ``15° Kanya (165°)`` | **`12 Years`** | **`9 Years`** | Lose **`1/2` (`50%`)** when combust | Lose **`1/3` (`33.3%`)** in Enemy Sign (Exempt if Retrograde) | `H9:` Lose `1/4` (Malefic) / `1/8` (Benefic) |
 | **Jupiter** | ``05° Karka (095°)`` | **`15 Years`** | **`18 Years`** | Lose **`1/2` (`50%`)** when combust | Lose **`1/3` (`33.3%`)** in Enemy Sign (Exempt if Retrograde) | `H8:` Lose `1/5` (Malefic) / `1/10` (Benefic) |
 | **Venus** | ``27° Meena (357°)`` | **`21 Years`** | **`20 Years`** | **Exempt** (Saturn & Venus never lose years by combustion) | Lose **`1/3` (`33.3%`)** in Enemy Sign (Exempt if Retrograde) | `H7:` Lose `1/6` (Malefic) / `1/12` (Benefic) |
-| **Saturn** | ``20° Tula (200°)`` | **`20 Years`** | **`50 Years`** | **Exempt** (Saturn & Venus never lose years by combustion) | Lose **`1/3` (`33.3%`)** in Enemy Sign (Exempt if Retrograde) | **Amsayu Rule:** Total Elapsed Arcminutes $\div 200' \bmod 12 =$ Base Years (multiplied by $2\times$ or $3\times$ in Own/Exalted Rashi or D9) |
+| **Saturn** | ``20° Tula (200°)`` | **`20 Years`** | **`50 Years`** | **Exempt** (Saturn & Venus never lose years by combustion) | Lose **`1/3` (`33.3%`)** in Enemy Sign (Exempt if Retrograde) | **Amsayu Rule:** Total Elapsed Arcminutes `÷ 200' mod 12 =` Base Years (multiplied by `2×` or `3×` in Own/Exalted Rashi or D9) |
 
 ## Chapter 17 — Complete *Tajika Varshphal* (Annual Solar Return) Manual Compendium, 100-Year *Dhruvanka* Table, *Hadda* Bounds, & All 36 *Tajika Sahams*
 
@@ -1352,9 +1354,9 @@ $$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \fr
 
 ### Table 17C — Complete Catalog of All 36 Classical *Tajika Sahams* (Arabic Lots — Day & Night Manual Formulas)
 
-**Universal Saham Rule (*Tajika Neelakanthi*):** Compute $\lambda_{\text{Saham}} = (A - B + C) \bmod 360^\circ$. Whenever the Ascendant ($C$) is **not** geometrically situated on the zodiacal arc moving forward from $B$ to $A$, **add $+30^\circ$ ($1\text{ Sign}$)** to the result.
+**Universal Saham Rule (*Tajika Neelakanthi*):** Compute `λ_Saham = (A - B + C) mod 360°`. Whenever the Ascendant (`C`) is **not** geometrically situated on the zodiacal arc moving forward from `B` to `A`, **add `+30°` (`1 Sign`)** to the result.
 
-| # | Classical *Saham* Name | Life Domain / Signification | Day Birth Formula ($A - B + C$) | Night Birth Formula ($A - B + C$) |
+| # | Classical *Saham* Name | Life Domain / Signification | Day Birth Formula (`A - B + C`) | Night Birth Formula (`A - B + C`) |
 |---|---|---|---|---|
 | **`#01`** | **Punya Saham (Fortune)** | Overall fortune, dharma, prosperity & grace | `Moon - Sun + Lagna` | `Sun - Moon + Lagna` |
 | **`#02`** | **Vidya Saham (Learning)** | Education, scholarship, wisdom & intellect | `Sun - Moon + Lagna` | `Moon - Sun + Lagna` |
@@ -1476,7 +1478,7 @@ $$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \fr
 
 ### Table 19A — Complete 30-Star *Yogatara* (Junction Star) Astrometric Reference Catalog (*Surya Siddhanta* Chapter 8)
 
-| # | Nakshatra / Star | Sanskrit *Yogatara* Name | Modern IAU Star | J2000 RA (`deg`) | J2000 Dec (`deg`) | Visual Mag ($V$) | *Kalansha* Heliacal Arc |
+| # | Nakshatra / Star | Sanskrit *Yogatara* Name | Modern IAU Star | J2000 RA (`deg`) | J2000 Dec (`deg`) | Visual Mag (`V`) | *Kalansha* Heliacal Arc |
 |---|---|---|---|---|---|---|---|
 | **01** | **Ashwini** *(Nakshatra #1)* | `ashwini` (`HIP 8903`) | `Sheratan / beta Arietis` | `028.660°` | `+20.808°` | `+2.64` | `13.0°` |
 | **02** | **Bharani** *(Nakshatra #2)* | `bharani` (`HIP 13209`) | `41 Arietis / c Arietis` | `042.496°` | `+27.261°` | `+3.61` | `14.0°` |
@@ -1525,22 +1527,22 @@ $$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \fr
 
 - **Case Study Date & Time:** `2026-11-15` at `10:42:00 IST (UTC+05:30)`
 - **Observer Location:** `Lat 23.1765 deg, Lon 75.7885 deg` (Ujjain Prime Meridian Reference)
-- **Elapsed Time After `05:30 IST` Tabular Epoch:** `5 hours 12 minutes (13 Ghatis 00 Palas)` (Interpolation Fraction $f = 0.216667$)
+- **Elapsed Time After `05:30 IST` Tabular Epoch:** `5 hours 12 minutes (13 Ghatis 00 Palas)` (Interpolation Fraction `f = 0.216667`)
 - **Manual Ascendant (*Udaya Lagna*):** `Dhanu 22° 18' 00"` | **10th Cusp (*Madhya Lagna*):** `Tula 05° 57' 51"`
 - **Natal Moon Nakshatra & Pada:** `Uttara Ashadha Pada 3 (Lord: Sun)` (`378.34'` *Bhogyamsha* remaining)
 - **Natal *Vimshottari Dasha* Balance at Birth:** **`Sun Mahadasha: 2 Years, 10 Months, 2 Days remaining`**
 
 ### Step 1 & Step 2 — Complete 1st-Order (*Trairashika*) & 2nd-Order (*Bessel*) Manual *Spashta Graha* Worksheet
 
-| Body | `05:30 IST` Day $D$ | `05:30 IST` Day $D+1$ | Daily Motion $v_1$ | 1st-Order *Trairashika* | 2nd-Order *Bessel* Exact | `D9` Navamsa | `D10` Dasamsa | `D60` Shashtiamsa | *KP* Star / Sub / Sub-Sub |
+| Body | `05:30 IST` Day `D` | `05:30 IST` Day `D+1` | Daily Motion `v₁` | 1st-Order *Trairashika* | 2nd-Order *Bessel* Exact | `D9` Navamsa | `D10` Dasamsa | `D60` Shashtiamsa | *KP* Star / Sub / Sub-Sub |
 |---|---|---|---|---|---|---|---|---|---|
 | **Surya (Sun)** | `Tula 28° 23' 45"` | `+00° 13' 06"` | `+01° 00' 25"` | `Tula 28° 36' 50"` | **`Tula 28° 36' 50"`** | **Mithuna** | **Karka** | Karka | `venus / jupiter / venus / mercury` |
-| **Chandra (Moon)** | `Makara 01° 08' 07"` | `+02° 33' 27"` | `+11° 48' 14"` | `Makara 03° 41' 34"` | **`Makara 03° 41' 27"`** | **Kumbha** | **Tula** | Simha | `saturn / sun / saturn / ketu` |
-| **Mangala (Mars)** | `Simha 01° 05' 12"` | `+00° 05' 52"` | `+00° 27' 03"` | `Simha 01° 11' 03"` | **`Simha 01° 11' 04"`** | **Mesha** | **Simha** | Tula | `sun / ketu / venus / sun` |
-| **Budha (Mercury)** | `Tula 10° 57' 40"` | `+00° 03' 07"` | `+00° 14' 22"` | `Tula 11° 00' 47"` | **`Tula 11° 00' 21"`** | **Makara** | **Makara** | Simha | `venus / rahu / saturn / mercury` |
+| **Chandra (Moon)** | `Makara 01° 08' 07"` | `+02° 33' 27"` | `+11° 48' 14"` | `Makara 03° 41' 34"` | **`Makara 03° 41' 38"`** | **Kumbha** | **Tula** | Simha | `saturn / sun / saturn / ketu` |
+| **Mangala (Mars)** | `Simha 01° 05' 12"` | `+00° 05' 52"` | `+00° 27' 03"` | `Simha 01° 11' 03"` | **`Simha 01° 11' 03"`** | **Mesha** | **Simha** | Tula | `sun / ketu / venus / sun` |
+| **Budha (Mercury)** | `Tula 10° 57' 40"` | `+00° 03' 07"` | `+00° 14' 22"` | `Tula 11° 00' 47"` | **`Tula 11° 01' 02"`** | **Makara** | **Makara** | Simha | `venus / rahu / saturn / mercury` |
 | **Guru (Jupiter)** | `Simha 01° 32' 52"` | `+00° 01' 07"` | `+00° 05' 09"` | `Simha 01° 33' 59"` | **`Simha 01° 33' 59"`** | **Mesha** | **Simha** | Vrishchika | `sun / ketu / venus / mars` |
-| **Shukra (Venus)** | `Kanya 28° 38' 53"` | `+00° 00' 30"` | `+00° 02' 21"` | `Kanya 28° 39' 24"` | **`Kanya 28° 39' 18"`** | **Kanya** | **Kumbha** | Mithuna | `mercury / mars / saturn / venus` |
-| **Shani (Saturn)** | `Meena 14° 17' 33"` | `-00° 00' 35"` | `-00° 02' 40"` | `Meena 14° 16' 59"` | **`Meena 14° 16' 58"`** | **Vrishchika** | **Meena** | Karka | `jupiter / saturn / rahu / venus` |
+| **Shukra (Venus)** | `Kanya 28° 38' 53"` | `+00° 00' 30"` | `+00° 02' 21"` | `Kanya 28° 39' 24"` | **`Kanya 28° 39' 27"`** | **Kanya** | **Kumbha** | Mithuna | `mercury / mars / saturn / venus` |
+| **Shani (Saturn)** | `Meena 14° 17' 33"` | `-00° 00' 35"` | `-00° 02' 40"` | `Meena 14° 16' 59"` | **`Meena 14° 16' 59"`** | **Vrishchika** | **Meena** | Karka | `jupiter / saturn / rahu / venus` |
 | **Rahu (Node)** | `Kumbha 01° 05' 51"` | `-00° 00' 41"` | `-00° 03' 11"` | `Kumbha 01° 05' 10"` | **`Kumbha 01° 05' 10"`** | **Tula** | **Kumbha** | Mesha | `saturn / mars / mercury / rahu` |
 | **Ketu (S. Node)** | `Simha 01° 05' 51"` | `-00° 00' 41"` | `-00° 03' 11"` | `Simha 01° 05' 10"` | **`Simha 01° 05' 10"`** | **Mesha** | **Simha** | Tula | `sun / ketu / venus / venus` |
 
@@ -1549,12 +1551,12 @@ $$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \fr
 | Special Point Category | Point Name | Computed Sidereal Longitude (`DMS`) | Sign (`Rashi`) | `D9` Navamsa / Nakshatra Details |
 |---|---|---|---|---|
 | **8 Vishesha Lagnas** | **Udaya Lagna (Birth Ascendant)** | **`Dhanu 22° 18' 00"`** | Dhanu (Jupiter) | `D9:` **Tula**; *Purva Ashadha* P3 (Eastern horizon intersection with the sidereal ecliptic at birth) |
-| **8 Vishesha Lagnas** | **Hora Lagna (HL — Sustenance & Wealth)** | **`Kumbha 05° 06' 30"`** | Kumbha (Saturn) | `D9:` **Vrishchika**; *Dhanishta* P4 (Sun at Sunrise + (Elapsed Minutes since Sunrise / 2.5)) |
+| **8 Vishesha Lagnas** | **Hora Lagna (HL — Sustenance & Wealth)** | **`Kumbha 29° 16' 26"`** | Kumbha (Saturn) | `D9:` **Mithuna**; *Purva Bhadrapada* P3 (Sun at Sunrise + (Elapsed Minutes since Sunrise / 2.0)) |
 | **8 Vishesha Lagnas** | **Ghati Lagna (GL — Power, Rank & Authority)** | **`Kanya 00° 31' 03"`** | Kanya (Mercury) | `D9:` **Makara**; *Uttara Phalguni* P2 (Sun at Sunrise + (Elapsed Ghatis since Sunrise × 30°)) |
 | **8 Vishesha Lagnas** | **Bhava Lagna (BL — Disposition & Vitality)** | **`Dhanu 28° 51' 34"`** | Dhanu (Jupiter) | `D9:` **Dhanu**; *Uttara Ashadha* P1 (Sun at Sunrise + (Elapsed Ghatis since Sunrise × 6°)) |
 | **8 Vishesha Lagnas** | **Sree Lagna (SL — Lakshmi Prosperity & Grace)** | **`Karka 02° 02' 46"`** | Karka (Moon) | `D9:` **Karka**; *Punarvasu* P4 (Udaya Lagna + (Moon's Traversed Nakshatra Fraction × 360°)) |
 | **8 Vishesha Lagnas** | **Indu Lagna (IL — Kalidasa Wealth & Dhana Yoga Point)** | **`Kumbha 03° 41' 39"`** | Kumbha (Saturn) | `D9:` **Vrishchika**; *Dhanishta* P4 (9th Lord from Lagna (Sun=30) + 9th Lord from Moon (Mercury=8) = 38 Kalas -> 2th sign from Moon) |
-| **8 Vishesha Lagnas** | **Pranapada Lagna (PL — Vital Breath & Rectification Anchor)** | **`Dhanu 08° 53' 25"`** | Dhanu (Jupiter) | `D9:` **Mithuna**; *Mula* P3 (Sun at Birth + Modality Offset (Movable +0°, Fixed +240°, Dual +120°) + (Elapsed Palas / 15)) |
+| **8 Vishesha Lagnas** | **Pranapada Lagna (PL — Vital Breath & Rectification Anchor)** | **`Meena 06° 54' 16"`** | Meena (Jupiter) | `D9:` **Kanya**; *Uttara Bhadrapada* P2 (Sun at Birth + Modality Offset (Movable +0°, Fixed +240°, Dual +120°) + ((Elapsed Palas / 15) × 30°)) |
 | **8 Vishesha Lagnas** | **Varnada Lagna (VL — Social Standing & Vocational Destiny)** | **`Vrishchika 22° 18' 00"`** | Vrishchika (Mars) | `D9:` **Makara**; *Jyeshtha* P2 (Parashari Odd-Direct / Even-Reverse synthesis of Udaya Lagna and Hora Lagna) |
 | **Yogi & Avayogi** | **Yogi Point & Yogi Planet** | **`Vrishchika 05° 38' 30"`** | Yogi: **Saturn** | Nakshatra: *Anuradha*; Sahayogi: **Mars** |
 | **Yogi & Avayogi** | **Avayogi Point & Planet** | **`Vrishabha 12° 18' 30"`** | Avayogi: **Moon** | Nakshatra: *Rohini* |
@@ -1594,7 +1596,7 @@ $$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \fr
 
 **Worked 12 *Sarvashtakavarga* (`SAV`) Totals by Sign (`Mesha` to `Meena`):** **Mesha:** `20`, **Vrishabha:** `33`, **Mithuna:** `35`, **Karka:** `30`, **Simha:** `30`, **Kanya:** `24`, **Tula:** `27`, **Vrishchika:** `25`, **Dhanu:** `27`, **Makara:** `27`, **Kumbha:** `27`, **Meena:** `32` (Grand Total = **`337 Bindus`**).
 
-**Worked 12 *Jaimini Arudha Padas* (`AL` to `UL`):** **AL:** Mesha, **A2:** Vrishabha, **A3:** Mesha, **A4:** Makara, **A5:** Dhanu, **A6:** Makara, **A7:** Kumbha, **A8:** Mesha *(Swastha)*, **A9:** Dhanu, **A10:** Vrishchika, **A11:** Simha, **UL:** Vrishabha.
+**Worked 12 *Jaimini Arudha Padas* (`AL` to `UL`):** **AL:** Mesha, **A2:** Vrishabha, **A3:** Mesha, **A4:** Makara, **A5:** Dhanu, **A6:** Makara, **A7:** Kumbha, **A8:** Mesha *(Swastha)*, **A9:** Dhanu, **A10:** Vrishchika, **A11:** Simha, **UL:** Kumbha *(Swastha)*.
 
 **Worked *Kalachakra Dasha* at Birth:** Chakra Group = **Savya**, *Dehamsha* = **Kanya**, *Jeevamsha* = **Kumbha**, Paramayus = `85 Years`, Birth Period = **Simha** (`Krama Gati` Gati).
 
@@ -1606,60 +1608,60 @@ $$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \fr
 
 ### 21.1 Worked Case Study: 13-Body Geocentric vs Topocentric & Relativistic Astrometry Table
 
-| Body | Geocentric Sidereal (`DMS`) | Topocentric Sidereal (`DMS`) | Parallax Shift (`Δλ" / Δβ"`) | Azimuth / True Alt / Refracted Alt | Air Mass $X$ | Doppler $\dot{r}$ (`km/s`) | Light-Time $\tau$ (`s`) | Shapiro $\Delta t$ (`μs`) | GR Defl (`mas`) | `D9 / D60 / KP` Flip Audit |
+| Body | Geocentric Sidereal (`DMS`) | Topocentric Sidereal (`DMS`) | Parallax Shift (`Δλ" / Δβ"`) | Azimuth / True Alt / Refracted Alt | Air Mass `X` | Doppler `v_r` (`km/s`) | Light-Time `τ` (`s`) | Shapiro `Δt` (`μs`) | GR Defl (`mas`) | `D9 / D60 / KP` Flip Audit |
 |---|---|---|---|---|---|---|---|---|---|---|
-| **sun** | `Tula 28° 36' 50"` | **`Tula 28° 36' 55"`** | `+4.45" / +5.30"` | `Az 150.5° / Alt +42.97° -> +42.99° (+62.1")` | `1.47` | `-0.393` | `493.65s` | `29.89μs` | `0.00` | `D9:OK(Mithuna->Mithuna) D60:OK(58->58) KP:OK(venus->venus)` |
-| **moon** | `Makara 03° 41' 39"` | **`Makara 04° 26' 35"`** | `+2695.25" / -1687.73"` | `Az 110.3° / Alt -11.75° -> -11.75° (+0.0")` | `40.00` | `-0.020` | `1.35s` | `0.10μs` | `6.38` | `D9:OK(Kumbha->Kumbha) D60:FLIP(8->9) KP:OK(saturn->saturn)` |
-| **mars** | `Simha 01° 11' 03"` | **`Simha 01° 10' 58"`** | `-4.76" / -10.58"` | `Az 273.0° / Alt +33.27° -> +33.29° (+87.9")` | `1.82` | `-14.758` | `655.70s` | `10.97μs` | `4.26` | `D9:OK(Mesha->Mesha) D60:OK(3->3) KP:OK(venus->venus)` |
-| **mercury** | `Tula 11° 01' 01"` | **`Tula 11° 01' 04"`** | `+2.40" / +2.10"` | `Az 170.3° / Alt +55.22° -> +55.23° (+40.3")` | `1.22` | `+44.165` | `424.62s` | `15.39μs` | `26.31` | `D9:OK(Makara->Makara) D60:OK(23->23) KP:OK(saturn->saturn)` |
-| **jupiter** | `Simha 01° 33' 59"` | **`Simha 01° 33' 57"`** | `-1.23" / -7.94"` | `Az 271.6° / Alt +32.84° -> +32.86° (+89.4")` | `1.84` | `-27.185` | `2634.61s` | `23.84μs` | `4.29` | `D9:OK(Mesha->Mesha) D60:OK(4->4) KP:OK(venus->venus)` |
-| **venus** | `Kanya 28° 39' 27"` | **`Kanya 28° 39' 30"`** | `+2.74" / -9.73"` | `Az 193.1° / Alt +55.85° -> +55.86° (+39.3")` | `1.21` | `+8.723` | `165.49s` | `3.87μs` | `15.22` | `D9:OK(Kanya->Kanya) D60:OK(58->58) KP:OK(saturn->saturn)` |
-| **saturn** | `Meena 14° 16' 59"` | **`Meena 14° 16' 58"`** | `-0.45" / -2.36"` | `Az 40.4° / Alt -59.47° -> -59.47° (+0.0")` | `40.00` | `+20.065` | `4335.70s` | `23.70μs` | `1.66` | `D9:OK(Vrishchika->Vrishchika) D60:OK(29->29) KP:OK(rahu->rahu)` |
-| **rahu** | `Kumbha 01° 05' 10"` | **`Kumbha 01° 40' 41"`** | `+2131.00" / -1706.39"` | `Az 91.3° / Alt -32.76° -> -32.76° (+0.0")` | `40.00` | `+0.000` | `1.28s` | `0.10μs` | `3.90` | `D9:OK(Tula->Tula) D60:FLIP(3->4) KP:OK(mercury->mercury)` |
-| **true_rahu** | `Kumbha 00° 56' 51"` | **`Kumbha 01° 32' 27"`** | `+2135.17" / -1706.40"` | `Az 91.4° / Alt -32.65° -> -32.65° (+0.0")` | `40.00` | `-0.020` | `1.35s` | `0.10μs` | `3.91` | `D9:OK(Tula->Tula) D60:FLIP(2->4) KP:OK(mercury->mercury)` |
-| **ketu** | `Simha 01° 05' 10"` | **`Simha 00° 29' 03"`** | `-2166.90" / -1749.56"` | `Az 271.3° / Alt +31.23° -> +31.25° (+95.1")` | `1.93` | `+0.000` | `1.28s` | `0.10μs` | `4.25` | `D9:OK(Mesha->Mesha) D60:FLIP(3->1) KP:FLIP(venus->ketu)` |
-| **uranus** | `Vrishabha 09° 53' 15"` | **`Vrishabha 09° 53' 15"`** | `-0.31" / -11.57"` | `Az 320.3° / Alt -34.89° -> -34.89° (+0.0")` | `40.00` | `-5.745` | `9209.99s` | `29.43μs` | `0.40` | `D9:OK(Meena->Meena) D60:OK(20->20) KP:OK(venus->venus)` |
-| **neptune** | `Meena 07° 35' 05"` | **`Meena 07° 35' 05"`** | `-0.24" / -0.55"` | `Az 51.7° / Alt -56.20° -> -56.20° (+0.0")` | `40.00` | `+23.470` | `14593.30s` | `35.59μs` | `1.94` | `D9:OK(Kanya->Kanya) D60:OK(16->16) KP:OK(ketu->ketu)` |
-| **pluto** | `Makara 09° 02' 57"` | **`Makara 09° 02' 56"`** | `-0.32" / +10.39"` | `Az 109.1° / Alt -16.42° -> -16.42° (+0.0")` | `40.00` | `+29.233` | `17946.19s` | `46.15μs` | `5.77` | `D9:OK(Meena->Meena) D60:OK(19->19) KP:OK(venus->venus)` |
+| **sun** | `Tula 28° 36' 50"` | **`Tula 28° 36' 55"`** | `+4.45" / -4.72"` | `Az 150.5° / Alt +42.97° -> +42.99° (+62.1")` | `1.47` | `-0.393` | `493.65s` | `29.89μs` | `0.00` | `D9:OK(Mithuna->Mithuna) D60:OK(58->58) KP:OK(venus->venus)` |
+| **moon** | `Makara 03° 41' 39"` | **`Makara 04° 26' 35"`** | `+2695.54" / -1698.76"` | `Az 110.3° / Alt -11.75° -> -11.75° (+0.0")` | `40.00` | `-0.020` | `1.35s` | `0.10μs` | `6.38` | `D9:OK(Kumbha->Kumbha) D60:FLIP(8->9) KP:OK(saturn->saturn)` |
+| **mars** | `Simha 01° 11' 03"` | **`Simha 01° 10' 59"`** | `-4.42" / -3.43"` | `Az 273.0° / Alt +33.27° -> +33.29° (+87.9")` | `1.82` | `-14.758` | `655.70s` | `10.97μs` | `4.26` | `D9:OK(Mesha->Mesha) D60:OK(3->3) KP:OK(venus->venus)` |
+| **mercury** | `Tula 11° 01' 01"` | **`Tula 11° 01' 04"`** | `+2.80" / -5.16"` | `Az 170.3° / Alt +55.22° -> +55.23° (+40.3")` | `1.22` | `+44.165` | `424.62s` | `15.39μs` | `26.31` | `D9:OK(Makara->Makara) D60:OK(23->23) KP:OK(saturn->saturn)` |
+| **jupiter** | `Simha 01° 33' 59"` | **`Simha 01° 33' 57"`** | `-1.09" / -0.87"` | `Az 271.6° / Alt +32.84° -> +32.86° (+89.4")` | `1.84` | `-27.185` | `2634.61s` | `23.84μs` | `4.29` | `D9:OK(Mesha->Mesha) D60:OK(4->4) KP:OK(venus->venus)` |
+| **venus** | `Kanya 28° 39' 27"` | **`Kanya 28° 39' 30"`** | `+2.46" / -14.62"` | `Az 193.1° / Alt +55.85° -> +55.86° (+39.3")` | `1.21` | `+8.723` | `165.49s` | `3.87μs` | `15.22` | `D9:OK(Kanya->Kanya) D60:OK(58->58) KP:OK(saturn->saturn)` |
+| **saturn** | `Meena 14° 16' 59"` | **`Meena 14° 16' 59"`** | `+0.12" / -0.50"` | `Az 40.4° / Alt -59.47° -> -59.47° (+0.0")` | `40.00` | `+20.065` | `4335.70s` | `23.70μs` | `1.66` | `D9:OK(Vrishchika->Vrishchika) D60:OK(29->29) KP:OK(rahu->rahu)` |
+| **rahu** | `Kumbha 01° 05' 10"` | **`Kumbha 01° 40' 41"`** | `+2131.09" / -1713.44"` | `Az 91.3° / Alt -32.76° -> -32.76° (+0.0")` | `40.00` | `+0.000` | `1.28s` | `0.10μs` | `3.90` | `D9:OK(Tula->Tula) D60:FLIP(3->4) KP:OK(mercury->mercury)` |
+| **true_rahu** | `Kumbha 00° 56' 51"` | **`Kumbha 01° 32' 27"`** | `+2135.26" / -1713.48"` | `Az 91.4° / Alt -32.65° -> -32.65° (+0.0")` | `40.00` | `-0.020` | `1.35s` | `0.10μs` | `3.91` | `D9:OK(Tula->Tula) D60:FLIP(2->4) KP:OK(mercury->mercury)` |
+| **ketu** | `Simha 01° 05' 10"` | **`Simha 00° 29' 03"`** | `-2166.98" / -1742.29"` | `Az 271.3° / Alt +31.23° -> +31.25° (+95.1")` | `1.93` | `+0.000` | `1.28s` | `0.10μs` | `4.25` | `D9:OK(Mesha->Mesha) D60:FLIP(3->1) KP:FLIP(venus->ketu)` |
+| **uranus** | `Vrishabha 09° 53' 15"` | **`Vrishabha 09° 53' 15"`** | `-0.30" / -0.25"` | `Az 320.3° / Alt -34.89° -> -34.89° (+0.0")` | `40.00` | `-5.742` | `9212.59s` | `29.43μs` | `0.40` | `D9:OK(Meena->Meena) D60:OK(20->20) KP:OK(venus->venus)` |
+| **neptune** | `Meena 07° 35' 31"` | **`Meena 07° 35' 32"`** | `+0.06" / -0.15"` | `Az 51.7° / Alt -56.21° -> -56.21° (+0.0")` | `40.00` | `+23.468` | `14593.45s` | `35.59μs` | `1.94` | `D9:OK(Kanya->Kanya) D60:OK(16->16) KP:OK(ketu->ketu)` |
+| **pluto** | `Makara 09° 02' 53"` | **`Makara 09° 02' 54"`** | `+0.20" / -0.13"` | `Az 109.1° / Alt -16.42° -> -16.42° (+0.0")` | `40.00` | `+29.233` | `17944.09s` | `46.15μs` | `5.77` | `D9:OK(Meena->Meena) D60:OK(19->19) KP:OK(venus->venus)` |
 
 ### 21.2 Daily Geocentric vs Topocentric Moon & Sun Parallax Almanac Across the Month (`05:30 IST`)
 
 | Date | Local Sidereal Time | Geocentric Moon (`DMS`) | Topocentric Moon (`DMS`) | Lunar Parallax Shift (`Δλ" / Δβ"`) | Moon Alt / Azimuth / Refraction | Geocentric vs Topocentric `D9 / D60 / KP-Sub` Audit |
 |---|---|---|---|---|---|---|
-| `2026-11-01` | `07h 44m 21s` | `Karka 03° 14' 11"` | **`Karka 03° 17' 57"`** | **`+226.2" / +36.1"`** | `Alt +86.3° / Az 90.3° (Refr +3.9")` | `D9: Karka->Karka | D60: #7->#7 | KP: rahu->rahu` |
-| `2026-11-02` | `07h 48m 18s` | `Karka 17° 14' 11"` | **`Karka 17° 31' 20"`** | **`+1028.9" / -47.3"`** | `Alt +73.0° / Az 102.5° (Refr +18.4")` | `D9: Dhanu->Dhanu | D60: #35->#36 | KP: mercury->mercury` |
-| `2026-11-03` | `07h 52m 14s` | `Simha 00° 58' 43"` | **`Simha 01° 27' 50"`** | **`+1746.9" / -126.8"`** | `Alt +59.9° / Az 104.4° (Refr +34.9")` | `D9: Mesha->Mesha | D60: #2->#3 | KP: venus->venus` |
-| `2026-11-04` | `07h 56m 11s` | `Simha 14° 28' 48"` | **`Simha 15° 07' 58"`** | **`+2350.4" / -187.9"`** | `Alt +47.1° / Az 105.3° (Refr +55.9")` | `D9: Simha->Simha | D60: #29->#31 | KP: venus->venus` |
-| `2026-11-05` | `08h 00m 07s` | `Simha 27° 45' 45"` | **`Simha 28° 32' 45"`** | **`+2819.8" / -221.7"`** | `Alt +34.5° / Az 105.9° (Refr +87.2")` | `D9: Dhanu->Dhanu | D60: #56->#58 | KP: moon->mars` |
-| `2026-11-06` | `08h 04m 04s` | `Kanya 10° 50' 49"` | **`Kanya 11° 43' 13"`** | **`+3143.9" / -225.7"`** | `Alt +22.2° / Az 106.4° (Refr +145.7")` | `D9: Mesha->Mesha | D60: #22->#24 | KP: moon->mars` |
-| `2026-11-07` | `08h 08m 00s` | `Kanya 23° 44' 48"` | **`Kanya 24° 40' 06"`** | **`+3318.2" / -203.1"`** | `Alt +10.1° / Az 106.7° (Refr +318.5")` | `D9: Simha->Simha | D60: #48->#50 | KP: mars->rahu` |
-| `2026-11-08` | `08h 11m 57s` | `Tula 06° 28' 05"` | **`Tula 07° 23' 51"`** | **`+3345.3" / -161.8"`** | `Alt -1.8° / Az 107.0° (Refr +0.0")` | `D9: Vrishchika->Dhanu | D60: #13->#15 | KP: moon->rahu` |
-| `2026-11-09` | `08h 15m 54s` | `Tula 19° 00' 43"` | **`Tula 19° 54' 37"`** | **`+3234.0" / -112.4"`** | `Alt -13.4° / Az 107.1° (Refr +0.0")` | `D9: Meena->Meena | D60: #39->#40 | KP: moon->mars` |
-| `2026-11-10` | `08h 19m 50s` | `Vrishchika 01° 22' 43"` | **`Vrishchika 02° 12' 42"`** | **`+2998.6" / -65.7"`** | `Alt -24.8° / Az 107.1° (Refr +0.0")` | `D9: Karka->Karka | D60: #3->#5 | KP: rahu->rahu` |
-| `2026-11-11` | `08h 23m 47s` | `Vrishchika 13° 34' 23"` | **`Vrishchika 14° 18' 40"`** | **`+2657.1" / -31.2"`** | `Alt -36.0° / Az 106.9° (Refr +0.0")` | `D9: Vrishchika->Vrishchika | D60: #28->#29 | KP: rahu->rahu` |
-| `2026-11-12` | `08h 27m 43s` | `Vrishchika 25° 36' 37"` | **`Vrishchika 26° 13' 46"`** | **`+2229.0" / -15.5"`** | `Alt -47.0° / Az 106.3° (Refr +0.0")` | `D9: Kumbha->Kumbha | D60: #52->#53 | KP: rahu->jupiter` |
-| `2026-11-13` | `08h 31m 40s` | `Dhanu 07° 31' 05"` | **`Dhanu 07° 59' 59"`** | **`+1733.5" / -22.3"`** | `Alt -57.8° / Az 105.2° (Refr +0.0")` | `D9: Mithuna->Mithuna | D60: #16->#16 | KP: rahu->jupiter` |
-| `2026-11-14` | `08h 35m 36s` | `Dhanu 19° 20' 25"` | **`Dhanu 19° 40' 12"`** | **`+1187.4" / -51.7"`** | `Alt -68.5° / Az 102.5° (Refr +0.0")` | `D9: Kanya->Kanya | D60: #39->#40 | KP: rahu->rahu` |
-| `2026-11-15` | `08h 39m 33s` | `Makara 01° 08' 07"` | **`Makara 01° 18' 12"`** | **`+604.9" / -101.6"`** | `Alt -79.1° / Az 94.2° (Refr +0.0")` | `D9: Makara->Makara | D60: #3->#3 | KP: rahu->jupiter` |
-| `2026-11-16` | `08h 43m 30s` | `Makara 12° 58' 35"` | **`Makara 12° 58' 32"`** | **`-2.2" / -167.4"`** | `Alt -86.8° / Az 13.9° (Refr +0.0")` | `D9: Mesha->Mesha | D60: #26->#26 | KP: rahu->rahu` |
-| `2026-11-17` | `08h 47m 26s` | `Makara 24° 56' 49"` | **`Makara 24° 46' 25"`** | **`-623.3" / -242.8"`** | `Alt -78.1° / Az 307.4° (Refr +0.0")` | `D9: Simha->Simha | D60: #50->#50 | KP: rahu->rahu` |
-| `2026-11-18` | `08h 51m 23s` | `Kumbha 07° 08' 17"` | **`Kumbha 06° 47' 31"`** | **`-1246.5" / -320.2"`** | `Alt -67.1° / Az 299.8° (Refr +0.0")` | `D9: Dhanu->Dhanu | D60: #15->#14 | KP: rahu->rahu` |
-| `2026-11-19` | `08h 55m 19s` | `Kumbha 19° 38' 30"` | **`Kumbha 19° 07' 34"`** | **`-1856.1" / -390.4"`** | `Alt -55.7° / Az 297.0° (Refr +0.0")` | `D9: Meena->Meena | D60: #40->#39 | KP: mars->moon` |
-| `2026-11-20` | `08h 59m 16s` | `Meena 02° 32' 29"` | **`Meena 01° 51' 59"`** | **`-2429.4" / -444.0"`** | `Alt -43.8° / Az 295.5° (Refr +0.0")` | `D9: Karka->Karka | D60: #6->#4 | KP: rahu->rahu` |
-| `2026-11-21` | `09h 03m 12s` | `Meena 15° 54' 06"` | **`Meena 15° 05' 13"`** | **`-2933.6" / -472.3"`** | `Alt -31.5° / Az 294.5° (Refr +0.0")` | `D9: Vrishchika->Vrishchika | D60: #32->#31 | KP: jupiter->jupiter` |
-| `2026-11-22` | `09h 07m 09s` | `Meena 29° 45' 14"` | **`Meena 28° 49' 48"`** | **`-3326.0" / -470.4"`** | `Alt -18.7° / Az 293.6° (Refr +0.0")` | `D9: Meena->Meena | D60: #60->#58 | KP: saturn->saturn` |
-| `2026-11-23` | `09h 11m 05s` | `Mesha 14° 04' 53"` | **`Mesha 13° 05' 36"`** | **`-3557.2" / -439.7"`** | `Alt -5.3° / Az 292.6° (Refr +0.0")` | `D9: Simha->Karka | D60: #29->#27 | KP: venus->mercury` |
-| `2026-11-24` | `09h 15m 02s` | `Mesha 28° 48' 42"` | **`Mesha 27° 49' 00"`** | **`-3581.6" / -390.8"`** | `Alt +8.5° / Az 291.5° (Refr +373.1")` | `D9: Dhanu->Dhanu | D60: #58->#56 | KP: mars->moon` |
-| `2026-11-25` | `09h 18m 59s` | `Vrishabha 13° 49' 06"` | **`Vrishabha 12° 52' 55"`** | **`-3371.1" / -341.9"`** | `Alt +22.5° / Az 290.0° (Refr +143.1")` | `D9: Vrishabha->Mesha | D60: #28->#26 | KP: rahu->rahu` |
-| `2026-11-26` | `09h 22m 55s` | `Vrishabha 28° 56' 15"` | **`Vrishabha 28° 07' 27"`** | **`-2928.2" / -313.9"`** | `Alt +36.7° / Az 287.9° (Refr +80.3")` | `D9: Kanya->Kanya | D60: #58->#57 | KP: saturn->saturn` |
-| `2026-11-27` | `09h 26m 52s` | `Mithuna 13° 59' 53"` | **`Mithuna 13° 21' 43"`** | **`-2289.6" / -321.4"`** | `Alt +50.9° / Az 284.4° (Refr +48.9")` | `D9: Kumbha->Kumbha | D60: #28->#27 | KP: mercury->mercury` |
-| `2026-11-28` | `09h 30m 48s` | `Mithuna 28° 50' 59"` | **`Mithuna 28° 25' 41"`** | **`-1517.3" / -367.0"`** | `Alt +64.6° / Az 277.4° (Refr +28.6")` | `D9: Mithuna->Mithuna | D60: #58->#57 | KP: sun->venus` |
-| `2026-11-29` | `09h 34m 45s` | `Karka 13° 23' 13"` | **`Karka 13° 11' 50"`** | **`-682.5" / -441.3"`** | `Alt +77.0° / Az 256.9° (Refr +14.0")` | `D9: Vrishchika->Tula | D60: #27->#27 | KP: rahu->rahu` |
-| `2026-11-30` | `09h 38m 41s` | `Karka 27° 33' 17"` | **`Karka 27° 35' 47"`** | **`+149.5" / -527.3"`** | `Alt +81.1° / Az 182.9° (Refr +9.5")` | `D9: Meena->Meena | D60: #56->#56 | KP: jupiter->jupiter` |
+| `2026-11-01` | `07h 44m 21s` | `Karka 03° 14' 11"` | **`Karka 03° 17' 57"`** | **`+226.4" / +47.2"`** | `Alt +86.3° / Az 90.3° (Refr +3.9")` | `D9: Karka->Karka | D60: #7->#7 | KP: rahu->rahu` |
+| `2026-11-02` | `07h 48m 18s` | `Karka 17° 14' 11"` | **`Karka 17° 31' 20"`** | **`+1029.1" / -37.9"`** | `Alt +73.0° / Az 102.5° (Refr +18.4")` | `D9: Dhanu->Dhanu | D60: #35->#36 | KP: mercury->mercury` |
+| `2026-11-03` | `07h 52m 14s` | `Simha 00° 58' 43"` | **`Simha 01° 27' 50"`** | **`+1746.9" / -119.7"`** | `Alt +59.9° / Az 104.4° (Refr +34.9")` | `D9: Mesha->Mesha | D60: #2->#3 | KP: venus->venus` |
+| `2026-11-04` | `07h 56m 11s` | `Simha 14° 28' 48"` | **`Simha 15° 07' 58"`** | **`+2350.1" / -183.4"`** | `Alt +47.1° / Az 105.3° (Refr +55.9")` | `D9: Simha->Simha | D60: #29->#31 | KP: venus->venus` |
+| `2026-11-05` | `08h 00m 07s` | `Simha 27° 45' 45"` | **`Simha 28° 32' 45"`** | **`+2819.3" / -220.1"`** | `Alt +34.5° / Az 105.9° (Refr +87.2")` | `D9: Dhanu->Dhanu | D60: #56->#58 | KP: moon->mars` |
+| `2026-11-06` | `08h 04m 04s` | `Kanya 10° 50' 49"` | **`Kanya 11° 43' 12"`** | **`+3143.2" / -227.0"`** | `Alt +22.2° / Az 106.4° (Refr +145.7")` | `D9: Mesha->Mesha | D60: #22->#24 | KP: moon->mars` |
+| `2026-11-07` | `08h 08m 00s` | `Kanya 23° 44' 48"` | **`Kanya 24° 40' 06"`** | **`+3317.4" / -207.1"`** | `Alt +10.1° / Az 106.7° (Refr +318.5")` | `D9: Simha->Simha | D60: #48->#50 | KP: mars->rahu` |
+| `2026-11-08` | `08h 11m 57s` | `Tula 06° 28' 05"` | **`Tula 07° 23' 50"`** | **`+3344.5" / -168.4"`** | `Alt -1.8° / Az 107.0° (Refr +0.0")` | `D9: Vrishchika->Dhanu | D60: #13->#15 | KP: moon->rahu` |
+| `2026-11-09` | `08h 15m 54s` | `Tula 19° 00' 43"` | **`Tula 19° 54' 36"`** | **`+3233.3" / -121.1"`** | `Alt -13.4° / Az 107.1° (Refr +0.0")` | `D9: Meena->Meena | D60: #39->#40 | KP: moon->mars` |
+| `2026-11-10` | `08h 19m 50s` | `Vrishchika 01° 22' 43"` | **`Vrishchika 02° 12' 41"`** | **`+2998.0" / -76.2"`** | `Alt -24.8° / Az 107.1° (Refr +0.0")` | `D9: Karka->Karka | D60: #3->#5 | KP: rahu->rahu` |
+| `2026-11-11` | `08h 23m 47s` | `Vrishchika 13° 34' 23"` | **`Vrishchika 14° 18' 40"`** | **`+2656.7" / -42.9"`** | `Alt -36.0° / Az 106.9° (Refr +0.0")` | `D9: Vrishchika->Vrishchika | D60: #28->#29 | KP: rahu->rahu` |
+| `2026-11-12` | `08h 27m 43s` | `Vrishchika 25° 36' 37"` | **`Vrishchika 26° 13' 46"`** | **`+2228.9" / -27.9"`** | `Alt -47.0° / Az 106.3° (Refr +0.0")` | `D9: Kumbha->Kumbha | D60: #52->#53 | KP: rahu->jupiter` |
+| `2026-11-13` | `08h 31m 40s` | `Dhanu 07° 31' 05"` | **`Dhanu 07° 59' 59"`** | **`+1733.5" / -34.8"`** | `Alt -57.8° / Az 105.2° (Refr +0.0")` | `D9: Mithuna->Mithuna | D60: #16->#16 | KP: rahu->jupiter` |
+| `2026-11-14` | `08h 35m 36s` | `Dhanu 19° 20' 25"` | **`Dhanu 19° 40' 13"`** | **`+1187.5" / -63.9"`** | `Alt -68.5° / Az 102.5° (Refr +0.0")` | `D9: Kanya->Kanya | D60: #39->#40 | KP: rahu->rahu` |
+| `2026-11-15` | `08h 39m 33s` | `Makara 01° 08' 07"` | **`Makara 01° 18' 13"`** | **`+605.1" / -112.9"`** | `Alt -79.1° / Az 94.2° (Refr +0.0")` | `D9: Makara->Makara | D60: #3->#3 | KP: rahu->jupiter` |
+| `2026-11-16` | `08h 43m 30s` | `Makara 12° 58' 35"` | **`Makara 12° 58' 33"`** | **`-2.0" / -177.4"`** | `Alt -86.8° / Az 13.9° (Refr +0.0")` | `D9: Mesha->Mesha | D60: #26->#26 | KP: rahu->rahu` |
+| `2026-11-17` | `08h 47m 26s` | `Makara 24° 56' 49"` | **`Makara 24° 46' 26"`** | **`-623.2" / -251.1"`** | `Alt -78.1° / Az 307.4° (Refr +0.0")` | `D9: Simha->Simha | D60: #50->#50 | KP: rahu->rahu` |
+| `2026-11-18` | `08h 51m 23s` | `Kumbha 07° 08' 17"` | **`Kumbha 06° 47' 31"`** | **`-1246.5" / -326.2"`** | `Alt -67.1° / Az 299.8° (Refr +0.0")` | `D9: Dhanu->Dhanu | D60: #15->#14 | KP: rahu->rahu` |
+| `2026-11-19` | `08h 55m 19s` | `Kumbha 19° 38' 30"` | **`Kumbha 19° 07' 33"`** | **`-1856.4" / -394.0"`** | `Alt -55.7° / Az 297.0° (Refr +0.0")` | `D9: Meena->Meena | D60: #40->#39 | KP: mars->moon` |
+| `2026-11-20` | `08h 59m 16s` | `Meena 02° 32' 29"` | **`Meena 01° 51' 59"`** | **`-2429.9" / -444.8"`** | `Alt -43.8° / Az 295.5° (Refr +0.0")` | `D9: Karka->Karka | D60: #6->#4 | KP: rahu->rahu` |
+| `2026-11-21` | `09h 03m 12s` | `Meena 15° 54' 06"` | **`Meena 15° 05' 12"`** | **`-2934.4" / -470.3"`** | `Alt -31.5° / Az 294.5° (Refr +0.0")` | `D9: Vrishchika->Vrishchika | D60: #32->#31 | KP: jupiter->jupiter` |
+| `2026-11-22` | `09h 07m 09s` | `Meena 29° 45' 14"` | **`Meena 28° 49' 47"`** | **`-3326.8" / -465.5"`** | `Alt -18.7° / Az 293.6° (Refr +0.0")` | `D9: Meena->Meena | D60: #60->#58 | KP: saturn->saturn` |
+| `2026-11-23` | `09h 11m 05s` | `Mesha 14° 04' 53"` | **`Mesha 13° 05' 35"`** | **`-3558.0" / -432.1"`** | `Alt -5.3° / Az 292.6° (Refr +0.0")` | `D9: Simha->Karka | D60: #29->#27 | KP: venus->mercury` |
+| `2026-11-24` | `09h 15m 02s` | `Mesha 28° 48' 42"` | **`Mesha 27° 49' 00"`** | **`-3582.3" / -380.8"`** | `Alt +8.5° / Az 291.5° (Refr +373.1")` | `D9: Dhanu->Dhanu | D60: #58->#56 | KP: mars->moon` |
+| `2026-11-25` | `09h 18m 59s` | `Vrishabha 13° 49' 06"` | **`Vrishabha 12° 52' 54"`** | **`-3371.5" / -330.3"`** | `Alt +22.5° / Az 290.0° (Refr +143.1")` | `D9: Vrishabha->Mesha | D60: #28->#26 | KP: rahu->rahu` |
+| `2026-11-26` | `09h 22m 55s` | `Vrishabha 28° 56' 15"` | **`Vrishabha 28° 07' 27"`** | **`-2928.4" / -301.5"`** | `Alt +36.7° / Az 287.9° (Refr +80.3")` | `D9: Kanya->Kanya | D60: #58->#57 | KP: saturn->saturn` |
+| `2026-11-27` | `09h 26m 52s` | `Mithuna 13° 59' 53"` | **`Mithuna 13° 21' 43"`** | **`-2289.5" / -308.9"`** | `Alt +50.9° / Az 284.4° (Refr +48.9")` | `D9: Kumbha->Kumbha | D60: #28->#27 | KP: mercury->mercury` |
+| `2026-11-28` | `09h 30m 48s` | `Mithuna 28° 50' 59"` | **`Mithuna 28° 25' 42"`** | **`-1517.1" / -355.4"`** | `Alt +64.6° / Az 277.4° (Refr +28.6")` | `D9: Mithuna->Mithuna | D60: #58->#57 | KP: sun->venus` |
+| `2026-11-29` | `09h 34m 45s` | `Karka 13° 23' 13"` | **`Karka 13° 11' 50"`** | **`-682.3" / -431.3"`** | `Alt +77.0° / Az 256.9° (Refr +14.0")` | `D9: Vrishchika->Tula | D60: #27->#27 | KP: rahu->rahu` |
+| `2026-11-30` | `09h 38m 41s` | `Karka 27° 33' 17"` | **`Karka 27° 35' 47"`** | **`+149.5" / -519.5"`** | `Alt +81.1° / Az 182.9° (Refr +9.5")` | `D9: Meena->Meena | D60: #56->#56 | KP: jupiter->jupiter` |
 
 ### 21.3 Saemundsson-Bennett Atmospheric Refraction & Rozenberg Optical Air Mass Master Table (`-1°` to `90°` Altitude)
 
-| True Altitude $h_0$ | Std Refraction (`15°C, 1013 hPa`) | Hot Tropical (`35°C, 1005 hPa`) | Cold Winter (`0°C, 1020 hPa`) | High Altitude (`2200m, 780 hPa`) | Rozenberg Optical Air Mass $X(z)$ | Extinction Loss (`Δmag`, $k=0.20$) |
+| True Altitude `h₀` | Std Refraction (`15°C, 1013 hPa`) | Hot Tropical (`35°C, 1005 hPa`) | Cold Winter (`0°C, 1020 hPa`) | High Altitude (`2200m, 780 hPa`) | Rozenberg Optical Air Mass `X(z)` | Extinction Loss (`Δmag`, `k=0.20`) |
 |---|---|---|---|---|---|---|
 | **` -1.0°`** | `2294.8"` (`38.25'`) | `2128.3"` | `2437.0"` | `1797.7"` | **`40.00x`** | `+8.00 mag` |
 | **` -0.5°`** | `1992.7"` (`33.21'`) | `1848.1"` | `2116.2"` | `1561.1"` | **`38.94x`** | `+7.79 mag` |
@@ -1692,7 +1694,7 @@ $$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \fr
 
 ### 22.1 Complete 5-Point Synodic Retrograde Phase-Space Loops (±180 Days Around Reference Epoch)
 
-| Body | Pre-Shadow Entry | First Station $S_1$ (*Vakri*) | Minimum Distance / Opposition Peak | Second Station $S_2$ (*Margi*) | Post-Shadow Exit | Retrograde Arc Width | Loop Duration (`Days`) |
+| Body | Pre-Shadow Entry | First Station `S₁` (*Vakri*) | Minimum Distance / Opposition Peak | Second Station `S₂` (*Margi*) | Post-Shadow Exit | Retrograde Arc Width | Loop Duration (`Days`) |
 |---|---|---|---|---|---|---|---|
 | **Mercury** | `2026-06-13T00:50:17Z` | **`2026-06-29T17:35:03Z`** (`Karka 02° 01' 41"`) | `2026-07-10T15:12:52Z` (`0.5687 AU`, `+128.31 mag`) | **`2026-07-23T22:59:06Z`** (`Mithuna 22° 05' 09"`) | `2026-08-07T03:38:51Z` | **`9.94°`** | **`24.23 d`** |
 | **Saturn** | `2026-04-20T10:15:20Z` | **`2026-07-26T17:41:58Z`** (`Meena 20° 31' 09"`) | `2026-10-03T08:28:21Z` (`8.4345 AU`, `+0.59 mag`) | **`2026-12-10T23:14:44Z`** (`Meena 13° 41' 42"`) | `2027-03-15T08:42:53Z` | **`6.82°`** | **`137.23 d`** |
@@ -2073,7 +2075,7 @@ $$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \fr
 
 | Eclipse Category | Subtype | Maximum Eclipse (`UTC`) | Sidereal Longitude (`DMS`) | Sign (`Rashi`) | `Nakshatra & Pada` | Local Visible? | Local Obscuration Fraction |
 |---|---|---|---|---|---|---|---|
-| **Solar** | **Partial Solar** | `2026-02-17T12:01:09Z` | **`Kumbha 04° 36' 17"`** | Kumbha | *Dhanishta* P4 | `YES` | **`38.1%`** |
+| **Solar** | **Partial Solar** | `2026-02-17T12:01:09Z` | **`Kumbha 04° 36' 17"`** | Kumbha | *Dhanishta* P4 | `No` | **`0.0%`** |
 | **Lunar** | **Total Lunar** | `2026-03-03T11:37:54Z` | **`Simha 18° 40' 25"`** | Simha | *Purva Phalguni* P2 | `No` | **`0.0%`** |
 | **Solar** | **Partial Solar** | `2026-08-12T17:36:44Z` | **`Karka 25° 48' 05"`** | Karka | *Ashlesha* P3 | `No` | **`0.0%`** |
 | **Lunar** | **Partial Lunar** | `2026-08-28T04:18:32Z` | **`Kumbha 10° 40' 12"`** | Kumbha | *Shatabhisha* P2 | `No` | **`0.0%`** |
@@ -2102,45 +2104,45 @@ $$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \fr
 | `#` | Nakshatra (`0°..360°`) | Vimshottari (`120y`) | Ashtottari (`108y`) | Shodashottari (`116y`) | Dwadashottari (`112y`) | Panchottari (`105y`) | Shatabdika (`100y`) | Chaturashiti (`84y`) | Dwisaptati (`72y`) | Shat-Trimsha (`36y`) | Yogini (`36y`) |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | `#01` | **Ashwini** | `Ketu (7y)` | `Rahu (12y)` | `Ketu (15y)` | `Ketu (11y)` | `Venus (16y)` | `Sun (5y)` | `Saturn (12y)` | `Moon (9y)` | `Venus (7y)` | `Bhramari (Mars) (4y)` |
-| `#02` | **Bharani** | `Venus (20y)` | `Venus (21y)` | `Moon (16y)` | `Jupiter (9y)` | `Moon (17y)` | `Moon (10y)` | `Sun (12y)` | `Mars (9y)` | `Rahu (8y)` | `Bhadrika (Mercury) (5y)` |
-| `#03` | **Krittika** | `Sun (6y)` | `Sun (6y)` | `Mercury (17y)` | `Sun (7y)` | `Jupiter (18y)` | `Mercury (10y)` | `Moon (12y)` | `Mercury (9y)` | `Moon (1y)` | `Ulka (Saturn) (6y)` |
-| `#04` | **Rohini** | `Moon (10y)` | `Moon (15y)` | `Venus (18y)` | `Moon (21y)` | `Sun (12y)` | `Jupiter (20y)` | `Mars (12y)` | `Jupiter (9y)` | `Sun (2y)` | `Siddha (Venus) (7y)` |
-| `#05` | **Mrigashirsha** | `Mars (7y)` | `Mars (8y)` | `Sun (11y)` | `Saturn (19y)` | `Mercury (13y)` | `Mars (20y)` | `Mercury (12y)` | `Venus (9y)` | `Jupiter (3y)` | `Sankata (Rahu) (8y)` |
+| `#02` | **Bharani** | `Venus (20y)` | `Rahu (12y)` | `Moon (16y)` | `Jupiter (9y)` | `Moon (17y)` | `Moon (10y)` | `Sun (12y)` | `Mars (9y)` | `Rahu (8y)` | `Bhadrika (Mercury) (5y)` |
+| `#03` | **Krittika** | `Sun (6y)` | `Venus (21y)` | `Mercury (17y)` | `Sun (7y)` | `Jupiter (18y)` | `Mercury (10y)` | `Moon (12y)` | `Mercury (9y)` | `Moon (1y)` | `Ulka (Saturn) (6y)` |
+| `#04` | **Rohini** | `Moon (10y)` | `Venus (21y)` | `Venus (18y)` | `Moon (21y)` | `Sun (12y)` | `Jupiter (20y)` | `Mars (12y)` | `Jupiter (9y)` | `Sun (2y)` | `Siddha (Venus) (7y)` |
+| `#05` | **Mrigashirsha** | `Mars (7y)` | `Venus (21y)` | `Sun (11y)` | `Saturn (19y)` | `Mercury (13y)` | `Mars (20y)` | `Mercury (12y)` | `Venus (9y)` | `Jupiter (3y)` | `Sankata (Rahu) (8y)` |
 | `#06` | **Ardra** | `Rahu (18y)` | `Sun (6y)` | `Mars (12y)` | `Mars (17y)` | `Saturn (14y)` | `Saturn (30y)` | `Jupiter (12y)` | `Saturn (9y)` | `Mars (4y)` | `Mangala (Moon) (1y)` |
-| `#07` | **Punarvasu** | `Jupiter (16y)` | `Moon (15y)` | `Jupiter (13y)` | `Rahu (15y)` | `Mars (15y)` | `Venus (5y)` | `Venus (12y)` | `Rahu (9y)` | `Mercury (5y)` | `Pingala (Sun) (2y)` |
-| `#08` | **Pushya** | `Saturn (19y)` | `Mars (8y)` | `Sun (11y)` | `Mercury (13y)` | `Venus (16y)` | `Sun (5y)` | `Saturn (12y)` | `Sun (9y)` | `Saturn (6y)` | `Dhanya (Jupiter) (3y)` |
-| `#09` | **Ashlesha** | `Mercury (17y)` | `Mercury (17y)` | `Mars (12y)` | `Ketu (11y)` | `Moon (17y)` | `Moon (10y)` | `Sun (12y)` | `Moon (9y)` | `Venus (7y)` | `Bhramari (Mars) (4y)` |
-| `#10` | **Magha** | `Ketu (7y)` | `Saturn (10y)` | `Jupiter (13y)` | `Jupiter (9y)` | `Jupiter (18y)` | `Mercury (10y)` | `Moon (12y)` | `Mars (9y)` | `Rahu (8y)` | `Bhadrika (Mercury) (5y)` |
-| `#11` | **Purva Phalguni** | `Venus (20y)` | `Jupiter (19y)` | `Saturn (14y)` | `Sun (7y)` | `Sun (12y)` | `Jupiter (20y)` | `Mars (12y)` | `Mercury (9y)` | `Moon (1y)` | `Ulka (Saturn) (6y)` |
-| `#12` | **Uttara Phalguni** | `Sun (6y)` | `Rahu (12y)` | `Ketu (15y)` | `Moon (21y)` | `Mercury (13y)` | `Mars (20y)` | `Mercury (12y)` | `Jupiter (9y)` | `Sun (2y)` | `Siddha (Venus) (7y)` |
-| `#13` | **Hasta** | `Moon (10y)` | `Venus (21y)` | `Moon (16y)` | `Saturn (19y)` | `Saturn (14y)` | `Saturn (30y)` | `Jupiter (12y)` | `Venus (9y)` | `Jupiter (3y)` | `Sankata (Rahu) (8y)` |
-| `#14` | **Chitra** | `Mars (7y)` | `Sun (6y)` | `Mercury (17y)` | `Mars (17y)` | `Mars (15y)` | `Venus (5y)` | `Venus (12y)` | `Saturn (9y)` | `Mars (4y)` | `Mangala (Moon) (1y)` |
-| `#15` | **Swati** | `Rahu (18y)` | `Moon (15y)` | `Venus (18y)` | `Rahu (15y)` | `Venus (16y)` | `Sun (5y)` | `Sun (12y)` | `Rahu (9y)` | `Mercury (5y)` | `Pingala (Sun) (2y)` |
+| `#07` | **Punarvasu** | `Jupiter (16y)` | `Sun (6y)` | `Jupiter (13y)` | `Rahu (15y)` | `Mars (15y)` | `Venus (5y)` | `Venus (12y)` | `Rahu (9y)` | `Mercury (5y)` | `Pingala (Sun) (2y)` |
+| `#08` | **Pushya** | `Saturn (19y)` | `Sun (6y)` | `Sun (11y)` | `Mercury (13y)` | `Venus (16y)` | `Sun (5y)` | `Saturn (12y)` | `Sun (9y)` | `Saturn (6y)` | `Dhanya (Jupiter) (3y)` |
+| `#09` | **Ashlesha** | `Mercury (17y)` | `Sun (6y)` | `Mars (12y)` | `Ketu (11y)` | `Moon (17y)` | `Moon (10y)` | `Sun (12y)` | `Moon (9y)` | `Venus (7y)` | `Bhramari (Mars) (4y)` |
+| `#10` | **Magha** | `Ketu (7y)` | `Moon (15y)` | `Jupiter (13y)` | `Jupiter (9y)` | `Jupiter (18y)` | `Mercury (10y)` | `Moon (12y)` | `Mars (9y)` | `Rahu (8y)` | `Bhadrika (Mercury) (5y)` |
+| `#11` | **Purva Phalguni** | `Venus (20y)` | `Moon (15y)` | `Saturn (14y)` | `Sun (7y)` | `Sun (12y)` | `Jupiter (20y)` | `Mars (12y)` | `Mercury (9y)` | `Moon (1y)` | `Ulka (Saturn) (6y)` |
+| `#12` | **Uttara Phalguni** | `Sun (6y)` | `Moon (15y)` | `Ketu (15y)` | `Moon (21y)` | `Mercury (13y)` | `Mars (20y)` | `Mercury (12y)` | `Jupiter (9y)` | `Sun (2y)` | `Siddha (Venus) (7y)` |
+| `#13` | **Hasta** | `Moon (10y)` | `Mars (8y)` | `Moon (16y)` | `Saturn (19y)` | `Saturn (14y)` | `Saturn (30y)` | `Jupiter (12y)` | `Venus (9y)` | `Jupiter (3y)` | `Sankata (Rahu) (8y)` |
+| `#14` | **Chitra** | `Mars (7y)` | `Mars (8y)` | `Mercury (17y)` | `Mars (17y)` | `Mars (15y)` | `Venus (5y)` | `Venus (12y)` | `Saturn (9y)` | `Mars (4y)` | `Mangala (Moon) (1y)` |
+| `#15` | **Swati** | `Rahu (18y)` | `Mars (8y)` | `Venus (18y)` | `Rahu (15y)` | `Venus (16y)` | `Sun (5y)` | `Sun (12y)` | `Rahu (9y)` | `Mercury (5y)` | `Pingala (Sun) (2y)` |
 | `#16` | **Vishakha** | `Jupiter (16y)` | `Mars (8y)` | `Sun (11y)` | `Mercury (13y)` | `Moon (17y)` | `Moon (10y)` | `Moon (12y)` | `Sun (9y)` | `Saturn (6y)` | `Dhanya (Jupiter) (3y)` |
 | `#17` | **Anuradha** | `Saturn (19y)` | `Mercury (17y)` | `Mars (12y)` | `Ketu (11y)` | `Sun (12y)` | `Mercury (10y)` | `Mars (12y)` | `Moon (9y)` | `Venus (7y)` | `Bhramari (Mars) (4y)` |
-| `#18` | **Jyeshtha** | `Mercury (17y)` | `Saturn (10y)` | `Jupiter (13y)` | `Jupiter (9y)` | `Mercury (13y)` | `Jupiter (20y)` | `Mercury (12y)` | `Mars (9y)` | `Rahu (8y)` | `Bhadrika (Mercury) (5y)` |
-| `#19` | **Mula** | `Ketu (7y)` | `Jupiter (19y)` | `Saturn (14y)` | `Sun (7y)` | `Saturn (14y)` | `Mars (20y)` | `Jupiter (12y)` | `Sun (9y)` | `Moon (1y)` | `Ulka (Saturn) (6y)` |
-| `#20` | **Purva Ashadha** | `Venus (20y)` | `Rahu (12y)` | `Ketu (15y)` | `Moon (21y)` | `Mars (15y)` | `Saturn (30y)` | `Venus (12y)` | `Moon (9y)` | `Sun (2y)` | `Siddha (Venus) (7y)` |
-| `#21` | **Uttara Ashadha** | `Sun (6y)` | `Venus (21y)` | `Moon (16y)` | `Saturn (19y)` | `Venus (16y)` | `Venus (5y)` | `Saturn (12y)` | `Mars (9y)` | `Jupiter (3y)` | `Sankata (Rahu) (8y)` |
-| `#22` | **Shravana** | `Moon (10y)` | `Sun (6y)` | `Mercury (17y)` | `Mars (17y)` | `Moon (17y)` | `Sun (5y)` | `Sun (12y)` | `Mercury (9y)` | `Moon (1y)` | `Mangala (Moon) (1y)` |
-| `#23` | **Dhanishta** | `Mars (7y)` | `Moon (15y)` | `Venus (18y)` | `Rahu (15y)` | `Jupiter (18y)` | `Moon (10y)` | `Moon (12y)` | `Jupiter (9y)` | `Sun (2y)` | `Pingala (Sun) (2y)` |
-| `#24` | **Shatabhisha** | `Rahu (18y)` | `Mars (8y)` | `Sun (11y)` | `Mercury (13y)` | `Sun (12y)` | `Mercury (10y)` | `Mars (12y)` | `Venus (9y)` | `Jupiter (3y)` | `Dhanya (Jupiter) (3y)` |
-| `#25` | **Purva Bhadrapada** | `Jupiter (16y)` | `Mercury (17y)` | `Mars (12y)` | `Ketu (11y)` | `Mercury (13y)` | `Jupiter (20y)` | `Mercury (12y)` | `Saturn (9y)` | `Mars (4y)` | `Bhramari (Mars) (4y)` |
-| `#26` | **Uttara Bhadrapada** | `Saturn (19y)` | `Saturn (10y)` | `Jupiter (13y)` | `Jupiter (9y)` | `Saturn (14y)` | `Mars (20y)` | `Jupiter (12y)` | `Rahu (9y)` | `Mercury (5y)` | `Bhadrika (Mercury) (5y)` |
-| `#27` | **Revati** | `Mercury (17y)` | `Jupiter (19y)` | `Saturn (14y)` | `Sun (7y)` | `Mars (15y)` | `Venus (5y)` | `Venus (12y)` | `Sun (9y)` | `Saturn (6y)` | `Ulka (Saturn) (6y)` |
+| `#18` | **Jyeshtha** | `Mercury (17y)` | `Mercury (17y)` | `Jupiter (13y)` | `Jupiter (9y)` | `Mercury (13y)` | `Jupiter (20y)` | `Mercury (12y)` | `Mars (9y)` | `Rahu (8y)` | `Bhadrika (Mercury) (5y)` |
+| `#19` | **Mula** | `Ketu (7y)` | `Mercury (17y)` | `Saturn (14y)` | `Sun (7y)` | `Saturn (14y)` | `Mars (20y)` | `Jupiter (12y)` | `Sun (9y)` | `Moon (1y)` | `Ulka (Saturn) (6y)` |
+| `#20` | **Purva Ashadha** | `Venus (20y)` | `Saturn (10y)` | `Ketu (15y)` | `Moon (21y)` | `Mars (15y)` | `Saturn (30y)` | `Venus (12y)` | `Moon (9y)` | `Sun (2y)` | `Siddha (Venus) (7y)` |
+| `#21` | **Uttara Ashadha** | `Sun (6y)` | `Saturn (10y)` | `Moon (16y)` | `Saturn (19y)` | `Venus (16y)` | `Venus (5y)` | `Saturn (12y)` | `Mars (9y)` | `Jupiter (3y)` | `Sankata (Rahu) (8y)` |
+| `#22` | **Shravana** | `Moon (10y)` | `Saturn (10y)` | `Mercury (17y)` | `Mars (17y)` | `Moon (17y)` | `Sun (5y)` | `Sun (12y)` | `Mercury (9y)` | `Moon (1y)` | `Mangala (Moon) (1y)` |
+| `#23` | **Dhanishta** | `Mars (7y)` | `Jupiter (19y)` | `Venus (18y)` | `Rahu (15y)` | `Jupiter (18y)` | `Moon (10y)` | `Moon (12y)` | `Jupiter (9y)` | `Sun (2y)` | `Pingala (Sun) (2y)` |
+| `#24` | **Shatabhisha** | `Rahu (18y)` | `Jupiter (19y)` | `Sun (11y)` | `Mercury (13y)` | `Sun (12y)` | `Mercury (10y)` | `Mars (12y)` | `Venus (9y)` | `Jupiter (3y)` | `Dhanya (Jupiter) (3y)` |
+| `#25` | **Purva Bhadrapada** | `Jupiter (16y)` | `Jupiter (19y)` | `Mars (12y)` | `Ketu (11y)` | `Mercury (13y)` | `Jupiter (20y)` | `Mercury (12y)` | `Saturn (9y)` | `Mars (4y)` | `Bhramari (Mars) (4y)` |
+| `#26` | **Uttara Bhadrapada** | `Saturn (19y)` | `Rahu (12y)` | `Jupiter (13y)` | `Jupiter (9y)` | `Saturn (14y)` | `Mars (20y)` | `Jupiter (12y)` | `Rahu (9y)` | `Mercury (5y)` | `Bhadrika (Mercury) (5y)` |
+| `#27` | **Revati** | `Mercury (17y)` | `Rahu (12y)` | `Saturn (14y)` | `Sun (7y)` | `Mars (15y)` | `Venus (5y)` | `Venus (12y)` | `Sun (9y)` | `Saturn (6y)` | `Ulka (Saturn) (6y)` |
 
 ### 24.2 Worked Case Study: All 10 BPHS Conditional Dasha Eligibility & Active Period Synchronicity
 
 | Dasha System | Cycle (`Years`) | BPHS Conditional Eligibility | Eligibility Reason | Opening Lord & Balance (`Years`) | Active Mahadasha (`+24y`) | Active Antardasha (`+24y`) |
 |---|---|---|---|---|---|---|
 | **Vimshottari Dasha (120-Year Universal Mahadasha)** | `120y` | **`ELIGIBLE`** | Universal Kali Yuga primary Nakshatra Dasha (always applicable). | `Sun` (`2.84y`) | **`Rahu`** | **`Jupiter`** |
-| **Ashtottari Dasha (108-Year Conditional Mahadasha)** | `108y` | **`Secondary`** | Secondary: Rahu in House 6 from Venus and Day=True/Shukla=True. | `Venus` (`9.93y`) | **`Moon`** | **`Jupiter`** |
+| **Ashtottari Dasha (108-Year Conditional Mahadasha)** | `108y` | **`ELIGIBLE`** | Eligible: Rahu is in House 7 from Lagna Lord (Jupiter) / Paksha-Day condition met. | `Saturn` (`2.97y`) | **`Rahu`** | **`Venus`** |
 | **Shodashottari Dasha (116-Year Conditional Mahadasha)** | `116y` | **`Secondary`** | Secondary: Hora Lagna and Paksha polarity do not trigger primary Shodashottari condition. | `Moon` (`7.57y`) | **`Mercury`** | **`Moon`** |
-| **Dwadashottari Dasha (112-Year Conditional Mahadasha)** | `112y` | **`Secondary`** | Secondary: Ascendant D9 Navamsa is Mithuna (not Taurus/Libra). | `Saturn` (`8.99y`) | **`Moon`** | **`Mars`** |
-| **Panchottari Dasha (105-Year Conditional Mahadasha)** | `105y` | **`Secondary`** | Secondary: Ascendant is Tula (D12 Kanya). | `Venus` (`7.57y`) | **`Moon`** | **`Venus`** |
-| **Shatabdika Dasha (100-Year Vargottama Mahadasha)** | `100y` | **`Secondary`** | Secondary: Ascendant D1 (Tula) != D9 (Mithuna). | `Venus` (`2.36y`) | **`Mercury`** | **`Saturn`** |
-| **Chaturashiti-Sama Dasha (84-Year 10th-Lord Mahadasha)** | `84y` | **`Secondary`** | Secondary: 10th Lord (Moon) is in Makara. | `Saturn` (`5.68y`) | **`Moon`** | **`Jupiter`** |
-| **Dwisaptati-Sama Dasha (72-Year Lagna/7th-Lord Mahadasha)** | `72y` | **`Secondary`** | Secondary: Lagna Lord (Venus) in Kanya. | `Mars` (`4.26y`) | **`Venus`** | **`Saturn`** |
+| **Dwadashottari Dasha (112-Year Conditional Mahadasha)** | `112y` | **`ELIGIBLE`** | Eligible: Ascendant D9 Navamsa is Tula (ruled by Venus). | `Saturn` (`8.99y`) | **`Moon`** | **`Mars`** |
+| **Panchottari Dasha (105-Year Conditional Mahadasha)** | `105y` | **`Secondary`** | Secondary: Ascendant is Dhanu (D12 Simha). | `Venus` (`7.57y`) | **`Moon`** | **`Venus`** |
+| **Shatabdika Dasha (100-Year Vargottama Mahadasha)** | `100y` | **`Secondary`** | Secondary: Ascendant D1 (Dhanu) != D9 (Tula). | `Venus` (`2.36y`) | **`Mercury`** | **`Saturn`** |
+| **Chaturashiti-Sama Dasha (84-Year 10th-Lord Mahadasha)** | `84y` | **`Secondary`** | Secondary: 10th Lord (Mercury) is in Tula. | `Saturn` (`5.68y`) | **`Moon`** | **`Jupiter`** |
+| **Dwisaptati-Sama Dasha (72-Year Lagna/7th-Lord Mahadasha)** | `72y` | **`Secondary`** | Secondary: Lagna Lord (Jupiter) in Simha. | `Mars` (`4.26y`) | **`Venus`** | **`Saturn`** |
 | **Shat-Trimsha-Sama Dasha (36-Year Hora-Aligned Mahadasha)** | `36y` | **`Secondary`** | Secondary: Day/Night birth does not match Sun/Moon Hora Lagna. | `Jupiter` (`1.42y`) | **`Rahu`** | **`Rahu`** |
 | **Yogini Dasha (36-Year Tantric/Parashari Mahadasha)** | `36y` | **`ELIGIBLE`** | Universal companion 36-year Yogini Dasha cycle. | `Sankata (Rahu)` (`3.78y`) | **`Ulka (Saturn)`** | **`Bhadrika (Mercury)`** |
 
@@ -2148,12 +2150,12 @@ $$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \fr
 
 | Rank | Graha | Active Mahadasha Count | Active Antardasha Count | Eligible-System MD Count | Consensus Score (`0..100`) | Supporting Dasha Systems |
 |---|---|---|---|---|---|---|
-| `#1` | **Moon** | `4` | `1` | `0` | **`64.0`** | `ashtottari:MD, dwadashottari:MD, panchottari:MD, chaturashiti_sama:MD, shodashottari:AD` |
-| `#2` | **Rahu** | `2` | `1` | `1` | **`46.0`** | `vimshottari:MD, shat_trimsha_sama:MD, shat_trimsha_sama:AD` |
+| `#1` | **Rahu** | `3` | `1` | `2` | **`70.0`** | `vimshottari:MD, ashtottari:MD, shat_trimsha_sama:MD, shat_trimsha_sama:AD` |
+| `#2` | **Moon** | `3` | `1` | `1` | **`60.0`** | `dwadashottari:MD, panchottari:MD, chaturashiti_sama:MD, shodashottari:AD` |
 | `#3` | **Saturn** | `1` | `2` | `1` | **`40.0`** | `yogini:MD, shatabdika:AD, dwisaptati_sama:AD` |
 | `#4` | **Mercury** | `2` | `1` | `0` | **`36.0`** | `shodashottari:MD, shatabdika:MD, yogini:AD` |
-| `#5` | **Jupiter** | `0` | `3` | `0` | **`24.0`** | `vimshottari:AD, ashtottari:AD, chaturashiti_sama:AD` |
-| `#6` | **Venus** | `1` | `1` | `0` | **`22.0`** | `dwisaptati_sama:MD, panchottari:AD` |
+| `#5` | **Venus** | `1` | `2` | `0` | **`30.0`** | `dwisaptati_sama:MD, ashtottari:AD, panchottari:AD` |
+| `#6` | **Jupiter** | `0` | `2` | `0` | **`16.0`** | `vimshottari:AD, chaturashiti_sama:AD` |
 | `#7` | **Mars** | `0` | `1` | `0` | **`8.0`** | `dwadashottari:AD` |
 
 ## Chapter 25 — 5-Level *Vimshottari Prana-Dasha* Sub-Hour Chronometer (*Mahadasha -> Antardasha -> Pratyantardasha -> Sookshma -> Prana*)
@@ -2982,21 +2984,21 @@ $$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \fr
 
 | Rank | Window (`UTC`) | Vara | Tithi | Nakshatra | Yoga | Ascendant (`Lagna`) | *Panchaka Rahita* | *Tarabala* | *Chandrabala* | Score (`0..100`) | Grade & Auspicious Factors |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| `#01` | `2026-11-01T02:00:00Z` | Sunday | Krishna #22 | *Pushya* | Yoga #22 | **Tula** | `Shubha (r=5)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Non-Rikta Tithi (Krishna 7), Activity-Favored Nakshatra (Pushya), Auspicious Yoga (#22) |
-| `#02` | `2026-11-01T04:00:00Z` | Sunday | Krishna #22 | *Pushya* | Yoga #22 | **Vrishchika** | `Dosha (r=6)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Non-Rikta Tithi (Krishna 7), Activity-Favored Nakshatra (Pushya), Auspicious Yoga (#22) |
-| `#03` | `2026-11-01T08:00:00Z` | Sunday | Krishna #22 | *Pushya* | Yoga #22 | **Makara** | `Dosha (r=8)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Non-Rikta Tithi (Krishna 7), Activity-Favored Nakshatra (Pushya), Auspicious Yoga (#22) |
-| `#04` | `2026-11-01T10:00:00Z` | Sunday | Krishna #23 | *Pushya* | Yoga #23 | **Meena** | `Dosha (r=2)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Non-Rikta Tithi (Krishna 8), Activity-Favored Nakshatra (Pushya), Auspicious Yoga (#23) |
-| `#05` | `2026-11-01T12:00:00Z` | Sunday | Krishna #23 | *Pushya* | Yoga #23 | **Mesha** | `Shubha (r=0)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Non-Rikta Tithi (Krishna 8), Activity-Favored Nakshatra (Pushya), Auspicious Yoga (#23) |
-| `#06` | `2026-11-01T14:00:00Z` | Sunday | Krishna #23 | *Pushya* | Yoga #23 | **Vrishabha** | `Dosha (r=1)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Non-Rikta Tithi (Krishna 8), Activity-Favored Nakshatra (Pushya), Auspicious Yoga (#23) |
-| `#07` | `2026-11-01T18:00:00Z` | Sunday | Krishna #23 | *Pushya* | Yoga #23 | **Karka** | `Shubha (r=3)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Non-Rikta Tithi (Krishna 8), Activity-Favored Nakshatra (Pushya), Auspicious Yoga (#23) |
-| `#08` | `2026-11-01T20:00:00Z` | Monday | Krishna #23 | *Pushya* | Yoga #23 | **Simha** | `Shubha (r=5)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Shubha Vara (Monday), Non-Rikta Tithi (Krishna 8), Activity-Favored Nakshatra (Pushya) |
-| `#09` | `2026-11-01T22:00:00Z` | Monday | Krishna #23 | *Pushya* | Yoga #23 | **Kanya** | `Dosha (r=6)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Shubha Vara (Monday), Non-Rikta Tithi (Krishna 8), Activity-Favored Nakshatra (Pushya) |
-| `#10` | `2026-11-01T06:00:00Z` | Sunday | Krishna #22 | *Pushya* | Yoga #22 | **Dhanu** | `Shubha (r=7)` | `Sadhana (Realization/Success)` | 7H | **`98.0`** | **Uttama (Supreme Golden Muhurta)**: Non-Rikta Tithi (Krishna 7), Activity-Favored Nakshatra (Pushya), Auspicious Yoga (#22) |
-| `#11` | `2026-11-01T16:00:00Z` | Sunday | Krishna #23 | *Pushya* | Yoga #23 | **Mithuna** | `Dosha (r=2)` | `Sadhana (Realization/Success)` | 7H | **`92.0`** | **Uttama (Supreme Golden Muhurta)**: Non-Rikta Tithi (Krishna 8), Activity-Favored Nakshatra (Pushya), Auspicious Yoga (#23) |
-| `#12` | `2026-11-01T00:00:00Z` | Sunday | Krishna #22 | *Punarvasu* | Yoga #22 | **Kanya** | `Shubha (r=3)` | `Pratyak (Obstacles)` | 7H | **`90.0`** | **Uttama (Supreme Golden Muhurta)**: Non-Rikta Tithi (Krishna 7), Activity-Favored Nakshatra (Punarvasu), Auspicious Yoga (#22) |
-| `#13` | `2026-11-02T04:00:00Z` | Monday | Krishna #23 | *Ashlesha* | Yoga #23 | **Vrishchika** | `Shubha (r=0)` | `Naidhana (Peril/Destruction)` | 7H | **`86.0`** | **Uttama (Supreme Golden Muhurta)**: Shubha Vara (Monday), Non-Rikta Tithi (Krishna 8), Auspicious Yoga (#23) |
-| `#14` | `2026-11-04T08:00:00Z` | Wednesday | Krishna #26 | *Purva Phalguni* | Yoga #26 | **Makara** | `Shubha (r=0)` | `Parama Mitra (Supreme Friend)` | 8H | **`86.0`** | **Uttama (Supreme Golden Muhurta)**: Shubha Vara (Wednesday), Non-Rikta Tithi (Krishna 11), Auspicious Yoga (#26) |
-| `#15` | `2026-11-04T12:00:00Z` | Wednesday | Krishna #26 | *Purva Phalguni* | Yoga #26 | **Mesha** | `Shubha (r=0)` | `Parama Mitra (Supreme Friend)` | 8H | **`86.0`** | **Uttama (Supreme Golden Muhurta)**: Shubha Vara (Wednesday), Non-Rikta Tithi (Krishna 11), Auspicious Yoga (#26) |
+| `#01` | `2026-11-01T02:00:00Z` | Sunday | Krishna #22 | *Pushya* | Yoga #22 | **Tula** | `Shubha (r=5)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Non-Rikta Tithi (Krishna 7) |
+| `#02` | `2026-11-01T04:00:00Z` | Sunday | Krishna #22 | *Pushya* | Yoga #22 | **Vrishchika** | `Dosha (r=6)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Non-Rikta Tithi (Krishna 7) |
+| `#03` | `2026-11-01T10:00:00Z` | Sunday | Krishna #23 | *Pushya* | Yoga #23 | **Meena** | `Dosha (r=2)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Non-Rikta Tithi (Krishna 8) |
+| `#04` | `2026-11-01T14:00:00Z` | Sunday | Krishna #23 | *Pushya* | Yoga #23 | **Vrishabha** | `Dosha (r=1)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Non-Rikta Tithi (Krishna 8) |
+| `#05` | `2026-11-01T18:00:00Z` | Sunday | Krishna #23 | *Pushya* | Yoga #23 | **Karka** | `Shubha (r=3)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Non-Rikta Tithi (Krishna 8) |
+| `#06` | `2026-11-01T20:00:00Z` | Monday | Krishna #23 | *Pushya* | Yoga #23 | **Simha** | `Shubha (r=5)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Shubha Vara (Monday) |
+| `#07` | `2026-11-01T22:00:00Z` | Monday | Krishna #23 | *Pushya* | Yoga #23 | **Kanya** | `Dosha (r=6)` | `Sadhana (Realization/Success)` | 7H | **`100.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Shubha Vara (Monday) |
+| `#08` | `2026-11-01T06:00:00Z` | Sunday | Krishna #22 | *Pushya* | Yoga #22 | **Dhanu** | `Shubha (r=7)` | `Sadhana (Realization/Success)` | 7H | **`98.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Non-Rikta Tithi (Krishna 7) |
+| `#09` | `2026-11-01T08:00:00Z` | Sunday | Krishna #22 | *Pushya* | Yoga #22 | **Makara** | `Dosha (r=8)` | `Sadhana (Realization/Success)` | 7H | **`94.0`** | **Madhyama (Auspicious)**: Free of Rahu Kalam, Non-Rikta Tithi (Krishna 7), Activity-Favored Nakshatra (Pushya) |
+| `#10` | `2026-11-01T12:00:00Z` | Sunday | Krishna #23 | *Pushya* | Yoga #23 | **Mesha** | `Shubha (r=0)` | `Sadhana (Realization/Success)` | 7H | **`93.0`** | **Madhyama (Auspicious)**: Free of Yamagandam, Non-Rikta Tithi (Krishna 8), Activity-Favored Nakshatra (Pushya) |
+| `#11` | `2026-11-01T16:00:00Z` | Sunday | Krishna #23 | *Pushya* | Yoga #23 | **Mithuna** | `Dosha (r=2)` | `Sadhana (Realization/Success)` | 7H | **`92.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Non-Rikta Tithi (Krishna 8) |
+| `#12` | `2026-11-01T00:00:00Z` | Sunday | Krishna #22 | *Punarvasu* | Yoga #22 | **Kanya** | `Shubha (r=3)` | `Pratyak (Obstacles)` | 7H | **`90.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Non-Rikta Tithi (Krishna 7) |
+| `#13` | `2026-11-02T04:00:00Z` | Monday | Krishna #23 | *Ashlesha* | Yoga #23 | **Vrishchika** | `Shubha (r=0)` | `Naidhana (Peril/Destruction)` | 7H | **`86.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Shubha Vara (Monday) |
+| `#14` | `2026-11-04T12:00:00Z` | Wednesday | Krishna #26 | *Purva Phalguni* | Yoga #26 | **Mesha** | `Shubha (r=0)` | `Parama Mitra (Supreme Friend)` | 8H | **`86.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Shubha Vara (Wednesday) |
+| `#15` | `2026-11-04T18:00:00Z` | Wednesday | Krishna #26 | *Purva Phalguni* | Yoga #26 | **Karka** | `Shubha (r=3)` | `Parama Mitra (Supreme Friend)` | 8H | **`86.0`** | **Uttama (Supreme Golden Muhurta)**: Free of Rahu Kalam, Free of Yamagandam, Shubha Vara (Wednesday) |
 
 ### 28.4 Complete `30 Tithi × 7 Vara` (`210-Row`) *Panchaka Rahita*, *Dagdha Rashi*, & *Amrita/Sarvartha Siddhi* Electional Master Table
 
@@ -3274,7 +3276,7 @@ $$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \fr
 
 ## Chapter 30 — 81-Cell *Sarvatobhadra Trishula* Ray-Tracer, 7-Planet *Shodhya Pinda* Trigger Stars, 12-House *Vitta-Ayavyaya* Wealth Matrix, & Continuous Harmonic *Yoga* Potency
 
-### 30.1 Worked Case Study: 9x9 *Sarvatobhadra Chakra* 3-Way *Trishula Vedha* Ray-Trace (`Net Protection Index = +25.0`, Verdict: Strong Benefic Subha-Vedha protection across Janma Nakshatra / Rashi / Akshara.)
+### 30.1 Worked Case Study: 9x9 *Sarvatobhadra Chakra* 3-Way *Trishula Vedha* Ray-Trace (`Net Protection Index = +0.0`, Verdict: Balanced / neutral Sarvatobhadra Chakra ray geometry across natal sensitivity cells.)
 
 | Transiting Graha | Source 28-Star (`Nakshatra`) | Border Grid `(r, c)` | Ray Direction (*Sammukha / Vama / Dakshina*) | Target Cell `(r, c)` | Target Type | Target Label | *Vedha* Nature | Hits Natal *Janma Star / Rashi / Akshara* |
 |---|---|---|---|---|---|---|---|---|
@@ -3283,7 +3285,7 @@ $$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \fr
 | **Sun** | *Vishakha* | `(7, 8)` | `RIGHT_DIAGONAL_DAKSHINA` | `(0, 1)` | `nakshatra` | **Krittika** | `KRURA_MALEFIC_VEDHA` | `Perimeter Nakshatra` |
 | **Moon** | *Uttara Ashadha* | `(8, 3)` | `FRONT_SAMMUKHA` | `(0, 3)` | `nakshatra` | **Mrigashirsha** | `SUBHA_BENEFIC_VEDHA` | `Perimeter Nakshatra` |
 | **Moon** | *Uttara Ashadha* | `(8, 3)` | `LEFT_DIAGONAL_VAMA` | `(5, 0)` | `nakshatra` | **Purva Bhadrapada** | `SUBHA_BENEFIC_VEDHA` | `Perimeter Nakshatra` |
-| **Moon** | *Uttara Ashadha* | `(8, 3)` | `RIGHT_DIAGONAL_DAKSHINA` | `(3, 8)` | `nakshatra` | **Uttara Phalguni** | `SUBHA_BENEFIC_VEDHA` | `JANMA_NAKSHATRA` |
+| **Moon** | *Uttara Ashadha* | `(8, 3)` | `RIGHT_DIAGONAL_DAKSHINA` | `(3, 8)` | `nakshatra` | **Uttara Phalguni** | `SUBHA_BENEFIC_VEDHA` | `Perimeter Nakshatra` |
 | **Mars** | *Magha* | `(1, 8)` | `FRONT_SAMMUKHA` | `(1, 0)` | `nakshatra` | **Bharani** | `KRURA_MALEFIC_VEDHA` | `Perimeter Nakshatra` |
 | **Mars** | *Magha* | `(1, 8)` | `LEFT_DIAGONAL_VAMA` | `(8, 1)` | `nakshatra` | **Shravana** | `KRURA_MALEFIC_VEDHA` | `Perimeter Nakshatra` |
 | **Mars** | *Magha* | `(1, 8)` | `RIGHT_DIAGONAL_DAKSHINA` | `(0, 7)` | `nakshatra` | **Ashlesha** | `KRURA_MALEFIC_VEDHA` | `Perimeter Nakshatra` |

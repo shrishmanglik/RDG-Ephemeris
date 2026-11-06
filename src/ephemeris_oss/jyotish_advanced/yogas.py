@@ -28,8 +28,8 @@ SIGN_EXALTATION_LORD: Mapping[int, str] = {
     11: "venus",
 }
 
-NATURAL_BENEFICS: frozenset[str] = frozenset({"jupiter", "venus", "mercury", "moon"})
-NATURAL_MALEFICS: frozenset[str] = frozenset({"sun", "mars", "saturn"})
+NATURAL_BENEFICS: tuple[str, ...] = ("jupiter", "venus", "mercury", "moon")
+NATURAL_MALEFICS: tuple[str, ...] = ("sun", "mars", "saturn")
 KENDRA_HOUSES: frozenset[int] = frozenset({1, 4, 7, 10})
 TRIKONA_HOUSES: frozenset[int] = frozenset({1, 5, 9})
 PANAPARA_HOUSES: frozenset[int] = frozenset({2, 5, 8, 11})

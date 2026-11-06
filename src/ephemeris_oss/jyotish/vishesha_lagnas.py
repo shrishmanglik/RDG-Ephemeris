@@ -84,9 +84,9 @@ PUSHKARA_NAVAMSA_RASHI_INDICES: Mapping[int, tuple[int, int]] = {
     1: (11, 1),  # Vrishabha -> Meena, Vrishabha
     5: (11, 1),  # Kanya -> Meena, Vrishabha
     9: (11, 1),  # Makara -> Meena, Vrishabha
-    2: (11, 3),  # Mithuna -> Meena, Karka
-    6: (11, 3),  # Tula -> Meena, Karka
-    10: (11, 3), # Kumbha -> Meena, Karka
+    2: (11, 1),  # Mithuna -> Meena, Vrishabha
+    6: (11, 1),  # Tula -> Meena, Vrishabha
+    10: (11, 1), # Kumbha -> Meena, Vrishabha
     3: (3, 5),   # Karka -> Karka, Kanya
     7: (3, 5),   # Vrishchika -> Karka, Kanya
     11: (3, 5),  # Meena -> Karka, Kanya
@@ -463,13 +463,13 @@ def compute_vishesha_lagnas_and_special_points(
         "Eastern horizon intersection with the sidereal ecliptic at birth",
     )
 
-    # 2. Hora Lagna (HL): Sun at sunrise + (elapsed_minutes / 2.5) degrees (= 1 sign per 2 hours = 2.5 Ghatis)
-    hora_lagna_deg = normalize_degrees(sun_sunrise + (elapsed_minutes / 2.5))
+    # 2. Hora Lagna (HL): Sun at sunrise + (elapsed_minutes / 2.0) degrees (= 1 sign per Hora / hour = 2.5 Ghatis)
+    hora_lagna_deg = normalize_degrees(sun_sunrise + (elapsed_minutes / 2.0))
     hl_entry = _make_special_lagna_entry(
         "hora_lagna",
         "Hora Lagna (HL — Sustenance & Wealth)",
         hora_lagna_deg,
-        "Sun at Sunrise + (Elapsed Minutes since Sunrise / 2.5)",
+        "Sun at Sunrise + (Elapsed Minutes since Sunrise / 2.0)",
     )
 
     # 3. Ghati Lagna (GL): Sun at sunrise + (elapsed_ghatis * 30 deg) (= 1 sign per Ghati = 1.25 deg/min)
@@ -521,16 +521,16 @@ def compute_vishesha_lagnas_and_special_points(
         f"{kala_sum} Kalas -> {indu_offset_signs}th sign from Moon",
     )
 
-    # 7. Pranapada Lagna (PL): BPHS Ch. 5 — Palas since sunrise / 15 = degrees added to Sun (Movable: +0°, Fixed: +240°, Dual: +120°)
+    # 7. Pranapada Lagna (PL): BPHS Ch. 5 — Palas since sunrise / 15 = signs (* 30° = 2° per Pala) added to Sun (Movable: +0°, Fixed: +240°, Dual: +120°)
     sun_sign_idx = int(sun_birth // 30.0) % 12
     sun_modality = sun_sign_idx % 3  # 0=Movable (Chara), 1=Fixed (Sthira), 2=Dual (Dwiswabhava)
     modality_offset_deg = 0.0 if sun_modality == 0 else (240.0 if sun_modality == 1 else 120.0)
-    pranapada_deg = normalize_degrees(sun_birth + modality_offset_deg + (elapsed_palas / 15.0))
+    pranapada_deg = normalize_degrees(sun_birth + modality_offset_deg + (elapsed_palas * 2.0))
     pl_entry = _make_special_lagna_entry(
         "pranapada_lagna",
         "Pranapada Lagna (PL — Vital Breath & Rectification Anchor)",
         pranapada_deg,
-        "Sun at Birth + Modality Offset (Movable +0°, Fixed +240°, Dual +120°) + (Elapsed Palas / 15)",
+        "Sun at Birth + Modality Offset (Movable +0°, Fixed +240°, Dual +120°) + ((Elapsed Palas / 15) × 30°)",
     )
 
     # 8. Varnada Lagna (VL): BPHS Ch. 5 — Odd/Even counting of Udaya Lagna and Hora Lagna
@@ -604,7 +604,7 @@ def compute_vishesha_lagnas_and_special_points(
         lord_sign = int(lord_lon // 30.0) % 12
         dist = (lord_sign - base_sign) % 12  # 0 means 1st from house, 6 means 7th from house
         raw_arudha = (lord_sign + dist) % 12
-        swastha = dist in (0, 6)
+        swastha = ((raw_arudha - base_sign) % 12) in (0, 6)
         final_arudha = (raw_arudha + 9) % 12 if swastha else raw_arudha
         arudha_list.append(
             ArudhaPadaEntry(
@@ -807,14 +807,19 @@ def compute_full_astronomical_sky_ephemeris(
         spd_lat = pos_sid.latitude_speed_deg_per_day
         spd_dist = pos_sid.distance_speed_au_per_day
 
-        # Equatorial RA and Dec + Declination daily speed via +/- 0.5 day probe
+        # Equatorial RA and Dec + Declination/Latitude/Radial daily speeds via +/- 1.0 day probe
         ra_deg, dec_deg = _ecliptic_to_equatorial(lon_trop, lat_deg, eps_deg)
+        use_phys = physical_center and b_query in ("mars", "jupiter", "saturn")
         try:
-            pos_m1 = ad.calc_ut(jd_ut - 1.0, b_query, sidereal=True, ayanamsa=ayanamsa)
-            pos_p1 = ad.calc_ut(jd_ut + 1.0, b_query, sidereal=True, ayanamsa=ayanamsa)
+            pos_m1 = ad.calc_ut(jd_ut - 1.0, b_query, sidereal=True, ayanamsa=ayanamsa, physical_center=use_phys)
+            pos_p1 = ad.calc_ut(jd_ut + 1.0, b_query, sidereal=True, ayanamsa=ayanamsa, physical_center=use_phys)
             _, dec_m1 = _ecliptic_to_equatorial((pos_m1.longitude_deg + ay_deg) % 360.0, pos_m1.latitude_deg, eps_deg)
             _, dec_p1 = _ecliptic_to_equatorial((pos_p1.longitude_deg + ay_deg) % 360.0, pos_p1.latitude_deg, eps_deg)
             dec_speed = 0.5 * (dec_p1 - dec_m1)
+            if spd_lat == 0.0:
+                spd_lat = 0.5 * (pos_p1.latitude_deg - pos_m1.latitude_deg)
+            if spd_dist == 0.0:
+                spd_dist = 0.5 * (pos_p1.distance_au - pos_m1.distance_au)
             # Second-order tabular difference Delta^2 = L(+1) - 2*L(0) + L(-1) in arcseconds
             d_plus = ((pos_p1.longitude_deg - lon_sid + 180.0) % 360.0) - 180.0
             d_minus = ((lon_sid - pos_m1.longitude_deg + 180.0) % 360.0) - 180.0

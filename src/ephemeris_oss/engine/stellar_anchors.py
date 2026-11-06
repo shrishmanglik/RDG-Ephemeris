@@ -263,7 +263,7 @@ def propagate_yogatara_apparent(
         x = math.cos(equinox_ra) * math.cos(float(di))
         y = math.sin(equinox_ra) * math.cos(float(di)) * math.cos(obliquity) + math.sin(float(di)) * math.sin(obliquity)
         z = -math.sin(equinox_ra) * math.cos(float(di)) * math.sin(obliquity) + math.sin(float(di)) * math.cos(obliquity)
-        trop_lon = math.degrees(math.atan2(y, x)) % 360.0
+        trop_lon = (math.degrees(math.atan2(y, x)) - math.degrees(float(dpsi))) % 360.0
         ecl_lat = math.degrees(math.asin(max(-1.0, min(1.0, z))))
         ra_deg = math.degrees(equinox_ra) % 360.0
         dec_deg = math.degrees(float(di))

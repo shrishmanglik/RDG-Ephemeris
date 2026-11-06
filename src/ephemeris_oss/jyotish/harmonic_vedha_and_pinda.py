@@ -225,6 +225,7 @@ def _find_nearest_heliacal_crossing(
     step_days = 2.0
     max_steps = int(search_window_days / step_days)
     for k in range(1, max_steps + 1):
+        shell_candidates: List[Tuple[float, str, float]] = []
         for sign_dir in (1.0, -1.0):
             t_prev = jd_ut + sign_dir * (k - 1) * step_days
             t_curr = jd_ut + sign_dir * k * step_days
@@ -249,7 +250,11 @@ def _find_nearest_heliacal_crossing(
                     if m_before < 0.0 and m_after >= 0.0
                     else "HELIACAL_SETTING_ASTA"
                 )
-                return evt_type, round(root_jd, 6)
+                shell_candidates.append((abs(root_jd - jd_ut), evt_type, round(root_jd, 6)))
+        if shell_candidates:
+            shell_candidates.sort(key=lambda item: item[0])
+            _, evt_type, best_root_jd = shell_candidates[0]
+            return evt_type, best_root_jd
     return None, None
 
 
@@ -414,6 +419,10 @@ def compute_continuous_dignity_and_heliacal_phenomena(
     )
 
 
+def _norm_sbc_name(name: str) -> str:
+    return "".join(ch for ch in name.strip().lower() if ch.isalnum())
+
+
 def _build_sbc_nakshatra_coord_map() -> Dict[str, Tuple[int, int]]:
     from ..jyotish_transit.chakras import build_sarvatobhadra_grid
 
@@ -423,6 +432,7 @@ def _build_sbc_nakshatra_coord_map() -> Dict[str, Tuple[int, int]]:
         for cell in row:
             if cell.cell_type.lower() == "nakshatra":
                 mapping[cell.label.lower()] = (cell.row, cell.col)
+                mapping[_norm_sbc_name(cell.label)] = (cell.row, cell.col)
     return mapping
 
 
@@ -486,13 +496,8 @@ def compute_sarvatobhadra_81_ray_vedha(
         ab_pos = abhijit_position(lon)
         nak28_name = ab_pos.nakshatra_28_name
 
-        # Match nakshatra cell on 9x9 border
-        coord = nak_coords.get(nak28_name.lower())
-        if coord is None:
-            for k_label, rc in nak_coords.items():
-                if k_label[:6] == nak28_name.lower()[:6]:
-                    coord = rc
-                    break
+        # Match exact nakshatra cell on 9x9 border
+        coord = nak_coords.get(nak28_name.lower()) or nak_coords.get(_norm_sbc_name(nak28_name))
         if coord is None:
             coord = (0, 1)
 
@@ -536,11 +541,11 @@ def compute_sarvatobhadra_81_ray_vedha(
                 ctype, clabel = grid_lookup.get((rr, cc), ("unknown", ""))
                 hits_nak = (
                     ctype == "nakshatra"
-                    and clabel.lower()[:6] == natal_nak_28_name.lower()[:6]
+                    and _norm_sbc_name(clabel) == _norm_sbc_name(natal_nak_28_name)
                 )
                 hits_rashi = (
                     ctype in ("rasi", "rashi")
-                    and clabel.lower()[:4] == natal_rashi_name.lower()[:4]
+                    and _norm_sbc_name(clabel) == _norm_sbc_name(natal_rashi_name)
                 )
                 hits_akshara = (
                     ctype in ("consonant", "vowel", "akshara", "swara")

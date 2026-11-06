@@ -280,7 +280,9 @@ def compute_topocentric_relativistic_astrometry(
 
     ay_deg = float(ad.get_ayanamsa_ut(jd_ut, mode=ayanamsa))
     lst_deg = (280.46061837 + 360.98564736629 * (float(jd_ut) - 2451545.0) + float(longitude_deg)) % 360.0
-    eps_rad = math.radians(23.439291111)
+    t_cent = (float(jd_ut) - 2451545.0) / 36525.0
+    eps_deg = 23.43929111 - (46.8150 * t_cent + 0.00059 * (t_cent ** 2) - 0.001813 * (t_cent ** 3)) / 3600.0
+    eps_rad = math.radians(eps_deg)
 
     rho_cos, rho_sin, obs_r_km = _wgs84_geocentric_constants(latitude_deg, elevation_m)
     phi_rad = math.radians(float(latitude_deg))
@@ -582,7 +584,7 @@ def solve_synodic_retrograde_loops_and_triple_passes(
         b_low = body_key.lower()
         step_d = 1.0 if b_low in ("mercury", "venus") else 2.0
         # Scan with padding before and after so complete loops inside [start_jd_ut, end_jd_ut] are captured:
-        pad_d = 45.0 if b_low in ("mercury", "venus") else 110.0
+        pad_d = 60.0 if b_low in ("mercury", "venus") else 180.0
         t_cursor = float(start_jd_ut) - pad_d
         t_limit = float(end_jd_ut) + pad_d
 
@@ -787,10 +789,40 @@ def evaluate_lifetime_eclipse_natal_sensitivity(
                     topo_rep = compute_topocentric_relativistic_astrometry(
                         syz_jd, latitude_deg, longitude_deg, ayanamsa=ayanamsa, adapter=ad
                     )
-                    target_body = "sun" if is_amavasya else "moon"
-                    alt_deg = topo_rep.bodies[target_body].apparent_altitude_deg
-                    loc_vis = alt_deg > 0.0
-                    obsc_frac = max(0.0, min(1.0, (1.0 - node_dist / limit_deg))) if loc_vis else 0.0
+                    if is_amavasya:
+                        s_topo = topo_rep.bodies["sun"]
+                        m_topo = topo_rep.bodies["moon"]
+                        sr_r, sd_r, mr_r, md_r = map(
+                            math.radians,
+                            [
+                                s_topo.topocentric_ra_deg,
+                                s_topo.topocentric_dec_deg,
+                                m_topo.topocentric_ra_deg,
+                                m_topo.topocentric_dec_deg,
+                            ],
+                        )
+                        cos_sep = max(
+                            -1.0,
+                            min(
+                                1.0,
+                                math.sin(sd_r) * math.sin(md_r)
+                                + math.cos(sd_r) * math.cos(md_r) * math.cos(sr_r - mr_r),
+                            ),
+                        )
+                        sep_deg = math.degrees(math.acos(cos_sep))
+                        r_sun_deg = math.degrees(math.asin(min(1.0, 695700.0 / max(1.0, s_topo.distance_km))))
+                        r_moon_deg = math.degrees(math.asin(min(1.0, 1737.4 / max(1.0, m_topo.distance_km))))
+                        rad_sum = r_sun_deg + r_moon_deg
+                        loc_vis = s_topo.apparent_altitude_deg > 0.0 and sep_deg < rad_sum
+                        obsc_frac = (
+                            max(0.0, min(1.0, (rad_sum - sep_deg) / max(1e-6, 2.0 * r_sun_deg)))
+                            if loc_vis
+                            else 0.0
+                        )
+                    else:
+                        alt_deg = topo_rep.bodies["moon"].apparent_altitude_deg
+                        loc_vis = alt_deg > 0.0
+                        obsc_frac = max(0.0, min(1.0, (1.0 - node_dist / limit_deg))) if loc_vis else 0.0
 
                     nak_obj = nakshatra_position(axis_lon)
                     r_idx = int(axis_lon // 30.0) % 12
@@ -832,7 +864,9 @@ def evaluate_lifetime_eclipse_natal_sensitivity(
 
         prev_diff = diff
         prev_t = t_curr
-        t_curr += t_step
+        if t_curr >= float(end_jd_ut):
+            break
+        t_curr = min(float(end_jd_ut), t_curr + t_step)
 
     receipt = canonical_hash(
         {

@@ -552,18 +552,29 @@ def compute_all_10_parashari_nakshatra_dashas(
         if is_elig:
             eligible_keys.append(s_key)
 
-        open_lord = lords[open_idx]
-        open_full_yrs = float(yrs[open_idx])
-        bal_yrs = open_full_yrs * frac_rem
-        el_days = open_full_yrs * frac_el * float(year_days)
+        if s_key == "ashtottari":
+            from .dasha import compute_ashtottari_dasha
+
+            ash_tl = compute_ashtottari_dasha(moon_sidereal_lon_deg, birth_jd, year_days=year_days)
+            open_lord = ash_tl.opening_lord
+            open_idx = lords.index(open_lord)
+            open_full_yrs = float(yrs[open_idx])
+            bal_yrs = float(ash_tl.birth_balance_years)
+            el_days = (open_full_yrs - bal_yrs) * float(year_days)
+        else:
+            open_lord = lords[open_idx]
+            open_full_yrs = float(yrs[open_idx])
+            bal_yrs = open_full_yrs * frac_rem
+            el_days = open_full_yrs * frac_el * float(year_days)
 
         cursor_jd = float(birth_jd) - el_days
         mahas: list[ConditionalDashaPeriodSummary] = []
         active_maha = open_lord
         active_antar = open_lord
 
-        # Generate 2 full cycles so query_jd up to +120 years is always covered:
-        for cycle_step in range(len(lords) * 2):
+        # Generate enough full cycles so query_jd is always covered across any horizon:
+        num_cycles = max(2, int(math.ceil(max(0.0, q_jd - float(birth_jd)) / max(1.0, tot_y * float(year_days)))) + 2)
+        for cycle_step in range(len(lords) * num_cycles):
             l_i = (open_idx + cycle_step) % len(lords)
             l_name = lords[l_i]
             f_y = float(yrs[l_i])
@@ -586,7 +597,7 @@ def compute_all_10_parashari_nakshatra_dashas(
                         end_iso_utc=jd_to_iso_utc(e_jd),
                     )
                 )
-            if s_jd <= q_jd <= e_jd:
+            if s_jd <= q_jd < e_jd:
                 active_maha = l_name
                 # Locate active Antardasha proportionally inside [s_jd, e_jd]:
                 sub_c = s_jd
@@ -594,7 +605,7 @@ def compute_all_10_parashari_nakshatra_dashas(
                     sub_i = (l_i + sub_step) % len(lords)
                     sub_y = f_y * (float(yrs[sub_i]) / tot_y)
                     sub_e = sub_c + sub_y * float(year_days)
-                    if sub_c <= q_jd <= sub_e:
+                    if (sub_c <= q_jd < sub_e) if sub_step < len(lords) - 1 else (sub_c <= q_jd <= sub_e):
                         active_antar = lords[sub_i]
                         break
                     sub_c = sub_e
@@ -720,7 +731,7 @@ def compute_vimshottari_5_level_prana_chronometer(
         p_s = p_cursor
         p_e = p_cursor + p_span
         p_cursor = p_e
-        is_act = p_s <= float(query_jd) <= p_e + 1e-9
+        is_act = (p_s <= float(query_jd) < p_e) if k < 8 else (p_s <= float(query_jd) <= p_e + 1e-9)
         if is_act:
             active_prana = p_lord
         prana_list.append(
@@ -1045,10 +1056,47 @@ def solve_golden_muhurta_electional_windows(
             nak_idx in SARVARTHA_SIDDHI_NAKSHATRAS.get(vara_sun0, ())
         )
 
+        # Daily sunrise/sunset time-window checks (Rahu Kalam, Yamagandam, Gulika Kalam, Abhijit Muhurta):
+        from .panchanga import compute_muhurta_windows
+
+        sr_approx = math.floor(jd_local - 0.5) + 0.5 + (6.0 / 24.0) - (float(longitude_deg) / 360.0)
+        if sr_approx > t_curr:
+            sr_approx -= 1.0
+        try:
+            _, (sr_jd,) = ad.rise_trans(sr_approx - 0.25, "sun", 1, (float(longitude_deg), float(latitude_deg), 0.0))
+            _, (ss_jd,) = ad.rise_trans(sr_jd, "sun", 2, (float(longitude_deg), float(latitude_deg), 0.0))
+            _, (next_sr_jd,) = ad.rise_trans(ss_jd, "sun", 1, (float(longitude_deg), float(latitude_deg), 0.0))
+        except Exception:
+            sr_jd = sr_approx
+            ss_jd = sr_approx + 0.5
+            next_sr_jd = sr_approx + 1.0
+        m_wins = compute_muhurta_windows(sr_jd, ss_jd, next_sunrise_jd=next_sr_jd, vara_index=vara_sun0)
+        in_rahu = m_wins.rahu_kalam.start_jd <= t_curr < m_wins.rahu_kalam.end_jd
+        in_yama = m_wins.yamagandam.start_jd <= t_curr < m_wins.yamagandam.end_jd
+        in_gulika = m_wins.gulika_kalam.start_jd <= t_curr < m_wins.gulika_kalam.end_jd
+        in_abhijit = m_wins.abhijit_muhurta.start_jd <= t_curr < m_wins.abhijit_muhurta.end_jd
+
         # Scoring across the 12 Muhurta constraints:
         score = 50.0
         passed: list[str] = []
         warns: list[str] = []
+
+        if in_rahu:
+            score -= 25.0
+            warns.append("Rahu Kalam (Inauspicious Daily Window)")
+        else:
+            passed.append("Free of Rahu Kalam")
+        if in_yama:
+            score -= 18.0
+            warns.append("Yamagandam (Inauspicious Daily Window)")
+        else:
+            passed.append("Free of Yamagandam")
+        if in_gulika:
+            score -= 10.0
+            warns.append("Gulika Kalam")
+        if in_abhijit:
+            score += 10.0
+            passed.append("Abhijit Muhurta (Midday Victory Window)")
 
         if vara_sun0 in (1, 3, 4, 5):  # Mon, Wed, Thu, Fri
             score += 8.0
@@ -1106,11 +1154,14 @@ def solve_golden_muhurta_electional_windows(
             passed.append("Amrita / Sarvartha Siddhi Yoga Active")
 
         final_score = max(0.0, min(100.0, round(score, 1)))
-        grade = (
-            "Uttama (Supreme Golden Muhurta)"
-            if final_score >= 85.0
-            else ("Madhyama (Auspicious)" if final_score >= 70.0 else "Adhama (Avoid)")
-        )
+        if in_rahu or in_yama:
+            grade = "Adhama (Avoid)" if final_score < 70.0 else "Madhyama (Auspicious)"
+        else:
+            grade = (
+                "Uttama (Supreme Golden Muhurta)"
+                if final_score >= 85.0
+                else ("Madhyama (Auspicious)" if final_score >= 70.0 else "Adhama (Avoid)")
+            )
 
         ist_iso = jd_to_iso_utc(t_curr + 5.5 / 24.0).replace("Z", " IST")
         candidates.append(

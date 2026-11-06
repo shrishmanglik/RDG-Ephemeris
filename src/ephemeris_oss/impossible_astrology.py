@@ -2047,12 +2047,45 @@ def solve_chart_date_from_planetary_constraints(
 
     ad = adapter if adapter is not None else EphemerisAdapter()
     jd_start = max(float(erfa.cal2jd(y0, 1, 1)[0] + erfa.cal2jd(y0, 1, 1)[1]), 588465.5)
-    jd_end = min(float(erfa.cal2jd(y1, 12, 31)[0] + erfa.cal2jd(y1, 12, 31)[1] + 0.999), 2816787.5)
+    jd_end = min(float(erfa.cal2jd(y1, 12, 31)[0] + erfa.cal2jd(y1, 12, 31)[1] + 0.999), 2817152.5)
+
+    body_alias_map: dict[str, str] = {
+        "sun": "sun",
+        "surya": "sun",
+        "ravi": "sun",
+        "moon": "moon",
+        "chandra": "moon",
+        "soma": "moon",
+        "mars": "mars",
+        "mangala": "mars",
+        "kuja": "mars",
+        "mercury": "mercury",
+        "budha": "mercury",
+        "jupiter": "jupiter",
+        "guru": "jupiter",
+        "brihaspati": "jupiter",
+        "venus": "venus",
+        "shukra": "venus",
+        "saturn": "saturn",
+        "shani": "saturn",
+        "rahu": "rahu",
+        "mean_node": "rahu",
+        "true_node": "rahu",
+        "true_rahu": "rahu",
+        "ketu": "ketu",
+        "true_ketu": "ketu",
+        "uranus": "uranus",
+        "neptune": "neptune",
+        "pluto": "pluto",
+    }
 
     parsed_signs: dict[str, int] = {}
     normalized_sign_names: dict[str, str] = {}
     for body_raw, s_val in (sign_constraints or {}).items():
-        b_key = str(body_raw).strip().lower()
+        b_raw = str(body_raw).strip().lower()
+        if b_raw not in body_alias_map:
+            raise ValueError(f"Unsupported planetary constraint body: {body_raw!r}")
+        b_key = body_alias_map[b_raw]
         s_idx = _parse_sign_index(s_val)
         parsed_signs[b_key] = s_idx
         normalized_sign_names[b_key] = RASI_NAMES[s_idx]
@@ -2060,7 +2093,10 @@ def solve_chart_date_from_planetary_constraints(
     parsed_naks: dict[str, int] = {}
     normalized_nak_names: dict[str, str] = {}
     for body_raw, n_val in (nakshatra_constraints or {}).items():
-        b_key = str(body_raw).strip().lower()
+        b_raw = str(body_raw).strip().lower()
+        if b_raw not in body_alias_map:
+            raise ValueError(f"Unsupported planetary constraint body: {body_raw!r}")
+        b_key = body_alias_map[b_raw]
         if isinstance(n_val, int) and not isinstance(n_val, bool):
             n_idx = n_val if 0 <= n_val <= 26 else n_val - 1
         else:
@@ -2076,7 +2112,11 @@ def solve_chart_date_from_planetary_constraints(
         parsed_naks[b_key] = n_idx
         normalized_nak_names[b_key] = NAKSHATRA_NAMES[n_idx]
 
-    slow_bodies = [b for b in ("saturn", "jupiter", "rahu", "ketu") if b in parsed_signs or b in parsed_naks]
+    slow_bodies = [
+        b
+        for b in ("pluto", "neptune", "uranus", "saturn", "jupiter", "rahu", "ketu")
+        if b in parsed_signs or b in parsed_naks
+    ]
     med_bodies = [b for b in ("mars", "sun", "venus", "mercury") if b in parsed_signs or b in parsed_naks]
     fast_bodies = [b for b in ("moon",) if b in parsed_signs or b in parsed_naks]
 
@@ -2089,23 +2129,44 @@ def solve_chart_date_from_planetary_constraints(
             return False
         return True
 
-    # Stage 1: 10-day intervals where slow bodies match
-    stage1_intervals: list[tuple[float, float]] = []
+    # Stage 1: Build conservative padded intervals per slow body and intersect so short overlaps (<10d) are preserved
     step1 = 10.0
-    t = jd_start
-    in_match = False
-    win_s = jd_start
-    while t <= jd_end:
-        ok = all(_body_matches(t, b) for b in slow_bodies) if slow_bodies else True
-        if ok and not in_match:
-            in_match = True
-            win_s = max(jd_start, t - step1)
-        elif not ok and in_match:
+    if not slow_bodies:
+        stage1_intervals: list[tuple[float, float]] = [(jd_start, jd_end)]
+    else:
+        stage1_intervals = [(jd_start, jd_end)]
+        for s_body in slow_bodies:
+            b_intervals: list[tuple[float, float]] = []
+            t = jd_start
             in_match = False
-            stage1_intervals.append((win_s, min(jd_end, t + step1)))
-        t += step1
-    if in_match:
-        stage1_intervals.append((win_s, jd_end))
+            win_s = jd_start
+            while True:
+                ok = _body_matches(t, s_body)
+                if ok and not in_match:
+                    in_match = True
+                    win_s = max(jd_start, t - step1)
+                elif not ok and in_match:
+                    in_match = False
+                    b_intervals.append((win_s, min(jd_end, t + step1)))
+                if t >= jd_end:
+                    break
+                t = min(jd_end, t + step1)
+            if in_match:
+                b_intervals.append((win_s, jd_end))
+            # Intersect stage1_intervals with b_intervals:
+            next_intervals: list[tuple[float, float]] = []
+            for a0, a1 in stage1_intervals:
+                for b0, b1 in b_intervals:
+                    lo = max(a0, b0)
+                    hi = min(a1, b1)
+                    if lo <= hi:
+                        if next_intervals and lo <= next_intervals[-1][1]:
+                            next_intervals[-1] = (next_intervals[-1][0], max(next_intervals[-1][1], hi))
+                        else:
+                            next_intervals.append((lo, hi))
+            stage1_intervals = next_intervals
+            if not stage1_intervals:
+                break
 
     # Stage 2: 1-day intervals inside Stage 1 where medium + slow bodies match
     stage2_intervals: list[tuple[float, float]] = []
@@ -2193,7 +2254,7 @@ def _build_inverse_match_window(
     lons: dict[str, float] = {}
     signs: dict[str, str] = {}
     naks: dict[str, str] = {}
-    for b_key in VEDIC_NINE_GRAHAS:
+    for b_key in VEDIC_NINE_GRAHAS + ("uranus", "neptune", "pluto"):
         pos = ad.calc_ut(mid_jd, b_key, sidereal=True, ayanamsa=ayanamsa, true_node=true_node)
         lon = float(pos.longitude_deg)
         cap = b_key.capitalize()
@@ -2368,11 +2429,15 @@ def compute_triple_lock_life_event_convergence(
     rahu_lon = natal_lons["Rahu"]
     bhrigu_bindu_lon = normalize_degrees(rahu_lon + 0.5 * normalize_degrees(moon_lon - rahu_lon))
 
-    # Precompute Dasha timelines and Ashtakavarga
-    vim_dasha = compute_vimshottari_dasha(moon_lon, b_jd, max_level=2)
+    # Precompute Dasha timelines and Ashtakavarga (extend cycles so any query horizon is covered)
+    req_years = max(120.0, (t1 - b_jd) / 365.2425 + 24.0)
+    vim_cycles = max(1, int(math.ceil(req_years / 120.0)) + 1)
+    vim_dasha = compute_vimshottari_dasha(moon_lon, b_jd, max_level=2, cycles=vim_cycles)
     kc_dasha = compute_kalachakra_dasha(moon_lon, b_jd)
+    kc_span = (kc_dasha.mahadashas[-1].end_jd - b_jd) if kc_dasha.mahadashas else 0.0
     chara_timeline = compute_chara_dasha(asc_deg, natal_lons, b_jd, max_level=1)
     chara_periods = chara_timeline.mahadashas
+    chara_span = (chara_periods[-1].end_jd - b_jd) if chara_periods else 0.0
     ashtaka = compute_ashtakavarga(natal_lons, asc_deg)
 
     # Which planets are connected to the target domain houses (by occupancy or lordship)?
@@ -2426,8 +2491,9 @@ def compute_triple_lock_life_event_convergence(
         kc_gati = "Mandooka_Regular"
         kc_touches_vital = False
         kc_sign_idx = kc_dasha.deha_sign_index
+        curr_kc = b_jd + ((curr - b_jd) % kc_span) if (kc_span > 0.0 and curr >= kc_dasha.mahadashas[-1].end_jd) else curr
         for kp in kc_dasha.mahadashas:
-            if kp.start_jd <= curr < kp.end_jd:
+            if kp.start_jd <= curr_kc < kp.end_jd:
                 kc_sign_name = kp.sign_name
                 kc_gati = kp.gati
                 kc_touches_vital = bool(kp.is_deha_sign or kp.is_jeeva_sign)
@@ -2436,8 +2502,9 @@ def compute_triple_lock_life_event_convergence(
 
         chara_sign_name = RASI_NAMES[lagna_sign]
         chara_sign_idx = lagna_sign
+        curr_chara = b_jd + ((curr - b_jd) % chara_span) if (chara_span > 0.0 and curr >= chara_periods[-1].end_jd) else curr
         for cp in chara_periods:
-            if cp.start_jd <= curr < cp.end_jd:
+            if cp.start_jd <= curr_chara < cp.end_jd:
                 chara_sign_name = cp.lord
                 chara_sign_idx = RASI_NAMES.index(cp.lord) if cp.lord in RASI_NAMES else lagna_sign
                 break

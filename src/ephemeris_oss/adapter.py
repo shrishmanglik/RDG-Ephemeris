@@ -988,16 +988,6 @@ class EphemerisAdapter:
 
         provider = self._engine._provider
         ayan_deg = self.get_ayanamsa_ut(jd_val, mode=ayanamsa) if sidereal else 0.0
-        if body_key in ("uranus", "neptune", "pluto"):
-            return self._calc_ut_historical_analytical(
-                jd_val=jd_val,
-                jd_tt=jd_tt,
-                body_key=body_key,
-                sidereal=sidereal,
-                ayanamsa=ayanamsa,
-                ayan_deg=ayan_deg,
-                true_node=use_true_node,
-            )
         try:
             artifact = provider._kernel_registry.artifact_for_tdb_jd(times.tdb_jd)
         except AstronomyDataUnavailable:
@@ -1009,6 +999,7 @@ class EphemerisAdapter:
                 ayanamsa=ayanamsa,
                 ayan_deg=ayan_deg,
                 true_node=use_true_node,
+                physical_center=use_physical_center,
             )
 
         if body_key in ("rahu", "ketu"):
@@ -1075,36 +1066,48 @@ class EphemerisAdapter:
             )
             lat_deg = 0.0
         else:
-            earth_state = provider.barycentric_state_at_tdb(
-                body="earth", tdb=tdb, kernel_year=year
-            )
-            sun_cache: dict[float, Any] = {}
+            try:
+                earth_state = provider.barycentric_state_at_tdb(
+                    body="earth", tdb=tdb, kernel_year=year
+                )
+                sun_cache: dict[float, Any] = {}
 
-            def _sun_at(jd: float) -> Any:
-                if jd not in sun_cache:
-                    sun_cache[jd] = provider.barycentric_state_at_tdb(
-                        body="sun", tdb=(J2000_JD, jd - J2000_JD), kernel_year=year
-                    )
-                return sun_cache[jd]
+                def _sun_at(jd: float) -> Any:
+                    if jd not in sun_cache:
+                        sun_cache[jd] = provider.barycentric_state_at_tdb(
+                            body="sun", tdb=(J2000_JD, jd - J2000_JD), kernel_year=year
+                        )
+                    return sun_cache[jd]
 
-            apparent, _ = provider._apparent_state(
-                body=body_key,
-                instant_utc=None,
-                kernel_year=year,
-                observer=None,
-                times=times,
-                apply_deflection=(body_key != "sun"),
-                apply_aberration=True,
-                precomputed_earth_state=earth_state,
-                precomputed_sun_func=_sun_at,
-            )
-            icrf = np.asarray(apparent.apparent_vector_km, dtype=np.float64)
-            tau_days = float(apparent.light_time_seconds) / SECONDS_PER_DAY
-            target_emitted = provider.barycentric_state_at_tdb(
-                body=body_key,
-                tdb=(J2000_JD, times.tdb_jd - tau_days - J2000_JD),
-                kernel_year=year,
-            )
+                apparent, _ = provider._apparent_state(
+                    body=body_key,
+                    instant_utc=None,
+                    kernel_year=year,
+                    observer=None,
+                    times=times,
+                    apply_deflection=(body_key != "sun"),
+                    apply_aberration=True,
+                    precomputed_earth_state=earth_state,
+                    precomputed_sun_func=_sun_at,
+                )
+                icrf = np.asarray(apparent.apparent_vector_km, dtype=np.float64)
+                tau_days = float(apparent.light_time_seconds) / SECONDS_PER_DAY
+                target_emitted = provider.barycentric_state_at_tdb(
+                    body=body_key,
+                    tdb=(J2000_JD, times.tdb_jd - tau_days - J2000_JD),
+                    kernel_year=year,
+                )
+            except (AstronomyDataUnavailable, KeyError, EphemerisError):
+                return self._calc_ut_historical_analytical(
+                    jd_val=jd_val,
+                    jd_tt=jd_tt,
+                    body_key=body_key,
+                    sidereal=sidereal,
+                    ayanamsa=ayanamsa,
+                    ayan_deg=ayan_deg,
+                    true_node=use_true_node,
+                    physical_center=use_physical_center,
+                )
             v_icrf = np.asarray(target_emitted.velocity_km_per_day, dtype=np.float64) - np.asarray(
                 earth_state.velocity_km_per_day, dtype=np.float64
             )
@@ -1177,6 +1180,7 @@ class EphemerisAdapter:
         ayanamsa: str,
         ayan_deg: float,
         true_node: bool = False,
+        physical_center: bool = False,
     ) -> PlanetCoordinateResult:
         """Long-term Vondrak-2011 + Keplerian/Meeus/ELP historical analytical evaluator (3102 BCE to 3000 CE)."""
 
@@ -1262,6 +1266,15 @@ class EphemerisAdapter:
         speed_deg = ((trop_after - trop_before + 180.0) % 360.0 - 180.0) / (2.0 * step)
         lat_speed = (lat_after - lat_before) / (2.0 * step)
         dist_speed = (dist_after - dist_before) / (2.0 * step)
+        if physical_center and body_key in ("mars", "jupiter", "saturn"):
+            dlon_center_deg, dlat_center_deg = _planet_physical_center_offset_deg(
+                body_key=body_key,
+                jd_tt=jd_tt,
+                planet_lon_deg=trop_lon,
+                dist_au=dist_au,
+            )
+            trop_lon = (trop_lon + dlon_center_deg) % 360.0
+            lat_deg = float(lat_deg + dlat_center_deg)
         if body_key in ("rahu", "ketu") and not true_node:
             speed_deg = -0.05295376
             is_retro = True
@@ -1272,7 +1285,7 @@ class EphemerisAdapter:
         lon_deg = (trop_lon - ayan_deg) % 360.0 if sidereal else normalize_degrees(trop_lon)
         hist_kernel_id = "HISTORICAL-ANALYTICAL-VONDRAK2011"
         hist_sha = canonical_hash({"provider": hist_kernel_id, "version": __version__})
-        receipt_payload = {
+        receipt_payload: dict[str, Any] = {
             "schema": "ephemeris-oss.adapter.calc_ut.v1",
             "version": __version__,
             "jd_ut": round(jd_val, 9),
@@ -1289,6 +1302,8 @@ class EphemerisAdapter:
             "longitude_speed_deg_per_day": round(speed_deg, 9),
             "is_retrograde": is_retro,
         }
+        if physical_center:
+            receipt_payload["physical_center"] = True
         return PlanetCoordinateResult(
             longitude_deg=float(lon_deg),
             latitude_deg=float(lat_deg),

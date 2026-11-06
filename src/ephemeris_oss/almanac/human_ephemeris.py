@@ -1,11 +1,11 @@
 """Human-Readable Classical Ephemeris & Pt. Maheshji's Jyotish Academy Master Calculation Compendium.
 
-Generates a complete, encyclopedic, 20-Chapter classical *Nirayana* (Sidereal) and *Sayana* (Tropical)
+Generates a complete, encyclopedic, 30-Chapter classical *Nirayana* (Sidereal) and *Sayana* (Tropical)
 Astronomical Ephemeris and Manual Kundali Calculation Compendium designed for human astrologers,
 classical researchers, and students of **Pt. Maheshji's Jyotish Academy (Jyotish Gurukul)**.
 
 Every calculation that the ``ephemeris-oss`` software engine performs computationally can be
-performed manually on paper using the tables in this 20-chapter master volume:
+performed manually on paper using the tables in this 30-chapter master volume:
 
 1. **Chapter 1:** Fundamental Astronomical Constants, Time Scales (UTC/UT1/TT/TDB/Delta-T), Julian Day Conversion Tables (1900-2050), & 25-Ayanamsha Master Reference Table
 2. **Chapter 2:** Complete Daily Sidereal (*Nirayana*) & Tropical (*Sayana*) Planetary Longitude Grid (`05:30 IST / 00:00 UTC`) Across All 13 Bodies + Second-Order Tabular Differences
@@ -369,7 +369,7 @@ class HumanManualEphemerisCompendium:
         }
 
     def to_markdown(self) -> str:
-        """Render the complete 20-Chapter Human-Readable Classical Ephemeris & Jyotish Academy Manual."""
+        """Render the complete 30-Chapter Human-Readable Classical Ephemeris & Jyotish Academy Manual."""
         return _render_compendium_markdown(self)
 
     def to_html(self) -> str:
@@ -388,7 +388,7 @@ def generate_human_manual_ephemeris_compendium(
     reference_hour_ut: float = 0.0,  # 00:00 UTC = 05:30 IST (standard Indian Ephemeris daily epoch)
     adapter: EphemerisAdapter | None = None,
 ) -> HumanManualEphemerisCompendium:
-    """Generate the complete 20-Chapter Human-Readable Classical Ephemeris & Jyotish Academy Compendium."""
+    """Generate the complete 30-Chapter Human-Readable Classical Ephemeris & Jyotish Academy Compendium."""
     if not (1 <= int(month) <= 12):
         raise ValueError(f"month must be in 1..12; got {month}")
     yr = int(year)
@@ -405,6 +405,7 @@ def generate_human_manual_ephemeris_compendium(
         lat,
         lon,
         tz_offset_hours=tz_off,
+        ayanamsa=ayanamsa,
         adapter=ad,
     )
 
@@ -555,8 +556,9 @@ def generate_human_manual_ephemeris_compendium(
         s0 = sky_d0[b]
         # 1st-order Trairashika linear interpolation: L_1(t) = L_0 + f * v_0
         manual_lon_1st = (c0.longitude_deg + interp_fraction * c0.speed_deg_per_day) % 360.0
-        # 2nd-order Bessel correction: L_2(t) = L_1(t) + (f * (f - 1) / 4) * Delta^2
-        bessel_corr_deg = (interp_fraction * (interp_fraction - 1.0) / 4.0) * (s0.second_difference_arcsec_per_day2 / 3600.0)
+        # 2nd-order Taylor/Bessel correction using instantaneous velocity v_0 and centered second difference Delta^2:
+        # L_2(t) = L_1(t) + 0.5 * f^2 * Delta^2
+        bessel_corr_deg = 0.5 * (interp_fraction ** 2) * (s0.second_difference_arcsec_per_day2 / 3600.0)
         manual_lon_2nd = (manual_lon_1st + bessel_corr_deg) % 360.0
 
         exact_pos = ad.calc_ut(jd_worked_ut, b, sidereal=True, ayanamsa=ayanamsa)
@@ -679,8 +681,8 @@ def generate_human_manual_ephemeris_compendium(
     )
     frontier_dashas_worked = compute_all_10_parashari_nakshatra_dashas(
         moon_exact_lon,
-        sun_w_lon,
         worked_houses.ascendant_deg,
+        sun_w_lon,
         natal_lons_worked,
         jd_worked_ut,
         is_day_birth=True,
@@ -796,7 +798,7 @@ def generate_human_manual_ephemeris_compendium(
 
 
 def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
-    """Render the complete 20-Chapter Human-Readable Classical Ephemeris & Jyotish Academy Master Compendium."""
+    """Render the complete 30-Chapter Human-Readable Classical Ephemeris & Jyotish Academy Master Compendium."""
     lines: list[str] = []
     ad = EphemerisAdapter()
     jd_epoch = comp.daily_rows[0].jd_reference_ut
@@ -812,11 +814,11 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
         "*KP 249 Sub-Lords*, *Jaimini Arudha Padas & Chara Karakas*, *Vimshottari/Yogini/Ashtottari/Kalachakra Dashas*, "
         "*Shadbala* (6-fold planetary strength), *Ashtakavarga* (337-bindu transit grid), *Ayurdaya* (longevity), and "
         "*Tajika Varshphal* (annual solar return with 36 Sahams) **entirely by hand** using printed ephemeris tables. "
-        "This 20-chapter master volume restores that unbroken lineage with sub-arcsecond NASA JPL DE440/DE441 astronomical precision."
+        "This 30-chapter master volume restores that unbroken lineage with sub-arcsecond NASA JPL DE440/DE441 astronomical precision."
     )
     lines.append("")
-    lines.append("## Master Document Metadata & Cryptographic Provenance Receipt")
-    lines.append(f"- **Ephemeris Month & Year:** `{comp.year}-{comp.month:02d}` (`20 Complete Chapters`)")
+    lines.append("### Master Document Metadata & Cryptographic Provenance Receipt")
+    lines.append(f"- **Ephemeris Month & Year:** `{comp.year}-{comp.month:02d}` (`30 Complete Chapters`)")
     lines.append(f"- **Daily Tabular Reference Epoch:** `{comp.reference_epoch_label}`")
     lines.append(
         f"- **Reference Meridian / Location:** Latitude `{comp.observer_latitude_deg:.4f}°`, "
@@ -830,7 +832,7 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     # =========================================================================
     # CHAPTER 1: Fundamental Astronomical Constants, Julian Days & 25 Ayanamshas
     # =========================================================================
-    lines.append("## Chapter 1 — Fundamental Astronomical Constants, Julian Day Tables (`1900–2050`), $\\Delta T$, & 25-Ayanamsha Master Conversion Table")
+    lines.append("## Chapter 1 — Fundamental Astronomical Constants, Julian Day Tables (`1900–2050`), ΔT, & 25-Ayanamsha Master Conversion Table")
     lines.append("")
     lines.append("### Table 1A — Fundamental Astronomical & Vedic Siddhantic Constants")
     lines.append("")
@@ -838,15 +840,15 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     lines.append("|---|---|---|")
     lines.append("| **J2000.0 Fundamental Epoch** | `JD 2451545.0 TT` (`2000-01-01 12:00:00 TT`) | IAU 2006 / 2000A Standard Epoch |")
     lines.append("| **Kali Yuga Fundamental Epoch** | `JD 588465.5 UT` (`3102 BCE Feb 18 00:00 Ujjain`) | *Surya Siddhanta* & *Aryabhatiya* |")
-    lines.append("| **Astronomical Unit ($1\\text{ AU}$)** | `149,597,870.700 km` (exact) | IAU 2012 Resolution B2 |")
-    lines.append("| **Speed of Light ($c$)** | `299,792.458 km/s` (`173.144632674 AU/day`) | IAU / SI Exact Constant |")
-    lines.append("| **Mean Obliquity at J2000.0 ($\\varepsilon_0$)** | `23° 26' 21.406\"` (`84381.406\"`) | Capitaine et al. (2003) / IAU 2006 |")
-    lines.append("| **General Precession Rate ($p_A$ at J2000)** | `50.28796195\" / Julian year` (`1° in 71.5877 years`) | IAU 2006 Precession Model |")
-    lines.append("| **Mean Tropical Year ($Y_{\\text{trop}}$)** | `365.24218967 days` (`365d 05h 48m 45.2s`) | Simon et al. (1994) |")
-    lines.append("| **Mean Sidereal Year ($Y_{\\text{sid}}$)** | `365.256363004 days` (`365d 06h 09m 09.8s`) | IAU Standard Sidereal Year |")
+    lines.append("| **Astronomical Unit (`1 AU`)** | `149,597,870.700 km` (exact) | IAU 2012 Resolution B2 |")
+    lines.append("| **Speed of Light (`c`)** | `299,792.458 km/s` (`173.144632674 AU/day`) | IAU / SI Exact Constant |")
+    lines.append("| **Mean Obliquity at J2000.0 (`ε₀`)** | `23° 26' 21.406\"` (`84381.406\"`) | Capitaine et al. (2003) / IAU 2006 |")
+    lines.append("| **General Precession Rate (`p_A` at J2000)** | `50.28796195\" / Julian year` (`1° in 71.5877 years`) | IAU 2006 Precession Model |")
+    lines.append("| **Mean Tropical Year (`Y_trop`)** | `365.24218967 days` (`365d 05h 48m 45.2s`) | Simon et al. (1994) |")
+    lines.append("| **Mean Sidereal Year (`Y_sid`)** | `365.256363004 days` (`365d 06h 09m 09.8s`) | IAU Standard Sidereal Year |")
     lines.append("| **Surya Siddhanta Sidereal Year** | `365.25875648 days` (`365d 15g 31p 31.4v`) | `1,577,917,828 / 4,320,000` Savana days |")
     lines.append("| **Mean Synodic Lunar Month** | `29.530588853 days` (`29d 12h 44m 02.9s`) | Mean New Moon to New Moon |")
-    lines.append("| **Mean Sidereal Lunar Month** | `27.321661547 days` (`27d 07h 43m 11.6s`) | `1 Nakshatra` $\\approx 24\\text{h } 18\\text{m}$ |")
+    lines.append("| **Mean Sidereal Lunar Month** | `27.321661547 days` (`27d 07h 43m 11.6s`) | `1 Nakshatra ≈ 24h 18m` |")
     lines.append("| **Vedic Time Units (*Ghati / Pala / Vipala*)** | `1 Day = 60 Ghatis = 3,600 Palas = 216,000 Vipalas` | `1 Ghati = 24 min`, `1 Pala = 24 sec`, `1 Vipala = 0.4 sec` |")
     lines.append("")
 
@@ -855,10 +857,10 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     lines.append(
         "**How to Convert Any Position in This Compendium to Another Ayanamsha:** Every sidereal table in this book "
         "is printed in **Chitrapaksha / Lahiri (`IAE 1989`)**. To convert any longitude to another Ayanamsha, simply "
-        "**subtract $\\Delta = (\\text{Target Ayanamsha} - \\text{Lahiri Ayanamsha})$** listed in the column below:"
+        "**subtract `Δ = (Target Ayanamsha − Lahiri Ayanamsha)`** listed in the column below:"
     )
     lines.append("")
-    lines.append("| # | Ayanamsha Key | Canonical Name & Lineage | Value on `2026-11-01` (`DD° MM' SS\"`) | Decimal (`deg`) | Offset vs Lahiri ($\\Delta = A - A_{\\text{Lahiri}}$) | Precession / Anchor Model |")
+    lines.append("| # | Ayanamsha Key | Canonical Name & Lineage | Value on `2026-11-01` (`DD° MM' SS\"`) | Decimal (`deg`) | Offset vs Lahiri (`Δ = A − A_Lahiri`) | Precession / Anchor Model |")
     lines.append("|---|---|---|---|---|---|---|")
     lahiri_base = ad.get_ayanamsa_ut(jd_epoch, mode="lahiri")
     ay_idx = 0
@@ -888,7 +890,7 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     lines.append("")
     lines.append(
         "**How to Compute Any Julian Date (`JD`) by Hand:**\n"
-        "$$\\text{JD} = \\text{JD}_{\\text{Jan 0.0}}(\\text{Year}) + \\text{Month Offset (Table 1D)} + \\text{Day of Month} + \\frac{\\text{UTC Hours}}{24}$$"
+        "`JD = JD_Jan0.0(Year) + Month Offset (Table 1D) + Day of Month + (UTC Hours / 24)`"
     )
     lines.append("")
     lines.append("| Year | `JD (Jan 0.0)` | Year | `JD (Jan 0.0)` | Year | `JD (Jan 0.0)` | Year | `JD (Jan 0.0)` | Year | `JD (Jan 0.0)` |")
@@ -906,9 +908,9 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
         lines.append("| " + " | ".join(row_cells) + " |")
     lines.append("")
 
-    lines.append("### Table 1D — Cumulative Month Day-Offsets & Historical $\\Delta T = \\text{TT} - \\text{UT1}$ Table")
+    lines.append("### Table 1D — Cumulative Month Day-Offsets & Historical `ΔT = TT − UT1` Table")
     lines.append("")
-    lines.append("| Month | Regular Year Offset | Leap Year (`*`) Offset | Historical Epoch | $\\Delta T = \\text{TT} - \\text{UT1}$ (Seconds) | $\\Delta T$ (Minutes) |")
+    lines.append("| Month | Regular Year Offset | Leap Year (`*`) Offset | Historical Epoch | `ΔT = TT − UT1` (Seconds) | `ΔT` (Minutes) |")
     lines.append("|---|---|---|---|---|---|")
     month_names = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
     reg_offsets = (0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334)
@@ -957,10 +959,10 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
         lines.append("| " + " | ".join(cells) + " |")
     lines.append("")
 
-    lines.append("### Table 2B — Daily Outer Planets (*Aruna / Uranus, Varuna / Neptune, Yama / Pluto*), Tropical (*Sayana*) Luminaries, & Second-Order Tabular Differences ($\\Delta^2 \\lambda$)")
+    lines.append("### Table 2B — Daily Outer Planets (*Aruna / Uranus, Varuna / Neptune, Yama / Pluto*), Tropical (*Sayana*) Luminaries, & Second-Order Tabular Differences (`Δ²λ`)")
     lines.append("")
     lines.append(
-        "| Date | Kali *Ahargana* | Tropical Sun ($\\lambda_{\\text{trop}}$) | Tropical Moon ($\\lambda_{\\text{trop}}$) | Uranus (*Aruna*) Sidereal | Neptune (*Varuna*) Sidereal | Pluto (*Yama*) Sidereal | Moon $\\Delta^2 \\lambda$ (`\"/d²`) | Mercury $\\Delta^2 \\lambda$ (`\"/d²`) | Venus $\\Delta^2 \\lambda$ (`\"/d²`) | Mars $\\Delta^2 \\lambda$ (`\"/d²`) |"
+        "| Date | Kali *Ahargana* | Tropical Sun (`λ_trop`) | Tropical Moon (`λ_trop`) | Uranus (*Aruna*) Sidereal | Neptune (*Varuna*) Sidereal | Pluto (*Yama*) Sidereal | Moon `Δ²λ` (`\"/d²`) | Mercury `Δ²λ` (`\"/d²`) | Venus `Δ²λ` (`\"/d²`) | Mars `Δ²λ` (`\"/d²`) |"
     )
     lines.append("|---|---|---|---|---|---|---|---|---|---|---|")
     for idx_r, r in enumerate(comp.daily_rows):
@@ -980,18 +982,18 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     # =========================================================================
     # CHAPTER 3: Complete Daily Spherical & Physical Ephemeris Grid
     # =========================================================================
-    lines.append("## Chapter 3 — Daily Spherical & Physical Ephemeris Grid (Declination $\\delta$, Right Ascension $\\alpha$, Ecliptic Latitude $\\beta$, Distance $R$, Parallax, Diameter, Phase & Magnitude)")
+    lines.append("## Chapter 3 — Daily Spherical & Physical Ephemeris Grid (Declination `δ`, Right Ascension `α`, Ecliptic Latitude `β`, Distance `R`, Parallax, Diameter, Phase & Magnitude)")
     lines.append("")
     lines.append(
         "**Why Spherical & Physical Coordinates Are Essential for Manual Jyotish:**\n"
-        "- **Declination ($\\delta$ / *Kranti*):** Required to compute *Ayana Bala* in *Shadbala*, Parallel/Contra-Parallel Declination aspects (*Kranti Yoga*), and *Vyatipata / Vaidhriti Mahapata*.\n"
-        "- **Ecliptic Latitude ($\\beta$ / *Shara / Vikshepa*):** Required to adjudicate the winner of a *Graha Yuddha* (Planetary War — the planet with the more northern latitude wins) and *Nakshatra Tara Bheda*.\n"
-        "- **True Distance ($R$ in AU), Horizontal Parallax (`HP`), Apparent Diameter (`\"`), & Visual Magnitude ($V_{\\text{mag}}$):** Required for topocentric Moon correction, eclipse contact sizing, and *Cheshta / Brihat Samhita* brightness diagnostics."
+        "- **Declination (`δ` / *Kranti*):** Required to compute *Ayana Bala* in *Shadbala*, Parallel/Contra-Parallel Declination aspects (*Kranti Yoga*), and *Vyatipata / Vaidhriti Mahapata*.\n"
+        "- **Ecliptic Latitude (`β` / *Shara / Vikshepa*):** Required to adjudicate the winner of a *Graha Yuddha* (Planetary War — the planet with the more northern latitude wins) and *Nakshatra Tara Bheda*.\n"
+        "- **True Distance (`R` in AU), Horizontal Parallax (`HP`), Apparent Diameter (`\"`), & Visual Magnitude (`V_mag`):** Required for topocentric Moon correction, eclipse contact sizing, and *Cheshta / Brihat Samhita* brightness diagnostics."
     )
     lines.append("")
-    lines.append("### Table 3A — Daily Declination ($\\delta$ / *Kranti*) & Right Ascension ($\\alpha$) Across the *Navagrahas* (`05:30 IST`)")
+    lines.append("### Table 3A — Daily Declination (`δ` / *Kranti*) & Right Ascension (`α`) Across the *Navagrahas* (`05:30 IST`)")
     lines.append("")
-    lines.append("| Date | Sun $\\delta$ / $\\alpha$ | Moon $\\delta$ / $\\alpha$ | Mars $\\delta$ / $\\alpha$ | Mercury $\\delta$ / $\\alpha$ | Jupiter $\\delta$ / $\\alpha$ | Venus $\\delta$ / $\\alpha$ | Saturn $\\delta$ / $\\alpha$ | Rahu $\\delta$ |")
+    lines.append("| Date | Sun `δ / α` | Moon `δ / α` | Mars `δ / α` | Mercury `δ / α` | Jupiter `δ / α` | Venus `δ / α` | Saturn `δ / α` | Rahu `δ` |")
     lines.append("|---|---|---|---|---|---|---|---|---|")
     for idx_r, r in enumerate(comp.daily_rows):
         sky = comp.full_sky_rows[idx_r]
@@ -1007,9 +1009,9 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
         )
     lines.append("")
 
-    lines.append("### Table 3B — Daily Ecliptic Latitude ($\\beta$ / *Shara*), Geocentric Distance ($R$ in AU), Lunar Parallax (`HP`), Disk Illumination (`%`), & Visual Magnitude ($V_{\\text{mag}}$)")
+    lines.append("### Table 3B — Daily Ecliptic Latitude (`β` / *Shara*), Geocentric Distance (`R` in AU), Lunar Parallax (`HP`), Disk Illumination (`%`), & Visual Magnitude (`V_mag`)")
     lines.append("")
-    lines.append("| Date | Moon $\\beta$ (`DMS`) | Moon `HP` / Diam | Moon Illum `%` | Mars $\\beta$ / Dist (`AU`) / $V_{\\text{mag}}$ | Mercury $\\beta$ / Dist (`AU`) / $V_{\\text{mag}}$ | Jupiter $\\beta$ / Dist (`AU`) / $V_{\\text{mag}}$ | Venus $\\beta$ / Dist (`AU`) / $V_{\\text{mag}}$ | Saturn $\\beta$ / Dist (`AU`) / $V_{\\text{mag}}$ |")
+    lines.append("| Date | Moon `β` (`DMS`) | Moon `HP` / Diam | Moon Illum `%` | Mars `β` / Dist (`AU`) / `V_mag` | Mercury `β` / Dist (`AU`) / `V_mag` | Jupiter `β` / Dist (`AU`) / `V_mag` | Venus `β` / Dist (`AU`) / `V_mag` | Saturn `β` / Dist (`AU`) / `V_mag` |")
     lines.append("|---|---|---|---|---|---|---|---|---|")
     for idx_r, r in enumerate(comp.daily_rows):
         sky = comp.full_sky_rows[idx_r]
@@ -1078,12 +1080,12 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
 
     lines.append("### Table 4D — Exact *Surya Siddhanta Krantisamya* (*Vyatipata* & *Vaidhriti Mahapata*) Declination-Equality Windows")
     lines.append("")
-    lines.append("| Mahapata Type | Classical Condition | Peak Exact JD (`UT`) | Window Start (`JD UT`) | Window End (`JD UT`) | Sun Declination ($\\delta_\\odot$) | Moon Declination ($\\delta_{\\mathbb{C}}$) |")
+    lines.append("| Mahapata Type | Classical Condition | Peak Exact JD (`UT`) | Window Start (`JD UT`) | Window End (`JD UT`) | Sun Declination (`δ_Sun`) | Moon Declination (`δ_Moon`) |")
     lines.append("|---|---|---|---|---|---|---|")
     mp_rep = phen.get("mahapata_report")
     if mp_rep and mp_rep.events:
         for mp in mp_rep.events:
-            cond = "$\\delta_\\odot = +\\delta_{\\mathbb{C}}$ (Same Hemisphere)" if mp.mahapata_type == "Vyatipata" else "$\\delta_\\odot = -\\delta_{\\mathbb{C}}$ (Opposite Hemisphere)"
+            cond = "`δ_Sun = +δ_Moon` (Same Hemisphere)" if mp.mahapata_type == "Vyatipata" else "`δ_Sun = -δ_Moon` (Opposite Hemisphere)"
             lines.append(
                 f"| **{mp.mahapata_type} Mahapata** | {cond} | `{mp.exact_jd_ut:.5f}` | "
                 f"`{mp.window_start_jd_ut:.5f}` | `{mp.window_end_jd_ut:.5f}` | "
@@ -1099,9 +1101,9 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     lines.append("## Chapter 5 — Section 2 — Daily Sunrise-Anchored *Drik Panchanga*, *Ghati-Pala* Almanac, & *Muhurta* Table")
     lines.append("")
     lines.append(
-        "**Vedic Timekeeping Conversion:** $1\\text{ Solar Day} = 24\\text{ Hours} = 60\\text{ Ghatis (Nadis)}$; "
-        "$1\\text{ Hour} = 2.5\\text{ Ghatis}$; $1\\text{ Ghati} = 24\\text{ Minutes} = 60\\text{ Palas (Vinadis)}$; "
-        "$1\\text{ Pala} = 24\\text{ Seconds}$."
+        "**Vedic Timekeeping Conversion:** `1 Solar Day = 24 Hours = 60 Ghatis (Nadis)`; "
+        "`1 Hour = 2.5 Ghatis`; `1 Ghati = 24 Minutes = 60 Palas (Vinadis)`; "
+        "`1 Pala = 24 Seconds`."
     )
     lines.append("")
     lines.append(
@@ -1127,15 +1129,15 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     lines.append(
         "### 6.1 First-Order *Trairashika* (Rule of Three) & Second-Order Bessel Formula\n"
         "- **First-Order Formula (Sufficient for Sun, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu to `< 0.5\"`):**\n"
-        "  $$\\lambda_1(t) = \\lambda(05\\text{:}30\\text{ IST}) + f \\times v_{\\text{day}}, \\quad f = \\frac{\\Delta t_{\\text{hours}}}{24} = \\frac{\\Delta G_{\\text{ghatis}}}{60}$$\n"
-        "- **Second-Order Bessel Formula (For Sub-Arcsecond Manual Interpolation of the Fast-Moving Moon):**\n"
-        "  $$\\lambda_2(t) = \\lambda_1(t) + \\frac{f(f - 1)}{4} \\times \\Delta^2 \\lambda$$\n"
-        "  where $\\Delta^2 \\lambda$ is printed in **Table 2B** and the Bessel multiplier $B_2(f) = \\frac{f(f-1)}{4}$ is printed in **Table 6A** below."
+        "  `λ₁(t) = λ(05:30 IST) + f × v_day`, where `f = Δt_hours / 24 = ΔG_ghatis / 60`\n"
+        "- **Second-Order Quadratic Formula (For Sub-Arcsecond Manual Interpolation of the Fast-Moving Moon using Instantaneous Velocity `v_day`):**\n"
+        "  `λ₂(t) = λ₁(t) + (f² / 2) × Δ²λ`\n"
+        "  where `Δ²λ` is printed in **Table 2B** and the quadratic multiplier `B₂(f) = f² / 2` is printed in **Table 6A** below."
     )
     lines.append("")
-    lines.append("### Table 6A — Complete 96-Row 15-Minute (`00:00` to `24:00`) *Trairashika* Fraction ($f$), *Ghati-Pala*, & Bessel 2nd-Difference Coefficient ($B_2(f)$) Table")
+    lines.append("### Table 6A — Complete 96-Row 15-Minute (`00:00` to `24:00`) *Trairashika* Fraction (`f`), *Ghati-Pala*, & 2nd-Difference Coefficient (`B₂(f)`) Table")
     lines.append("")
-    lines.append("| Elapsed Time (`HH:MM`) | Elapsed *Ghati-Pala* | Fraction $f = \\Delta t / 24$ | Bessel $B_2(f)$ | Sun Incr (`+59'08\"/d`) | Mean Moon Incr (`+13°10'35\"/d`) | Elapsed Time (`HH:MM`) | Elapsed *Ghati-Pala* | Fraction $f = \\Delta t / 24$ | Bessel $B_2(f)$ | Sun Incr (`+59'08\"/d`) | Mean Moon Incr (`+13°10'35\"/d`) |")
+    lines.append("| Elapsed Time (`HH:MM`) | Elapsed *Ghati-Pala* | Fraction `f = Δt / 24` | Quadratic `B₂(f) = f² / 2` | Sun Incr (`+59'08\"/d`) | Mean Moon Incr (`+13°10'35\"/d`) | Elapsed Time (`HH:MM`) | Elapsed *Ghati-Pala* | Fraction `f = Δt / 24` | Quadratic `B₂(f) = f² / 2` | Sun Incr (`+59'08\"/d`) | Mean Moon Incr (`+13°10'35\"/d`) |")
     lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
     for q_idx in range(1, 49):
         # Left column: 00:15 to 12:00; Right column: 12:15 to 24:00
@@ -1145,7 +1147,7 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
             hh = int(hrs)
             mm = int(round((hrs - hh) * 60))
             f_val = hrs / 24.0
-            b2_val = f_val * (f_val - 1.0) / 4.0
+            b2_val = 0.5 * (f_val ** 2)
             gp_s = format_ghati_pala(hrs)
             sun_i = format_daily_motion_dms(f_val * (59.1333 / 60.0))
             moon_i = format_daily_motion_dms(f_val * 13.17639)
@@ -1160,8 +1162,9 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     lines.append("")
     lines.append(
         "**How to Find the Exact Sidereal Ascendant (*Udaya Lagna*) and 10th Cusp (*Madhya Lagna*) from Table 7A:**\n"
-        "1. Take the **Local Sidereal Time (LST)** at `05:30 IST` from **Table 2A**.\n"
-        "2. Add the time elapsed from `05:30 IST` to Birth Time, plus `10 seconds per hour` of elapsed solar time (`+3m 56.56s` per 24h), and adjust by `(Observer Longitude - 75.7885°) × 4 minutes/degree` to get **Birth Local Sidereal Time (RAMC)**.\n"
+        "1. Take the **Local Sidereal Time (LST)** at `05:30 IST` from **Table 2A** (already computed for the compendium reference meridian `"
+        f"{comp.observer_longitude_deg:.4f}°`).\n"
+        f"2. Add the time elapsed from `05:30 IST` to Birth Time, plus `10 seconds per hour` of elapsed solar time (`+3m 56.56s` per 24h), and adjust by `(Observer Longitude - {comp.observer_longitude_deg:.4f}°) × 4 minutes/degree` to get **Birth Local Sidereal Time (RAMC)**.\n"
         "3. Look up the Birth LST row in **Table 7A** under your city's latitude column and subtract `(Current Lahiri Ayanamsha - 24° 13' 55\")` if casting for another century."
     )
     lines.append("")
@@ -1239,12 +1242,12 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     lines.append("| # | Special Lagna (*Vishesha Lagna*) | Rate of Motion | Exact Classical Manual Formula (*Brihat Parashara Hora Shastra* & *Uttara Kalamrita*) | Primary Predictive Domain |")
     lines.append("|---|---|---|---|---|")
     lines.append("| **1** | **Udaya Lagna (Birth Ascendant)** | `~1° per 4 min` (`12 signs / 24h`) | Eastern horizon intersection with the sidereal ecliptic at birth (Table 7A) | Physical body, vitality, self, overall life trajectory |")
-    lines.append("| **2** | **Hora Lagna (HL)** | `1° per 2.5 min` (`24 signs / 24h`) | $\\text{HL} = \\lambda_\\odot(\\text{Sunrise}) + \\frac{\\text{Elapsed Minutes since Sunrise}}{2.5}$ | Personal wealth, sustenance, liquid resources, financial inflow |")
-    lines.append("| **3** | **Ghati Lagna (GL)** | `1.25° per min` (`1 sign per Ghati`) | $\\text{GL} = \\lambda_\\odot(\\text{Sunrise}) + (\\text{Elapsed Ghatis since Sunrise} \\times 30^\\circ)$ | Power, royal authority, political/executive rank, fame |")
-    lines.append("| **4** | **Bhava Lagna (BL)** | `0.25° per min` (`1 sign per 5 Ghatis`) | $\\text{BL} = \\lambda_\\odot(\\text{Sunrise}) + (\\text{Elapsed Ghatis since Sunrise} \\times 6^\\circ)$ | Inner psychological disposition and bodily constitution |")
-    lines.append("| **5** | **Sree Lagna (SL)** | Linked to Moon's Pada | $\\text{SL} = \\lambda_{\\text{Udaya Lagna}} + \\left(\\frac{\\lambda_{\\mathbb{C}} \\bmod 13^\\circ 20'}{13^\\circ 20'} \\times 360^\\circ\\right)$ | Goddess Lakshmi's grace, prosperity, marriage fortune |")
-    lines.append("| **6** | **Indu Lagna (IL)** | Planetary *Kala* Sum | Sum *Kalas* (`Sun 30, Moon 16, Mars 6, Mercury 8, Jupiter 10, Venus 12, Saturn 1`) of 9th Lord from Lagna + 9th Lord from Moon; take $\\text{Sum} \\bmod 12$ (`0 -> 12`) and count that many signs from Natal Moon | Millionaire/billionaire *Dhana Yogas* and windfall wealth Dasha triggers |")
-    lines.append("| **7** | **Pranapada Lagna (PL)** | `4° per minute` (`1° per 15 Palas`) | $\\text{PL} = \\lambda_\\odot + \\frac{\\text{Elapsed Palas since Sunrise}}{15} + \\begin{cases} 0^\\circ & \\text{Sun in Movable Sign} \\\\ 240^\\circ & \\text{Sun in Fixed Sign} \\\\ 120^\\circ & \\text{Sun in Dual Sign} \\end{cases}$ | Birth-time rectification (must fall in trine/10th to Moon or Lagna) |")
+    lines.append("| **2** | **Hora Lagna (HL)** | `0.5° per min` (`1 sign per Hora`) | `HL = λ_Sun(Sunrise) + (Elapsed Minutes since Sunrise / 2.0)` | Personal wealth, sustenance, liquid resources, financial inflow |")
+    lines.append("| **3** | **Ghati Lagna (GL)** | `1.25° per min` (`1 sign per Ghati`) | `GL = λ_Sun(Sunrise) + (Elapsed Ghatis since Sunrise × 30°)` | Power, royal authority, political/executive rank, fame |")
+    lines.append("| **4** | **Bhava Lagna (BL)** | `0.25° per min` (`1 sign per 5 Ghatis`) | `BL = λ_Sun(Sunrise) + (Elapsed Ghatis since Sunrise × 6°)` | Inner psychological disposition and bodily constitution |")
+    lines.append("| **5** | **Sree Lagna (SL)** | Linked to Moon's Pada | `SL = λ_Udaya_Lagna + ((λ_Moon mod 13°20') / 13°20') × 360°` | Goddess Lakshmi's grace, prosperity, marriage fortune |")
+    lines.append("| **6** | **Indu Lagna (IL)** | Planetary *Kala* Sum | Sum *Kalas* (`Sun 30, Moon 16, Mars 6, Mercury 8, Jupiter 10, Venus 12, Saturn 1`) of 9th Lord from Lagna + 9th Lord from Moon; take `Sum mod 12` (`0 -> 12`) and count that many signs from Natal Moon | Millionaire/billionaire *Dhana Yogas* and windfall wealth Dasha triggers |")
+    lines.append("| **7** | **Pranapada Lagna (PL)** | `2° per Pala` (`1 sign per 15 Palas`) | `PL = λ_Sun + ((Elapsed Palas since Sunrise / 15) × 30°) + Offset` (`0°` Movable, `240°` Fixed, `120°` Dual Solar Sign) | Birth-time rectification (must fall in trine/10th to Moon or Lagna) |")
     lines.append("| **8** | **Varnada Lagna (VL)** | Sign-Parity Vector | Count Udaya Lagna & Hora Lagna from Mesha (if Odd) or Meena backwards (if Even); add if same parity, subtract if opposite parity | Social class, vocational calling, and public duty |")
     lines.append("")
 
@@ -1252,11 +1255,11 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     lines.append("")
     lines.append("| Category | Upagraha Name | Ruling Planet | Exact Manual Calculation Formula | Daytime Octant (`Sun..Sat`, out of 8) | Nighttime Octant (`Sun..Sat`, out of 8) |")
     lines.append("|---|---|---|---|---|---|")
-    lines.append("| **Solar Upagraha 1** | **Dhuma** | Mars (Fiery Smoke) | $\\lambda_{\\text{Dhuma}} = (\\lambda_\\odot + 133^\\circ 20') \\bmod 360^\\circ$ | Instantaneous from $\\lambda_\\odot$ | Instantaneous from $\\lambda_\\odot$ |")
-    lines.append("| **Solar Upagraha 2** | **Vyatipata** | Rahu (Calamity) | $\\lambda_{\\text{Vyatipata}} = (360^\\circ - \\lambda_{\\text{Dhuma}}) \\bmod 360^\\circ$ | Instantaneous from $\\lambda_\\odot$ | Instantaneous from $\\lambda_\\odot$ |")
-    lines.append("| **Solar Upagraha 3** | **Parivesha** | Moon (Halo) | $\\lambda_{\\text{Parivesha}} = (\\lambda_{\\text{Vyatipata}} + 180^\\circ) \\bmod 360^\\circ$ | Instantaneous from $\\lambda_\\odot$ | Instantaneous from $\\lambda_\\odot$ |")
-    lines.append("| **Solar Upagraha 4** | **Indrachapa (Kodanda)** | Venus (Rainbow Bow) | $\\lambda_{\\text{Indrachapa}} = (360^\\circ - \\lambda_{\\text{Parivesha}}) \\bmod 360^\\circ$ | Instantaneous from $\\lambda_\\odot$ | Instantaneous from $\\lambda_\\odot$ |")
-    lines.append("| **Solar Upagraha 5** | **Upaketu (Sikhi)** | Ketu (Comet Crest) | $\\lambda_{\\text{Upaketu}} = (\\lambda_{\\text{Indrachapa}} + 16^\\circ 40') \\bmod 360^\\circ = (\\lambda_\\odot - 30^\\circ)$ | Instantaneous from $\\lambda_\\odot$ | Instantaneous from $\\lambda_\\odot$ |")
+    lines.append("| **Solar Upagraha 1** | **Dhuma** | Mars (Fiery Smoke) | `λ_Dhuma = (λ_Sun + 133° 20') mod 360°` | Instantaneous from `λ_Sun` | Instantaneous from `λ_Sun` |")
+    lines.append("| **Solar Upagraha 2** | **Vyatipata** | Rahu (Calamity) | `λ_Vyatipata = (360° - λ_Dhuma) mod 360°` | Instantaneous from `λ_Sun` | Instantaneous from `λ_Sun` |")
+    lines.append("| **Solar Upagraha 3** | **Parivesha** | Moon (Halo) | `λ_Parivesha = (λ_Vyatipata + 180°) mod 360°` | Instantaneous from `λ_Sun` | Instantaneous from `λ_Sun` |")
+    lines.append("| **Solar Upagraha 4** | **Indrachapa (Kodanda)** | Venus (Rainbow Bow) | `λ_Indrachapa = (360° - λ_Parivesha) mod 360°` | Instantaneous from `λ_Sun` | Instantaneous from `λ_Sun` |")
+    lines.append("| **Solar Upagraha 5** | **Upaketu (Sikhi)** | Ketu (Comet Crest) | `λ_Upaketu = (λ_Indrachapa + 16° 40') mod 360° = (λ_Sun - 30°)` | Instantaneous from `λ_Sun` | Instantaneous from `λ_Sun` |")
     lines.append("| **Kalavela 1** | **Gulika (Mandi)** | Saturn's Son | Ascendant rising at start of Saturn's 1/8th portion of *Dinamana* / *Ratrimana* | `Sun:7, Mon:6, Tue:5, Wed:4, Thu:3, Fri:2, Sat:1` | `Sun:3, Mon:2, Tue:1, Wed:7, Thu:6, Fri:5, Sat:4` |")
     lines.append("| **Kalavela 2** | **Kala** | Sun's Portion | Ascendant rising at start of Sun's 1/8th portion | `Sun:1, Mon:7, Tue:6, Wed:5, Thu:4, Fri:3, Sat:2` | `Sun:4, Mon:3, Tue:2, Wed:1, Thu:7, Fri:6, Sat:5` |")
     lines.append("| **Kalavela 3** | **Mrityu** | Mars's Portion | Ascendant rising at start of Mars's 1/8th portion | `Sun:3, Mon:2, Tue:1, Wed:7, Thu:6, Fri:5, Sat:4` | `Sun:6, Mon:5, Tue:4, Wed:3, Thu:2, Fri:1, Sat:7` |")
@@ -1268,17 +1271,17 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     lines.append("")
     lines.append("| Sensitive Point (*Sphuta*) | Exact Mathematical Formula (`Mod 360°`) | Classical Interpretation Rule (*Prashna Marga* & *BPHS*) |")
     lines.append("|---|---|---|")
-    lines.append("| **Yogi Point & Yogi Planet** | $\\lambda_{\\text{Yogi}} = (\\lambda_\\odot + \\lambda_{\\mathbb{C}} + 93^\\circ 20') \\bmod 360^\\circ$ | Nakshatra Lord of $\\lambda_{\\text{Yogi}}$ is **Yogi Planet** (supreme prosperity significator); Sign Lord is **Sahayogi** |")
-    lines.append("| **Avayogi Point & Planet** | $\\lambda_{\\text{Avayogi}} = (\\lambda_{\\text{Yogi}} + 186^\\circ 40') \\bmod 360^\\circ$ | Nakshatra Lord of $\\lambda_{\\text{Avayogi}}$ is **Avayogi Planet** (obstruction/drain significator) |")
-    lines.append("| **1. Trisphuta** | $(\\lambda_{\\text{Lagna}} + \\lambda_{\\mathbb{C}} + \\lambda_{\\text{Gulika}}) \\bmod 360^\\circ$ | Core vitality, health, and immediate horary crisis indicator |")
-    lines.append("| **2. Chatusphuta** | $(\\lambda_{\\text{Trisphuta}} + \\lambda_\\odot) \\bmod 360^\\circ$ | Soul-level endurance and royal/spiritual support |")
-    lines.append("| **3. Panchasphuta** | $(\\lambda_{\\text{Chatusphuta}} + \\lambda_{\\text{Rahu}}) \\bmod 360^\\circ$ | Karmic destiny and hidden snakes/curses in Prashna |")
-    lines.append("| **4. Prana Sphuta** | $(5 \\times \\lambda_{\\text{Lagna}} + \\lambda_{\\text{Gulika}}) \\bmod 360^\\circ$ | Vital breath (*Prana*) — conjunction with Mrityu Sphuta indicates acute danger |")
-    lines.append("| **5. Deha Sphuta** | $(8 \\times \\lambda_{\\mathbb{C}} + \\lambda_{\\text{Gulika}}) \\bmod 360^\\circ$ | Physical body resilience and recovery capacity |")
-    lines.append("| **6. Mrityu Sphuta** | $(7 \\times \\lambda_{\\text{Gulika}} + \\lambda_\\odot) \\bmod 360^\\circ$ | Mortality / critical vulnerability point |")
-    lines.append("| **7. Tithi Sphuta** | $\\left(\\lambda_{\\text{Lagna}} + (\\lambda_{\\mathbb{C}} - \\lambda_\\odot)\\right) \\bmod 360^\\circ$ | Lunar-phase harmony in relationships and undertakings |")
-    lines.append("| **8. Beeja Sphuta (Male)** | $(\\lambda_\\odot + \\lambda_{\\text{Venus}} + \\lambda_{\\text{Jupiter}}) \\bmod 360^\\circ$ | Male virility and progeny seed strength (must occupy odd signs/navamsas with benefic aspect) |")
-    lines.append("| **9. Kshetra Sphuta (Female)** | $(\\lambda_{\\mathbb{C}} + \\lambda_{\\text{Mars}} + \\lambda_{\\text{Jupiter}}) \\bmod 360^\\circ$ | Female fertility and womb strength (must occupy even signs/navamsas with benefic aspect) |")
+    lines.append("| **Yogi Point & Yogi Planet** | `λ_Yogi = (λ_Sun + λ_Moon + 93° 20') mod 360°` | Nakshatra Lord of `λ_Yogi` is **Yogi Planet** (supreme prosperity significator); Sign Lord is **Sahayogi** |")
+    lines.append("| **Avayogi Point & Planet** | `λ_Avayogi = (λ_Yogi + 186° 40') mod 360°` | Nakshatra Lord of `λ_Avayogi` is **Avayogi Planet** (obstruction/drain significator) |")
+    lines.append("| **1. Trisphuta** | `(λ_Lagna + λ_Moon + λ_Gulika) mod 360°` | Core vitality, health, and immediate horary crisis indicator |")
+    lines.append("| **2. Chatusphuta** | `(λ_Trisphuta + λ_Sun) mod 360°` | Soul-level endurance and royal/spiritual support |")
+    lines.append("| **3. Panchasphuta** | `(λ_Chatusphuta + λ_Rahu) mod 360°` | Karmic destiny and hidden snakes/curses in Prashna |")
+    lines.append("| **4. Prana Sphuta** | `(5 × λ_Lagna + λ_Gulika) mod 360°` | Vital breath (*Prana*) — conjunction with Mrityu Sphuta indicates acute danger |")
+    lines.append("| **5. Deha Sphuta** | `(8 × λ_Moon + λ_Gulika) mod 360°` | Physical body resilience and recovery capacity |")
+    lines.append("| **6. Mrityu Sphuta** | `(7 × λ_Gulika + λ_Sun) mod 360°` | Mortality / critical vulnerability point |")
+    lines.append("| **7. Tithi Sphuta** | `(λ_Lagna + (λ_Moon - λ_Sun)) mod 360°` | Lunar-phase harmony in relationships and undertakings |")
+    lines.append("| **8. Beeja Sphuta (Male)** | `(λ_Sun + λ_Venus + λ_Jupiter) mod 360°` | Male virility and progeny seed strength (must occupy odd signs/navamsas with benefic aspect) |")
+    lines.append("| **9. Kshetra Sphuta (Female)** | `(λ_Moon + λ_Mars + λ_Jupiter) mod 360°` | Female fertility and womb strength (must occupy even signs/navamsas with benefic aspect) |")
     lines.append("")
 
     # =========================================================================
@@ -1329,7 +1332,7 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
         w_s = RASHI_NAMES[(3 + p_idx) % 12]
         pn_f = " *PN*" if ((0 + p_idx) % 12) in (6, 8) else ""
         pn_e = " *PN*" if ((9 + p_idx) % 12) in (11, 1) else ""
-        pn_a = " *PN*" if ((6 + p_idx) % 12) in (11, 3) else ""
+        pn_a = " *PN*" if ((6 + p_idx) % 12) in (11, 1) else ""
         pn_w = " *PN*" if ((3 + p_idx) % 12) in (3, 5) else ""
         lines.append(
             f"| **Navamsa {p_idx + 1}** | `{sd:02d}° {sm:02d}' – {ed:02d}° {em:02d}'` | `{start_min}'–{end_min}'` | "
@@ -1460,11 +1463,11 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     lines.append("")
     lines.append("| Significator Level | Priority | Classical *KP* Definition | Predictive Rule |")
     lines.append("|---|---|---|---|")
-    lines.append("| **Level A (1st Order)** | Highest (`4x`) | Planet(s) occupying the **Nakshatra (Star)** of the Occupants of House $H$ | Strongest driver of the event when its Dasha/Bhukti/Antara runs |")
-    lines.append("| **Level B (2nd Order)** | High (`3x`) | Planet(s) directly **occupying** House $H$ in the *Placidus Bhava Chalit* chart | Delivers the house result directly unless vacated by Star tenants |")
-    lines.append("| **Level C (3rd Order)** | Moderate (`2x`) | Planet(s) occupying the **Nakshatra (Star)** of the Cusp Sign Lord of House $H$ | Activates the house promise through stellar rulership over the cusp lord |")
-    lines.append("| **Level D (4th Order)** | Baseline (`1x`) | The **Sign Lord** of the Cusp of House $H$ itself | Background significator; strong when untenanted in both house and star |")
-    lines.append("| **Cuspal Sub-Lord Gate** | **Decider** | The **Sub-Lord (`#001–#249`)** of Cusp $H$ | **The Star Lord shows the nature of the involvement; the Sub-Lord decides YES or NO** |")
+    lines.append("| **Level A (1st Order)** | Highest (`4x`) | Planet(s) occupying the **Nakshatra (Star)** of the Occupants of House `H` | Strongest driver of the event when its Dasha/Bhukti/Antara runs |")
+    lines.append("| **Level B (2nd Order)** | High (`3x`) | Planet(s) directly **occupying** House `H` in the *Placidus Bhava Chalit* chart | Delivers the house result directly unless vacated by Star tenants |")
+    lines.append("| **Level C (3rd Order)** | Moderate (`2x`) | Planet(s) occupying the **Nakshatra (Star)** of the Cusp Sign Lord of House `H` | Activates the house promise through stellar rulership over the cusp lord |")
+    lines.append("| **Level D (4th Order)** | Baseline (`1x`) | The **Sign Lord** of the Cusp of House `H` itself | Background significator; strong when untenanted in both house and star |")
+    lines.append("| **Cuspal Sub-Lord Gate** | **Decider** | The **Sub-Lord (`#001–#249`)** of Cusp `H` | **The Star Lord shows the nature of the involvement; the Sub-Lord decides YES or NO** |")
     lines.append("")
 
     # =========================================================================
@@ -1474,10 +1477,10 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     lines.append("")
     lines.append(
         "**Classical Formula for Balance of Dasha at Birth (*Bhogyamsha*):**\n"
-        "- Each Nakshatra spans $13^\\circ 20' = 800\\text{ arcminutes}$ ($4\\text{ Padas} \\times 200' = 800'$).\n"
-        "- If the Natal Moon is at $\\lambda_{\\mathbb{C}}$, find its elapsed arcminutes inside the current Nakshatra ($G_{\\text{elapsed}}$) "
-        "and the remaining arcminutes to complete the Nakshatra ($B_{\\text{rem}} = 800' - G_{\\text{elapsed}}$).\n"
-        "$$\\text{Balance of Mahadasha at Birth (Years)} = Y_{\\text{Mahadasha}} \\times \\frac{800' - G_{\\text{elapsed}}}{800'}$$"
+        "- Each Nakshatra spans `13° 20' = 800 arcminutes` (`4 Padas × 200' = 800'`).\n"
+        "- If the Natal Moon is at `λ_Moon`, find its elapsed arcminutes inside the current Nakshatra (`G_elapsed`) "
+        "and the remaining arcminutes to complete the Nakshatra (`B_rem = 800' - G_elapsed`).\n"
+        "- `Balance of Mahadasha at Birth (Years) = Y_Mahadasha × (800' - G_elapsed) / 800'`"
     )
     lines.append("")
     lines.append("### Table 12A — 80-Row *Vimshottari Dasha* Balance Ready Reckoner (For Every `10'` of Remaining Lunar Arc `800'` down to `10'`)")
@@ -1509,6 +1512,12 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
 
     lines.append("### Table 12B — Complete 81-Cell *Vimshottari Mahadasha × Antardasha (Bhukti)* Exact Duration Matrix (`Years-Months-Days`)")
     lines.append("")
+    lines.append(
+        "**Manual Antardasha (Bhukti) Formula:** Multiply the Mahadasha years by the Antardasha years and divide by 10 to obtain total months "
+        "(`Total Months = (Y_MD × Y_AD) / 10`); divide integer months by 12 for years and remaining months, and multiply any fractional month by **30** "
+        "(`Days = Fractional Month × 30`) to obtain days."
+    )
+    lines.append("")
     lines.append("| Mahadasha \\ Antardasha | Ketu (`7y`) | Venus (`20y`) | Sun (`6y`) | Moon (`10y`) | Mars (`7y`) | Rahu (`18y`) | Jupiter (`16y`) | Saturn (`19y`) | Mercury (`17y`) |")
     lines.append("|---|---|---|---|---|---|---|---|---|---|")
     for m_lord in VIMSHOTTARI_LORDS:
@@ -1532,7 +1541,7 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
 
     lines.append("### Table 12C — Complete 36-Year *Yogini Dasha* (`8 Yoginis`) & 108-Year *Ashtottari Dasha* (`8 Grahas`) Reference Tables")
     lines.append("")
-    lines.append("| Yogini # | Yogini Name | Planetary Ruler | Duration (`Years`) | Starting Nakshatra Rule $(N + 3) \\bmod 8$ | Ashtottari # | Ashtottari Lord | Duration (`Years`) | Assigned 28-Nakshatra Group |")
+    lines.append("| Yogini # | Yogini Name | Planetary Ruler | Duration (`Years`) | Starting Nakshatra Rule `(N + 3) mod 8` | Ashtottari # | Ashtottari Lord | Duration (`Years`) | Assigned 28-Nakshatra Group |")
     lines.append("|---|---|---|---|---|---|---|---|---|")
     ashto_groups = (
         "Ardra, Punarvasu, Pushya, Ashlesha (4)",
@@ -1563,7 +1572,7 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
         "Karka (`21y`), Simha (`5y`), Dhanu/Meena (`10y`), Makara/Kumbha (`4y`)."
     )
     lines.append("")
-    lines.append("| Cycle Group | Nakshatra Triad | Pada | *Dehamsha* (First Sign) | *Jeevamsha* (Last Sign) | Total Cycle (`Paramayus`) | 9-Sign *Kalachakra* Progression Sequence |")
+    lines.append("| Cycle Group | Nakshatra Triad | Pada | *Dehamsha* (Body Sign) | *Jeevamsha* (Soul Sign) | Total Cycle (`Paramayus`) | 9-Sign *Kalachakra* Progression Sequence |")
     lines.append("|---|---|---|---|---|---|---|")
     for g_idx in range(3):
         triad_lbl = ("Ashwini, Punarvasu, Hasta, Mula, P.Bhadra (I)", "Bharani, Pushya, Chitra, P.Ashadha, U.Bhadra (II)", "Krittika, Ashlesha, Swati, U.Ashadha, Revati (III)")[g_idx]
@@ -1582,7 +1591,7 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
             seq_names = [RASHI_NAMES[s] for s in seq_tuple]
             tot_y = sum(int(KALACHAKRA_SIGN_YEARS[s]) for s in seq_tuple)
             lines.append(
-                f"| **Apasavya {g_idx + 1}** | {triad_lbl} | **Pada {p_no}** | **{seq_names[0]}** | **{seq_names[-1]}** | "
+                f"| **Apasavya {g_idx + 1}** | {triad_lbl} | **Pada {p_no}** | **{seq_names[-1]}** | **{seq_names[0]}** | "
                 f"`{tot_y} Years` | " + " → ".join(seq_names) + " |"
             )
     lines.append("")
@@ -1595,8 +1604,8 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     lines.append("### Table 13A — Complete 144-Cell `12 × 12` *Jaimini Arudha Pada* (*Swastha* 1st/7th Exception Included) Master Lookup Matrix")
     lines.append("")
     lines.append(
-        "**How to Read This Table:** Find the **Sign of the House ($H$)** in the left column, and the **Sign Occupied by Its Lord ($L$)** "
-        "across the top row. The cell gives the **exact Arudha Pada Sign** (automatically applying the Jaimini *Swastha* rule: when the Lord is in the 1st or 7th from the house, the Arudha jumps 10 signs from the raw position)."
+        "**How to Read This Table:** Find the **Sign of the House (`H`)** in the left column, and the **Sign Occupied by Its Lord (`L`)** "
+        "across the top row. The cell gives the **exact Arudha Pada Sign** (automatically applying the Jaimini *Swastha* rule: when the projected Arudha lands in the 1st or 7th from the house, the Arudha jumps 10 signs from the raw position)."
     )
     lines.append("")
     lines.append("| House Sign \\ Lord Sign | " + " | ".join(f"**{r[:5]}**" for r in RASHI_NAMES) + " |")
@@ -1606,7 +1615,7 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
         for l_s in range(12):
             dist = (l_s - h_s) % 12
             raw_a = (l_s + dist) % 12
-            if dist in (0, 6):
+            if ((raw_a - h_s) % 12) in (0, 6):
                 final_a = (raw_a + 9) % 12
                 row_arudha.append(f"**{RASHI_NAMES[final_a][:5]}***")
             else:
@@ -1639,7 +1648,7 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
         ("Jupiter", JAIMINI_DEITY_MAP["Jupiter"], "Movable + Dual", "Fixed + Fixed", "Movable + Fixed", "**Purnayu** (with Jupiter in Lagna/7th: *Kakshya Vriddhi* +1 tier)"),
         ("Venus", JAIMINI_DEITY_MAP["Venus"], "Fixed + Dual", "Dual + Dual", "Fixed + Dual", "**Purnayu** (`66–100 Years`)"),
         ("Saturn", JAIMINI_DEITY_MAP["Saturn"], "Malefic in 8th/Lagna", "Afflicted Rudra", "Saturn un-elevated", "**Kakshya Hrasa** (-1 tier reduction when unassisted)"),
-        ("Rahu / Ketu", f"{JAIMINI_DEITY_MAP['Rahu']} / {JAIMINI_DEITY_MAP['Ketu']}", "8-Karaka Scheme (`Rahu` at $30^\\circ - d$)", "*Moksha Karaka* (`Ketu` in 12th from *Karakamsa*)", "—", "Ketu in 4th/8th/12th from *Karakamsa* grants final liberation"),
+        ("Rahu / Ketu", f"{JAIMINI_DEITY_MAP['Rahu']} / {JAIMINI_DEITY_MAP['Ketu']}", "8-Karaka Scheme (`Rahu` at `30° - d`)", "*Moksha Karaka* (`Ketu` in 12th from *Karakamsa*)", "—", "Ketu in 4th/8th/12th from *Karakamsa* grants final liberation"),
     )
     for g_n, dev_n, mp1, mp2, mp3, ay_res in ayur_rows:
         lines.append(f"| **{g_n}** | **{dev_n}** | {mp1} | {mp2} | {mp3} | {ay_res} |")
@@ -1670,14 +1679,14 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     lines.append("### Table 14B — Complete 36-Row Continuous Parashari *Sphuta Drishti* (Aspectual Strength in *Virupas* `0v–60v`) Lookup Table")
     lines.append("")
     lines.append(
-        "**Classical Piecewise Formula (*Brihat Parashara Hora Shastra*):** Let $\\Delta = (\\lambda_{\\text{Target}} - \\lambda_{\\text{Aspecting}}) \\bmod 360^\\circ$. "
-        "Base *Drishti* is `0v` for $0^\\circ..30^\\circ$ and $300^\\circ..360^\\circ$; rises from $30^\\circ..60^\\circ$ (`(Δ-30)/2`); "
-        "rises from $60^\\circ..90^\\circ$ (`(Δ-60)+15`); drops from $90^\\circ..120^\\circ$ (`45-(Δ-90)/2`); drops from $120^\\circ..150^\\circ$ (`30-(Δ-120)`); "
-        "rises sharply from $150^\\circ..180^\\circ$ (`2*(Δ-150)` peaking at `60v` at $180^\\circ$); and decreases linearly from $180^\\circ..300^\\circ$ (`(300-Δ)/2`). "
-        "**Special Vishesha Drishti:** Mars gets `60v` across $90^\\circ..120^\\circ$ & $210^\\circ..240^\\circ$; Jupiter gets `60v` across $120^\\circ..150^\\circ$ & $240^\\circ..270^\\circ$; Saturn gets `60v` across $60^\\circ..90^\\circ$ & $270^\\circ..300^\\circ$."
+        "**Classical Piecewise Formula (*Brihat Parashara Hora Shastra*):** Let `Δ = (λ_Target - λ_Aspecting) mod 360°`. "
+        "Base *Drishti* is `0v` for `0°..30°` and `300°..360°`; rises from `30°..60°` (`(Δ-30)/2`); "
+        "rises from `60°..90°` (`(Δ-60)+15`); drops from `90°..120°` (`45-(Δ-90)/2`); drops from `120°..150°` (`30-(Δ-120)`); "
+        "rises sharply from `150°..180°` (`2*(Δ-150)` peaking at `60v` at `180°`); and decreases linearly from `180°..300°` (`(300-Δ)/2`). "
+        "**Special Vishesha Drishti:** Mars gets `60v` across `90°..120°` & `210°..240°`; Jupiter gets `60v` across `120°..150°` & `240°..270°`; Saturn gets `60v` across `60°..90°` & `270°..300°`."
     )
     lines.append("")
-    lines.append("| Separation $\\Delta$ | House Span | Standard (*Sun, Moon, Mer, Ven*) | Mars (*4th & 8th Vishesha*) | Jupiter (*5th & 9th Vishesha*) | Saturn (*3rd & 10th Vishesha*) |")
+    lines.append("| Separation `Δ` | House Span | Standard (*Sun, Moon, Mer, Ven*) | Mars (*4th & 8th Vishesha*) | Jupiter (*5th & 9th Vishesha*) | Saturn (*3rd & 10th Vishesha*) |")
     lines.append("|---|---|---|---|---|---|")
     for deg_step in range(0, 360, 10):
         d = float(deg_step)
@@ -1773,7 +1782,7 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
         "`H9:` Lose `1/4` (Malefic) / `1/8` (Benefic)",
         "`H8:` Lose `1/5` (Malefic) / `1/10` (Benefic)",
         "`H7:` Lose `1/6` (Malefic) / `1/12` (Benefic)",
-        "**Amsayu Rule:** Total Elapsed Arcminutes $\\div 200' \\bmod 12 =$ Base Years (multiplied by $2\\times$ or $3\\times$ in Own/Exalted Rashi or D9)",
+        "**Amsayu Rule:** Total Elapsed Arcminutes `÷ 200' mod 12 =` Base Years (multiplied by `2×` or `3×` in Own/Exalted Rashi or D9)",
     )
     for idx_ay, p_ay in enumerate(("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn")):
         p_max = PINDAYU_MAX_YEARS.get(p_ay, PINDAYU_MAX_YEARS.get(p_ay.lower(), 0.0))
@@ -1840,12 +1849,12 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     lines.append("### Table 17C — Complete Catalog of All 36 Classical *Tajika Sahams* (Arabic Lots — Day & Night Manual Formulas)")
     lines.append("")
     lines.append(
-        "**Universal Saham Rule (*Tajika Neelakanthi*):** Compute $\\lambda_{\\text{Saham}} = (A - B + C) \\bmod 360^\\circ$. "
-        "Whenever the Ascendant ($C$) is **not** geometrically situated on the zodiacal arc moving forward from $B$ to $A$, "
-        "**add $+30^\\circ$ ($1\\text{ Sign}$)** to the result."
+        "**Universal Saham Rule (*Tajika Neelakanthi*):** Compute `λ_Saham = (A - B + C) mod 360°`. "
+        "Whenever the Ascendant (`C`) is **not** geometrically situated on the zodiacal arc moving forward from `B` to `A`, "
+        "**add `+30°` (`1 Sign`)** to the result."
     )
     lines.append("")
-    lines.append("| # | Classical *Saham* Name | Life Domain / Signification | Day Birth Formula ($A - B + C$) | Night Birth Formula ($A - B + C$) |")
+    lines.append("| # | Classical *Saham* Name | Life Domain / Signification | Day Birth Formula (`A - B + C`) | Night Birth Formula (`A - B + C`) |")
     lines.append("|---|---|---|---|---|")
     saham_catalog_36 = (
         ("01", "Punya Saham (Fortune)", "Overall fortune, dharma, prosperity & grace", "Moon - Sun + Lagna", "Sun - Moon + Lagna"),
@@ -1958,7 +1967,7 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     lines.append("")
     lines.append("### Table 19A — Complete 30-Star *Yogatara* (Junction Star) Astrometric Reference Catalog (*Surya Siddhanta* Chapter 8)")
     lines.append("")
-    lines.append("| # | Nakshatra / Star | Sanskrit *Yogatara* Name | Modern IAU Star | J2000 RA (`deg`) | J2000 Dec (`deg`) | Visual Mag ($V$) | *Kalansha* Heliacal Arc |")
+    lines.append("| # | Nakshatra / Star | Sanskrit *Yogatara* Name | Modern IAU Star | J2000 RA (`deg`) | J2000 Dec (`deg`) | Visual Mag (`V`) | *Kalansha* Heliacal Arc |")
     lines.append("|---|---|---|---|---|---|---|---|")
     for st_i, st in enumerate(YOGATARA_30_CATALOG, start=1):
         nak_lbl = f"Nakshatra #{st.nakshatra_number}" if st.nakshatra_number else "Seasonal Star"
@@ -1999,7 +2008,7 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
 
     lines.append(f"- **Case Study Date & Time:** `{we['civil_date']}` at `{we['birth_time_local']}`")
     lines.append(f"- **Observer Location:** `{we['observer_location']}` (Ujjain Prime Meridian Reference)")
-    lines.append(f"- **Elapsed Time After `05:30 IST` Tabular Epoch:** `{we['elapsed_after_0530_ist']}` (Interpolation Fraction $f = {we['trairashika_fraction']:.6f}$)")
+    lines.append(f"- **Elapsed Time After `05:30 IST` Tabular Epoch:** `{we['elapsed_after_0530_ist']}` (Interpolation Fraction `f = {we['trairashika_fraction']:.6f}`)")
     lines.append(f"- **Manual Ascendant (*Udaya Lagna*):** `{we['ascendant_dms']}` | **10th Cusp (*Madhya Lagna*):** `{we['mc_10th_cusp_dms']}`")
     lines.append(f"- **Natal Moon Nakshatra & Pada:** `{we['moon_nakshatra']}` (`{we['remaining_arcminutes_bhogyamsha']:.2f}'` *Bhogyamsha* remaining)")
     lines.append(f"- **Natal *Vimshottari Dasha* Balance at Birth:** **`{we['vimshottari_dasha_balance_at_birth']}`**")
@@ -2007,7 +2016,7 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
 
     lines.append("### Step 1 & Step 2 — Complete 1st-Order (*Trairashika*) & 2nd-Order (*Bessel*) Manual *Spashta Graha* Worksheet")
     lines.append("")
-    lines.append("| Body | `05:30 IST` Day $D$ | `05:30 IST` Day $D+1$ | Daily Motion $v_1$ | 1st-Order *Trairashika* | 2nd-Order *Bessel* Exact | `D9` Navamsa | `D10` Dasamsa | `D60` Shashtiamsa | *KP* Star / Sub / Sub-Sub |")
+    lines.append("| Body | `05:30 IST` Day `D` | `05:30 IST` Day `D+1` | Daily Motion `v₁` | 1st-Order *Trairashika* | 2nd-Order *Bessel* Exact | `D9` Navamsa | `D10` Dasamsa | `D60` Shashtiamsa | *KP* Star / Sub / Sub-Sub |")
     lines.append("|---|---|---|---|---|---|---|---|---|---|")
     for b_key, b_label in (
         ("sun", "Surya (Sun)"),
@@ -2158,7 +2167,7 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     topo_rep = we["frontier_topo_report"]
     lines.append("### 21.1 Worked Case Study: 13-Body Geocentric vs Topocentric & Relativistic Astrometry Table")
     lines.append("")
-    lines.append("| Body | Geocentric Sidereal (`DMS`) | Topocentric Sidereal (`DMS`) | Parallax Shift (`Δλ\" / Δβ\"`) | Azimuth / True Alt / Refracted Alt | Air Mass $X$ | Doppler $\\dot{r}$ (`km/s`) | Light-Time $\\tau$ (`s`) | Shapiro $\\Delta t$ (`μs`) | GR Defl (`mas`) | `D9 / D60 / KP` Flip Audit |")
+    lines.append("| Body | Geocentric Sidereal (`DMS`) | Topocentric Sidereal (`DMS`) | Parallax Shift (`Δλ\" / Δβ\"`) | Azimuth / True Alt / Refracted Alt | Air Mass `X` | Doppler `v_r` (`km/s`) | Light-Time `τ` (`s`) | Shapiro `Δt` (`μs`) | GR Defl (`mas`) | `D9 / D60 / KP` Flip Audit |")
     lines.append("|---|---|---|---|---|---|---|---|---|---|---|")
     for b_k, tb in topo_rep.bodies.items():
         flip_tag = (
@@ -2203,7 +2212,7 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
 
     lines.append("### 21.3 Saemundsson-Bennett Atmospheric Refraction & Rozenberg Optical Air Mass Master Table (`-1°` to `90°` Altitude)")
     lines.append("")
-    lines.append("| True Altitude $h_0$ | Std Refraction (`15°C, 1013 hPa`) | Hot Tropical (`35°C, 1005 hPa`) | Cold Winter (`0°C, 1020 hPa`) | High Altitude (`2200m, 780 hPa`) | Rozenberg Optical Air Mass $X(z)$ | Extinction Loss (`Δmag`, $k=0.20$) |")
+    lines.append("| True Altitude `h₀` | Std Refraction (`15°C, 1013 hPa`) | Hot Tropical (`35°C, 1005 hPa`) | Cold Winter (`0°C, 1020 hPa`) | High Altitude (`2200m, 780 hPa`) | Rozenberg Optical Air Mass `X(z)` | Extinction Loss (`Δmag`, `k=0.20`) |")
     lines.append("|---|---|---|---|---|---|---|")
     for h_deg in (-1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 60.0, 70.0, 80.0, 90.0):
         r_std = _saemundsson_refraction_arcsec(h_deg, 15.0, 1013.25)
@@ -2225,7 +2234,7 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     retro_rep = we["frontier_retro_report"]
     lines.append("### 22.1 Complete 5-Point Synodic Retrograde Phase-Space Loops (±180 Days Around Reference Epoch)")
     lines.append("")
-    lines.append("| Body | Pre-Shadow Entry | First Station $S_1$ (*Vakri*) | Minimum Distance / Opposition Peak | Second Station $S_2$ (*Margi*) | Post-Shadow Exit | Retrograde Arc Width | Loop Duration (`Days`) |")
+    lines.append("| Body | Pre-Shadow Entry | First Station `S₁` (*Vakri*) | Minimum Distance / Opposition Peak | Second Station `S₂` (*Margi*) | Post-Shadow Exit | Retrograde Arc Width | Loop Duration (`Days`) |")
     lines.append("|---|---|---|---|---|---|---|---|")
     for lp in retro_rep.loops:
         lines.append(
@@ -2317,6 +2326,10 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
             dv = int(spec["divisor"])
             if s_k == "vimshottari":
                 o_i = nk_i % 9
+            elif s_k == "ashtottari":
+                from ..jyotish.dasha import compute_ashtottari_dasha
+                ash_rep = compute_ashtottari_dasha(nk_i * (360.0 / 27.0) + 1.0, 2451545.0)
+                o_i = lords_t.index(ash_rep.opening_lord)
             elif s_k == "dwadashottari":
                 o_i = ((st_n - nk_i) % 27) % dv
             elif s_k == "yogini":
@@ -2676,11 +2689,14 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
 
 
 def _format_inline_md(text: str) -> str:
-    """Convert inline Markdown formatting (bold, italic, inline code) to clean HTML."""
-    escaped = html_mod.escape(text)
+    """Convert inline Markdown formatting (bold, italic, inline code, and `<br/>` line breaks) to clean HTML."""
+    br_token = "___BR_TOKEN___"
+    cleaned = text.replace("<br/>", br_token).replace("<br>", br_token)
+    escaped = html_mod.escape(cleaned)
     escaped = re.sub(r"`([^`]+)`", r"<code>\1</code>", escaped)
     escaped = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", escaped)
     escaped = re.sub(r"\*([^*]+)\*", r"<em>\1</em>", escaped)
+    escaped = escaped.replace(br_token, "<br/>")
     return escaped
 
 
@@ -2822,59 +2838,60 @@ def _render_compendium_html(comp: HumanManualEphemerisCompendium) -> str:
     background: var(--bg);
     color: var(--ink);
     margin: 0;
-    padding: 28px 36px;
-    line-height: 1.55;
+    padding: 20px 24px;
+    line-height: 1.5;
   }}
   .page-container {{
     max-width: 1560px;
+    width: 100%;
     margin: 0 auto;
     background: var(--paper);
     border: 1px solid var(--border);
     box-shadow: 0 8px 28px rgba(0,0,0,0.06);
-    padding: 36px 44px;
+    padding: 28px 32px;
   }}
   .book-header h1 {{
-    font-size: 1.95rem;
+    font-size: 1.85rem;
     color: var(--accent);
     border-bottom: 3px double var(--gold);
-    padding-bottom: 14px;
+    padding-bottom: 12px;
     margin-top: 0;
   }}
   h2 {{
-    font-size: 1.42rem;
+    font-size: 1.35rem;
     color: var(--accent);
     border-bottom: 2px solid var(--border);
     padding-bottom: 6px;
-    margin-top: 38px;
+    margin-top: 32px;
   }}
   h3 {{
-    font-size: 1.12rem;
+    font-size: 1.08rem;
     color: #2f261d;
-    margin-top: 24px;
+    margin-top: 20px;
     margin-bottom: 8px;
   }}
   .toc-box {{
     background: var(--row-alt);
     border: 1px solid var(--border);
     border-left: 5px solid var(--gold);
-    padding: 18px 26px;
-    margin: 22px 0 32px 0;
+    padding: 16px 22px;
+    margin: 18px 0 28px 0;
     border-radius: 4px;
   }}
   .toc-box h2 {{
     margin-top: 0;
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     border-bottom: none;
   }}
   .toc-box ol {{
     columns: 2;
-    column-gap: 36px;
+    column-gap: 32px;
     margin: 0;
-    padding-left: 22px;
+    padding-left: 20px;
   }}
   .toc-box li {{
-    margin-bottom: 6px;
-    font-size: 0.94rem;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
   }}
   .toc-box a {{
     color: var(--accent);
@@ -2886,49 +2903,64 @@ def _render_compendium_html(comp: HumanManualEphemerisCompendium) -> str:
   .academy-callout {{
     background: #fbf5e6;
     border-left: 4px solid var(--accent);
-    padding: 14px 20px;
-    margin: 16px 0;
-    font-size: 0.98rem;
+    padding: 12px 18px;
+    margin: 14px 0;
+    font-size: 0.95rem;
   }}
   .table-scroll {{
-    overflow-x: auto;
-    margin: 12px 0 24px 0;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    margin: 10px 0 20px 0;
   }}
   table.ephemeris-table {{
     width: 100%;
+    max-width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
-    font-size: 0.82rem;
+    font-size: 0.72rem;
     font-family: "Consolas", "Menlo", "Monaco", monospace;
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }}
   table.ephemeris-table th {{
     background: #2b2118;
     color: #fdfaf3;
     text-align: left;
-    padding: 7px 9px;
+    padding: 4px 5px;
     border: 1px solid #3d3024;
     font-weight: 600;
-    white-space: nowrap;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }}
   table.ephemeris-table td {{
-    padding: 5px 9px;
+    padding: 4px 5px;
     border: 1px solid var(--border);
     vertical-align: top;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }}
   table.ephemeris-table tbody tr:nth-child(even) {{
     background: var(--row-alt);
   }}
   code {{
     background: var(--code-bg);
-    padding: 1px 5px;
+    padding: 1px 3px;
     border-radius: 3px;
     font-family: "Consolas", "Menlo", monospace;
-    font-size: 0.86em;
+    font-size: 0.85em;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }}
   @media print {{
-    body {{ background: #fff; padding: 0; }}
-    .page-container {{ box-shadow: none; border: none; padding: 10px; }}
+    body {{ background: #fff; padding: 0; margin: 0; }}
+    .page-container {{ box-shadow: none; border: none; padding: 4px; max-width: 100%; width: 100%; }}
     .chapter-section {{ page-break-before: always; }}
-    table.ephemeris-table {{ font-size: 7.5pt; }}
+    table.ephemeris-table {{ font-size: 5.2pt; table-layout: fixed; width: 100%; max-width: 100%; }}
+    table.ephemeris-table th, table.ephemeris-table td {{ padding: 2px 2px; }}
   }}
 </style>
 </head>

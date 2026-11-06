@@ -149,6 +149,7 @@ def generate_monthly_panchang(
     longitude_deg: float,
     *,
     tz_offset_hours: float = 0.0,
+    ayanamsa: str = "lahiri",
     adapter: EphemerisAdapter | None = None,
 ) -> MonthlyPanchangSheet:
     """Generate a sunrise-anchored monthly Drik Panchang sheet with Vrata detection."""
@@ -168,8 +169,8 @@ def generate_monthly_panchang(
 
     def _sun_moon_sidereal(jd_ut: float) -> tuple[float, float, float, float]:
         if adapter is not None:
-            s_pos = adapter.calc_ut(jd_ut, "sun", sidereal=True)
-            m_pos = adapter.calc_ut(jd_ut, "moon", sidereal=True)
+            s_pos = adapter.calc_ut(jd_ut, "sun", sidereal=True, ayanamsa=ayanamsa)
+            m_pos = adapter.calc_ut(jd_ut, "moon", sidereal=True, ayanamsa=ayanamsa)
             return (
                 s_pos.longitude_deg,
                 m_pos.longitude_deg,
