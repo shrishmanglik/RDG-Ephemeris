@@ -132,3 +132,84 @@ def test_sarvatobhadra_natal_star_hit_names_exact_star(moon: float) -> None:
         and h.target_label.lower() != rep.natal_janma_nakshatra_28.lower()
     ]
     assert not bad
+
+
+def _disk_area_fraction(r: float, R: float, d: float) -> float:
+    if d >= r + R:
+        return 0.0
+    if d <= abs(r - R):
+        return min(r, R) ** 2 / r ** 2
+    overlap = (
+        r * r * math.acos((d * d + r * r - R * R) / (2 * d * r))
+        + R * R * math.acos((d * d + R * R - r * r) / (2 * d * R))
+        - 0.5 * math.sqrt((-d + r + R) * (d + r - R) * (d - r + R) * (d + r + R))
+    )
+    return overlap / (math.pi * r * r)
+
+
+def _geometry(jd: float, lat: float, lon: float) -> tuple[float, float]:
+    top = compute_topocentric_relativistic_astrometry(jd, lat, lon)
+    sun, moon = top.bodies["sun"], top.bodies["moon"]
+    ra, dec, mra, mdec = map(
+        math.radians,
+        [
+            sun.topocentric_ra_deg,
+            sun.topocentric_dec_deg,
+            moon.topocentric_ra_deg,
+            moon.topocentric_dec_deg,
+        ],
+    )
+    separation = math.acos(
+        max(
+            -1.0,
+            min(
+                1.0,
+                math.sin(dec) * math.sin(mdec)
+                + math.cos(dec) * math.cos(mdec) * math.cos(ra - mra),
+            ),
+        )
+    )
+    r = math.asin(695700 / sun.distance_km)
+    R = math.asin(1737.4 / moon.distance_km)
+    return _disk_area_fraction(r, R, separation), sun.apparent_altitude_deg
+
+
+@pytest.mark.parametrize(
+    "r,R,d,expected",
+    [
+        (1.0, 1.0, 3.0, 0.0),
+        (2.0, 1.0, 0.0, 0.25),
+        (1.0, 2.0, 0.0, 1.0),
+        (1.0, 1.0, 1.0, 2 / 3 - math.sqrt(3) / (2 * math.pi)),
+    ],
+)
+def test_independent_area_formula_has_known_clean_controls(
+    r: float, R: float, d: float, expected: float
+) -> None:
+    assert _disk_area_fraction(r, R, d) == pytest.approx(expected, abs=1e-12)
+
+
+@pytest.mark.parametrize("latitude,longitude", [(64.15, -21.94), (43.36, -5.85)])
+def test_obscuration_reports_area_instead_of_diameter(
+    latitude: float, longitude: float
+) -> None:
+    event = evaluate_lifetime_eclipse_natal_sensitivity(
+        2461262.5, 2461266.5, latitude_deg=latitude, longitude_deg=longitude
+    ).eclipses[0]
+    area, altitude = _geometry(event.maximum_jd_ut, latitude, longitude)
+    assert altitude > 0 and event.local_visible
+    assert event.local_obscuration_fraction == pytest.approx(area, abs=0.001)
+
+
+def test_observer_visibility_accounts_for_local_eclipse_time() -> None:
+    latitude, longitude = 40.4168, -3.7038
+    event = evaluate_lifetime_eclipse_natal_sensitivity(
+        2461262.5, 2461266.5, latitude_deg=latitude, longitude_deg=longitude
+    ).eclipses[0]
+    samples = [
+        _geometry(event.maximum_jd_ut + minutes / 1440, latitude, longitude)
+        for minutes in [30, 45, 60, 75, 90]
+    ]
+    assert any(area > 0.01 and altitude > 0 for area, altitude in samples), samples
+    assert event.local_visible, (event, samples)
+

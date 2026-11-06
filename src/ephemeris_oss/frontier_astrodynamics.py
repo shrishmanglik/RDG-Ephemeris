@@ -785,22 +785,46 @@ def evaluate_lifetime_eclipse_natal_sensitivity(
                         )
                         axis_lon = float(mv.longitude_deg) % 360.0
 
-                    # Estimate local observer visibility and obscuration fraction:
-                    topo_rep = compute_topocentric_relativistic_astrometry(
-                        syz_jd, latitude_deg, longitude_deg, ayanamsa=ayanamsa, adapter=ad
-                    )
-                    if is_amavasya:
-                        s_topo = topo_rep.bodies["sun"]
-                        m_topo = topo_rep.bodies["moon"]
-                        sr_r, sd_r, mr_r, md_r = map(
-                            math.radians,
-                            [
-                                s_topo.topocentric_ra_deg,
-                                s_topo.topocentric_dec_deg,
-                                m_topo.topocentric_ra_deg,
-                                m_topo.topocentric_dec_deg,
-                            ],
+                    # Estimate local observer visibility, local maximum time, and disk-area obscuration fraction:
+                    rho_cos_e, rho_sin_e, _ = _wgs84_geocentric_constants(latitude_deg, 0.0)
+                    phi_rad_e = math.radians(float(latitude_deg))
+
+                    def _solar_topo_area_and_alt(sample_jd: float) -> tuple[float, float, float]:
+                        ay_s = float(ad.get_ayanamsa_ut(sample_jd, mode=ayanamsa))
+                        lst_s = (280.46061837 + 360.98564736629 * (float(sample_jd) - 2451545.0) + float(longitude_deg)) % 360.0
+                        lst_rad_s = math.radians(lst_s)
+                        t_c = (float(sample_jd) - 2451545.0) / 36525.0
+                        eps_s = math.radians(
+                            23.43929111 - (46.8150 * t_c + 0.00059 * (t_c ** 2) - 0.001813 * (t_c ** 3)) / 3600.0
                         )
+
+                        def _body_topo(b_name: str) -> tuple[float, float, float, float]:
+                            p_s = ad.calc_ut(sample_jd, b_name, sidereal=True, ayanamsa=ayanamsa)
+                            lon_tr_r = math.radians((p_s.longitude_deg + ay_s) % 360.0)
+                            lat_r = math.radians(p_s.latitude_deg)
+                            y_eq = math.sin(lon_tr_r) * math.cos(eps_s) - math.tan(lat_r) * math.sin(eps_s)
+                            x_eq = math.cos(lon_tr_r)
+                            ra_g_r = math.atan2(y_eq, x_eq) % (2.0 * math.pi)
+                            sin_d = math.sin(lat_r) * math.cos(eps_s) + math.cos(lat_r) * math.sin(eps_s) * math.sin(lon_tr_r)
+                            dec_g_r = math.asin(max(-1.0, min(1.0, sin_d)))
+                            d_km = max(1e-6, p_s.distance_au) * AU_IN_KM
+                            sin_pi_b = WGS84_EQUATORIAL_RADIUS_KM / max(WGS84_EQUATORIAL_RADIUS_KM * 1.01, d_km)
+                            ha_g_r = lst_rad_s - ra_g_r
+                            den = math.cos(dec_g_r) - rho_cos_e * sin_pi_b * math.cos(ha_g_r)
+                            d_ra_r = math.atan2(-rho_cos_e * sin_pi_b * math.sin(ha_g_r), den)
+                            ra_t_r = (ra_g_r + d_ra_r) % (2.0 * math.pi)
+                            dec_t_r = math.atan2((math.sin(dec_g_r) - rho_sin_e * sin_pi_b) * math.cos(d_ra_r), den)
+                            ha_t_r = lst_rad_s - ra_t_r
+                            sin_alt_b = (
+                                math.sin(phi_rad_e) * math.sin(dec_t_r)
+                                + math.cos(phi_rad_e) * math.cos(dec_t_r) * math.cos(ha_t_r)
+                            )
+                            geom_alt_b = math.degrees(math.asin(max(-1.0, min(1.0, sin_alt_b))))
+                            app_alt_b = min(90.0, geom_alt_b + _saemundsson_refraction_arcsec(geom_alt_b) / 3600.0)
+                            return ra_t_r, dec_t_r, d_km, app_alt_b
+
+                        sr_r, sd_r, s_km, s_alt = _body_topo("sun")
+                        mr_r, md_r, m_km, _ = _body_topo("moon")
                         cos_sep = max(
                             -1.0,
                             min(
@@ -809,17 +833,79 @@ def evaluate_lifetime_eclipse_natal_sensitivity(
                                 + math.cos(sd_r) * math.cos(md_r) * math.cos(sr_r - mr_r),
                             ),
                         )
-                        sep_deg = math.degrees(math.acos(cos_sep))
-                        r_sun_deg = math.degrees(math.asin(min(1.0, 695700.0 / max(1.0, s_topo.distance_km))))
-                        r_moon_deg = math.degrees(math.asin(min(1.0, 1737.4 / max(1.0, m_topo.distance_km))))
-                        rad_sum = r_sun_deg + r_moon_deg
-                        loc_vis = s_topo.apparent_altitude_deg > 0.0 and sep_deg < rad_sum
-                        obsc_frac = (
-                            max(0.0, min(1.0, (rad_sum - sep_deg) / max(1e-6, 2.0 * r_sun_deg)))
-                            if loc_vis
-                            else 0.0
-                        )
+                        sep_rad = math.acos(cos_sep)
+                        r_sun_rad = math.asin(min(1.0, 695700.0 / max(1.0, s_km)))
+                        r_moon_rad = math.asin(min(1.0, 1737.4 / max(1.0, m_km)))
+                        if sep_rad >= r_sun_rad + r_moon_rad or r_sun_rad <= 0.0:
+                            area_frac = 0.0
+                        elif sep_rad <= abs(r_sun_rad - r_moon_rad):
+                            area_frac = (min(r_sun_rad, r_moon_rad) ** 2) / (r_sun_rad ** 2)
+                        else:
+                            c_sun = max(
+                                -1.0,
+                                min(
+                                    1.0,
+                                    (sep_rad * sep_rad + r_sun_rad * r_sun_rad - r_moon_rad * r_moon_rad)
+                                    / (2.0 * sep_rad * r_sun_rad),
+                                ),
+                            )
+                            c_moon = max(
+                                -1.0,
+                                min(
+                                    1.0,
+                                    (sep_rad * sep_rad + r_moon_rad * r_moon_rad - r_sun_rad * r_sun_rad)
+                                    / (2.0 * sep_rad * r_moon_rad),
+                                ),
+                            )
+                            heron = max(
+                                0.0,
+                                (-sep_rad + r_sun_rad + r_moon_rad)
+                                * (sep_rad + r_sun_rad - r_moon_rad)
+                                * (sep_rad - r_sun_rad + r_moon_rad)
+                                * (sep_rad + r_sun_rad + r_moon_rad),
+                            )
+                            overlap_area = (
+                                (r_sun_rad * r_sun_rad) * math.acos(c_sun)
+                                + (r_moon_rad * r_moon_rad) * math.acos(c_moon)
+                                - 0.5 * math.sqrt(heron)
+                            )
+                            area_frac = overlap_area / (math.pi * r_sun_rad * r_sun_rad)
+                        return area_frac, s_alt, sep_rad
+
+                    event_max_jd = syz_jd
+                    if is_amavasya:
+                        # Coarse search across [-180, +180] minutes around geocentric syzygy for observer-local daylight contact
+                        best_jd = syz_jd
+                        best_area, best_alt, _ = _solar_topo_area_and_alt(syz_jd)
+                        if best_alt <= 0.0:
+                            best_area = 0.0
+                        for offset_min in range(-180, 181, 10):
+                            cand_jd = syz_jd + offset_min / 1440.0
+                            c_area, c_alt, _ = _solar_topo_area_and_alt(cand_jd)
+                            if c_alt > 0.0 and c_area > best_area:
+                                best_area = c_area
+                                best_alt = c_alt
+                                best_jd = cand_jd
+                        if best_area > 0.0:
+                            # Fine 1-minute refinement around local peak daylight overlap
+                            center_jd = best_jd
+                            for fine_min in range(-9, 10, 1):
+                                cand_jd = center_jd + fine_min / 1440.0
+                                c_area, c_alt, _ = _solar_topo_area_and_alt(cand_jd)
+                                if c_alt > 0.0 and c_area > best_area:
+                                    best_area = c_area
+                                    best_alt = c_alt
+                                    best_jd = cand_jd
+                            loc_vis = True
+                            obsc_frac = max(0.0, min(1.0, best_area))
+                            event_max_jd = best_jd
+                        else:
+                            loc_vis = False
+                            obsc_frac = 0.0
                     else:
+                        topo_rep = compute_topocentric_relativistic_astrometry(
+                            syz_jd, latitude_deg, longitude_deg, ayanamsa=ayanamsa, adapter=ad
+                        )
                         alt_deg = topo_rep.bodies["moon"].apparent_altitude_deg
                         loc_vis = alt_deg > 0.0
                         obsc_frac = max(0.0, min(1.0, (1.0 - node_dist / limit_deg))) if loc_vis else 0.0
@@ -829,8 +915,8 @@ def evaluate_lifetime_eclipse_natal_sensitivity(
                     item = EclipseCatalogItem(
                         eclipse_Category=cat,
                         eclipse_subtype=subtype,
-                        maximum_jd_ut=syz_jd,
-                        maximum_iso_utc=jd_to_iso_utc(syz_jd),
+                        maximum_jd_ut=event_max_jd,
+                        maximum_iso_utc=jd_to_iso_utc(event_max_jd),
                         sidereal_longitude_deg=axis_lon,
                         sidereal_classical_dms=_format_classical_rashi_dms(axis_lon),
                         rashi_name=RASI_NAMES[r_idx],

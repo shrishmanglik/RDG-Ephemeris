@@ -121,7 +121,7 @@
       "id": 4494934709,
       "path": "src/ephemeris_oss/frontier_astrodynamics.py",
       "status": "FIXED_AND_VERIFIED",
-      "resolution": "Computed topocentric solar-lunar disk separation and apparent angular radii in evaluate_lifetime_eclipse_natal_sensitivity so local_visible=True and positive obscuration require actual topocentric disk overlap."
+      "resolution": "Computed exact circular disk-area intersection fraction and searched observer-local daylight contact intervals around geocentric syzygy in evaluate_lifetime_eclipse_natal_sensitivity so local_visible, maximum_jd_ut, and local_obscuration_fraction reflect true local solar disk area obscuration and local eclipse timing."
     },
     {
       "id": 4494934718,
