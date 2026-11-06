@@ -522,6 +522,7 @@ def generate_human_manual_ephemeris_compendium(
         bodies=("Sun", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu"),
         aspect_angles=(0.0, 60.0, 90.0, 120.0, 180.0),
         include_nakshatra_ingresses=True,
+        ayanamsa=ayanamsa,
         adapter=ad,
     )
     rashi_ingresses = transit_timeline.rashi_ingresses

@@ -533,7 +533,23 @@ def test_frontier_continuous_dignity_heliacal_sarvatobhadra_vedha_and_shodhya_pi
     assert len(dig.receipt_sha256) == 64
 
     sbc = compute_sarvatobhadra_81_ray_vedha(2461350.0, 42.8, natal_nama_akshara="a")
-    assert len(sbc.active_ray_hits) >= 27
+    assert len(sbc.active_ray_hits) > 0
+    rays_by_body: dict[str, set[str]] = {}
+    natures_by_body: dict[str, set[str]] = {}
+    for hit in sbc.active_ray_hits:
+        rays_by_body.setdefault(hit.transiting_body, set()).add(hit.ray_direction)
+        natures_by_body.setdefault(hit.transiting_body, set()).add(hit.vedha_nature)
+    for lum in ("Sun", "Moon"):
+        assert rays_by_body[lum] == {"FRONT_SAMMUKHA", "LEFT_DIAGONAL_VAMA", "RIGHT_DIAGONAL_DAKSHINA"}
+    for body_name, ray_dirs in rays_by_body.items():
+        if body_name in ("Sun", "Moon"):
+            continue
+        if body_name in ("Rahu", "Ketu") or "ATI_VEDHA_RETROGRADE" in natures_by_body[body_name]:
+            assert ray_dirs <= {"FRONT_SAMMUKHA", "RIGHT_DIAGONAL_DAKSHINA"}
+            assert "LEFT_DIAGONAL_VAMA" not in ray_dirs
+        else:
+            assert ray_dirs <= {"FRONT_SAMMUKHA", "LEFT_DIAGONAL_VAMA"}
+            assert "RIGHT_DIAGONAL_DAKSHINA" not in ray_dirs
     assert -100.0 <= sbc.net_vedha_protection_index_minus100_to_plus100 <= 100.0
     assert len(sbc.receipt_sha256) == 64
 

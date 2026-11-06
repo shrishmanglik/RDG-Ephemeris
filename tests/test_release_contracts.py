@@ -479,5 +479,153 @@ def test_only_motion_active_rays_can_hit_the_natal_moon(body: str, speed: float,
     assert any(h.transiting_body == cap and h.hits_natal_janma_nakshatra for h in rep.active_ray_hits) is expect_hit
 
 
+class _LinearSunMoon:
+    def __init__(self, entry: float) -> None:
+        self.entry = entry
+
+    def calc_ut(self, jd: float, body: str, **kwargs):
+        day = jd - sum(erfa.cal2jd(2026, 1, 1))
+        lon = 29.9 + day if body == "sun" else (30.0 - self.entry + day if body == "moon" else 0.0)
+        return SimpleNamespace(longitude_deg=lon % 360.0)
+
+
+@pytest.mark.parametrize("entry", [0.0, 0.02])
+def test_final_stage_preserves_a_short_joint_constraint_window(entry: float) -> None:
+    report = solve_chart_date_from_planetary_constraints(
+        2026, 2026, {"sun": "Aries", "moon": "Taurus"}, max_results=1, adapter=_LinearSunMoon(entry)
+    )
+    assert report.match_count > 0
+    jd_jan1 = sum(erfa.cal2jd(2026, 1, 1))
+    assert report.matches[0].window_start_jd_ut == pytest.approx(jd_jan1 + entry, abs=1e-4)
+    assert report.matches[0].window_end_jd_ut == pytest.approx(jd_jan1 + 0.10, abs=1e-4)
+    assert report.matches[0].window_duration_hours == pytest.approx(round((0.10 - entry) * 24.0, 2), abs=0.02)
+
+
+class _GeneratedWindowAdapter:
+    def __init__(self, entry_day: float, exit_day: float, use_nakshatra: bool) -> None:
+        self.entry_day = entry_day
+        self.exit_day = exit_day
+        self.use_nakshatra = use_nakshatra
+        self.jd_0 = sum(erfa.cal2jd(2026, 1, 1))
+
+    def calc_ut(self, jd: float, body: str, **kwargs):
+        day = jd - self.jd_0
+        b = body.lower()
+        if not self.use_nakshatra:
+            # Target: sun in Aries [0, 30) exits at exit_day; moon enters Taurus [30, 60) at entry_day
+            if b == "sun":
+                lon = 30.0 - self.exit_day + day
+            elif b == "moon":
+                lon = 30.0 - self.entry_day + day
+            else:
+                lon = 15.0
+        else:
+            # Target: sun in Ashwini [0, 13.3333) exits at exit_day; moon enters Bharani [13.3333, 26.6667) at entry_day
+            span = 360.0 / 27.0
+            if b == "sun":
+                lon = span - self.exit_day + day
+            elif b == "moon":
+                lon = span - self.entry_day + day
+            else:
+                lon = 5.0
+        return SimpleNamespace(longitude_deg=lon % 360.0)
+
+
+def test_generated_inverse_interval_and_ayanamsa_matrix(monkeypatch) -> None:
+    """Generated class-wide test over 36 synthetic short-overlap intervals and 6 ayanamsa conventions."""
+    from ephemeris_oss.almanac import human_ephemeris as human
+    from ephemeris_oss.almanac.ephemeris_tables import generate_ephemeris_table, scan_ingresses_and_aspects
+
+    jd_jan1 = sum(erfa.cal2jd(2026, 1, 1))
+    entries = (0.0, 0.01, 0.02, 0.04, 0.07, 0.11)
+    exits = (0.05, 0.10, 0.18, 0.45)
+    case_count = 0
+    for use_nak in (False, True):
+        for entry_d in entries:
+            for exit_d in exits:
+                if exit_d <= entry_d + 0.015:
+                    continue
+                case_count += 1
+                ad = _GeneratedWindowAdapter(entry_d, exit_d, use_nak)
+                if not use_nak:
+                    rep = solve_chart_date_from_planetary_constraints(
+                        2026, 2026, {"sun": "Aries", "moon": "Taurus"}, max_results=1, adapter=ad
+                    )
+                else:
+                    rep = solve_chart_date_from_planetary_constraints(
+                        2026,
+                        2026,
+                        {},
+                        nakshatra_constraints={"sun": "Ashwini", "moon": "Bharani"},
+                        max_results=1,
+                        adapter=ad,
+                    )
+                assert rep.match_count == 1, f"Failed for entry={entry_d}, exit={exit_d}, nak={use_nak}"
+                w = rep.matches[0]
+                expected_hours = round((exit_d - entry_d) * 24.0, 2)
+                assert w.window_start_jd_ut == pytest.approx(jd_jan1 + entry_d, abs=1e-4)
+                assert w.window_end_jd_ut == pytest.approx(jd_jan1 + exit_d, abs=1e-4)
+                assert w.window_duration_hours == pytest.approx(expected_hours, abs=0.02)
+    assert case_count >= 36
+
+    for mode in ("lahiri", "raman", "krishnamurti", "fagan_bradley", "yukteshwar", "true_chitrapaksha"):
+        ad_track = _TrackingAdapter()
+        ad_track.scanning = True
+        tbl = generate_ephemeris_table(2461345.5, 2461347.5, step_days=1.0, ayanamsa=mode, adapter=ad_track)
+        assert ad_track.scan_modes == {mode}
+        expected_ay = ad_track.actual.get_ayanamsa_ut(2461345.5, mode=mode)
+        assert tbl.rows[0].ayanamsa_deg == pytest.approx(expected_ay, abs=1e-6)
+
+        ad_scan = _TrackingAdapter()
+        ad_scan.scanning = True
+        timeline = scan_ingresses_and_aspects(
+            2461345.5, 2461375.5, bodies=("Sun",), aspect_angles=(0.0,), ayanamsa=mode, adapter=ad_scan
+        )
+        assert ad_scan.scan_modes == {mode}
+        sun_ing = next(e for e in timeline.rashi_ingresses if e.body.lower() == "sun")
+        sel_lon = ad_scan.actual.calc_ut(sun_ing.jd_ut, "sun", sidereal=True, ayanamsa=mode).longitude_deg
+        res_deg = abs((sel_lon - sun_ing.boundary_longitude_deg + 180.0) % 360.0 - 180.0)
+        assert res_deg < 0.001
+
+
+class _TrackingAdapter:
+    def __init__(self) -> None:
+        self.actual = EphemerisAdapter()
+        self.scanning = False
+        self.scan_modes: set[str] = set()
+
+    def __getattr__(self, name: str):
+        return getattr(self.actual, name)
+
+    def calc_ut(self, jd: float, body: str, *, sidereal: bool = False, ayanamsa: str = "lahiri", **kwargs):
+        if self.scanning and sidereal:
+            self.scan_modes.add(ayanamsa)
+        return self.actual.calc_ut(jd, body, sidereal=sidereal, ayanamsa=ayanamsa, **kwargs)
+
+
+@pytest.mark.parametrize("mode", ["lahiri", "raman"])
+def test_compendium_phenomena_respect_the_selected_convention(mode: str, monkeypatch) -> None:
+    from ephemeris_oss.almanac import human_ephemeris as human
+
+    ad = _TrackingAdapter()
+    original = human.scan_ingresses_and_aspects
+
+    def observed_scan(*args, **kwargs):
+        ad.scanning = True
+        try:
+            return original(*args, **kwargs)
+        finally:
+            ad.scanning = False
+
+    monkeypatch.setattr(human, "scan_ingresses_and_aspects", observed_scan)
+    comp = human.generate_human_manual_ephemeris_compendium(2026, 11, ayanamsa=mode, adapter=ad)
+    event = next(e for e in comp.phenomena_summary["rashi_ingresses"] if e.body.lower() == "sun")
+    selected_lon = ad.actual.calc_ut(event.jd_ut, "sun", sidereal=True, ayanamsa=mode).longitude_deg
+    residual = abs((selected_lon - event.boundary_longitude_deg + 180.0) % 360.0 - 180.0)
+    assert ad.scan_modes == {mode}
+    assert residual < 0.001
+
+
+
 
 

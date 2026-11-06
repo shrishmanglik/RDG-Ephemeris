@@ -1,7 +1,7 @@
 {
   "pr": 26,
   "repository": "shrishmanglik/RDG-Ephemeris",
-  "previous_head": "4a474a961fa48a27098ddaf160cc2d63fc7c27ca",
+  "previous_head": "e6839de73140d2ce98c7f39fcf77d8b089290bc4",
   "dispositions": [
     {
       "id": 4493166187,
@@ -236,6 +236,18 @@
       "path": "src/ephemeris_oss/jyotish/harmonic_vedha_and_pinda.py",
       "status": "FIXED_AND_VERIFIED",
       "resolution": "Filtered active Sarvatobhadra Vedha rays by planetary motion in compute_sarvatobhadra_81_ray_vedha (all 3 rays for Sun/Moon, front+left for direct planets, front+right for retrograde planets) matching evaluate_sarvatobhadra_transits."
+    },
+    {
+      "id": 4498147985,
+      "path": "src/ephemeris_oss/impossible_astrology.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Replaced simultaneous 3-hour sampling in Stage 3 of solve_chart_date_from_planetary_constraints with per-body transition bisection (_bisect_match_edge) and interval intersection so short joint constraint overlaps (< 3 hours) and exact window boundaries are preserved."
+    },
+    {
+      "id": 4498148000,
+      "path": "src/ephemeris_oss/almanac/human_ephemeris.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Extended _make_evaluator and scan_ingresses_and_aspects in ephemeris_tables.py to accept ayanamsa and forwarded ayanamsa=ayanamsa from generate_human_manual_ephemeris_compendium so monthly ingress scans match the requested ayanamsa convention."
     }
   ]
 }

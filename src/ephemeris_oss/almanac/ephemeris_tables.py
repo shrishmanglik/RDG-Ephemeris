@@ -481,8 +481,12 @@ class TransitTimelineReport:
 
 def _make_evaluator(
     adapter: EphemerisAdapter | AnalyticalEphemerisProvider | None,
+    ayanamsa: str = "lahiri",
 ):
-    analytical = AnalyticalEphemerisProvider()
+    analytical: AnalyticalEphemerisProvider | None = None
+    if adapter is None:
+        analytical = AnalyticalEphemerisProvider()
+        analytical.set_ayanamsa(ayanamsa)
     cache: dict[tuple[str, float], tuple[float, float, bool]] = {}
 
     def eval_body(jd_ut: float, body_label: str) -> tuple[float, float, bool]:
@@ -490,17 +494,22 @@ def _make_evaluator(
         if key in cache:
             return cache[key]
         if adapter is None:
+            assert analytical is not None
             coords, _ = analytical.calc_ut(jd_ut, body_label, flags=FLG_SIDEREAL)
             lon = float(coords[0]) % 360.0
             spd = float(coords[3])
             retro = False if body_label in ("Sun", "Moon") else (True if body_label in ("Rahu", "Ketu") else bool(spd < 0.0))
         elif isinstance(adapter, AnalyticalEphemerisProvider):
+            adapter.set_ayanamsa(ayanamsa)
             coords, _ = adapter.calc_ut(jd_ut, body_label, flags=FLG_SIDEREAL)
             lon = float(coords[0]) % 360.0
             spd = float(coords[3])
             retro = False if body_label in ("Sun", "Moon") else (True if body_label in ("Rahu", "Ketu") else bool(spd < 0.0))
         else:
-            pos = adapter.calc_ut(jd_ut, body_label.lower(), sidereal=True)
+            try:
+                pos = adapter.calc_ut(jd_ut, body_label.lower(), sidereal=True, ayanamsa=ayanamsa)
+            except TypeError:
+                pos = adapter.calc_ut(jd_ut, body_label.lower(), sidereal=True)
             lon = float(pos.longitude_deg) % 360.0
             spd = float(pos.longitude_speed_deg_per_day)
             retro = bool(pos.is_retrograde)
@@ -510,8 +519,12 @@ def _make_evaluator(
 
     def eval_ayanamsa(jd_ut: float) -> float:
         if adapter is None:
+            assert analytical is not None
             return float(analytical.get_ayanamsa_ut(jd_ut))
-        return float(adapter.get_ayanamsa_ut(jd_ut))
+        try:
+            return float(adapter.get_ayanamsa_ut(jd_ut, mode=ayanamsa))
+        except TypeError:
+            return float(adapter.get_ayanamsa_ut(jd_ut))
 
     return eval_body, eval_ayanamsa
 
@@ -530,6 +543,7 @@ def generate_ephemeris_table(
     step_days: float = 1.0,
     *,
     bodies: Sequence[str] = DEFAULT_TABLE_BODIES,
+    ayanamsa: str = "lahiri",
     adapter: EphemerisAdapter | AnalyticalEphemerisProvider | None = None,
 ) -> EphemerisTable:
     """Generate a complete *Indian Ephemeris* style tabular sidereal grid."""
@@ -562,7 +576,7 @@ def generate_ephemeris_table(
             f"Requested grid requires {num_rows} rows, exceeding maximum {MAX_EPHEMERIS_TABLE_ROWS} rows per call"
         )
 
-    eval_body, eval_ayanamsa = _make_evaluator(adapter)
+    eval_body, eval_ayanamsa = _make_evaluator(adapter, ayanamsa=ayanamsa)
     rows: list[EphemerisTableRow] = []
 
     for idx in range(num_rows):
@@ -694,6 +708,7 @@ def scan_ingresses_and_aspects(
     bodies: Sequence[str] = DEFAULT_TABLE_BODIES,
     aspect_angles: Sequence[float] = DEFAULT_ASPECT_ANGLES,
     include_nakshatra_ingresses: bool = False,
+    ayanamsa: str = "lahiri",
     adapter: EphemerisAdapter | AnalyticalEphemerisProvider | None = None,
 ) -> TransitTimelineReport:
     """Scan ``[start_jd_ut, end_jd_ut]`` for exact Rashi/Nakshatra ingresses and synodic aspects."""
@@ -729,7 +744,7 @@ def scan_ingresses_and_aspects(
             seen_angles.add(norm_ang)
     angle_tuple = tuple(clean_angles)
 
-    eval_body, _ = _make_evaluator(adapter)
+    eval_body, _ = _make_evaluator(adapter, ayanamsa=ayanamsa)
 
     # Coarse grid at 0.25-day intervals (6 hours) guarantees Moon moves ~3.3 deg (< 1/4 Nakshatra)
     coarse_step = 0.25

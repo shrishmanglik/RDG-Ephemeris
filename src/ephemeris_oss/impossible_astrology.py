@@ -2136,127 +2136,234 @@ def solve_chart_date_from_planetary_constraints(
     med_bodies = [b for b in ("mars", "sun", "venus", "mercury") if b in parsed_signs or b in parsed_naks]
     fast_bodies = [b for b in ("moon",) if b in parsed_signs or b in parsed_naks]
 
-    def _body_matches(j_ut: float, b_key: str) -> bool:
+    def _body_lon(j_ut: float, b_key: str) -> float:
         use_true = _node_model_for(b_key)
         pos = ad.calc_ut(j_ut, b_key, sidereal=True, ayanamsa=ayanamsa, true_node=use_true)
-        lon = float(pos.longitude_deg)
+        return float(pos.longitude_deg) % 360.0
+
+    def _body_matches(j_ut: float, b_key: str) -> bool:
+        lon = _body_lon(j_ut, b_key)
         if b_key in parsed_signs and min(int(lon // 30.0), 11) != parsed_signs[b_key]:
             return False
         if b_key in parsed_naks and min(int(lon // (360.0 / 27.0)), 26) != parsed_naks[b_key]:
             return False
         return True
 
+    def _target_arc_mid(b_key: str) -> float | None:
+        s_i = parsed_signs.get(b_key)
+        n_i = parsed_naks.get(b_key)
+        if s_i is not None and n_i is not None:
+            s_lo, s_hi = s_i * 30.0, (s_i + 1) * 30.0
+            n_span = 360.0 / 27.0
+            n_lo, n_hi = n_i * n_span, (n_i + 1) * n_span
+            lo = max(s_lo, n_lo)
+            hi = min(s_hi, n_hi)
+            return 0.5 * (lo + hi) if lo < hi else None
+        if s_i is not None:
+            return s_i * 30.0 + 15.0
+        if n_i is not None:
+            n_span = 360.0 / 27.0
+            return (n_i + 0.5) * n_span
+        return None
+
+    def _target_arc_bounds(b_key: str) -> tuple[float, float] | None:
+        s_i = parsed_signs.get(b_key)
+        n_i = parsed_naks.get(b_key)
+        if s_i is not None and n_i is not None:
+            s_lo, s_hi = s_i * 30.0, (s_i + 1) * 30.0
+            n_span = 360.0 / 27.0
+            n_lo, n_hi = n_i * n_span, (n_i + 1) * n_span
+            lo = max(s_lo, n_lo)
+            hi = min(s_hi, n_hi)
+            return (lo, hi) if lo < hi else None
+        if s_i is not None:
+            return (s_i * 30.0, (s_i + 1) * 30.0)
+        if n_i is not None:
+            n_span = 360.0 / 27.0
+            return (n_i * n_span, (n_i + 1) * n_span)
+        return None
+
+    def _substep_interior_sample(b_key: str, t_a: float, t_b: float) -> float | None:
+        """If body crosses into and out of its target arc strictly inside (t_a, t_b), return an interior matching JD."""
+        bounds = _target_arc_bounds(b_key)
+        if bounds is None or t_b <= t_a:
+            return None
+        arc_lo, arc_hi = bounds
+        lon_a = _body_lon(t_a, b_key)
+        lon_b = _body_lon(t_b, b_key)
+        delta = ((lon_b - lon_a + 180.0) % 360.0) - 180.0
+        if abs(delta) < 1e-9:
+            return None
+        if delta > 0.0:
+            dist_lo = (arc_lo - lon_a) % 360.0
+            dist_hi = (arc_hi - lon_a) % 360.0
+            if 0.0 < dist_lo <= delta:
+                reach = min(delta, dist_hi if dist_hi > dist_lo else delta)
+                frac = 0.5 * (dist_lo + reach) / delta
+                t_cand = t_a + frac * (t_b - t_a)
+                if _body_matches(t_cand, b_key):
+                    return t_cand
+        else:
+            abs_d = -delta
+            dist_hi = (lon_a - arc_hi) % 360.0
+            dist_lo = (lon_a - arc_lo) % 360.0
+            if 0.0 < dist_hi <= abs_d:
+                reach = min(abs_d, dist_lo if dist_lo > dist_hi else abs_d)
+                frac = 0.5 * (dist_hi + reach) / abs_d
+                t_cand = t_a + frac * (t_b - t_a)
+                if _body_matches(t_cand, b_key):
+                    return t_cand
+        return None
+
+    def _intersect_interval_lists(
+        list_a: list[tuple[float, float]],
+        list_b: list[tuple[float, float]],
+    ) -> list[tuple[float, float]]:
+        out: list[tuple[float, float]] = []
+        for a0, a1 in list_a:
+            for b0, b1 in list_b:
+                lo = max(a0, b0)
+                hi = min(a1, b1)
+                if lo <= hi:
+                    if out and lo <= out[-1][1]:
+                        out[-1] = (out[-1][0], max(out[-1][1], hi))
+                    else:
+                        out.append((lo, hi))
+        return out
+
     # Stage 1: Build conservative padded intervals per slow body and intersect so short overlaps (<10d) are preserved
     step1 = 10.0
-    if not slow_bodies:
-        stage1_intervals: list[tuple[float, float]] = [(jd_start, jd_end)]
-    else:
-        stage1_intervals = [(jd_start, jd_end)]
-        for s_body in slow_bodies:
-            b_intervals: list[tuple[float, float]] = []
-            t = jd_start
-            in_match = False
-            win_s = jd_start
-            while True:
-                ok = _body_matches(t, s_body)
-                if ok and not in_match:
-                    in_match = True
-                    win_s = max(jd_start, t - step1)
-                elif not ok and in_match:
-                    in_match = False
-                    b_intervals.append((win_s, min(jd_end, t + step1)))
-                if t >= jd_end:
-                    break
-                t = min(jd_end, t + step1)
-            if in_match:
-                b_intervals.append((win_s, jd_end))
-            # Intersect stage1_intervals with b_intervals:
-            next_intervals: list[tuple[float, float]] = []
-            for a0, a1 in stage1_intervals:
-                for b0, b1 in b_intervals:
-                    lo = max(a0, b0)
-                    hi = min(a1, b1)
-                    if lo <= hi:
-                        if next_intervals and lo <= next_intervals[-1][1]:
-                            next_intervals[-1] = (next_intervals[-1][0], max(next_intervals[-1][1], hi))
-                        else:
-                            next_intervals.append((lo, hi))
-            stage1_intervals = next_intervals
-            if not stage1_intervals:
+    stage1_intervals: list[tuple[float, float]] = [(jd_start, jd_end)]
+    for s_body in slow_bodies:
+        if _target_arc_bounds(s_body) is None:
+            stage1_intervals = []
+            break
+        b_intervals: list[tuple[float, float]] = []
+        t = jd_start
+        in_match = False
+        win_s = jd_start
+        t_prev_s1 = jd_start
+        while True:
+            ok = _body_matches(t, s_body)
+            if not ok and not in_match and t > t_prev_s1:
+                t_in = _substep_interior_sample(s_body, t_prev_s1, t)
+                if t_in is not None:
+                    b_intervals.append((max(jd_start, t_prev_s1 - step1), min(jd_end, t + step1)))
+            if ok and not in_match:
+                in_match = True
+                win_s = max(jd_start, t - step1)
+            elif not ok and in_match:
+                in_match = False
+                b_intervals.append((win_s, min(jd_end, t + step1)))
+            if t >= jd_end:
                 break
+            t_prev_s1 = t
+            t = min(jd_end, t + step1)
+        if in_match:
+            b_intervals.append((win_s, jd_end))
+        stage1_intervals = _intersect_interval_lists(stage1_intervals, b_intervals)
+        if not stage1_intervals:
+            break
 
     # Stage 2: 1-day conservative per-body padded intervals inside Stage 1 where medium + slow bodies match
     step2 = 1.0
-    if not med_bodies:
-        stage2_intervals: list[tuple[float, float]] = list(stage1_intervals)
-    else:
-        stage2_intervals = list(stage1_intervals)
-        for m_body in med_bodies:
-            m_intervals: list[tuple[float, float]] = []
-            for s1_start, s1_end in stage2_intervals:
-                t = s1_start
-                in_m2 = False
-                w2_s = s1_start
-                while True:
-                    ok = _body_matches(t, m_body)
-                    if ok and not in_m2:
-                        in_m2 = True
-                        w2_s = max(s1_start, t - step2)
-                    elif not ok and in_m2:
-                        in_m2 = False
-                        m_intervals.append((w2_s, min(s1_end, t + step2)))
-                    if t >= s1_end:
-                        break
-                    t = min(s1_end, t + step2)
-                if in_m2:
-                    m_intervals.append((w2_s, s1_end))
-            next_s2: list[tuple[float, float]] = []
-            for a0, a1 in stage2_intervals:
-                for b0, b1 in m_intervals:
-                    lo = max(a0, b0)
-                    hi = min(a1, b1)
-                    if lo <= hi:
-                        if next_s2 and lo <= next_s2[-1][1]:
-                            next_s2[-1] = (next_s2[-1][0], max(next_s2[-1][1], hi))
-                        else:
-                            next_s2.append((lo, hi))
-            stage2_intervals = next_s2
-            if not stage2_intervals:
-                break
+    stage2_intervals: list[tuple[float, float]] = list(stage1_intervals)
+    for m_body in med_bodies:
+        if _target_arc_bounds(m_body) is None:
+            stage2_intervals = []
+            break
+        m_intervals: list[tuple[float, float]] = []
+        for s1_start, s1_end in stage2_intervals:
+            t = s1_start
+            in_m2 = False
+            w2_s = s1_start
+            t_prev_s2 = s1_start
+            while True:
+                ok = _body_matches(t, m_body)
+                if not ok and not in_m2 and t > t_prev_s2:
+                    t_in = _substep_interior_sample(m_body, t_prev_s2, t)
+                    if t_in is not None:
+                        m_intervals.append((max(s1_start, t_prev_s2 - step2), min(s1_end, t + step2)))
+                if ok and not in_m2:
+                    in_m2 = True
+                    w2_s = max(s1_start, t - step2)
+                elif not ok and in_m2:
+                    in_m2 = False
+                    m_intervals.append((w2_s, min(s1_end, t + step2)))
+                if t >= s1_end:
+                    break
+                t_prev_s2 = t
+                t = min(s1_end, t + step2)
+            if in_m2:
+                m_intervals.append((w2_s, s1_end))
+        stage2_intervals = _intersect_interval_lists(stage2_intervals, m_intervals)
+        if not stage2_intervals:
+            break
 
-    # Stage 3: 0.125-day (3-hour) refinement for fast/medium bodies and exact window bounds
+    # Stage 3: 0.125-day (3-hour) per-body transition bisection and exact interval intersection
     matches: list[InverseChartMatchWindow] = []
     step3 = 0.125
     all_constrained = slow_bodies + med_bodies + fast_bodies
 
+    def _bisect_match_edge(b_key: str, t_a: float, t_b: float, ok_a: bool) -> float:
+        lo_t, hi_t = t_a, t_b
+        for _ in range(24):
+            mid_t = 0.5 * (lo_t + hi_t)
+            if _body_matches(mid_t, b_key) == ok_a:
+                lo_t = mid_t
+            else:
+                hi_t = mid_t
+        return hi_t if not ok_a else lo_t
+
     for s2_start, s2_end in stage2_intervals:
         if len(matches) >= max_results:
             break
-        t = s2_start
-        in_m3 = False
-        w3_s = s2_start
-        last_good = s2_start
-        while t <= s2_end:
-            ok = all(_body_matches(t, b) for b in all_constrained)
-            if ok:
-                if not in_m3:
-                    in_m3 = True
-                    w3_s = t
-                last_good = t
-            elif in_m3:
-                in_m3 = False
-                mid_jd = 0.5 * (w3_s + last_good)
+        cur_intervals: list[tuple[float, float]] = [(s2_start, s2_end)]
+        for c_body in all_constrained:
+            if _target_arc_bounds(c_body) is None:
+                cur_intervals = []
+                break
+            body_ivs: list[tuple[float, float]] = []
+            for iv0, iv1 in cur_intervals:
+                t_prev = iv0
+                ok_prev = _body_matches(t_prev, c_body)
+                win_start = iv0 if ok_prev else None
+                t_cur = min(iv1, iv0 + step3) if iv1 > iv0 else iv0
+                while True:
+                    ok_cur = _body_matches(t_cur, c_body) if t_cur > t_prev else ok_prev
+                    if not ok_prev and not ok_cur and t_cur > t_prev:
+                        t_in = _substep_interior_sample(c_body, t_prev, t_cur)
+                        if t_in is not None:
+                            sub_s = _bisect_match_edge(c_body, t_prev, t_in, False)
+                            sub_e = _bisect_match_edge(c_body, t_in, t_cur, True)
+                            if sub_s <= sub_e:
+                                body_ivs.append((sub_s, sub_e))
+                    elif not ok_prev and ok_cur:
+                        win_start = _bisect_match_edge(c_body, t_prev, t_cur, False)
+                    elif ok_prev and not ok_cur and win_start is not None:
+                        win_end = _bisect_match_edge(c_body, t_prev, t_cur, True)
+                        if win_start <= win_end:
+                            body_ivs.append((win_start, win_end))
+                        win_start = None
+                    if t_cur >= iv1:
+                        break
+                    t_prev = t_cur
+                    ok_prev = ok_cur
+                    t_cur = min(iv1, t_cur + step3)
+                if win_start is not None and win_start <= iv1:
+                    body_ivs.append((win_start, iv1))
+            cur_intervals = body_ivs
+            if not cur_intervals:
+                break
+
+        for w3_s, last_good in cur_intervals:
+            if len(matches) >= max_results:
+                break
+            mid_jd = 0.5 * (w3_s + last_good)
+            if all(_body_matches(mid_jd, b) for b in all_constrained):
                 matches.append(
                     _build_inverse_match_window(ad, mid_jd, w3_s, last_good, ayanamsa, true_node, node_true_overrides)
                 )
-                if len(matches) >= max_results:
-                    break
-            t += step3
-        if in_m3 and len(matches) < max_results:
-            mid_jd = 0.5 * (w3_s + last_good)
-            matches.append(
-                _build_inverse_match_window(ad, mid_jd, w3_s, last_good, ayanamsa, true_node, node_true_overrides)
-            )
 
     receipt = {
         "module": "ephemeris_oss.impossible_astrology.inverse_chart_date_solver",
@@ -2315,7 +2422,7 @@ def _build_inverse_match_window(
         matched_iso_utc=jd_to_iso_utc(mid_jd),
         window_start_jd_ut=round(w_start, 6),
         window_end_jd_ut=round(w_end, 6),
-        window_duration_hours=round(max((w_end - w_start) * 24.0, 3.0), 2),
+        window_duration_hours=round(max((w_end - w_start) * 24.0, 0.0), 2),
         planetary_longitudes_deg=lons,
         planetary_signs=signs,
         planetary_nakshatras=naks,
