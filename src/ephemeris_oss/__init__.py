@@ -58,10 +58,12 @@ from .engine import phenomena, uncertainty_envelope
 from .fact_sheet import AIFactSheet, HallucinationAudit, compile_ai_fact_sheet, verify_ai_interpretation
 from .impossible_astrology import (
     MultiCenturyPhenomenaReport,
+    PersonalizedAstroFingerprintReport,
     SiddhantaDriftAnalysisReport,
     SubsecondShodashvargaCuspReport,
     VargaBoundaryMargin,
     analyze_siddhanta_vs_jpl_de440_drift,
+    compute_personalized_astro_fingerprint,
     rectify_birth_time_bayesian,
     scan_multi_century_rare_phenomena,
     solve_subsecond_shodashvarga_cusp_transitions,
@@ -84,6 +86,7 @@ __all__ = [
     "Houses",
     "MultiCenturyPhenomenaReport",
     "NakshatraInfo",
+    "PersonalizedAstroFingerprintReport",
     "PlanetCoordinateResult",
     "PlanetPosition",
     "RegionalPanchangReport",
@@ -102,6 +105,7 @@ __all__ = [
     "compact_kernel",
     "compile_ai_fact_sheet",
     "compute_lunar_month_amanta_purnimanta",
+    "compute_personalized_astro_fingerprint",
     "compute_regional_panchang",
     "compute_regional_solar_calendar",
     "compute_vedic_chart_analysis",

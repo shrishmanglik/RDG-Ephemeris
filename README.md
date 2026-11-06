@@ -2,6 +2,8 @@
 
 An independently built, permissively licensed (`Apache-2.0`) planetary ephemeris and classical Indian astronomy (Jyotish) engine designed for real Jyotish applications with **40 years of lived traditional Jyotish practice** (in tribute to **Raj Dulari Gupta  -  RDG**) and modern clean-room software engineering. Derived directly from NASA JPL DE440/DE441 Chebyshev polynomials, IAU 2006/2000A precession-nutation, Vondrák-2011 long-term precession, and primary astronomical and Jyotish treatises, every calculation carries explicit conventions, transparent accuracy and limitation disclosures, and a deterministic SHA-256 cryptographic receipt.
 
+- **Technical White Paper & 9,074-Month Full-Span DE440 Benchmark:** [`docs/RDG-EPHEMERIS-WHITEPAPER-AND-BENCHMARKS.md`](docs/RDG-EPHEMERIS-WHITEPAPER-AND-BENCHMARKS.md)
+- **AI Agent, MCP Server, CLI & REST Plugin Integration Guide:** [`docs/AI-MCP-AND-PLUGIN-INTEGRATION-GUIDE.md`](docs/AI-MCP-AND-PLUGIN-INTEGRATION-GUIDE.md)
 - **Jyotish Capabilities & Lineage Conventions:** [`docs/JYOTISH-CAPABILITIES-AND-CONVENTIONS.md`](docs/JYOTISH-CAPABILITIES-AND-CONVENTIONS.md)
 - **Scientific Limitations, Precision Regimes & Honest Roadmap:** [`docs/ROADMAP-AND-LIMITATIONS.md`](docs/ROADMAP-AND-LIMITATIONS.md)
 - **Trademark Reservation (`RDG™` / `Raj Dulari Gupta™`) & Commercial Boundary:** [`docs/TRADEMARK-AND-COMMERCIAL-BOUNDARY.md`](docs/TRADEMARK-AND-COMMERCIAL-BOUNDARY.md)
@@ -21,31 +23,31 @@ An independently built, permissively licensed (`Apache-2.0`) planetary ephemeris
 4. **Universal Integration Surfaces (Python SDK, CLI, LLM MCP Server, HTTP REST API, Rust & WebAssembly)**:
    Call it directly from Python, run it from the terminal, connect it to Claude Desktop / Cursor / AI agents via the built-in **Model Context Protocol (MCP)** server (`rdg-ephemeris-mcp`), serve it as an **OpenAPI 3.1 HTTP REST microservice** (`rdg-ephemeris-api`), or embed the **Rust / WebAssembly / Browser ES-Module SDK** (`rust/ephemeris-core` and `web/ephemeris-browser.js`).
 5. **Solves Computational Problems Legacy Point-Coordinate Ephemerides Leave Unsolved**:
-   Includes deterministic solvers for sub-second 16-Varga (`D1..D60`) cusp transition sensitivity, multi-criterion Bayesian birth-time rectification (*Kunda* 81x harmonic, *Pranapada Shuddhi*, *Pancha Tattwa* 90-minute elemental cycles, and life-event Dasha triggers), multi-century *Graha Yuddha* (planetary war) disc-diameter adjudication, classical *Surya Siddhanta* vs modern *Drig-Ganita* epicyclic drift analysis, and LLM hallucination auditing.
+   Includes five deterministic, SHA-256-receipt-sealed solvers: (1) sub-second 16-Varga (`D1..D60`) cusp transition sensitivity, (2) multi-criterion Bayesian birth-time rectification (*Kunda* 81x harmonic, *Pranapada Shuddhi*, *Pancha Tattwa* 90-minute elemental cycles, and life-event Dasha triggers), (3) multi-century *Graha Yuddha* (planetary war) disc-diameter adjudication, (4) classical *Surya Siddhanta* vs modern *Drig-Ganita* epicyclic drift analysis, and (5) **Personalized Astrological Fingerprint** (`compute_personalized_astro_fingerprint`) combining 16-domain birth-clock confidence decay $\exp(-\sigma_t / \tau_{\min})$, continuous 16-Varga harmonic phase stability, continuous topocentric *Digbala*, and 8-*Kaksha* (`3°45'`) *Ashtakavarga* transit resonance.
 
 ---
 
 ## Multi-Ephemeris Capability & Licensing Matrix
 
-The table below separates reproduced `ephemeris-oss` measurements from sourced capability and licensing attributes of legacy copyleft C ephemeris distributions (`SE 2.10.03`), `Skyfield 1.55`, and `Astropy 6.x`. Third-party engines are not executed inside this clean-room repository, so their numeric accuracy cells are marked `UNKNOWN` here. Full reproducible JSON evidence for `ephemeris-oss` is stored in [`evidence/sota-ephemeris-evaluation-matrix.json`](evidence/sota-ephemeris-evaluation-matrix.json) and generated via `python tools/evaluate_sota_ephemerides.py`.
+The table below separates reproduced `ephemeris-oss` measurements from sourced capability and licensing attributes of legacy copyleft C ephemeris distributions (`SE 2.10.03`), `Skyfield 1.55`, and `Astropy 6.x`. Third-party engines are not executed inside this clean-room repository, so their numeric accuracy cells are marked `UNKNOWN` here. Full reproducible JSON evidence for `ephemeris-oss` is stored in [`evidence/sota-ephemeris-evaluation-matrix.json`](evidence/sota-ephemeris-evaluation-matrix.json) and [`evidence/monthly-full-span-de440-benchmark.json`](evidence/monthly-full-span-de440-benchmark.json), generated via `python tools/evaluate_sota_ephemerides.py`.
 
 | Parameter | RDG-Ephemeris (`ephemeris-oss`) | Legacy C Ephemeris (`SE 2.10.03`) | `Skyfield 1.55` | `Astropy 6.x` |
 |---|---|---|---|---|
 | **Open-Source License** | **Apache-2.0** (free for commercial SaaS, apps, and research) | GPL v2+ / AGPL v3 or paid commercial license | MIT (astronomy only) | BSD-3-Clause (astronomy only) |
-| **Offline Embedded NASA JPL DE440 Span** | **`1550 CE` to `2306 CE`** bundled in wheel (~7.7 MB Chebyshev polynomials) | Requires external `.se1` or `.bsp` files on disk | Requires external 114 MB `de440.bsp` download | Built-in approximation or external SPK download |
-| **Multi-Millennium Historical Span** | **`3102 BCE` to `3000 CE`** offline (`Vondrak-2011` + analytical) + optional `DE441` (`-13200..+17191`) | Requires multi-file `.se1` archive across centuries | Requires 3.3 GB `DE441` SPK download outside `1550..2650` | Requires external SPK download |
-| **Reproduced Fidelity vs Full NASA JPL DE440 (`1800..2100 CE`)** | **`<= 0.000717 arcsec` max** (`0.000019 arcsec` median across 3,612 monthly TT epochs/planet) | UNKNOWN (not executed in this clean-room repository; depends on external `.se1`/`.bsp` files) | UNKNOWN (not executed in this clean-room repository; depends on external 114 MB `de440.bsp`) | UNKNOWN (not executed in this clean-room repository; depends on external SPK) |
-| **Reproduced Fidelity vs Full NASA JPL DE440 (`1550..2306 CE`)** | **`<= 0.018191 arcsec` max** across 3,864 live body-epoch evaluations from embedded wings (`0.007410"` in `1550..1800`, `0.018191"` in `1800..2100`, `0.007091"` in `2101..2306`) | UNKNOWN (not executed in this clean-room repository; depends on external `.se1` files) | UNKNOWN (not executed in this clean-room repository; requires external 114 MB `de440.bsp`) | UNKNOWN (not executed in this clean-room repository; requires external SPK) |
+| **Offline Embedded NASA JPL DE440 Span** | **`1550 CE` to `2306 CE`** bundled in wheel (~6.68 MB Chebyshev polynomials, `9,074` months) | Uses external `.se1` or `.bsp` files on disk | Loads local/cached SPK files (e.g., `de421.bsp`, `de440s.bsp`, `de440.bsp`; not bundled in wheel) | Built-in approximate ephemeris default; JPL `DE440`/`DE441` uses external SPK |
+| **Multi-Millennium Historical Span** | **`3102 BCE` to `3000 CE`** offline (`Vondrak-2011` + analytical) + optional `DE441` (`-13200..+17191`) | Uses multi-file `.se1` archive across centuries | Loads local/cached SPK files (e.g., `de440.bsp` / `de441.bsp`) | Built-in approximate ephemeris default; JPL `DE441` uses external SPK |
+| **Reproduced Fidelity vs Full NASA JPL DE440 (`1800..2100 CE`, `12:00 TT`)** | **`<= 0.000717 arcsec` max** (`0.000019 arcsec` median across 3,612 monthly TT epochs/planet) | UNKNOWN (not executed in this clean-room repository; depends on external `.se1`/`.bsp` files) | UNKNOWN (not executed in this clean-room repository; depends on selected SPK file) | UNKNOWN (not executed in this clean-room repository; depends on selected ephemeris) |
+| **Reproduced Month-by-Month Fidelity vs Full NASA JPL DE440 (`1550-01` to `2306-02`, `9,074` Months)** | **`<= 0.026041 arcsec` max** across **63,518 live body-epoch evaluations** (`0` failures; `0.011989"` in `1550..1800`, `0.026041"` in `1800..2100`, `0.013609"` in `2101..2306`) | UNKNOWN (not executed in this clean-room repository; depends on external `.se1` files) | UNKNOWN (not executed in this clean-room repository; depends on selected SPK file) | UNKNOWN (not executed in this clean-room repository; depends on selected ephemeris) |
 | **Cryptographic Receipts (`SHA-256`)** | **Built-in on every result** (binds kernel SHA-256, NAIF IDs, conventions, and output) | None (mutable C arrays) | None | None |
-| **Built-in LLM MCP Server (`stdio`)** | **Built-in (`rdg-ephemeris-mcp`)** with 8 tools + AI hallucination auditor | None | None | None |
-| **Built-in HTTP REST API (`OpenAPI 3.1`)** | **Built-in (`rdg-ephemeris-api`)** zero-dependency JSON server | None | None | None |
+| **Built-in LLM MCP Server (`stdio`)** | **Built-in (`rdg-ephemeris-mcp`)** with **9 tools** + AI hallucination auditor | None | None | None |
+| **Built-in HTTP REST API (`OpenAPI 3.1`)** | **Built-in (`rdg-ephemeris-api`)** zero-dependency JSON server (**12 endpoints**) | None | None | None |
 | **Classical Jyotish & Almanac Stack** | **23 Vargas (`D1..D144`), 86 Classical & Tajika Yogas, Shadbala, 337-Bindu Ashtakavarga, 8 Dashas, Jaimini, Nadi, Tajika, Drik Panchang, SVG** | Coordinates, ayanamsa, houses, and basic phenomena only | None | None |
-| **Inverse & Rectification Solvers** | **Sub-second Varga cusp solver, Kunda 81x / Pranapada / Tattwa rectification, Siddhanta drift analyzer** | None | None | None |
+| **Inverse & Personalization Solvers** | **5 built-in solvers**: Sub-second Varga cusp solver, Kunda 81x / Pranapada / Tattwa rectification, Graha Yuddha scanner, Siddhanta drift analyzer, Personalized Astro Fingerprint | None | None | None |
 | **Rust & Browser WebAssembly SDK** | **Included** (`rust/ephemeris-core` + `web/ephemeris-browser.js`) | C source requiring Emscripten port and AGPL compliance | Python only | Python/C only |
 
 ---
 
-## Install in 30 Seconds
+## Installation & Quick Start
 
 Requires Python 3.11 or later. Runtime dependencies are `numpy`, `pyerfa`, `jplephem`, and `tzdata`, each under its own permissive license.
 
@@ -115,13 +117,16 @@ ephemeris-oss fact-sheet --at 2026-10-06T12:00:00Z --lat 28.6139 --lon 77.2090 -
 # Render publication-grade North Indian, South Indian, East Indian, or Circular Wheel SVG charts
 ephemeris-oss svg --at 2026-10-06T12:00:00Z --lat 28.6139 --lon 77.2090 --style north_indian --theme obsidian --compact --out chart.svg
 
-# Solve sub-second D1-D60 varga cusp margins, Bayesian birth-time rectification, and Surya Siddhanta drift
+# Solve sub-second D1-D60 varga cusp margins, Bayesian birth-time rectification, Surya Siddhanta drift, and personalized fingerprint
 ephemeris-oss impossible --at 2026-10-06T12:00:00Z --lat 28.6139 --lon 77.2090
+
+# Compute the Personalized Astrological Fingerprint (16-domain clock confidence decay, 16-Varga phase stability, Digbala, 8-Kaksha transit resonance)
+ephemeris-oss fingerprint --at 2026-10-06T12:00:00Z --lat 28.6139 --lon 77.2090 --uncertainty-sec 60
 ```
 
 ### 3. Model Context Protocol (MCP) Server for LLMs (`rdg-ephemeris-mcp`)
 
-Language models hallucinate planetary degrees, retrograde stations, and divisional chart placements when asked to compute astronomy in weights. `ephemeris-oss` includes a built-in **MCP JSON-RPC 2.0 `stdio` server** exposing 8 deterministic tools:
+Language models hallucinate planetary degrees, retrograde stations, and divisional chart placements when asked to compute astronomy in weights. `ephemeris-oss` includes a built-in **MCP JSON-RPC 2.0 `stdio` server** exposing 9 deterministic tools:
 
 - `compute_planetary_positions` (`3102 BCE` to `3000 CE`)
 - `compute_complete_kundali` (`D1..D60` Vargas, Dashas, Shadbala, Ashtakavarga, Yogas)
@@ -129,6 +134,7 @@ Language models hallucinate planetary degrees, retrograde stations, and division
 - `rectify_birth_time_and_varga_cusps` (Sub-second 16-Varga cusp margins + Kunda 81x / Pranapada / Pancha Tattwa birth-time rectification)
 - `scan_planetary_wars_and_stations` (Exact-second *Graha Yuddha* planetary wars, retrograde stations, and combustion)
 - `compare_surya_siddhanta_vs_de440` (Classical *Surya Siddhanta* epicyclic positions vs modern NASA JPL DE440)
+- `compute_personalized_astro_fingerprint` (16-domain birth-clock confidence decay $\exp(-\sigma_t / \tau_{\min})$, 16-Varga harmonic phase stability, continuous topocentric *Digbala*, and 8-*Kaksha* *Ashtakavarga* transit resonance)
 - `compile_verified_ai_fact_sheet` (`<3 KB` token-disciplined JSON fact sheet for LLM prompts)
 - `verify_ai_astrology_text` (Audits LLM-generated prose against deterministic chart placements to catch hallucinations)
 
@@ -171,6 +177,7 @@ Available endpoints:
 - `POST /v1/rectify` (Sub-second 16-Varga cusp transition solver and Bayesian birth-time rectification)
 - `POST /v1/phenomena` (Multi-century *Graha Yuddha* planetary wars, retrograde stations, and combustion windows)
 - `POST /v1/siddhanta-diff` (*Surya Siddhanta* vs modern NASA JPL DE440 differential analysis)
+- `POST /v1/fingerprint` (Personalized Astrological Fingerprint: 16-domain clock confidence decay, 16-Varga phase stability, topocentric Digbala, and 8-Kaksha transit resonance)
 - `POST /v1/fact-sheet` (`<3 KB` SHA-256-sealed AI Fact Sheet)
 - `POST /v1/verify-text` (Deterministic hallucination audit on AI-generated text)
 
@@ -187,6 +194,7 @@ curl -X POST http://127.0.0.1:8765/v1/positions \
 ```python
 from ephemeris_oss import (
     analyze_siddhanta_vs_jpl_de440_drift,
+    compute_personalized_astro_fingerprint,
     rectify_birth_time_bayesian,
     scan_multi_century_rare_phenomena,
     solve_subsecond_shodashvarga_cusp_transitions,
@@ -207,6 +215,10 @@ print("Planetary wars:", phen.graha_yuddha_count, "Retrograde stations:", phen.r
 # 4. Classical Surya Siddhanta (3102 BCE epicycles) vs modern NASA JPL DE440 differential drift
 drift = analyze_siddhanta_vs_jpl_de440_drift(2461139.0)
 print("Ahargana days:", drift.ahargana_days, "Mean abs delta (deg):", drift.mean_abs_delta_deg)
+
+# 5. Personalized Astrological Fingerprint (16-domain clock confidence decay, 16-Varga phase stability, Digbala, 8-Kaksha transit resonance)
+fp = compute_personalized_astro_fingerprint(2461139.0, latitude_deg=28.6139, longitude_deg=77.2090, birth_time_uncertainty_seconds=60.0)
+print("Clock confidence:", fp.overall_clock_confidence_score, "Transit resonance:", fp.overall_personal_transit_resonance_score)
 ```
 
 ### 6. Native Rust Core and Browser WebAssembly / ES-Module SDK
@@ -250,7 +262,7 @@ The existing `positions(datetime, ...)` interface accepts UTC only in its declar
 
 The original node rows remain as legacy evidence. The mean-node policy now matches Meeus equation 47.7; its new Decimal reference replay and exact source binding sit beside the unchanged legacy records in the accuracy study.
 
-The corrected sample set passes the stated 0.02 arcsecond P95 and 0.1 arcsecond maximum position limits. Across the extended embedded Chebyshev wings (`1550..2306 CE`, 3,864 live body-epoch evaluations), worst positional difference against full 114 MB `de440.bsp` is `0.018191 arcsec` (`0.007410 arcsec` in `1550..1800 CE`, `0.018191 arcsec` in `1800..2100 CE`, and `0.007091 arcsec` in `2101..2306 CE`, using `mean_equinox=True` with explicit `jd_tdb` prior to `1600 CE` where IAU 2000A nutation is bounded). Note that [`docs/ACCURACY.md`](docs/ACCURACY.md) reports full `de440.bsp` vs Horizons `DE441` (`Moon worst 0.0253509189 arcsec`), whereas [`evidence/horizons-iae-benchmark.json`](evidence/horizons-iae-benchmark.json) reports live embedded Chebyshev vs Horizons `DE441` (`Moon worst 0.036858 arcsec`, `0.000233 arcsec` median, `0.009849 arcsec` P95 across 2,100 rows). Outside `1550..2306 CE`, unless an external NASA JPL `de441.bsp` SPK file is provisioned, `EphemerisAdapter` uses Vondrák-2011 precession with an analytical planetary/lunar fallback (see [`docs/ROADMAP-AND-LIMITATIONS.md`](docs/ROADMAP-AND-LIMITATIONS.md) for the three precision regimes, Mars/Jupiter/Saturn `NAIF 4/5/6` system-barycentre offsets, and deep-antiquity $\Delta T$ uncertainty). This is sampled component validation, not a claim of perfect physical prediction, full production readiness, continuous coverage proof or superiority to another engine. The package includes the Horizons-compatible opaque-solar-photosphere convention established by the preserved occulted-Mercury diagnostic.
+The corrected sample set passes the stated 0.02 arcsecond P95 and 0.1 arcsecond maximum position limits. Across every single calendar month of the extended embedded Chebyshev span (`1550-01` through `2306-02` = `9,074` consecutive months × `7` physical bodies = `63,518` live body-epoch evaluations in [`evidence/monthly-full-span-de440-benchmark.json`](evidence/monthly-full-span-de440-benchmark.json)), worst positional difference against full 114 MB `de440.bsp` is `0.026041 arcsec` with `0` failures (`0.011989 arcsec` in `1550..1800 CE`, `0.026041 arcsec` in `1800..2100 CE`, and `0.013609 arcsec` in `2101..2306 CE`, using `mean_equinox=True` with explicit `jd_tdb` prior to `1600 CE` where IAU 2000A nutation is bounded). Note that [`docs/ACCURACY.md`](docs/ACCURACY.md) reports full `de440.bsp` vs Horizons `DE441` (`Moon worst 0.0253509189 arcsec`), whereas [`evidence/horizons-iae-benchmark.json`](evidence/horizons-iae-benchmark.json) reports live embedded Chebyshev vs Horizons `DE441` (`Moon worst 0.036858 arcsec`, `0.000233 arcsec` median, `0.009849 arcsec` P95 across 2,100 rows). Outside `1550..2306 CE`, unless an external NASA JPL `de441.bsp` SPK file is provisioned, `EphemerisAdapter` uses Vondrák-2011 precession with an analytical planetary/lunar fallback (see [`docs/ROADMAP-AND-LIMITATIONS.md`](docs/ROADMAP-AND-LIMITATIONS.md) for the three precision regimes, Mars/Jupiter/Saturn `NAIF 4/5/6` system-barycentre offsets, and deep-antiquity $\Delta T$ uncertainty). This is sampled component validation, not a claim of perfect physical prediction, full production readiness, continuous coverage proof or superiority to another engine. The package includes the Horizons-compatible opaque-solar-photosphere convention established by the preserved occulted-Mercury diagnostic.
 
 ---
 

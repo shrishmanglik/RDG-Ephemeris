@@ -28,6 +28,7 @@ from .almanac import compute_regional_panchang
 from .fact_sheet import compile_ai_fact_sheet, verify_ai_interpretation
 from .impossible_astrology import (
     analyze_siddhanta_vs_jpl_de440_drift,
+    compute_personalized_astro_fingerprint,
     rectify_birth_time_bayesian,
     scan_multi_century_rare_phenomena,
     solve_subsecond_shodashvarga_cusp_transitions,
@@ -147,6 +148,7 @@ MCP_TOOLS: tuple[dict[str, Any], ...] = (
                 "window_minutes": {"type": "number", "default": 15.0},
                 "step_seconds": {"type": "number", "default": 15.0},
                 "ayanamsa": {"type": "string", "default": "lahiri"},
+                "true_node": {"type": "boolean", "default": False},
             },
         },
     },
@@ -221,6 +223,29 @@ MCP_TOOLS: tuple[dict[str, Any], ...] = (
                 "ayanamsa": {"type": "string", "default": "lahiri"},
             },
             "required": ["text"],
+        },
+    },
+    {
+        "name": "compute_personalized_astro_fingerprint",
+        "description": (
+            "Compute a personalized, birth-clock-calibrated, topocentric astrological fingerprint: "
+            "continuous 16-Varga (D1-D60) harmonic phase vector, 20-point Shodashvarga Vimshopaka "
+            "alignment, 16-domain clock-uncertainty confidence decay exp(-sigma_t / tau_min), "
+            "continuous horizon-meridian Digbala vector, and personal 8-Kaksha (3 deg 45 arcmin) "
+            "Ashtakavarga transit resonance."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "jd_ut": {"type": "number", "description": "Natal Julian Date (UT)."},
+                "iso_utc": {"type": "string", "description": "Natal ISO-8601 UTC timestamp."},
+                "query_jd_ut": {"type": "number", "description": "Optional transit/query Julian Date (UT)."},
+                "latitude_deg": {"type": "number", "default": 28.6139},
+                "longitude_deg": {"type": "number", "default": 77.2090},
+                "birth_time_uncertainty_seconds": {"type": "number", "default": 60.0},
+                "ayanamsa": {"type": "string", "default": "lahiri"},
+                "true_node": {"type": "boolean", "default": False},
+            },
         },
     },
 )
@@ -336,11 +361,13 @@ def execute_mcp_tool(name: str, arguments: Mapping[str, Any] | None = None) -> d
         win_min = float(args.get("window_minutes", 15.0))
         step_sec = float(args.get("step_seconds", 15.0))
         ayanamsa = str(args.get("ayanamsa", "lahiri"))
+        use_true_node = bool(args.get("true_node", False))
         cusp_report = solve_subsecond_shodashvarga_cusp_transitions(
             jd_ut,
             lat,
             lon,
             ayanamsa=ayanamsa,
+            true_node=use_true_node,
             adapter=adapter,
         )
         rect_report = rectify_birth_time_bayesian(
@@ -350,15 +377,19 @@ def execute_mcp_tool(name: str, arguments: Mapping[str, Any] | None = None) -> d
             window_minutes=win_min,
             step_seconds=step_sec,
             ayanamsa=ayanamsa,
+            true_node=use_true_node,
             adapter=adapter,
         )
         return _to_jsonable(
             {
                 "jd_ut": jd_ut,
                 "iso_utc": jd_to_iso_utc(jd_ut),
+                "node_mode": "true" if use_true_node else "mean",
                 "most_sensitive_varga": cusp_report.most_sensitive_varga,
                 "minimum_ascendant_cusp_margin_seconds": cusp_report.minimum_ascendant_cusp_margin_seconds,
                 "ascendant_varga_margins": cusp_report.ascendant_margins,
+                "planet_varga_margins": cusp_report.planet_margins,
+                "cusp_receipt_sha256": cusp_report.receipt_sha256,
                 "rectified_jd_ut": rect_report.rectified_jd_ut,
                 "rectified_iso_utc": jd_to_iso_utc(rect_report.rectified_jd_ut),
                 "offset_seconds": rect_report.offset_seconds,
@@ -421,6 +452,26 @@ def execute_mcp_tool(name: str, arguments: Mapping[str, Any] | None = None) -> d
         )
         audit = verify_ai_interpretation(text, bundle.ai_fact_sheet)
         return _to_jsonable(audit)
+
+    if name == "compute_personalized_astro_fingerprint":
+        jd_ut = _resolve_jd_ut(args)
+        lat = float(args.get("latitude_deg", 28.6139))
+        lon = float(args.get("longitude_deg", 77.2090))
+        query_jd = float(args["query_jd_ut"]) if args.get("query_jd_ut") is not None else None
+        sigma_t = float(args.get("birth_time_uncertainty_seconds", 60.0))
+        ayanamsa = str(args.get("ayanamsa", "lahiri"))
+        use_true_node = bool(args.get("true_node", False))
+        fp_report = compute_personalized_astro_fingerprint(
+            jd_ut,
+            lat,
+            lon,
+            query_jd_ut=query_jd,
+            birth_time_uncertainty_seconds=sigma_t,
+            ayanamsa=ayanamsa,
+            true_node=use_true_node,
+            adapter=adapter,
+        )
+        return _to_jsonable(fp_report.to_dict())
 
     raise ValueError(f"Unknown MCP tool: {name!r}")
 

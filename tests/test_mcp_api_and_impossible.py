@@ -13,8 +13,10 @@ import pytest
 from ephemeris_oss import (
     Engine,
     EphemerisAdapter,
+    PersonalizedAstroFingerprintReport,
     analyze_siddhanta_vs_jpl_de440_drift,
     cli,
+    compute_personalized_astro_fingerprint,
     rectify_birth_time_bayesian,
     scan_multi_century_rare_phenomena,
     solve_subsecond_shodashvarga_cusp_transitions,
@@ -110,9 +112,28 @@ def test_impossible_astrology_solvers_end_to_end() -> None:
     assert "sun" in drift.planet_comparisons
     assert "moon" in drift.planet_comparisons
 
+    fp = compute_personalized_astro_fingerprint(
+        jd_ut,
+        28.6139,
+        77.2090,
+        query_jd_ut=jd_ut + 15.0,
+        birth_time_uncertainty_seconds=60.0,
+    )
+    assert isinstance(fp, PersonalizedAstroFingerprintReport)
+    assert len(fp.fingerprint_id_sha256) == 64
+    assert len(fp.receipt_sha256) == 64
+    assert 0.0 < fp.overall_clock_confidence_score <= 1.0
+    assert 0.0 <= fp.overall_personal_transit_resonance_score <= 100.0
+    assert len(fp.harmonic_phase_matrix) == 10
+    assert len(fp.domain_clock_confidence) == 16
+    assert len(fp.topocentric_digbala_vector) == 7
+    assert len(fp.personal_transit_resonance) == 7
+    with pytest.raises(ValueError, match="birth_time_uncertainty_seconds"):
+        compute_personalized_astro_fingerprint(jd_ut, 28.6139, 77.2090, birth_time_uncertainty_seconds=-5.0)
+
 
 def test_mcp_jsonrpc_server_and_all_tools() -> None:
-    assert len(MCP_TOOLS) == 8
+    assert len(MCP_TOOLS) == 9
     init_resp = handle_jsonrpc_message(
         {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2024-11-05"}}
     )
@@ -121,7 +142,7 @@ def test_mcp_jsonrpc_server_and_all_tools() -> None:
 
     list_resp = handle_jsonrpc_message({"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}})
     assert list_resp is not None
-    assert len(list_resp["result"]["tools"]) == 8
+    assert len(list_resp["result"]["tools"]) == 9
 
     call_resp = handle_jsonrpc_message(
         {
@@ -139,6 +160,28 @@ def test_mcp_jsonrpc_server_and_all_tools() -> None:
     structured = call_resp["result"]["structuredContent"]
     assert structured["ephemeris_source"] == "de440-chebyshev"
     assert "sun" in structured["planets"]
+
+    fp_call = handle_jsonrpc_message(
+        {
+            "jsonrpc": "2.0",
+            "id": 4,
+            "method": "tools/call",
+            "params": {
+                "name": "compute_personalized_astro_fingerprint",
+                "arguments": {
+                    "iso_utc": "2026-10-06T12:00:00Z",
+                    "latitude_deg": 28.6139,
+                    "longitude_deg": 77.2090,
+                    "birth_time_uncertainty_seconds": 45.0,
+                },
+            },
+        }
+    )
+    assert fp_call is not None
+    assert fp_call["result"]["isError"] is False
+    fp_struct = fp_call["result"]["structuredContent"]
+    assert len(fp_struct["fingerprint_id_sha256"]) == 64
+    assert len(fp_struct["receipt_sha256"]) == 64
 
     # Test stdio loop
     stdin_buf = io.StringIO(
@@ -161,6 +204,7 @@ def test_rest_api_dispatcher_and_cli_subcommands() -> None:
     assert status_oa == 200
     assert oa["openapi"] == "3.1.0"
     assert "/v1/positions" in build_openapi_spec()["paths"]
+    assert "/v1/fingerprint" in build_openapi_spec()["paths"]
 
     status_pos, pos = dispatch_api_request(
         "POST",
@@ -186,9 +230,19 @@ def test_rest_api_dispatcher_and_cli_subcommands() -> None:
     assert status_fs == 200
     assert "receipt_sha256" in fs
 
+    status_fp, fp_payload = dispatch_api_request(
+        "POST",
+        "/v1/fingerprint",
+        {"jd_ut": 2461139.0, "latitude_deg": 28.6139, "longitude_deg": 77.2090, "birth_time_uncertainty_seconds": 30.0},
+    )
+    assert status_fp == 200
+    assert len(fp_payload["fingerprint_id_sha256"]) == 64
+
     assert cli.main(["mcp", "--dump-tools"]) == 0
     assert cli.main(["serve", "--dump-openapi"]) == 0
     assert cli.main(["impossible", "--at", "2026-10-06T12:00:00Z", "--step-seconds", "60"]) == 0
+    assert cli.main(["fingerprint", "--at", "2026-10-06T12:00:00Z", "--json"]) == 0
+    assert cli.main(["fingerprint", "--at", "2026-10-06T12:00:00Z"]) == 0
 
 
 def test_d30_unequal_boundaries_and_subsecond_varga_transitions_and_receipt_binding() -> None:
@@ -518,7 +572,7 @@ def test_round5_release_reconciliation_contracts(monkeypatch) -> None:  # type: 
         capture_output=True,
         check=True,
     )
-    assert len(json.loads(console.stdout)["tools"]) == 8
+    assert len(json.loads(console.stdout)["tools"]) == 9
 
     # 2. Complete Kundali exposes divisional charts and Dasha timelines
     kundali = mcp_server.execute_mcp_tool("compute_complete_kundali", {"jd_ut": 2461139.0})
@@ -729,4 +783,178 @@ def test_true_node_in_calc_ut_kundali_mcp_openapi_and_legal_docs() -> None:
     cohort_txt = (repo_root / "docs/EXPERT-TESTER-COHORT-REPORT.md").read_text(encoding="utf-8")
     assert "Internal AI Role Analysis, Not an External Human Expert Cohort" in cohort_txt
     assert "4dc841fe-b60e-4d5c-9c09-fda77e6deb80" in cohort_txt
+
+
+def test_personalized_astro_fingerprint_across_sdk_cli_mcp_and_rest_api() -> None:
+    """Verify compute_personalized_astro_fingerprint across Python SDK, CLI, MCP, and REST API."""
+    from ephemeris_oss.cli import main as cli_main
+
+    # 1. Python SDK
+    fp = compute_personalized_astro_fingerprint(
+        2461320.0,
+        latitude_deg=28.6139,
+        longitude_deg=77.2090,
+        query_jd_ut=2461350.0,
+        birth_time_uncertainty_seconds=60.0,
+        ayanamsa="lahiri",
+    )
+    assert len(fp.fingerprint_id_sha256) == 64
+    assert len(fp.receipt_sha256) == 64
+    assert 0.0 <= fp.overall_clock_confidence_score <= 1.0
+    assert 0.0 <= fp.overall_personal_transit_resonance_score <= 100.0
+    assert len(fp.domain_clock_confidence) == 16
+    assert len(fp.harmonic_phase_matrix) == 10
+    assert len(fp.topocentric_digbala_vector) == 7
+    assert len(fp.personal_transit_resonance) == 7
+
+    # 2. MCP tool execution
+    mcp_res = execute_mcp_tool(
+        "compute_personalized_astro_fingerprint",
+        {
+            "jd_ut": 2461320.0,
+            "query_jd_ut": 2461350.0,
+            "latitude_deg": 28.6139,
+            "longitude_deg": 77.2090,
+            "birth_time_uncertainty_seconds": 60.0,
+            "ayanamsa": "lahiri",
+        },
+    )
+    assert mcp_res["fingerprint_id_sha256"] == fp.fingerprint_id_sha256
+    assert mcp_res["receipt_sha256"] == fp.receipt_sha256
+
+    # 3. CLI subcommand `ephemeris-oss fingerprint`
+    rc = cli_main(
+        [
+            "fingerprint",
+            "--jd",
+            "2461320.0",
+            "--query-jd",
+            "2461350.0",
+            "--lat",
+            "28.6139",
+            "--lon",
+            "77.2090",
+            "--uncertainty-sec",
+            "60",
+            "--compact",
+        ]
+    )
+    assert rc == 0
+
+    # 4. REST API `POST /v1/fingerprint`
+    status, api_payload = dispatch_api_request(
+        "POST",
+        "/v1/fingerprint",
+        {
+            "jd_ut": 2461320.0,
+            "query_jd_ut": 2461350.0,
+            "latitude_deg": 28.6139,
+            "longitude_deg": 77.2090,
+            "birth_time_uncertainty_seconds": 60.0,
+        },
+    )
+    assert status == 200
+    assert api_payload["fingerprint_id_sha256"] == fp.fingerprint_id_sha256
+    assert api_payload["receipt_sha256"] == fp.receipt_sha256
+
+    # 5. Verify full-span 9,074-month benchmark & white paper artifacts exist and are valid
+    repo_root = Path(__file__).resolve().parents[1]
+    monthly_bench = json.loads(
+        (repo_root / "evidence/monthly-full-span-de440-benchmark.json").read_text(encoding="utf-8")
+    )
+    assert monthly_bench["monthly_embedded_de440_vs_full_de440_bsp"]["months_evaluated"] == 9074
+    assert monthly_bench["monthly_embedded_de440_vs_full_de440_bsp"]["samples_evaluated"] == 63518
+    assert monthly_bench["monthly_embedded_de440_vs_full_de440_bsp"]["failures"] == 0
+    assert (repo_root / "docs/RDG-EPHEMERIS-WHITEPAPER-AND-BENCHMARKS.md").is_file()
+    assert (repo_root / "docs/AI-MCP-AND-PLUGIN-INTEGRATION-GUIDE.md").is_file()
+
+
+@pytest.mark.parametrize("true_node", [False, True], ids=["mean-node", "true-node"])
+def test_personalized_astro_fingerprint_selected_node_divisional_consistency(true_node: bool) -> None:
+    """Ensure Rahu and Ketu varga_phases, D9, and D60 metadata match the selected node mode."""
+    report = compute_personalized_astro_fingerprint(2461139.0, true_node=true_node)
+    assert report.true_node is true_node
+    for body in ("Rahu", "Ketu"):
+        matrix = report.harmonic_phase_matrix[body]
+        lon = float(matrix["sidereal_longitude_deg"])
+        for v_key, phase in matrix["varga_phases"].items():
+            expected = varga_sign(lon, v_key)
+            assert phase["sign_name"] == expected.sign_name, (true_node, body, v_key)
+            assert phase["sign_lord"] == expected.sign_lord, (true_node, body, v_key)
+        d60_expected = varga_sign(lon, "D60")
+        assert matrix["d60_shashtiamsa_name"] == d60_expected.shashtiamsa_name
+        assert matrix["d60_shashtiamsa_is_benefic"] == d60_expected.shashtiamsa_is_benefic
+
+
+def test_public_utc_and_supplied_callback_lunar_interval_straddle() -> None:
+    """Verify public UTC positions() and supplied-callback _apparent_state share the lunar 16-day straddle fix."""
+    from datetime import datetime, timedelta, timezone
+    import math
+    from ephemeris_oss import Engine
+    from ephemeris_oss.engine.numerical_provider import TimeScaleState
+
+    target_tdb = 2460032.5 + (0.4 / 86400.0)
+    with Engine.load(kernels="compact", eop=None) as compact:
+        instant = datetime(2000, 1, 1, 12, tzinfo=timezone.utc) + timedelta(days=target_tdb - 2451545.0)
+        for _ in range(3):
+            instant += timedelta(days=target_tdb - compact._provider.utc_time_scales(instant).tdb_jd)
+        times = compact._provider.utc_time_scales(instant)
+        assert abs(times.tdb_jd - target_tdb) < 1.0e-8
+
+        tt_pos = compact.positions_tt(times.tt_jd, ("moon",), jd_tdb=times.tdb_jd, mean_equinox=True).value["moon"]
+        utc_pos = compact.positions(instant, ("moon",)).value["moon"]
+        diff_deg = abs((tt_pos["longitude_deg"] - utc_pos["longitude_deg"] + 180.0) % 360.0 - 180.0)
+        assert diff_deg * 3600.0 < 0.001
+
+        ts = TimeScaleState((math.nan, math.nan), (2451545.0, target_tdb - 2451545.0), (2451545.0, target_tdb - 2451545.0))
+        res_default, _ = compact._provider._apparent_state(
+            body="moon",
+            instant_utc=None,
+            kernel_year=2023,
+            observer=None,
+            times=ts,
+            apply_deflection=True,
+            apply_aberration=True,
+            precomputed_target_func=None,
+        )
+        res_cb, _ = compact._provider._apparent_state(
+            body="moon",
+            instant_utc=None,
+            kernel_year=2023,
+            observer=None,
+            times=ts,
+            apply_deflection=True,
+            apply_aberration=True,
+            precomputed_target_func=lambda at: compact._provider.barycentric_state_at_tdb(
+                body="moon",
+                tdb=(2451545.0, at - 2451545.0),
+                kernel_year=2023,
+            ),
+        )
+        assert res_default.apparent_vector_km == res_cb.apparent_vector_km
+
+
+@pytest.mark.parametrize("sigma", [0.0, 0.1, 2.0], ids=["exact-clock", "subsecond-clock", "two-second-control"])
+def test_actual_uncertainty_sets_near_cusp_status(sigma: float) -> None:
+    """Verify subsecond and zero birth_time_uncertainty_seconds govern stability_classification without a 1s floor."""
+    from ephemeris_oss import compute_personalized_astro_fingerprint, solve_subsecond_shodashvarga_cusp_transitions
+
+    base = 2461139.0
+    margins = solve_subsecond_shodashvarga_cusp_transitions(base, 28.6139, 77.2090)
+    near_cusp_jd = base + (margins.ascendant_margins["D60"].seconds_to_next_cusp - 0.5) / 86400.0
+    report = compute_personalized_astro_fingerprint(near_cusp_jd, birth_time_uncertainty_seconds=sigma)
+    domain = report.domain_clock_confidence["D60"]
+    tau = domain["governing_cusp_margin_seconds"]
+    assert 0.45 < tau < 0.55
+    expected = (
+        "LOCKED_INVARIANT"
+        if tau >= 3.0 * sigma
+        else "MODERATELY_SENSITIVE"
+        if tau >= sigma
+        else "RECTIFICATION_REQUIRED"
+    )
+    assert domain["stability_classification"] == expected
+
+
+
 
