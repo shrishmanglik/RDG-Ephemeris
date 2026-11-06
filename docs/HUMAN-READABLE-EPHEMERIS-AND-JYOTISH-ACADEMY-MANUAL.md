@@ -9,7 +9,7 @@
 - **Reference Meridian / Location:** Latitude `23.1765°`, Longitude `75.7885°` (UTC`+5.50h` — Ujjain Mahakaleshwar Prime Meridian)
 - **Primary Sidereal Ayanamsha:** `lahiri` (Chitrapaksha / IAE 1989 Lahiri Standard + 25-Ayanamsha Conversion Table in Chapter 1)
 - **Astronomical Kernel Backbone:** NASA JPL DE440 / DE441 + IAU 2006/2000A Precession-Nutation (`ephemeris-oss v0.2.0.dev1`)
-- **Cryptographic SHA-256 Receipt:** `sha256:08bdd0998425d14932fac3c97bca60bb14484d33172cba14b42c06916076a0b2`
+- **Cryptographic SHA-256 Receipt:** `sha256:1c1f878f6ea66828da96dc3f58231bf3ee2d3bbf46555ec21fcaf60640ce11de`
 
 ## Chapter 1 — Fundamental Astronomical Constants, Julian Day Tables (`1900–2050`), $\Delta T$, & 25-Ayanamsha Master Conversion Table
 
@@ -3212,3 +3212,137 @@ $$\text{Balance of Mahadasha at Birth (Years)} = Y_{\text{Mahadasha}} \times \fr
 | **`Tithi #30`** (Krishna 15) | Purna (Fullness) | **Thursday** | `None (Shubha)` | *Pushya* | Ashwini, Punarvasu, Pushya, Anuradha | Mithuna, Simha, Tula, Dhanu, Meena |
 | **`Tithi #30`** (Krishna 15) | Purna (Fullness) | **Friday** | `None (Shubha)` | *Revati* | Ashwini, Punarvasu, Anuradha, Shravana | Vrishabha, Karka, Kanya, Vrishchika, Kumbha |
 | **`Tithi #30`** (Krishna 15) | Purna (Fullness) | **Saturday** | `None (Shubha)` | *Rohini* | Rohini, Swati, Shravana | Mesha, Mithuna, Simha, Tula, Makara, Meena |
+
+## Chapter 29 — Continuous Sinusoidal *Uchcha-Neecha* Exaltation Potential, *Arohi/Avarohi* Orbital Climb Velocity, 3D *Digbala*, & *Surya Siddhanta Kalansha* Heliacal Phenomena
+
+> **Why Continuous Dignity Replaces Binary Lookup Tables:** Traditional software treats exaltation (*Uchcha*) as a step function by sign. RDG evaluates both the classical linear *Uchcha Bala* (`0..60 Virupas`) and the smooth harmonic potential `U(lambda) = 50 * (1 + cos(lambda - lambda_uchcha))` along with its exact time derivative `dU/dt` (*Arohi* ascending toward exaltation vs. *Avarohi* descending toward debilitation) and exact *Surya Siddhanta Kalansha* heliacal rising (*Udaya*) and setting (*Asta*) crossings.
+
+### 29.1 Worked Case Study: 9-Graha Continuous *Uchcha* Potential, *Arohi/Avarohi* Gradient, 3D *Digbala*, & Heliacal State (`Chart Uchcha Harmony = 32.76/100`)
+
+| Graha | Sidereal Lon (`deg`) | Speed (`deg/d`) | Deep Exaltation (`deg`) | *Uchcha* Potential (`0..100`) | *Uchcha Bala* (`0..60v`) | *Arohi / Avarohi* Climb State | `dU/dt` (`/day`) | Peak *Digbala* House | *Digbala* (`0..60v`) | Solar Elongation | *Kalansha* Limit | Heliacal Visibility & Nearest Crossing |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| **Sun** | `208.6140°` | `+1.0071°` | `10.0°` | **`2.62`** | `6.20v` | `AROHI_ASCENDING_TO_EXALTATION` | `+0.2805` | `10H` | `52.45v` | `0.00°` | `0.0°` | **SOLAR_SOURCE** (None in ±45d) |
+| **Moon** | `273.6943°` | `+11.8154°` | `33.0°` | **`25.53`** | `20.23v` | `AROHI_ASCENDING_TO_EXALTATION` | `+8.9913` | `4H` | `29.24v` | `65.08°` | `12.0°` | **VISIBLE_UDAYA** (None in ±45d) |
+| **Mars** | `121.1842°` | `+0.4500°` | `298.0°` | **`0.08`** | `1.06v` | `AROHI_ASCENDING_TO_EXALTATION` | `+0.0218` | `10H` | `38.41v` | `87.43°` | `17.0°` | **VISIBLE_UDAYA** (None in ±45d) |
+| **Mercury** | `191.0171°` | `+0.2763°` | `165.0°` | **`94.93`** | `51.33v` | `AVAROHI_DESCENDING_TO_DEBILITATION` | `-0.1058` | `1H` | `36.24v` | `17.60°` | `14.0°` | **VISIBLE_UDAYA** (HELIACAL_RISING_UDAYA @ `2026-11-10T10:24:09Z`) |
+| **Jupiter** | `121.5663°` | `+0.0852°` | `95.0°` | **`94.72`** | `51.14v` | `AVAROHI_DESCENDING_TO_DEBILITATION` | `-0.0332` | `1H` | `13.09v` | `87.05°` | `11.0°` | **VISIBLE_UDAYA** (None in ±45d) |
+| **Venus** | `178.6575°` | `+0.0476°` | `357.0°` | **`0.02`** | `0.55v` | `AROHI_ASCENDING_TO_EXALTATION` | `+0.0012` | `4H` | `2.44v` | `29.96°` | `10.0°` | **VISIBLE_UDAYA** (HELIACAL_RISING_UDAYA @ `2026-10-29T04:09:57Z`) |
+| **Saturn** | `344.2830°` | `-0.0441°` | `200.0°` | **`9.40`** | `11.91v` | `AROHI_ASCENDING_TO_EXALTATION` | `+0.0225` | `7H` | `27.33v` | `135.67°` | `15.0°` | **VISIBLE_UDAYA** (None in ±45d) |
+| **Rahu** | `301.0860°` | `-0.0530°` | `50.0°` | **`33.79`** | `23.70v` | `AVAROHI_DESCENDING_TO_DEBILITATION` | `-0.0437` | `1H` | `47.07v` | `92.47°` | `0.0°` | **SHADOW_NODE_EXEMPT** (None in ±45d) |
+| **Ketu** | `121.0860°` | `-0.0530°` | `230.0°` | **`33.79`** | `23.70v` | `AVAROHI_DESCENDING_TO_DEBILITATION` | `-0.0437` | `1H` | `12.93v` | `87.53°` | `0.0°` | **SHADOW_NODE_EXEMPT** (None in ±45d) |
+
+### 29.2 Complete 36-Row (`0°` to `350°` in `10°` Steps) Manual *Uchcha-Neecha* Harmonic Potential & *Arohi/Avarohi* Lookup Reckoner
+
+| Angular Offset `Δλ = λ - λ_uchcha` | Absolute Distance `|Δλ|` | Classical *Uchcha Bala* (`(180 - |Δλ|)/3` Virupas) | Harmonic Potential `50*(1 + cos Δλ)` (`0..100`) | Orbital Climb Phase (Direct Motion `v > 0`) | Orbital Climb Phase (Retrograde Motion `v < 0`) |
+|---|---|---|---|---|---|
+| **`000°`** (`+0°`) | `0°` | **`60.00 Virupas`** | **`100.00 / 100`** | PEAK / NADIR | PEAK / NADIR |
+| **`010°`** (`+10°`) | `10°` | **`56.67 Virupas`** | **`99.24 / 100`** | AVAROHI (Descending to Neecha) | AROHI (Retrograde Climb) |
+| **`020°`** (`+20°`) | `20°` | **`53.33 Virupas`** | **`96.98 / 100`** | AVAROHI (Descending to Neecha) | AROHI (Retrograde Climb) |
+| **`030°`** (`+30°`) | `30°` | **`50.00 Virupas`** | **`93.30 / 100`** | AVAROHI (Descending to Neecha) | AROHI (Retrograde Climb) |
+| **`040°`** (`+40°`) | `40°` | **`46.67 Virupas`** | **`88.30 / 100`** | AVAROHI (Descending to Neecha) | AROHI (Retrograde Climb) |
+| **`050°`** (`+50°`) | `50°` | **`43.33 Virupas`** | **`82.14 / 100`** | AVAROHI (Descending to Neecha) | AROHI (Retrograde Climb) |
+| **`060°`** (`+60°`) | `60°` | **`40.00 Virupas`** | **`75.00 / 100`** | AVAROHI (Descending to Neecha) | AROHI (Retrograde Climb) |
+| **`070°`** (`+70°`) | `70°` | **`36.67 Virupas`** | **`67.10 / 100`** | AVAROHI (Descending to Neecha) | AROHI (Retrograde Climb) |
+| **`080°`** (`+80°`) | `80°` | **`33.33 Virupas`** | **`58.68 / 100`** | AVAROHI (Descending to Neecha) | AROHI (Retrograde Climb) |
+| **`090°`** (`+90°`) | `90°` | **`30.00 Virupas`** | **`50.00 / 100`** | AVAROHI (Descending to Neecha) | AROHI (Retrograde Climb) |
+| **`100°`** (`+100°`) | `100°` | **`26.67 Virupas`** | **`41.32 / 100`** | AVAROHI (Descending to Neecha) | AROHI (Retrograde Climb) |
+| **`110°`** (`+110°`) | `110°` | **`23.33 Virupas`** | **`32.90 / 100`** | AVAROHI (Descending to Neecha) | AROHI (Retrograde Climb) |
+| **`120°`** (`+120°`) | `120°` | **`20.00 Virupas`** | **`25.00 / 100`** | AVAROHI (Descending to Neecha) | AROHI (Retrograde Climb) |
+| **`130°`** (`+130°`) | `130°` | **`16.67 Virupas`** | **`17.86 / 100`** | AVAROHI (Descending to Neecha) | AROHI (Retrograde Climb) |
+| **`140°`** (`+140°`) | `140°` | **`13.33 Virupas`** | **`11.70 / 100`** | AVAROHI (Descending to Neecha) | AROHI (Retrograde Climb) |
+| **`150°`** (`+150°`) | `150°` | **`10.00 Virupas`** | **`6.70 / 100`** | AVAROHI (Descending to Neecha) | AROHI (Retrograde Climb) |
+| **`160°`** (`+160°`) | `160°` | **`6.67 Virupas`** | **`3.02 / 100`** | AVAROHI (Descending to Neecha) | AROHI (Retrograde Climb) |
+| **`170°`** (`+170°`) | `170°` | **`3.33 Virupas`** | **`0.76 / 100`** | AVAROHI (Descending to Neecha) | AROHI (Retrograde Climb) |
+| **`180°`** (`-180°`) | `180°` | **`0.00 Virupas`** | **`0.00 / 100`** | PEAK / NADIR | PEAK / NADIR |
+| **`190°`** (`-170°`) | `170°` | **`3.33 Virupas`** | **`0.76 / 100`** | AROHI (Ascending to Uchcha) | AVAROHI (Retrograde Descent) |
+| **`200°`** (`-160°`) | `160°` | **`6.67 Virupas`** | **`3.02 / 100`** | AROHI (Ascending to Uchcha) | AVAROHI (Retrograde Descent) |
+| **`210°`** (`-150°`) | `150°` | **`10.00 Virupas`** | **`6.70 / 100`** | AROHI (Ascending to Uchcha) | AVAROHI (Retrograde Descent) |
+| **`220°`** (`-140°`) | `140°` | **`13.33 Virupas`** | **`11.70 / 100`** | AROHI (Ascending to Uchcha) | AVAROHI (Retrograde Descent) |
+| **`230°`** (`-130°`) | `130°` | **`16.67 Virupas`** | **`17.86 / 100`** | AROHI (Ascending to Uchcha) | AVAROHI (Retrograde Descent) |
+| **`240°`** (`-120°`) | `120°` | **`20.00 Virupas`** | **`25.00 / 100`** | AROHI (Ascending to Uchcha) | AVAROHI (Retrograde Descent) |
+| **`250°`** (`-110°`) | `110°` | **`23.33 Virupas`** | **`32.90 / 100`** | AROHI (Ascending to Uchcha) | AVAROHI (Retrograde Descent) |
+| **`260°`** (`-100°`) | `100°` | **`26.67 Virupas`** | **`41.32 / 100`** | AROHI (Ascending to Uchcha) | AVAROHI (Retrograde Descent) |
+| **`270°`** (`-90°`) | `90°` | **`30.00 Virupas`** | **`50.00 / 100`** | AROHI (Ascending to Uchcha) | AVAROHI (Retrograde Descent) |
+| **`280°`** (`-80°`) | `80°` | **`33.33 Virupas`** | **`58.68 / 100`** | AROHI (Ascending to Uchcha) | AVAROHI (Retrograde Descent) |
+| **`290°`** (`-70°`) | `70°` | **`36.67 Virupas`** | **`67.10 / 100`** | AROHI (Ascending to Uchcha) | AVAROHI (Retrograde Descent) |
+| **`300°`** (`-60°`) | `60°` | **`40.00 Virupas`** | **`75.00 / 100`** | AROHI (Ascending to Uchcha) | AVAROHI (Retrograde Descent) |
+| **`310°`** (`-50°`) | `50°` | **`43.33 Virupas`** | **`82.14 / 100`** | AROHI (Ascending to Uchcha) | AVAROHI (Retrograde Descent) |
+| **`320°`** (`-40°`) | `40°` | **`46.67 Virupas`** | **`88.30 / 100`** | AROHI (Ascending to Uchcha) | AVAROHI (Retrograde Descent) |
+| **`330°`** (`-30°`) | `30°` | **`50.00 Virupas`** | **`93.30 / 100`** | AROHI (Ascending to Uchcha) | AVAROHI (Retrograde Descent) |
+| **`340°`** (`-20°`) | `20°` | **`53.33 Virupas`** | **`96.98 / 100`** | AROHI (Ascending to Uchcha) | AVAROHI (Retrograde Descent) |
+| **`350°`** (`-10°`) | `10°` | **`56.67 Virupas`** | **`99.24 / 100`** | AROHI (Ascending to Uchcha) | AVAROHI (Retrograde Descent) |
+
+## Chapter 30 — 81-Cell *Sarvatobhadra Trishula* Ray-Tracer, 7-Planet *Shodhya Pinda* Trigger Stars, 12-House *Vitta-Ayavyaya* Wealth Matrix, & Continuous Harmonic *Yoga* Potency
+
+### 30.1 Worked Case Study: 9x9 *Sarvatobhadra Chakra* 3-Way *Trishula Vedha* Ray-Trace (`Net Protection Index = +25.0`, Verdict: Strong Benefic Subha-Vedha protection across Janma Nakshatra / Rashi / Akshara.)
+
+| Transiting Graha | Source 28-Star (`Nakshatra`) | Border Grid `(r, c)` | Ray Direction (*Sammukha / Vama / Dakshina*) | Target Cell `(r, c)` | Target Type | Target Label | *Vedha* Nature | Hits Natal *Janma Star / Rashi / Akshara* |
+|---|---|---|---|---|---|---|---|---|
+| **Sun** | *Vishakha* | `(7, 8)` | `FRONT_SAMMUKHA` | `(7, 0)` | `nakshatra` | **Dhanishta** | `KRURA_MALEFIC_VEDHA` | `Perimeter Nakshatra` |
+| **Sun** | *Vishakha* | `(7, 8)` | `LEFT_DIAGONAL_VAMA` | `(8, 7)` | `nakshatra` | **Anuradha** | `KRURA_MALEFIC_VEDHA` | `Perimeter Nakshatra` |
+| **Sun** | *Vishakha* | `(7, 8)` | `RIGHT_DIAGONAL_DAKSHINA` | `(0, 1)` | `nakshatra` | **Krittika** | `KRURA_MALEFIC_VEDHA` | `Perimeter Nakshatra` |
+| **Moon** | *Uttara Ashadha* | `(8, 3)` | `FRONT_SAMMUKHA` | `(0, 3)` | `nakshatra` | **Mrigashirsha** | `SUBHA_BENEFIC_VEDHA` | `Perimeter Nakshatra` |
+| **Moon** | *Uttara Ashadha* | `(8, 3)` | `LEFT_DIAGONAL_VAMA` | `(5, 0)` | `nakshatra` | **Purva Bhadrapada** | `SUBHA_BENEFIC_VEDHA` | `Perimeter Nakshatra` |
+| **Moon** | *Uttara Ashadha* | `(8, 3)` | `RIGHT_DIAGONAL_DAKSHINA` | `(3, 8)` | `nakshatra` | **Uttara Phalguni** | `SUBHA_BENEFIC_VEDHA` | `JANMA_NAKSHATRA` |
+| **Mars** | *Magha* | `(1, 8)` | `FRONT_SAMMUKHA` | `(1, 0)` | `nakshatra` | **Bharani** | `KRURA_MALEFIC_VEDHA` | `Perimeter Nakshatra` |
+| **Mars** | *Magha* | `(1, 8)` | `LEFT_DIAGONAL_VAMA` | `(8, 1)` | `nakshatra` | **Shravana** | `KRURA_MALEFIC_VEDHA` | `Perimeter Nakshatra` |
+| **Mars** | *Magha* | `(1, 8)` | `RIGHT_DIAGONAL_DAKSHINA` | `(0, 7)` | `nakshatra` | **Ashlesha** | `KRURA_MALEFIC_VEDHA` | `Perimeter Nakshatra` |
+| **Mercury** | *Swati* | `(6, 8)` | `FRONT_SAMMUKHA` | `(6, 0)` | `nakshatra` | **Shatabhisha** | `SUBHA_BENEFIC_VEDHA` | `Perimeter Nakshatra` |
+| **Mercury** | *Swati* | `(6, 8)` | `LEFT_DIAGONAL_VAMA` | `(8, 6)` | `nakshatra` | **Jyeshtha** | `SUBHA_BENEFIC_VEDHA` | `Perimeter Nakshatra` |
+| **Mercury** | *Swati* | `(6, 8)` | `RIGHT_DIAGONAL_DAKSHINA` | `(0, 2)` | `nakshatra` | **Rohini** | `SUBHA_BENEFIC_VEDHA` | `Perimeter Nakshatra` |
+| **Jupiter** | *Magha* | `(1, 8)` | `FRONT_SAMMUKHA` | `(1, 0)` | `nakshatra` | **Bharani** | `SUBHA_BENEFIC_VEDHA` | `Perimeter Nakshatra` |
+| **Jupiter** | *Magha* | `(1, 8)` | `LEFT_DIAGONAL_VAMA` | `(8, 1)` | `nakshatra` | **Shravana** | `SUBHA_BENEFIC_VEDHA` | `Perimeter Nakshatra` |
+| **Jupiter** | *Magha* | `(1, 8)` | `RIGHT_DIAGONAL_DAKSHINA` | `(0, 7)` | `nakshatra` | **Ashlesha** | `SUBHA_BENEFIC_VEDHA` | `Perimeter Nakshatra` |
+| **Venus** | *Chitra* | `(5, 8)` | `FRONT_SAMMUKHA` | `(5, 2)` | `rasi` | **Makara** | `SUBHA_BENEFIC_VEDHA` | `JANMA_RASHI` |
+| **Venus** | *Chitra* | `(5, 8)` | `FRONT_SAMMUKHA` | `(5, 0)` | `nakshatra` | **Purva Bhadrapada** | `SUBHA_BENEFIC_VEDHA` | `Perimeter Nakshatra` |
+| **Venus** | *Chitra* | `(5, 8)` | `LEFT_DIAGONAL_VAMA` | `(8, 5)` | `nakshatra` | **Mula** | `SUBHA_BENEFIC_VEDHA` | `Perimeter Nakshatra` |
+| **Venus** | *Chitra* | `(5, 8)` | `RIGHT_DIAGONAL_DAKSHINA` | `(0, 3)` | `nakshatra` | **Mrigashirsha** | `SUBHA_BENEFIC_VEDHA` | `Perimeter Nakshatra` |
+| **Saturn** | *Uttara Bhadrapada* | `(4, 0)` | `FRONT_SAMMUKHA` | `(4, 8)` | `nakshatra` | **Hasta** | `ATI_VEDHA_RETROGRADE` | `Perimeter Nakshatra` |
+| **Saturn** | *Uttara Bhadrapada* | `(4, 0)` | `LEFT_DIAGONAL_VAMA` | `(0, 4)` | `nakshatra` | **Ardra** | `ATI_VEDHA_RETROGRADE` | `Perimeter Nakshatra` |
+| **Saturn** | *Uttara Bhadrapada* | `(4, 0)` | `RIGHT_DIAGONAL_DAKSHINA` | `(8, 4)` | `nakshatra` | **Purva Ashadha** | `ATI_VEDHA_RETROGRADE` | `Perimeter Nakshatra` |
+| **Rahu** | *Dhanishta* | `(7, 0)` | `FRONT_SAMMUKHA` | `(7, 8)` | `nakshatra` | **Vishakha** | `KRURA_MALEFIC_VEDHA` | `Perimeter Nakshatra` |
+| **Rahu** | *Dhanishta* | `(7, 0)` | `LEFT_DIAGONAL_VAMA` | `(5, 2)` | `rasi` | **Makara** | `KRURA_MALEFIC_VEDHA` | `JANMA_RASHI` |
+| **Rahu** | *Dhanishta* | `(7, 0)` | `LEFT_DIAGONAL_VAMA` | `(0, 7)` | `nakshatra` | **Ashlesha** | `KRURA_MALEFIC_VEDHA` | `Perimeter Nakshatra` |
+| **Rahu** | *Dhanishta* | `(7, 0)` | `RIGHT_DIAGONAL_DAKSHINA` | `(8, 1)` | `nakshatra` | **Shravana** | `KRURA_MALEFIC_VEDHA` | `Perimeter Nakshatra` |
+| **Ketu** | *Magha* | `(1, 8)` | `FRONT_SAMMUKHA` | `(1, 0)` | `nakshatra` | **Bharani** | `KRURA_MALEFIC_VEDHA` | `Perimeter Nakshatra` |
+| **Ketu** | *Magha* | `(1, 8)` | `LEFT_DIAGONAL_VAMA` | `(8, 1)` | `nakshatra` | **Shravana** | `KRURA_MALEFIC_VEDHA` | `Perimeter Nakshatra` |
+| **Ketu** | *Magha* | `(1, 8)` | `RIGHT_DIAGONAL_DAKSHINA` | `(0, 7)` | `nakshatra` | **Ashlesha** | `KRURA_MALEFIC_VEDHA` | `Perimeter Nakshatra` |
+
+### 30.2 Worked Case Study: 7-Planet *Trikona & Ekadhipatya Shodhana*, *Rashi / Graha / Shodhya Pinda*, & 27-Nakshatra Transit Trigger Stars
+
+| Graha | Raw BAV Bindus | *Trikona* Reduced Sum | *Ekadhipatya* Reduced Sum | *Rashi Pinda* | *Graha Pinda* | *Shodhya Pinda* (`S`) | Classical Trigger Star (`(S × 7) mod 27`) | *Lagna-Bindu* Trigger Star | Current Transit Star | Active Trigger Hit |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **Sun** | `48` | `12` | `8` | `79` | `45` | **`124`** | **#05 Mrigashirsha** | *Shravana* | Vishakha | `No` |
+| **Moon** | `49` | `16` | `14` | `104` | `48` | **`152`** | **#12 Uttara Phalguni** | *Swati* | Uttara Ashadha | `No` |
+| **Mars** | `39` | `15` | `12` | `119` | `71` | **`190`** | **#08 Pushya** | *Mrigashirsha* | Magha | `No` |
+| **Mercury** | `54` | `9` | `7` | `51` | `46` | **`97`** | **#05 Mrigashirsha** | *Purva Phalguni* | Swati | `No` |
+| **Jupiter** | `56` | `11` | `11` | `101` | `72` | **`173`** | **#24 Shatabhisha** | *Dhanishta* | Magha | `No` |
+| **Venus** | `52` | `13` | `11` | `84` | `25` | **`109`** | **#08 Pushya** | *Pushya* | Chitra | `No` |
+| **Saturn** | `39` | `18` | `16` | `120` | `79` | **`199`** | **#17 Anuradha** | *Rohini* | Uttara Bhadrapada | `No` |
+
+### 30.3 Worked Case Study: 12-House *Bandhu / Sevaka / Poshaka / Ghataka* Vitality & *Vitta-Ayavyaya* Wealth Surplus (`Wealth Index = 64.0/100`)
+
+| House (`Bhava`) | Sign (`Rashi`) | SAV Bindus | *Bandhu* (`7th` from House) | *Sevaka* (`6th` from House) | *Poshaka* (`11th` Gains) | *Ghataka* (`12th` Loss) | *Artha* Net Surplus (`Poshaka - Ghataka`) | Prosperity Tier |
+|---|---|---|---|---|---|---|---|---|
+| **House `01`** | **Dhanu** | **`27`** | `35` | `33` | `27` | `25` | **`+2`** | `MADHYAMA_BALANCED_SUSTENANCE` |
+| **House `02`** | **Makara** | **`27`** | `30` | `35` | `25` | `27` | **`-2`** | `KSHINA_HIGH_EXPENDITURE` |
+| **House `03`** | **Kumbha** | **`27`** | `30` | `30` | `27` | `27` | **`+0`** | `MADHYAMA_BALANCED_SUSTENANCE` |
+| **House `04`** | **Meena** | **`32`** | `24` | `30` | `27` | `27` | **`+0`** | `MADHYAMA_BALANCED_SUSTENANCE` |
+| **House `05`** | **Mesha** | **`20`** | `27` | `24` | `27` | `32` | **`-5`** | `KSHINA_HIGH_EXPENDITURE` |
+| **House `06`** | **Vrishabha** | **`33`** | `25` | `27` | `32` | `20` | **`+12`** | `UTTAMA_HIGH_ACCUMULATION` |
+| **House `07`** | **Mithuna** | **`35`** | `27` | `25` | `20` | `33` | **`-13`** | `MADHYAMA_BALANCED_SUSTENANCE` |
+| **House `08`** | **Karka** | **`30`** | `27` | `27` | `33` | `35` | **`-2`** | `MADHYAMA_BALANCED_SUSTENANCE` |
+| **House `09`** | **Simha** | **`30`** | `27` | `27` | `35` | `30` | **`+5`** | `UTTAMA_HIGH_ACCUMULATION` |
+| **House `10`** | **Kanya** | **`24`** | `32` | `27` | `30` | `30` | **`+0`** | `MADHYAMA_BALANCED_SUSTENANCE` |
+| **House `11`** | **Tula** | **`27`** | `20` | `32` | `30` | `24` | **`+6`** | `MADHYAMA_BALANCED_SUSTENANCE` |
+| **House `12`** | **Vrishchika** | **`25`** | `33` | `20` | `24` | `27` | **`-3`** | `KSHINA_HIGH_EXPENDITURE` |
+
+### 30.4 Worked Case Study: Continuous Harmonic Phase-Coherence *Yoga* Potency Tensor
+
+| Classical *Yoga* Resonance | Category | Participating Grahas | Exact Separation (`deg`) | Ideal Harmonic (`deg`) | Orb Error (`deg`) | Phase Coherence (`0..100`) | Dignity-Weighted Potency (`0..100`) | Plain-English Effect |
+|---|---|---|---|---|---|---|---|---|
+| **Lakshmi-Narayana / Shukra-Budha Creative Resonance** | `SHUKRA_BUDHA_HARMONIC` | Venus, Mercury | `12.36°` | `0.0°` | `12.36°` | `21.7` | **`30.7`** | Aesthetic and commercial phase coherence uniting design taste with articulate communication. |
+| **Dharma-Karmadhipati / Guru-Shani Structural Resonance** | `GURU_SHANI_HARMONIC` | Jupiter, Saturn | `137.28°` | `120.0°` | `17.28°` | `5.0` | **`21.5`** | Expansion-structure harmonic alignment governing institutional leadership and long-term career architecture. |
+| **Gaja-Kesari Harmonic Resonance** | `CHANDRA_GURU_KENDRA` | Moon, Jupiter | `152.13°` | `180.0°` | `27.87°` | `0.0` | **`21.1`** | Continuous 4th-harmonic (Kendra) phase lock between Moon and Jupiter amplifying wisdom and lasting reputation. |
+| **Budha-Aditya Solar-Mental Coherence** | `SURYA_BUDHA_YUTI` | Sun, Mercury | `17.60°` | `0.0°` | `17.60°` | `4.5` | **`20.0`** | 1st-harmonic conjunction coherence (peaking outside deep combustion) sharpening analytical intelligence. |
+| **Chandra-Mangala Wealth Impulse Resonance** | `CHANDRA_MANGALA_HARMONIC` | Moon, Mars | `152.51°` | `180.0°` | `27.49°` | `0.1` | **`4.5`** | Emotional courage and enterprise execution harmonic driving decisive financial action. |

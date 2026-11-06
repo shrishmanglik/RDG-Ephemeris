@@ -58,6 +58,19 @@ from .conditional_dashas_and_nadi import (
     compute_vimshottari_5_level_prana_chronometer,
     solve_golden_muhurta_electional_windows,
 )
+from .harmonic_vedha_and_pinda import (
+    ContinuousDignityAndHeliacalReport,
+    ContinuousPlanetDignityVector,
+    HarmonicYogaResonanceRow,
+    HouseVitalityRatioRow,
+    Sarvatobhadra81RayVedhaReport,
+    SarvatobhadraRayHit,
+    ShodhyaPindaAndHarmonicYogaReport,
+    ShodhyaPindaPlanetRow,
+    compute_continuous_dignity_and_heliacal_phenomena,
+    compute_sarvatobhadra_81_ray_vedha,
+    compute_shodhya_pinda_transit_triggers_and_harmonic_yogas,
+)
 from .dasha import (
     ASHTOTTARI_RULERS,
     ASHTOTTARI_TOTAL_YEARS,

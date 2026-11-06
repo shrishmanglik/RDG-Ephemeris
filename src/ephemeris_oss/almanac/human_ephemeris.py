@@ -66,6 +66,13 @@ from ..jyotish.conditional_dashas_and_nadi import (
     compute_vimshottari_5_level_prana_chronometer,
     solve_golden_muhurta_electional_windows,
 )
+from ..jyotish.harmonic_vedha_and_pinda import (
+    EXALTATION_DEGREE,
+    KALANSHA_LIMIT_DEG,
+    compute_continuous_dignity_and_heliacal_phenomena,
+    compute_sarvatobhadra_81_ray_vedha,
+    compute_shodhya_pinda_transit_triggers_and_harmonic_yogas,
+)
 from ..jyotish.dasha import (
     ASHTOTTARI_RULERS as ASHTOTTARI_LORDS,
     ASHTOTTARI_YEARS,
@@ -278,7 +285,7 @@ class HumanManualEphemerisCompendium:
     receipt_sha256: str
     full_sky_rows: tuple[Mapping[str, FullAstronomicalBodyEphemeris], ...] = ()
     phenomena_summary: Mapping[str, Any] | None = None
-    chapter_count: int = 28
+    chapter_count: int = 30
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -352,6 +359,9 @@ class HumanManualEphemerisCompendium:
                     "frontier_prana_report",
                     "frontier_nadi_report",
                     "frontier_muhurta_report",
+                    "frontier_dignity_report",
+                    "frontier_sbc_report",
+                    "frontier_pinda_report",
                 )
             },
             "receipt": dict(self.receipt),
@@ -698,6 +708,27 @@ def generate_human_manual_ephemeris_compendium(
         ayanamsa=ayanamsa,
         adapter=ad,
     )
+    frontier_dignity_worked = compute_continuous_dignity_and_heliacal_phenomena(
+        jd_worked_ut,
+        lat,
+        lon,
+        ayanamsa=ayanamsa,
+        adapter=ad,
+    )
+    frontier_sbc_worked = compute_sarvatobhadra_81_ray_vedha(
+        jd_worked_ut,
+        moon_exact_lon,
+        natal_nama_akshara="a",
+        ayanamsa=ayanamsa,
+        adapter=ad,
+    )
+    frontier_pinda_worked = compute_shodhya_pinda_transit_triggers_and_harmonic_yogas(
+        jd_worked_ut,
+        lat,
+        lon,
+        ayanamsa=ayanamsa,
+        adapter=ad,
+    )
 
     worked_example = {
         "civil_date": row_d0.civil_date,
@@ -725,6 +756,9 @@ def generate_human_manual_ephemeris_compendium(
         "frontier_prana_report": frontier_prana_worked,
         "frontier_nadi_report": frontier_nadi_worked,
         "frontier_muhurta_report": frontier_muhurta_worked,
+        "frontier_dignity_report": frontier_dignity_worked,
+        "frontier_sbc_report": frontier_sbc_worked,
+        "frontier_pinda_report": frontier_pinda_worked,
     }
 
     receipt_payload = {
@@ -732,7 +766,7 @@ def generate_human_manual_ephemeris_compendium(
         "version": __version__,
         "year": yr,
         "month": mo,
-        "chapter_count": 28,
+        "chapter_count": 30,
         "latitude_deg": round(lat, 6),
         "longitude_deg": round(lon, 6),
         "ayanamsa": ayanamsa,
@@ -757,7 +791,7 @@ def generate_human_manual_ephemeris_compendium(
         receipt_sha256=receipt_sha256,
         full_sky_rows=tuple(full_sky_rows),
         phenomena_summary=phenomena_summary,
-        chapter_count=28,
+        chapter_count=30,
     )
 
 
@@ -2540,6 +2574,104 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
                 f"| **`Tithi #{t_num:02d}`** ({pk_name} {pk_tithi:02d}) | {t_grp} | **{w_name}** | `{dag_str}` | *{am_str}* | {sarv_str} | {', '.join(safe_lagnas[:6])} |"
             )
     lines.append("")
+
+    # =========================================================================
+    # CHAPTER 29: Continuous Sinusoidal Exaltation Potential, Arohi/Avarohi Climb, & Kalansha Heliacal Phenomena
+    # =========================================================================
+    dig_rep = we["frontier_dignity_report"]
+    lines.append("## Chapter 29 — Continuous Sinusoidal *Uchcha-Neecha* Exaltation Potential, *Arohi/Avarohi* Orbital Climb Velocity, 3D *Digbala*, & *Surya Siddhanta Kalansha* Heliacal Phenomena")
+    lines.append("")
+    lines.append("> **Why Continuous Dignity Replaces Binary Lookup Tables:** Traditional software treats exaltation (*Uchcha*) as a step function by sign. RDG evaluates both the classical linear *Uchcha Bala* (`0..60 Virupas`) and the smooth harmonic potential `U(lambda) = 50 * (1 + cos(lambda - lambda_uchcha))` along with its exact time derivative `dU/dt` (*Arohi* ascending toward exaltation vs. *Avarohi* descending toward debilitation) and exact *Surya Siddhanta Kalansha* heliacal rising (*Udaya*) and setting (*Asta*) crossings.")
+    lines.append("")
+    lines.append(f"### 29.1 Worked Case Study: 9-Graha Continuous *Uchcha* Potential, *Arohi/Avarohi* Gradient, 3D *Digbala*, & Heliacal State (`Chart Uchcha Harmony = {dig_rep.overall_chart_uchcha_harmony_0_to_100:.2f}/100`)")
+    lines.append("")
+    lines.append("| Graha | Sidereal Lon (`deg`) | Speed (`deg/d`) | Deep Exaltation (`deg`) | *Uchcha* Potential (`0..100`) | *Uchcha Bala* (`0..60v`) | *Arohi / Avarohi* Climb State | `dU/dt` (`/day`) | Peak *Digbala* House | *Digbala* (`0..60v`) | Solar Elongation | *Kalansha* Limit | Heliacal Visibility & Nearest Crossing |")
+    lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+    for pd in dig_rep.planets:
+        hel_evt = f"{pd.nearest_heliacal_event_type} @ `{pd.nearest_heliacal_event_utc}`" if pd.nearest_heliacal_event_type else "None in ±45d"
+        lines.append(
+            f"| **{pd.body}** | `{pd.sidereal_longitude_deg:.4f}°` | `{pd.speed_deg_per_day:+.4f}°` | `{pd.exaltation_point_deg:.1f}°` | "
+            f"**`{pd.uchcha_potential_0_to_100:.2f}`** | `{pd.uchcha_vira_virupas_0_to_60:.2f}v` | `{pd.arohi_avarohi_state}` | `{pd.dignity_velocity_per_day:+.4f}` | "
+            f"`{pd.digbala_peak_house}H` | `{pd.digbala_continuous_virupas_0_to_60:.2f}v` | `{pd.solar_elongation_deg:.2f}°` | `{pd.kalansha_threshold_deg:.1f}°` | **{pd.heliacal_visibility_state}** ({hel_evt}) |"
+        )
+    lines.append("")
+
+    lines.append("### 29.2 Complete 36-Row (`0°` to `350°` in `10°` Steps) Manual *Uchcha-Neecha* Harmonic Potential & *Arohi/Avarohi* Lookup Reckoner")
+    lines.append("")
+    lines.append("| Angular Offset `Δλ = λ - λ_uchcha` | Absolute Distance `|Δλ|` | Classical *Uchcha Bala* (`(180 - |Δλ|)/3` Virupas) | Harmonic Potential `50*(1 + cos Δλ)` (`0..100`) | Orbital Climb Phase (Direct Motion `v > 0`) | Orbital Climb Phase (Retrograde Motion `v < 0`) |")
+    lines.append("|---|---|---|---|---|---|")
+    for step_deg in range(0, 360, 10):
+        signed_d = ((step_deg + 180.0) % 360.0) - 180.0
+        abs_d = abs(signed_d)
+        vir_u = (180.0 - abs_d) / 3.0
+        pot_u = 50.0 * (1.0 + math.cos(math.radians(signed_d)))
+        phase_dir = "PEAK / NADIR" if step_deg in (0, 180) else ("AVAROHI (Descending to Neecha)" if 0 < step_deg < 180 else "AROHI (Ascending to Uchcha)")
+        phase_ret = "PEAK / NADIR" if step_deg in (0, 180) else ("AROHI (Retrograde Climb)" if 0 < step_deg < 180 else "AVAROHI (Retrograde Descent)")
+        lines.append(
+            f"| **`{step_deg:03d}°`** (`{signed_d:+.0f}°`) | `{abs_d:.0f}°` | **`{vir_u:.2f} Virupas`** | **`{pot_u:.2f} / 100`** | {phase_dir} | {phase_ret} |"
+        )
+    lines.append("")
+
+    # =========================================================================
+    # CHAPTER 30: 81-Cell Sarvatobhadra Trishula Ray-Tracer, Shodhya Pinda Triggers, & Harmonic Yogas
+    # =========================================================================
+    sbc_rep = we["frontier_sbc_report"]
+    pinda_rep = we["frontier_pinda_report"]
+    lines.append("## Chapter 30 — 81-Cell *Sarvatobhadra Trishula* Ray-Tracer, 7-Planet *Shodhya Pinda* Trigger Stars, 12-House *Vitta-Ayavyaya* Wealth Matrix, & Continuous Harmonic *Yoga* Potency")
+    lines.append("")
+    lines.append(f"### 30.1 Worked Case Study: 9x9 *Sarvatobhadra Chakra* 3-Way *Trishula Vedha* Ray-Trace (`Net Protection Index = {sbc_rep.net_vedha_protection_index_minus100_to_plus100:+.1f}`, Verdict: {sbc_rep.verdict_summary})")
+    lines.append("")
+    lines.append("| Transiting Graha | Source 28-Star (`Nakshatra`) | Border Grid `(r, c)` | Ray Direction (*Sammukha / Vama / Dakshina*) | Target Cell `(r, c)` | Target Type | Target Label | *Vedha* Nature | Hits Natal *Janma Star / Rashi / Akshara* |")
+    lines.append("|---|---|---|---|---|---|---|---|---|")
+    for hit in sbc_rep.active_ray_hits[:36]:
+        hit_flags = []
+        if hit.hits_natal_janma_nakshatra:
+            hit_flags.append("JANMA_NAKSHATRA")
+        if hit.hits_natal_janma_rashi:
+            hit_flags.append("JANMA_RASHI")
+        if hit.hits_natal_nama_akshara:
+            hit_flags.append("NAMA_AKSHARA")
+        flag_s = ", ".join(hit_flags) if hit_flags else "Perimeter Nakshatra"
+        lines.append(
+            f"| **{hit.transiting_body}** | *{hit.transiting_nakshatra_28}* | `({hit.transiting_grid_row}, {hit.transiting_grid_col})` | `{hit.ray_direction}` | "
+            f"`({hit.target_row}, {hit.target_col})` | `{hit.target_cell_type}` | **{hit.target_label}** | `{hit.vedha_nature}` | `{flag_s}` |"
+        )
+    lines.append("")
+
+    lines.append("### 30.2 Worked Case Study: 7-Planet *Trikona & Ekadhipatya Shodhana*, *Rashi / Graha / Shodhya Pinda*, & 27-Nakshatra Transit Trigger Stars")
+    lines.append("")
+    lines.append("| Graha | Raw BAV Bindus | *Trikona* Reduced Sum | *Ekadhipatya* Reduced Sum | *Rashi Pinda* | *Graha Pinda* | *Shodhya Pinda* (`S`) | Classical Trigger Star (`(S × 7) mod 27`) | *Lagna-Bindu* Trigger Star | Current Transit Star | Active Trigger Hit |")
+    lines.append("|---|---|---|---|---|---|---|---|---|---|---|")
+    for sp_r in pinda_rep.shodhya_pinda_rows:
+        lines.append(
+            f"| **{sp_r.body}** | `{sp_r.raw_bav_total_bindus}` | `{sp_r.trikona_reduced_total}` | `{sp_r.ekadhipatya_reduced_total}` | "
+            f"`{sp_r.rashi_pinda}` | `{sp_r.graha_pinda}` | **`{sp_r.shodhya_pinda}`** | **#{sp_r.sodya_nakshatra_index_1_to_27:02d} {sp_r.sodya_trigger_nakshatra}** | "
+            f"*{sp_r.kendra_kona_trigger_nakshatra}* | {sp_r.current_transit_nakshatra} | `{'YES' if sp_r.is_transit_on_sodya_trigger_now else 'No'}` |"
+        )
+    lines.append("")
+
+    lines.append(f"### 30.3 Worked Case Study: 12-House *Bandhu / Sevaka / Poshaka / Ghataka* Vitality & *Vitta-Ayavyaya* Wealth Surplus (`Wealth Index = {pinda_rep.vitta_ayavyaya_wealth_index_0_to_100:.1f}/100`)")
+    lines.append("")
+    lines.append("| House (`Bhava`) | Sign (`Rashi`) | SAV Bindus | *Bandhu* (`7th` from House) | *Sevaka* (`6th` from House) | *Poshaka* (`11th` Gains) | *Ghataka* (`12th` Loss) | *Artha* Net Surplus (`Poshaka - Ghataka`) | Prosperity Tier |")
+    lines.append("|---|---|---|---|---|---|---|---|---|")
+    for hv_r in pinda_rep.house_vitality_rows:
+        lines.append(
+            f"| **House `{hv_r.house_number:02d}`** | **{hv_r.rashi_name}** | **`{hv_r.sav_bindus}`** | `{hv_r.bandhu_7th_bindus}` | `{hv_r.sevaka_6th_bindus}` | "
+            f"`{hv_r.poshaka_11th_bindus}` | `{hv_r.ghataka_12th_bindus}` | **`{hv_r.artha_net_surplus:+d}`** | `{hv_r.prosperity_tier}` |"
+        )
+    lines.append("")
+
+    lines.append("### 30.4 Worked Case Study: Continuous Harmonic Phase-Coherence *Yoga* Potency Tensor")
+    lines.append("")
+    lines.append("| Classical *Yoga* Resonance | Category | Participating Grahas | Exact Separation (`deg`) | Ideal Harmonic (`deg`) | Orb Error (`deg`) | Phase Coherence (`0..100`) | Dignity-Weighted Potency (`0..100`) | Plain-English Effect |")
+    lines.append("|---|---|---|---|---|---|---|---|---|")
+    for hy_r in pinda_rep.harmonic_yogas:
+        lines.append(
+            f"| **{hy_r.yoga_name}** | `{hy_r.category}` | {', '.join(hy_r.participating_bodies)} | `{hy_r.exact_angular_separation_deg:.2f}°` | "
+            f"`{hy_r.ideal_harmonic_angle_deg:.1f}°` | `{hy_r.orb_error_deg:.2f}°` | `{hy_r.phase_coherence_score_0_to_100:.1f}` | "
+            f"**`{hy_r.dignity_weighted_potency_0_to_100:.1f}`** | {hy_r.plain_english_effect} |"
+        )
+    lines.append("")
     return "\n".join(lines)
 
 
@@ -2662,7 +2794,7 @@ def _render_compendium_html(comp: HumanManualEphemerisCompendium) -> str:
 
     close_blocks()
 
-    toc_html = "<nav class='toc-box'><h2>Master Table of Contents (28 Chapters)</h2><ol>" + "".join(
+    toc_html = "<nav class='toc-box'><h2>Master Table of Contents (30 Chapters)</h2><ol>" + "".join(
         f"<li><a href='#{cid}'>{ctitle}</a></li>" for cid, ctitle in toc_items
     ) + "</ol></nav>"
 
@@ -2671,7 +2803,7 @@ def _render_compendium_html(comp: HumanManualEphemerisCompendium) -> str:
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>RDG Ephemeris — 28-Chapter Classical Ephemeris &amp; Pt. Maheshji's Jyotish Academy Compendium ({comp.year}-{comp.month:02d})</title>
+<title>RDG Ephemeris — 30-Chapter Classical Ephemeris &amp; Pt. Maheshji's Jyotish Academy Compendium ({comp.year}-{comp.month:02d})</title>
 <style>
   :root {{
     --bg: #fdfaf3;

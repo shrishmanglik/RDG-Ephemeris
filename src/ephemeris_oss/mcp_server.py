@@ -49,6 +49,11 @@ from .jyotish.conditional_dashas_and_nadi import (
     solve_golden_muhurta_electional_windows,
 )
 from .jyotish.dasha import jd_to_iso_utc
+from .jyotish.harmonic_vedha_and_pinda import (
+    compute_continuous_dignity_and_heliacal_phenomena,
+    compute_sarvatobhadra_81_ray_vedha,
+    compute_shodhya_pinda_transit_triggers_and_harmonic_yogas,
+)
 
 MCP_PROTOCOL_VERSION = "2024-11-05"
 
@@ -445,6 +450,44 @@ MCP_TOOLS: tuple[dict[str, Any], ...] = (
                 "ayanamsa": {"type": "string", "default": "lahiri"},
             },
             "required": ["birth_jd_ut"],
+        },
+    },
+    {
+        "name": "compute_dignity_and_heliacal_phenomena",
+        "description": (
+            "Compute continuous sinusoidal Uchcha-Neecha exaltation potential (0..100), "
+            "Arohi/Avarohi orbital climb velocity, continuous 3D cardinal Digbala vector, "
+            "and Surya Siddhanta Kalansha heliacal rising/setting (Udaya/Asta) root crossings."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "jd_ut": {"type": "number"},
+                "iso_utc": {"type": "string"},
+                "latitude_deg": {"type": "number", "default": 28.6139},
+                "longitude_deg": {"type": "number", "default": 77.2090},
+                "ayanamsa": {"type": "string", "default": "lahiri"},
+            },
+        },
+    },
+    {
+        "name": "compute_sarvatobhadra_vedha_and_shodhya_pinda",
+        "description": (
+            "Trace 9x9 (81-Cell) Sarvatobhadra Chakra 3-way Trishula Vedha rays onto 28 Nakshatras, "
+            "12 Rashis, 16 Vowels, and 20 Consonants, plus 7-planet Ashtakavarga Shodhya Pinda "
+            "Nakshatra triggers, 12-house Vitta-Ayavyaya ratios, and Continuous Harmonic Yogas."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "jd_ut": {"type": "number"},
+                "iso_utc": {"type": "string"},
+                "latitude_deg": {"type": "number", "default": 28.6139},
+                "longitude_deg": {"type": "number", "default": 77.2090},
+                "natal_moon_longitude_deg": {"type": "number"},
+                "natal_nama_akshara": {"type": "string", "default": "a"},
+                "ayanamsa": {"type": "string", "default": "lahiri"},
+            },
         },
     },
 )
@@ -848,6 +891,50 @@ def execute_mcp_tool(name: str, arguments: Mapping[str, Any] | None = None) -> d
                 "conditional_dashas": dashas_rep,
                 "prana_chronometer": prana_rep,
                 "nadi_and_sudarshana": nadi_rep,
+            }
+        )
+
+    if name == "compute_dignity_and_heliacal_phenomena":
+        jd_ut = _resolve_jd_ut(args)
+        lat = float(args.get("latitude_deg", 28.6139))
+        lon = float(args.get("longitude_deg", 77.2090))
+        ayanamsa = str(args.get("ayanamsa", "lahiri"))
+        rep = compute_continuous_dignity_and_heliacal_phenomena(
+            jd_ut,
+            lat,
+            lon,
+            ayanamsa=ayanamsa,
+            adapter=adapter,
+        )
+        return _to_jsonable(rep)
+
+    if name == "compute_sarvatobhadra_vedha_and_shodhya_pinda":
+        jd_ut = _resolve_jd_ut(args)
+        lat = float(args.get("latitude_deg", 28.6139))
+        lon = float(args.get("longitude_deg", 77.2090))
+        ayanamsa = str(args.get("ayanamsa", "lahiri"))
+        natal_moon_lon = args.get("natal_moon_longitude_deg")
+        if natal_moon_lon is None:
+            natal_moon_lon = adapter.calc_ut(jd_ut, "moon", sidereal=True, ayanamsa=ayanamsa).longitude_deg
+        akshara = str(args.get("natal_nama_akshara", "a"))
+        sbc_rep = compute_sarvatobhadra_81_ray_vedha(
+            jd_ut,
+            float(natal_moon_lon),
+            natal_nama_akshara=akshara,
+            ayanamsa=ayanamsa,
+            adapter=adapter,
+        )
+        pinda_rep = compute_shodhya_pinda_transit_triggers_and_harmonic_yogas(
+            jd_ut,
+            lat,
+            lon,
+            ayanamsa=ayanamsa,
+            adapter=adapter,
+        )
+        return _to_jsonable(
+            {
+                "sarvatobhadra_81_ray_vedha": sbc_rep,
+                "shodhya_pinda_and_harmonic_yogas": pinda_rep,
             }
         )
 

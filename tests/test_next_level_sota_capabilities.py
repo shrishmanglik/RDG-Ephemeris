@@ -326,11 +326,11 @@ def test_human_readable_classical_ephemeris_and_jyotish_academy_compendium() -> 
     )
     assert len(sahams_36) == 36
 
-    # 4. Verify 28-Chapter Human-Readable Master Compendium & Real HTML Book Renderer
+    # 4. Verify 30-Chapter Human-Readable Master Compendium & Real HTML Book Renderer
     comp = generate_human_manual_ephemeris_compendium(2026, 11, latitude_deg=28.6139, longitude_deg=77.2090)
     assert comp.year == 2026
     assert comp.month == 11
-    assert comp.chapter_count == 28
+    assert comp.chapter_count == 30
     assert len(comp.daily_rows) == 30
     assert len(comp.full_sky_rows) == 30
     assert len(comp.receipt_sha256) == 64
@@ -371,10 +371,12 @@ def test_human_readable_classical_ephemeris_and_jyotish_academy_compendium() -> 
     assert "Chapter 26 — Complete 150-Division *Nadi Amsa*" in md
     assert "Chapter 27 — Complete 3-Ring *Sudarshana Chakra*" in md
     assert "Chapter 28 — Golden *Muhurta* Electional Optimization" in md
+    assert "Chapter 29 — Continuous Sinusoidal *Uchcha-Neecha* Exaltation Potential" in md
+    assert "Chapter 30 — 81-Cell *Sarvatobhadra Trishula* Ray-Tracer" in md
 
     html_doc = comp.to_html()
     assert "<!DOCTYPE html>" in html_doc
-    assert "Master Table of Contents (28 Chapters)" in html_doc
+    assert "Master Table of Contents (30 Chapters)" in html_doc
     assert "<table class='ephemeris-table'>" in html_doc
     assert "<pre>" not in html_doc
 
@@ -514,6 +516,85 @@ def test_frontier_all_10_conditional_nakshatra_dashas_and_prana_and_nadi_and_muh
     assert len(muh.top_windows) >= 1
     assert 0.0 <= muh.top_windows[0].score_0_to_100 <= 100.0
     assert len(muh.receipt_sha256) == 64
+
+
+def test_frontier_continuous_dignity_heliacal_sarvatobhadra_vedha_and_shodhya_pinda() -> None:
+    """Verify continuous Uchcha-Neecha potential, Arohi/Avarohi climb, 81-Cell Sarvatobhadra ray-tracer, and Shodhya Pinda triggers."""
+    from ephemeris_oss.jyotish.harmonic_vedha_and_pinda import (
+        compute_continuous_dignity_and_heliacal_phenomena,
+        compute_sarvatobhadra_81_ray_vedha,
+        compute_shodhya_pinda_transit_triggers_and_harmonic_yogas,
+    )
+
+    dig = compute_continuous_dignity_and_heliacal_phenomena(2461350.0, 28.6139, 77.2090)
+    assert len(dig.planets) == 9
+    assert 0.0 <= dig.overall_chart_uchcha_harmony_0_to_100 <= 100.0
+    assert 0.0 <= dig.overall_chart_digbala_harmony_0_to_100 <= 100.0
+    assert len(dig.receipt_sha256) == 64
+
+    sbc = compute_sarvatobhadra_81_ray_vedha(2461350.0, 42.8, natal_nama_akshara="a")
+    assert len(sbc.active_ray_hits) >= 27
+    assert -100.0 <= sbc.net_vedha_protection_index_minus100_to_plus100 <= 100.0
+    assert len(sbc.receipt_sha256) == 64
+
+    pinda = compute_shodhya_pinda_transit_triggers_and_harmonic_yogas(2461350.0, 28.6139, 77.2090)
+    assert len(pinda.shodhya_pinda_rows) == 7
+    assert len(pinda.house_vitality_rows) == 12
+    assert len(pinda.harmonic_yogas) == 5
+    assert 0.0 <= pinda.vitta_ayavyaya_wealth_index_0_to_100 <= 100.0
+    assert len(pinda.receipt_sha256) == 64
+
+
+def test_live_http_socket_server_and_mcp_20_tools_end_to_end() -> None:
+    """Verify live HTTP socket round-trips across all 23 REST endpoints and JSON-RPC 2.0 across all 20 MCP tools."""
+    import json
+    import threading
+    import urllib.request
+
+    from ephemeris_oss.api_server import create_http_server
+    from ephemeris_oss.mcp_server import MCP_TOOLS, handle_jsonrpc_message
+
+    assert len(MCP_TOOLS) == 20
+    list_resp = handle_jsonrpc_message({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
+    assert list_resp is not None
+    assert len(list_resp["result"]["tools"]) == 20
+
+    server = create_http_server("127.0.0.1", 0)
+    host, port = server.server_address[:2]
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        base_url = f"http://{host}:{port}"
+        with urllib.request.urlopen(f"{base_url}/health", timeout=10) as resp:
+            health = json.loads(resp.read().decode("utf-8"))
+        assert health["status"] == "ok"
+        assert len(health["endpoints"]) == 23
+
+        with urllib.request.urlopen(f"{base_url}/openapi.json", timeout=10) as resp:
+            openapi = json.loads(resp.read().decode("utf-8"))
+        assert len(openapi["paths"]) == 23
+
+        for path_url, payload in (
+            ("/v1/topocentric-astrometry", {"jd_ut": 2461350.0, "latitude_deg": 28.6139, "longitude_deg": 77.2090}),
+            ("/v1/dignity-heliacal", {"jd_ut": 2461350.0, "latitude_deg": 28.6139, "longitude_deg": 77.2090}),
+            ("/v1/sarvatobhadra-vedha-pinda", {"jd_ut": 2461350.0, "latitude_deg": 28.6139, "longitude_deg": 77.2090, "natal_moon_longitude_deg": 42.8}),
+            ("/v1/conditional-dashas-nadi", {"birth_jd_ut": 2451545.0, "query_jd_ut": 2461350.0}),
+        ):
+            req = urllib.request.Request(
+                f"{base_url}{path_url}",
+                data=json.dumps(payload).encode("utf-8"),
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=15) as r_post:
+                assert r_post.status == 200
+                body_json = json.loads(r_post.read().decode("utf-8"))
+                assert isinstance(body_json, dict)
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+
 
 
 
