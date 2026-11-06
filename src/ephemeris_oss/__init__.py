@@ -93,12 +93,18 @@ from .impossible_astrology import (
     solve_subsecond_shodashvarga_cusp_transitions,
 )
 from .jyotish import (
+    ArudhaPadaDetail,
+    FullAstronomicalBodyEphemeris,
     KalachakraDashaPeriod,
     KalachakraDashaTimeline,
     VedicChartAnalysis,
+    VisheshaLagnaAndSpecialPointsReport,
+    VisheshaLagnaPoint,
     classify_kalachakra_gati,
+    compute_full_astronomical_sky_ephemeris,
     compute_kalachakra_dasha,
     compute_vedic_chart_analysis,
+    compute_vishesha_lagnas_and_special_points,
 )
 from .mcp_server import execute_mcp_tool
 from .rust_bridge import evaluate_chebyshev_clenshaw_3d

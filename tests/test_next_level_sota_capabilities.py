@@ -284,16 +284,55 @@ def test_mcp_and_rest_api_endpoints_for_next_level_solvers() -> None:
 
 
 def test_human_readable_classical_ephemeris_and_jyotish_academy_compendium() -> None:
-    """Verify the Human-Readable Classical Ephemeris & Jyotish Academy Manual Compendium."""
+    """Verify the 20-Chapter Human-Readable Classical Ephemeris & Jyotish Academy Manual Compendium,
+    8 Vishesha Lagnas, Full Spherical/Physical Sky Ephemeris, and 36 Tajika Sahams.
+    """
+    from ephemeris_oss import (
+        compute_full_astronomical_sky_ephemeris,
+        compute_vishesha_lagnas_and_special_points,
+    )
+    from ephemeris_oss.jyotish_advanced.varshphal import compute_tajika_sahams
+
     assert format_classical_rashi_dms(137.0230556) == 'Simha 17° 01\' 23"'
     assert format_classical_rashi_dms(137.0230556, compact_sign_number=True) == '04s 17° 01\' 23"'
     assert format_daily_motion_dms(-0.2122223) == '-00° 12\' 44"'
-    assert format_ghati_pala(5.2) == "13 Gh 00 Pa"
+    assert format_ghati_pala(5.2) == "13g 00p"
 
+    # 1. Verify Full Spherical & Physical Sky Ephemeris (all 13 bodies)
+    sky = compute_full_astronomical_sky_ephemeris(2461345.5, ayanamsa="lahiri")
+    assert len(sky) == 13
+    assert "sun" in sky and "moon" in sky and "pluto" in sky
+    assert sky["moon"].horizontal_parallax_arcsec > 3000.0
+    assert 0.0 <= sky["moon"].illuminated_fraction_pct <= 100.0
+    assert 1 <= sky["sun"].kp_sub_number_249 <= 249
+
+    # 2. Verify All 8 Vishesha Lagnas, Yogi/Avayogi, 12 Arudha Padas, & 7/8 Chara Karakas
+    vis = compute_vishesha_lagnas_and_special_points(
+        2461345.72,
+        28.6139,
+        77.2090,
+        sunrise_jd_ut=2461345.54,
+    )
+    assert len(vis.arudha_padas) == 12
+    assert len(vis.chara_karakas_7) == 7
+    assert len(vis.chara_karakas_8) == 8
+    assert len(vis.receipt_sha256) == 64
+
+    # 3. Verify All 36 Classical Tajika Sahams
+    sahams_36 = compute_tajika_sahams(
+        {p: sky[p].sidereal_longitude_deg for p in ("sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn")},
+        232.4,
+        is_day_birth=True,
+    )
+    assert len(sahams_36) == 36
+
+    # 4. Verify 20-Chapter Human-Readable Master Compendium & Real HTML Book Renderer
     comp = generate_human_manual_ephemeris_compendium(2026, 11, latitude_deg=28.6139, longitude_deg=77.2090)
     assert comp.year == 2026
     assert comp.month == 11
+    assert comp.chapter_count == 20
     assert len(comp.daily_rows) == 30
+    assert len(comp.full_sky_rows) == 30
     assert len(comp.receipt_sha256) == 64
 
     first_day = comp.daily_rows[0]
@@ -301,18 +340,34 @@ def test_human_readable_classical_ephemeris_and_jyotish_academy_compendium() -> 
     assert "moon" in first_day.planets
     assert "true_rahu" in first_day.planets
     assert "uranus" in first_day.planets
-    assert "Gh" in first_day.dinamana_ghati_pala
+    assert "g" in first_day.dinamana_ghati_pala
 
     md = comp.to_markdown()
-    assert "Section 1 — Daily Sidereal (*Nirayana*) Planetary Ephemeris Table" in md
-    assert "Section 2 — Daily Sunrise-Anchored *Drik Panchanga* & *Muhurta* Table" in md
-    assert "Section 3 — Manual *Spashta Graha* (Planetary Interpolation) & *Lagna / Bhava* Tables" in md
-    assert "Section 4 — Complete Manual Divisional Chart (*Shodashvarga D1–D60*) Reckoning Tables" in md
-    assert "Section 5 — Complete Manual *Dasha* Balance (*Bhogyamsha*) & Progression Tables" in md
-    assert "Section 6 — Manual *Ashtakavarga* (337-Bindu Matrix), *Shadbala*, & 30-Star *Yogatara* Tables" in md
-    assert "Section 7 — Pt. Maheshji's Jyotish Academy Step-by-Step Worked Manual Kundali Worksheet" in md
+    assert len(md) > 150000
+    assert "Chapter 1 — Fundamental Astronomical Constants" in md
+    assert "Chapter 2 — Section 1 — Daily Sidereal (*Nirayana*) & Tropical (*Sayana*)" in md
+    assert "Chapter 3 — Daily Spherical & Physical Ephemeris Grid" in md
+    assert "Chapter 5 — Section 2 — Daily Sunrise-Anchored *Drik Panchanga*" in md
+    assert "Chapter 6 — Section 3 — Manual *Spashta Graha* Interpolation Compendium" in md
+    assert "Chapter 7 — Master Tables of Ascendants (*Udaya Lagna*)" in md
+    assert "Chapter 8 — Complete Manual Compendium of All 8 *Vishesha Lagnas*" in md
+    assert "Chapter 9 — Section 4 — Complete Manual Divisional Chart (*Shodashvarga D1–D60*)" in md
+    assert "Chapter 10 — Complete 132-Cell *Mrityu Bhaga*" in md
+    assert "Chapter 11 — Complete Krishnamurti Padhati (*KP*) 249 Sub-Lord Master Table" in md
+    assert "Chapter 12 — Section 5 — Complete Manual Dasha Balance" in md
+    assert "Chapter 13 — Complete *Jaimini Upadesha Sutras* Manual Compendium" in md
+    assert "Chapter 14 — Complete Six-Fold *Shadbala*" in md
+    assert "Chapter 15 — Complete *Ashtakavarga* (337-Bindu BAV/SAV)" in md
+    assert "Chapter 16 — Complete Classical Mathematical Longevity (*Ayurdaya*" in md
+    assert "Chapter 17 — Complete *Tajika Varshphal*" in md
+    assert "Chapter 18 — Complete *Ashtakoota* (36-Guna) Compatibility" in md
+    assert "Chapter 19 — Complete Classical Parashari Yoga Identification Directory" in md
+    assert "Chapter 20 — Section 7 — Pt. Maheshji's Jyotish Academy Step-by-Step Worked Manual Kundali Worksheet" in md
 
     html_doc = comp.to_html()
     assert "<!DOCTYPE html>" in html_doc
-    assert "RDG Human-Readable Ephemeris" in html_doc
+    assert "Master Table of Contents (20 Chapters)" in html_doc
+    assert "<table class='ephemeris-table'>" in html_doc
+    assert "<pre>" not in html_doc
+
 

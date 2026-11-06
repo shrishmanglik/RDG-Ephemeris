@@ -1,49 +1,67 @@
-"""Human-Readable Classical Ephemeris & Jyotish Academy Manual Calculation Compendium.
+"""Human-Readable Classical Ephemeris & Pt. Maheshji's Jyotish Academy Master Calculation Compendium.
 
-Generates a complete, print-ready classical *Nirayana* (Sidereal) Ephemeris and
-Manual Kundali Calculation Compendium designed for human astrologers, classical
-researchers, and students of **Pt. Maheshji's Jyotish Academy (Jyotish Gurukul)**.
+Generates a complete, encyclopedic, 20-Chapter classical *Nirayana* (Sidereal) and *Sayana* (Tropical)
+Astronomical Ephemeris and Manual Kundali Calculation Compendium designed for human astrologers,
+classical researchers, and students of **Pt. Maheshji's Jyotish Academy (Jyotish Gurukul)**.
 
-Every single calculation that the ``ephemeris-oss`` software engine performs
-computationally can be performed manually on paper using the tables in this compendium:
+Every calculation that the ``ephemeris-oss`` software engine performs computationally can be
+performed manually on paper using the tables in this 20-chapter master volume:
 
-1. **Daily Sidereal (*Nirayana*) Planetary Ephemeris Grid (`05:30 IST` / Reference Epoch):**
-   - Exact positions in classical ``Rashi DD° MM' SS"`` and ``SSs DD° MM' SS"`` notation
-   - 27-Nakshatra and Pada (``1..4``)
-   - Daily angular velocity (``±DD° MM' SS"/day``) for manual *Trairashika* (Rule of Three) interpolation
-   - Retrograde (``R`` / *Vakri*), Stationary (``S`` / *Stambhana*), and Combustion (``C`` / *Asta*) markers
-   - Daily exact Lahiri (*Chitrapaksha*) Ayanamsha, Kali Yuga *Ahargana*, and Sidereal Time
-2. **Daily Sunrise-Anchored *Drik Panchanga*, *Muhurta*, & *Mahapata* Table:**
-   - Local Sunrise, Sunset, *Dinamana* (in Hours and *Ghatis*), *Vara*, *Tithi* (with ending clock time and *Ghati-Pala*), *Nakshatra*, *Yoga*, *Karana*, *Rahu Kala*, *Abhijit Muhurta*, and *Vyatipata/Vaidhriti* alerts
-3. **Manual *Spashta Graha* Interpolation & *Lagna / Bhava* (Ascendant & House) Tables:**
-   - *Trairashika* time-fraction table, *Lankodaya / Rasimana* rising durations with latitude *Charakhanda* corrections, and *Sripathi Bhava Chalit* trisection rules
-4. **Complete Manual Divisional Chart (*Shodashvarga D1–D60*) Reckoning Tables:**
-   - Eye-lookup degree-minute tables for all 16 Parashari Vargas (D1, D2, D3, D4, D7, D9, D10, D12, D16, D20, D24, D27, D30, D40, D45, D60 with all 60 Shashtiamsa names)
-5. **Complete Manual Dasha Balance (*Bhogyamsha*) & Progression Tables:**
-   - Vimshottari (120y) arcminute-to-balance ready reckoner + 9×9 Antardasha matrix, Yogini (36y), Ashtottari (108y), and BPHS Kalachakra Dasha (108-Pada Savya/Apasavya wheel with Deha/Jeeva and Gati jumps)
-6. **Manual *Ashtakavarga* (337-Bindu Matrix), *Shadbala* (6-Fold Strength), & 30-Star *Yogatara* Reference Tables**
-7. **Pt. Maheshji's Jyotish Academy Step-by-Step Worked Manual Kundali Worksheet:**
-   - A 10-step worked numerical example showing how to hand-cast a complete natal chart from the ephemeris tables with pen and paper.
+1. **Chapter 1:** Fundamental Astronomical Constants, Time Scales (UTC/UT1/TT/TDB/Delta-T), Julian Day Conversion Tables (1900-2050), & 25-Ayanamsha Master Reference Table
+2. **Chapter 2:** Complete Daily Sidereal (*Nirayana*) & Tropical (*Sayana*) Planetary Longitude Grid (`05:30 IST / 00:00 UTC`) Across All 13 Bodies + Second-Order Tabular Differences
+3. **Chapter 3:** Complete Daily Spherical & Physical Ephemeris Grid — Right Ascension, Declination (*Kranti*), Ecliptic Latitude (*Shara*), True Distance (AU/km), Horizontal Parallax, Angular Diameter, Phase, & Visual Magnitude
+4. **Chapter 4:** Complete Monthly Astronomical & Astrological Phenomena Almanac (Sign Ingresses / *Sankrantis*, Nakshatra Ingresses, Synodic Aspects, *Krantisamya Mahapata* Windows, & 30-Star *Yogatara* Conjunctions)
+5. **Chapter 5:** Daily Sunrise-Anchored *Drik Panchanga*, *Ghati-Pala* Almanac, *Muhurta* Windows, & Daily Sunrise *Gulika/Mandi* Longitude Table
+6. **Chapter 6:** Manual *Spashta Graha* Interpolation Compendium — 96-Row 15-Minute *Trairashika* Ready Reckoner & Bessel Second-Difference Lunar Correction Table
+7. **Chapter 7:** Master Tables of Ascendants (*Udaya Lagna*), 10th House Midheaven (*Madhya Lagna*), & *Sripathi Bhava Chalit* Across 9 Canonical World Latitudes (`00h 00m` to `23h 52m` Local Sidereal Time)
+8. **Chapter 8:** Complete Manual Compendium of All 8 *Vishesha Lagnas* (*Udaya, Hora, Ghati, Bhava, Sree, Indu, Pranapada, Varnada*), 11 *Upagrahas*, *Yogi/Avayogi*, & 9 *Prashna Sphutas*
+9. **Chapter 9:** Complete *Shodashvarga* (D1-D60) Divisional Chart Master Lookup Tables, 36 *Drekkana Swarupas*, 60 *Shashtiamsa* Deities, *Pushkara*, & *Vimsopaka Bala* Matrices
+10. **Chapter 10:** Complete 132-Cell *Mrityu Bhaga* (Fatal Degrees), 22nd *Khara Drekkana*, & 64th *Khara Navamsa* Master Vulnerability Tables
+11. **Chapter 11:** Complete Krishnamurti Padhati (KP) 249 Sub-Lord Master Table (`#001` to `#249`) & 4-Fold Significator Worksheet
+12. **Chapter 12:** Complete Multi-System *Dasha* Manual Compendium (80-Row *Vimshottari Bhogyamsha* Balance Table, 81-Row *Mahadasha x Antardasha* Matrix, 36y *Yogini*, 108y *Ashtottari*, & 108-Pada *Kalachakra* Master Wheel)
+13. **Chapter 13:** Complete *Jaimini Upadesha Sutras* Manual Compendium (7/8 *Chara Karakas*, *Karakamsa* Deities, 144-Cell 12x12 *Arudha Pada* *Swastha* Jump Matrix, *Rashi Drishti*, *Argala*, & *Jaimini Ayurdaya*)
+14. **Chapter 14:** Complete Six-Fold *Shadbala*, 36-Row Continuous Parashari *Sphuta Drishti* Aspectual Strength Table (`0°..360°`), *Ishta/Kashta Phala*, & 12-House *Bhava Bala*
+15. **Chapter 15:** Complete *Ashtakavarga* (337-Bindu BAV/SAV), *Trikona & Ekadhipatya Shodhana*, *Rashi/Graha/Shodhya Pinda*, & 8-Lord *Kakshya* (`3°45'`) Transit Timing Compendium
+16. **Chapter 16:** Complete Classical Longevity (*Ayurdaya* — *Pindayu, Nisargayu, & Amsayu*) Manual Calculation Compendium
+17. **Chapter 17:** Complete *Tajika Varshphal* (Annual Solar Return) Manual Compendium — 100-Year *Dhruvanka* Table, *Muntha*, 12-Sign *Tajika Hadda* Bounds, 16 *Tajika Yogas*, & All 36 *Tajika Sahams*
+18. **Chapter 18:** Complete *Ashtakoota* (36-Guna) & *Dashakoota* (10-Porutham) Marriage Compatibility, 14x14 *Yoni* Matrix, 81-Cell *Sarvatobhadra Chakra*, *Kota Chakra*, & *Muhurta* Electional Compendium
+19. **Chapter 19:** Complete Classical Parashari Yoga Encyclopedia, 30-Star *Yogatara* Astrometric Catalog, & *Surya Siddhanta* Epicyclic Reference
+20. **Chapter 20 (Section 7):** Pt. Maheshji's Jyotish Academy Complete 15-Step Worked Manual Master Kundali & Predictive Synthesis Case Study
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, timedelta
+import html as html_mod
 import math
+import re
 from typing import Any, Mapping
 
 from .._version import __version__
-from ..adapter import CALC_RISE, CALC_SET, EphemerisAdapter, FLG_SIDEREAL
+from ..adapter import EphemerisAdapter, FLG_SIDEREAL
+from ..engine.conventions import AYANAMSA_CATALOG
+from ..engine.earth_orientation import estimate_delta_t
 from ..engine.receipt import canonical_hash
 from ..engine.stellar_anchors import YOGATARA_30_CATALOG
+from ..impossible_astrology import (
+    evaluate_yogatara_stellar_bheda_and_visibility,
+    solve_krantisamya_mahapata_windows,
+)
+from ..jyotish import compute_vedic_chart_analysis
 from ..jyotish.ashtakavarga import BAV_BENEFIC_HOUSES
 from ..jyotish.dasha import (
+    ASHTOTTARI_RULERS as ASHTOTTARI_LORDS,
+    ASHTOTTARI_YEARS,
     KALACHAKRA_APASAVYA_SEQUENCES,
     KALACHAKRA_SAVYA_SEQUENCES,
     KALACHAKRA_SIGN_YEARS,
     VIMSHOTTARI_TOTAL_YEARS,
     VIMSHOTTARI_YEARS,
+    YOGINI_LORDS as YOGINI_RULERS,
+    YOGINI_NAMES,
+    YOGINI_YEARS,
+    compute_kalachakra_dasha,
 )
 from ..jyotish.nakshatra import (
     NAKSHATRA_NAMES,
@@ -52,6 +70,42 @@ from ..jyotish.nakshatra import (
     nakshatra_position,
 )
 from ..jyotish.vargas import RASI_LORDS, SHASHTIAMSA_CATALOG, varga_sign
+from ..jyotish.vishesha_lagnas import (
+    ARUDHA_HOUSE_NAMES,
+    FullAstronomicalBodyEphemeris,
+    INDU_LAGNA_KALA_VALUES,
+    PUSHKARA_BHAGA_DEGREES,
+    PUSHKARA_NAVAMSA_RASHI_INDICES,
+    compute_full_astronomical_sky_ephemeris,
+    compute_vishesha_lagnas_and_special_points,
+)
+from ..jyotish_advanced.koota import (
+    NAKSHATRA_GANA,
+    NAKSHATRA_NADI,
+    NAKSHATRA_YONI_INDEX,
+    RASI_VARNA_NAME,
+    YONI_NAMES,
+    YONI_SCORE_MATRIX,
+)
+from ..jyotish_advanced.kp import kp_coordinate_lords, kp_sub_table_249
+from ..jyotish_advanced.varshphal import TAJIKA_HADDA_TABLE, TAJIKA_PLANET_ORBS_DEG, compute_tajika_sahams
+from ..jyotish_jaimini.sutras import JAIMINI_DEITY_MAP, RASHI_DRISHTI_TABLE
+from ..jyotish_nadi.ayurdaya import NISARGAYU_MAX_YEARS, PINDAYU_MAX_YEARS
+from ..jyotish_nadi.khara_mrityu import DREKKANA_SWARUPA_CATALOG, MRITYU_BHAGA_DEGREE_TABLE
+from ..jyotish_siddhanta.surya_siddhanta import (
+    MAHAYUGA_BHAGANA,
+    MANDOCCA_KALI_EPOCH_DEG,
+    MANDA_PARIDHI_EVEN_ODD_DEG,
+    SIGHRA_PARIDHI_EVEN_ODD_DEG,
+)
+from ..jyotish_transit.chakras import KAKSHYA_LORDS, build_sarvatobhadra_grid
+from ..jyotish_transit.muhurta_search import (
+    AMRITA_SIDDHI_NAKSHATRA,
+    DAGDHA_RASI_BY_PAKSHA_TITHI,
+    SARVARTHA_SIDDHI_NAKSHATRAS,
+)
+from ..jyotish_transit.prashna import compute_11_upagrahas, compute_prashna_sphutas
+from .ephemeris_tables import scan_ingresses_and_aspects
 from .panchang_calendar import generate_monthly_panchang
 
 # Classical combustion orbs (degrees from Sun) per Surya Siddhanta / BPHS
@@ -80,70 +134,63 @@ LANKODAYA_VINADIS: tuple[int, ...] = (
     278,  # Meena (Pisces)
 )
 
-# Classical Rahu Kala octant index (1..8 of daytime Dinamana) for Sunday=0 .. Saturday=6
-RAHU_KALA_OCTANT: tuple[int, ...] = (8, 2, 7, 5, 6, 4, 3)
-YAMAGANDA_OCTANT: tuple[int, ...] = (5, 4, 3, 2, 1, 7, 6)
-GULIKA_OCTANT: tuple[int, ...] = (7, 6, 5, 4, 3, 2, 1)
+# Daytime Rahu Kala octant (1..8 of Dinamana) for Sun=0, Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6
+RAHU_KALA_OCTANT: Mapping[int, int] = {0: 8, 1: 2, 2: 7, 3: 5, 4: 6, 5: 4, 6: 3}
+YAMAGANDA_OCTANT: Mapping[int, int] = {0: 5, 1: 4, 2: 3, 3: 2, 4: 1, 5: 7, 6: 6}
+GULIKA_KALA_OCTANT: Mapping[int, int] = {0: 7, 1: 6, 2: 5, 3: 4, 4: 3, 5: 2, 6: 1}
 
 
-def format_classical_rashi_dms(longitude_deg: float, *, compact_sign_number: bool = False) -> str:
-    """Format an ecliptic longitude in ``[0, 360)`` as classical Jyotish ``Sign DD° MM' SS"`` or ``SSs DD° MM' SS"``."""
-    lon = float(longitude_deg) % 360.0
-    total_arcsec = int(round(lon * 3600.0)) % (360 * 3600)
-    rashi_idx = (total_arcsec // (30 * 3600)) % 12
-    rem_sec = total_arcsec % (30 * 3600)
-    deg = rem_sec // 3600
-    rem_sec %= 3600
-    minutes = rem_sec // 60
-    seconds = rem_sec % 60
+def format_classical_rashi_dms(lon_deg: float, *, compact_sign_number: bool = False) -> str:
+    """Format an ecliptic longitude in ``[0, 360)`` as classical Jyotish ``Rashi DD° MM' SS"``
+    or ``SSs DD° MM' SS"`` (where ``SS`` is 00..11 completed signs).
+    """
+    lon = float(lon_deg) % 360.0
+    rashi_idx = int(lon // 30.0) % 12
+    deg_in_sign = lon - rashi_idx * 30.0
+    total_arcsec = int(round(deg_in_sign * 3600.0))
+    if total_arcsec >= 30 * 3600:
+        total_arcsec = 0
+        rashi_idx = (rashi_idx + 1) % 12
+    deg = total_arcsec // 3600
+    rem = total_arcsec % 3600
+    arcmin = rem // 60
+    arcsec = rem % 60
     if compact_sign_number:
-        return f"{rashi_idx:02d}s {deg:02d}° {minutes:02d}' {seconds:02d}\""
-    return f"{RASHI_NAMES[rashi_idx]} {deg:02d}° {minutes:02d}' {seconds:02d}\""
+        return f"{rashi_idx:02d}s {deg:02d}° {arcmin:02d}' {arcsec:02d}\""
+    return f"{RASHI_NAMES[rashi_idx]} {deg:02d}° {arcmin:02d}' {arcsec:02d}\""
 
 
 def format_daily_motion_dms(speed_deg_per_day: float) -> str:
-    """Format daily angular velocity in ``±DD° MM' SS"/d``."""
-    spd = float(speed_deg_per_day)
-    sign_char = "-" if spd < 0.0 else "+"
-    total_arcsec = int(round(abs(spd) * 3600.0))
+    """Format daily angular speed as ``+DD° MM' SS"`` or ``-DD° MM' SS"``."""
+    sign = "-" if speed_deg_per_day < 0.0 else "+"
+    val = abs(float(speed_deg_per_day))
+    total_arcsec = int(round(val * 3600.0))
     deg = total_arcsec // 3600
-    rem_sec = total_arcsec % 3600
-    minutes = rem_sec // 60
-    seconds = rem_sec % 60
-    return f"{sign_char}{deg:02d}° {minutes:02d}' {seconds:02d}\""
+    rem = total_arcsec % 3600
+    arcmin = rem // 60
+    arcsec = rem % 60
+    return f"{sign}{deg:02d}° {arcmin:02d}' {arcsec:02d}\""
 
 
 def format_ghati_pala(hours: float) -> str:
-    """Convert elapsed hours (e.g., since sunrise) into Vedic ``GG Gh PP Pa`` (1 Hour = 2.5 Ghatis)."""
-    total_palas = int(round(max(0.0, float(hours)) * 150.0))
+    """Convert decimal hours into classical Vedic ``GG Ghatis PP Palas`` (1 day = 24h = 60 Ghatis)."""
+    total_palas = int(round(max(0.0, float(hours)) * 2.5 * 60.0))
     ghatis = total_palas // 60
     palas = total_palas % 60
-    return f"{ghatis:02d} Gh {palas:02d} Pa"
+    return f"{ghatis:02d}g {palas:02d}p"
 
 
 def _jd_to_local_hhmm(jd_ut: float, tz_offset_hours: float) -> str:
-    local_jd = float(jd_ut) + (float(tz_offset_hours) / 24.0)
-    _y, _m, _d, hour_val = EphemerisAdapter.revjul(local_jd)
-    total_sec = int(round(hour_val * 3600.0)) % 86400
-    hh = total_sec // 3600
-    mm = (total_sec % 3600) // 60
+    year, month, day, hour_ut = EphemerisAdapter.revjul(jd_ut + tz_offset_hours / 24.0)
+    total_min = int(round(hour_ut * 60.0)) % 1440
+    hh = total_min // 60
+    mm = total_min % 60
     return f"{hh:02d}:{mm:02d}"
 
 
 def _jd_to_local_hhmmss(jd_ut: float, tz_offset_hours: float) -> str:
-    local_jd = float(jd_ut) + (float(tz_offset_hours) / 24.0)
-    _y, _m, _d, hour_val = EphemerisAdapter.revjul(local_jd)
-    total_sec = int(round(hour_val * 3600.0)) % 86400
-    hh = total_sec // 3600
-    rem = total_sec % 3600
-    mm = rem // 60
-    ss = rem % 60
-    return f"{hh:02d}:{mm:02d}:{ss:02d}"
-
-
-def _deg_to_hhmmss(deg_val: float) -> str:
-    hours = (float(deg_val) % 360.0) / 15.0
-    total_sec = int(round(hours * 3600.0)) % 86400
+    year, month, day, hour_ut = EphemerisAdapter.revjul(jd_ut + tz_offset_hours / 24.0)
+    total_sec = int(round(hour_ut * 3600.0)) % 86400
     hh = total_sec // 3600
     rem = total_sec % 3600
     mm = rem // 60
@@ -153,7 +200,7 @@ def _deg_to_hhmmss(deg_val: float) -> str:
 
 @dataclass(frozen=True)
 class HumanDailyPlanetCell:
-    """Classical human-readable planetary entry for a single reference day."""
+    """One planet's daily human-readable classical ephemeris entry."""
 
     body: str
     longitude_deg: float
@@ -171,29 +218,10 @@ class HumanDailyPlanetCell:
     status_flags: str
     d9_navamsa_sign: str
 
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "body": self.body,
-            "longitude_deg": round(self.longitude_deg, 6),
-            "rashi_index": self.rashi_index,
-            "rashi_name": self.rashi_name,
-            "classical_dms": self.classical_dms,
-            "sign_num_dms": self.sign_num_dms,
-            "nakshatra_name": self.nakshatra_name,
-            "nakshatra_lord": self.nakshatra_lord,
-            "pada": self.pada,
-            "speed_deg_per_day": round(self.speed_deg_per_day, 6),
-            "daily_motion_dms": self.daily_motion_dms,
-            "is_retrograde": self.is_retrograde,
-            "is_combust": self.is_combust,
-            "status_flags": self.status_flags,
-            "d9_navamsa_sign": self.d9_navamsa_sign,
-        }
-
 
 @dataclass(frozen=True)
 class HumanDailyEphemerisRow:
-    """Single day's complete human-readable ephemeris & Drik Panchanga row."""
+    """One day's complete human-readable ephemeris and Panchanga row."""
 
     civil_date: str
     vara_name: str
@@ -216,97 +244,121 @@ class HumanDailyEphemerisRow:
     vratas: tuple[str, ...]
     planets: Mapping[str, HumanDailyPlanetCell]
 
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "civil_date": self.civil_date,
-            "vara_name": self.vara_name,
-            "jd_reference_ut": round(self.jd_reference_ut, 6),
-            "ahargana_kali_days": round(self.ahargana_kali_days, 2),
-            "ayanamsa_dms": self.ayanamsa_dms,
-            "local_sidereal_time_hms": self.local_sidereal_time_hms,
-            "sunrise_local_hms": self.sunrise_local_hms,
-            "sunset_local_hms": self.sunset_local_hms,
-            "dinamana_hours": round(self.dinamana_hours, 4),
-            "dinamana_ghati_pala": self.dinamana_ghati_pala,
-            "tithi_name": self.tithi_name,
-            "tithi_end_local_hm": self.tithi_end_local_hm,
-            "tithi_end_ghati_pala": self.tithi_end_ghati_pala,
-            "nakshatra_at_sunrise": self.nakshatra_at_sunrise,
-            "yoga_at_sunrise": self.yoga_at_sunrise,
-            "karana_at_sunrise": self.karana_at_sunrise,
-            "rahu_kala_window": self.rahu_kala_window,
-            "abhijit_muhurta_window": self.abhijit_muhurta_window,
-            "vratas": list(self.vratas),
-            "planets": {k: v.to_dict() for k, v in self.planets.items()},
-        }
-
 
 @dataclass(frozen=True)
 class HumanManualEphemerisCompendium:
-    """Complete Human-Readable Ephemeris & Jyotish Academy Manual Calculation Compendium."""
+    """Complete human-readable ephemeris and Jyotish Academy manual calculation compendium."""
 
     year: int
     month: int
-    latitude_deg: float
-    longitude_deg: float
+    reference_epoch_label: str
+    observer_latitude_deg: float
+    observer_longitude_deg: float
     tz_offset_hours: float
     ayanamsa_mode: str
-    reference_time_label: str
     daily_rows: tuple[HumanDailyEphemerisRow, ...]
     worked_example: Mapping[str, Any]
     receipt: Mapping[str, Any]
     receipt_sha256: str
+    full_sky_rows: tuple[Mapping[str, FullAstronomicalBodyEphemeris], ...] = ()
+    phenomena_summary: Mapping[str, Any] | None = None
+    chapter_count: int = 20
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "year": self.year,
             "month": self.month,
-            "latitude_deg": self.latitude_deg,
-            "longitude_deg": self.longitude_deg,
+            "chapter_count": self.chapter_count,
+            "reference_epoch_label": self.reference_epoch_label,
+            "observer_latitude_deg": self.observer_latitude_deg,
+            "observer_longitude_deg": self.observer_longitude_deg,
             "tz_offset_hours": self.tz_offset_hours,
             "ayanamsa_mode": self.ayanamsa_mode,
-            "reference_time_label": self.reference_time_label,
-            "daily_rows": [r.to_dict() for r in self.daily_rows],
-            "worked_example": dict(self.worked_example),
+            "daily_rows": [
+                {
+                    "civil_date": r.civil_date,
+                    "vara_name": r.vara_name,
+                    "jd_reference_ut": r.jd_reference_ut,
+                    "ahargana_kali_days": r.ahargana_kali_days,
+                    "ayanamsa_dms": r.ayanamsa_dms,
+                    "local_sidereal_time_hms": r.local_sidereal_time_hms,
+                    "sunrise_local_hms": r.sunrise_local_hms,
+                    "sunset_local_hms": r.sunset_local_hms,
+                    "dinamana_hours": round(r.dinamana_hours, 4),
+                    "dinamana_ghati_pala": r.dinamana_ghati_pala,
+                    "tithi_name": r.tithi_name,
+                    "tithi_end_local_hm": r.tithi_end_local_hm,
+                    "tithi_end_ghati_pala": r.tithi_end_ghati_pala,
+                    "nakshatra_at_sunrise": r.nakshatra_at_sunrise,
+                    "yoga_at_sunrise": r.yoga_at_sunrise,
+                    "karana_at_sunrise": r.karana_at_sunrise,
+                    "rahu_kala_window": r.rahu_kala_window,
+                    "abhijit_muhurta_window": r.abhijit_muhurta_window,
+                    "vratas": list(r.vratas),
+                    "planets": {
+                        k: {
+                            "body": v.body,
+                            "longitude_deg": round(v.longitude_deg, 6),
+                            "rashi_index": v.rashi_index,
+                            "rashi_name": v.rashi_name,
+                            "classical_dms": v.classical_dms,
+                            "sign_num_dms": v.sign_num_dms,
+                            "nakshatra_name": v.nakshatra_name,
+                            "nakshatra_lord": v.nakshatra_lord,
+                            "pada": v.pada,
+                            "speed_deg_per_day": round(v.speed_deg_per_day, 6),
+                            "daily_motion_dms": v.daily_motion_dms,
+                            "is_retrograde": v.is_retrograde,
+                            "is_combust": v.is_combust,
+                            "status_flags": v.status_flags,
+                            "d9_navamsa_sign": v.d9_navamsa_sign,
+                        }
+                        for k, v in r.planets.items()
+                    },
+                }
+                for r in self.daily_rows
+            ],
+            "worked_example": {
+                k: v
+                for k, v in self.worked_example.items()
+                if k not in ("vishesha_report", "upagrahas_report", "sphutas_report", "kundali_bundle", "sahams_report", "kalachakra_report")
+            },
             "receipt": dict(self.receipt),
             "receipt_sha256": self.receipt_sha256,
         }
 
     def to_markdown(self) -> str:
-        """Render the complete Human-Readable Ephemeris & Pt. Maheshji's Jyotish Academy Manual as Markdown."""
+        """Render the complete 20-Chapter Human-Readable Classical Ephemeris & Jyotish Academy Manual."""
         return _render_compendium_markdown(self)
 
     def to_html(self) -> str:
-        """Render a publication-grade printable HTML book edition for human astrologers and Academy students."""
+        """Render a standalone, print-ready, richly formatted HTML book edition."""
         return _render_compendium_html(self)
 
 
 def generate_human_manual_ephemeris_compendium(
-    year: int,
+    year: int = 2026,
     month: int = 11,
     *,
-    latitude_deg: float = 28.6139,
-    longitude_deg: float = 77.2090,
+    latitude_deg: float = 23.1765,   # Default: Ujjain Mahakaleshwar Prime Meridian of Classical Jyotish
+    longitude_deg: float = 75.7885,
     tz_offset_hours: float = 5.5,
     ayanamsa: str = "lahiri",
+    reference_hour_ut: float = 0.0,  # 00:00 UTC = 05:30 IST (standard Indian Ephemeris daily epoch)
     adapter: EphemerisAdapter | None = None,
 ) -> HumanManualEphemerisCompendium:
-    """Generate the complete Human-Readable Classical Ephemeris & Jyotish Academy Manual Compendium.
-
-    Daily planetary positions are tabulated at ``05:30 Local Standard Time`` (equivalent to ``00:00 UTC``
-    when ``tz_offset_hours=5.5`` IST, the classical Indian Ephemeris standard), while daily Panchanga
-    and Muhurta windows are anchored to exact local topocentric sunrise.
-    """
+    """Generate the complete 20-Chapter Human-Readable Classical Ephemeris & Jyotish Academy Compendium."""
+    if not (1 <= int(month) <= 12):
+        raise ValueError(f"month must be in 1..12; got {month}")
     yr = int(year)
     mo = int(month)
-    if not 1 <= mo <= 12:
-        raise ValueError(f"month must be in 1..12; got {month!r}")
     lat = float(latitude_deg)
     lon = float(longitude_deg)
     tz_off = float(tz_offset_hours)
-    ad = adapter or EphemerisAdapter()
+    ref_h_ut = float(reference_hour_ut)
 
-    panchang_sheet = generate_monthly_panchang(
+    ad = adapter if adapter is not None else EphemerisAdapter()
+    panchang_cal = generate_monthly_panchang(
         yr,
         mo,
         lat,
@@ -332,86 +384,63 @@ def generate_human_manual_ephemeris_compendium(
     )
 
     daily_rows: list[HumanDailyEphemerisRow] = []
+    full_sky_rows: list[Mapping[str, FullAstronomicalBodyEphemeris]] = []
+    kali_epoch_jd = 588465.5  # 3102 BCE Feb 18 00:00 UT
 
-    for p_day in panchang_sheet.days:
+    for p_day in panchang_cal.days:
         parts = [int(x) for x in p_day.civil_date.split("-")]
-        # Standard Indian Ephemeris tabular epoch: 00:00 UTC (= 05:30 IST)
-        jd_ref_ut = EphemerisAdapter.julday(parts[0], parts[1], parts[2], 0.0)
-        # Kali Yuga epoch: 18 Feb 3102 BCE 00:00 UT = JD 588465.5
-        ahargana = jd_ref_ut - 588465.5
-
+        jd_ref_ut = ad.julday(parts[0], parts[1], parts[2], ref_h_ut)
+        ahargana = round(jd_ref_ut - kali_epoch_jd, 4)
         ay_deg = ad.get_ayanamsa_ut(jd_ref_ut, mode=ayanamsa)
-        ay_dms = format_classical_rashi_dms(ay_deg, compact_sign_number=True).replace("00s ", "")
+        ay_sec = int(round(ay_deg * 3600.0))
+        ay_d = ay_sec // 3600
+        ay_m = (ay_sec % 3600) // 60
+        ay_s = (ay_sec % 3600) % 60
+        ay_dms = f"{ay_d:02d}° {ay_m:02d}' {ay_s:02d}\""
 
-        _cusps_ref, ascmc_ref = ad.houses_ex(jd_ref_ut, lat, lon, b"P", FLG_SIDEREAL)
-        lst_hms = _deg_to_hhmmss(ascmc_ref[2])
+        houses_ref = ad.houses_ex(jd_ref_ut, lat, lon, b"P", FLG_SIDEREAL)
+        armc_deg = float(houses_ref[1][2]) % 360.0
+        lst_hours = armc_deg / 15.0
+        lst_sec_total = int(round(lst_hours * 3600.0)) % 86400
+        lst_hms = f"{lst_sec_total // 3600:02d}h {(lst_sec_total % 3600) // 60:02d}m {lst_sec_total % 60:02d}s"
 
-        sun_pos = ad.calc_ut(jd_ref_ut, "sun", sidereal=True, ayanamsa=ayanamsa)
-        sun_lon = sun_pos.longitude_deg
+        sky_map = compute_full_astronomical_sky_ephemeris(jd_ref_ut, ayanamsa=ayanamsa, adapter=ad)
+        full_sky_rows.append(sky_map)
 
         planet_cells: dict[str, HumanDailyPlanetCell] = {}
         for body in bodies_order:
-            pos = ad.calc_ut(jd_ref_ut, body, sidereal=True, ayanamsa=ayanamsa)
-            b_lon = pos.longitude_deg % 360.0
-            b_spd = pos.longitude_speed_deg_per_day
-            rashi_idx = int(b_lon // 30.0) % 12
-            rashi_name = RASHI_NAMES[rashi_idx]
-            nak = nakshatra_position(b_lon)
-            d9_sign = nak.navamsa_sign_name
-
-            is_retro = b_spd < 0.0
-            is_stat = abs(b_spd) < 0.005 and body not in ("sun", "moon")
-            is_combust = False
-            if body in CLASSICAL_COMBUSTION_ORBS_DEG:
-                orb_dir, orb_ret = CLASSICAL_COMBUSTION_ORBS_DEG[body]
-                orb = orb_ret if is_retro else orb_dir
-                sep = abs(((b_lon - sun_lon + 180.0) % 360.0) - 180.0)
-                is_combust = sep <= orb
-
-            flags: list[str] = []
-            if is_stat:
-                flags.append("S")
-            elif is_retro:
-                flags.append("R")
-            else:
-                flags.append("D")
-            if is_combust:
-                flags.append("C")
-
+            fb = sky_map[body]
             planet_cells[body] = HumanDailyPlanetCell(
                 body=body,
-                longitude_deg=b_lon,
-                rashi_index=rashi_idx,
-                rashi_name=rashi_name,
-                classical_dms=format_classical_rashi_dms(b_lon, compact_sign_number=False),
-                sign_num_dms=format_classical_rashi_dms(b_lon, compact_sign_number=True),
-                nakshatra_name=nak.name,
-                nakshatra_lord=nak.vimshottari_ruler,
-                pada=nak.pada,
-                speed_deg_per_day=b_spd,
-                daily_motion_dms=format_daily_motion_dms(b_spd),
-                is_retrograde=is_retro,
-                is_combust=is_combust,
-                status_flags="/".join(flags),
-                d9_navamsa_sign=d9_sign,
+                longitude_deg=fb.sidereal_longitude_deg,
+                rashi_index=fb.rashi_index,
+                rashi_name=fb.rashi_name,
+                classical_dms=fb.sidereal_dms,
+                sign_num_dms=format_classical_rashi_dms(fb.sidereal_longitude_deg, compact_sign_number=True),
+                nakshatra_name=fb.nakshatra_name,
+                nakshatra_lord=fb.nakshatra_lord,
+                pada=fb.pada,
+                speed_deg_per_day=fb.longitude_speed_deg_per_day,
+                daily_motion_dms=fb.daily_motion_dms,
+                is_retrograde=fb.is_retrograde,
+                is_combust=fb.is_combust,
+                status_flags=fb.status_flags,
+                d9_navamsa_sign=fb.d9_navamsa_sign,
             )
 
         sr_jd = p_day.sunrise_jd_ut
         ss_jd = p_day.sunset_jd_ut
         dinamana_hours = max(0.0, (ss_jd - sr_jd) * 24.0)
         dinamana_gp = format_ghati_pala(dinamana_hours)
-
         tithi_end_hours_from_sr = max(0.0, (p_day.tithi_end_jd_ut - sr_jd) * 24.0)
         tithi_end_gp = format_ghati_pala(tithi_end_hours_from_sr)
 
-        # Rahu Kala octant window
         octant_days = (ss_jd - sr_jd) / 8.0
         rk_oct = RAHU_KALA_OCTANT[p_day.vara_index % 7]
         rk_start = sr_jd + (rk_oct - 1) * octant_days
         rk_end = sr_jd + rk_oct * octant_days
         rahu_kala_str = f"{_jd_to_local_hhmm(rk_start, tz_off)}-{_jd_to_local_hhmm(rk_end, tz_off)}"
 
-        # Abhijit Muhurta (8th of 15 daytime Muhurtas)
         muhurta_days = (ss_jd - sr_jd) / 15.0
         ab_start = sr_jd + 7.0 * muhurta_days
         ab_end = sr_jd + 8.0 * muhurta_days
@@ -442,11 +471,39 @@ def generate_human_manual_ephemeris_compendium(
             )
         )
 
-    # Construct the worked example for the 15th day of the month at 10:42:00 Local Time (= +5h 12m after 05:30 IST)
+    # Scan monthly phenomena (Rashi Ingresses, Nakshatra Ingresses, Synodic Aspects, Krantisamya Mahapata, Yogatara Bheda)
+    start_jd_month = daily_rows[0].jd_reference_ut
+    end_jd_month = daily_rows[-1].jd_reference_ut + 1.0
+    transit_timeline = scan_ingresses_and_aspects(
+        start_jd_month,
+        end_jd_month,
+        bodies=("Sun", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu"),
+        aspect_angles=(0.0, 60.0, 90.0, 120.0, 180.0),
+        include_nakshatra_ingresses=True,
+        adapter=ad,
+    )
+    rashi_ingresses = transit_timeline.rashi_ingresses
+    nak_ingresses = transit_timeline.nakshatra_ingresses
+    major_aspects = transit_timeline.aspects
+    mahapata_rep = solve_krantisamya_mahapata_windows(start_jd_month, end_jd_month, step_hours=12.0, adapter=ad)
+    yogatara_rep = evaluate_yogatara_stellar_bheda_and_visibility(
+        daily_rows[min(14, len(daily_rows) - 1)].jd_reference_ut,
+        ayanamsa=ayanamsa,
+        orb_deg=2.5,
+        adapter=ad,
+    )
+    phenomena_summary = {
+        "rashi_ingresses": rashi_ingresses,
+        "nakshatra_ingresses": nak_ingresses,
+        "major_aspects": major_aspects,
+        "mahapata_report": mahapata_rep,
+        "yogatara_report": yogatara_rep,
+    }
+
+    # Construct the 15-Step Worked Example for the 15th day of the month at 10:42:00 Local Time (= +5h 12m after 05:30 IST)
     sample_idx = min(14, len(daily_rows) - 1)
     row_d0 = daily_rows[sample_idx]
-    row_d1 = daily_rows[min(sample_idx + 1, len(daily_rows) - 1)]
-    # 5 hours 12 minutes after 05:30 IST = 5.2 hours = 0.2166667 of a day = 13 Ghatis 00 Palas after 05:30 IST
+    sky_d0 = full_sky_rows[sample_idx]
     interp_hours = 5.2
     interp_fraction = interp_hours / 24.0
     jd_worked_ut = row_d0.jd_reference_ut + (interp_hours / 24.0)
@@ -454,23 +511,34 @@ def generate_human_manual_ephemeris_compendium(
     worked_planets: dict[str, Any] = {}
     for b in ("sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn", "rahu", "ketu"):
         c0 = row_d0.planets[b]
-        # Manual Trairashika linear interpolation: L(t) = L_0 + f * v_0
-        manual_lon = (c0.longitude_deg + interp_fraction * c0.speed_deg_per_day) % 360.0
+        s0 = sky_d0[b]
+        # 1st-order Trairashika linear interpolation: L_1(t) = L_0 + f * v_0
+        manual_lon_1st = (c0.longitude_deg + interp_fraction * c0.speed_deg_per_day) % 360.0
+        # 2nd-order Bessel correction: L_2(t) = L_1(t) + (f * (f - 1) / 4) * Delta^2
+        bessel_corr_deg = (interp_fraction * (interp_fraction - 1.0) / 4.0) * (s0.second_difference_arcsec_per_day2 / 3600.0)
+        manual_lon_2nd = (manual_lon_1st + bessel_corr_deg) % 360.0
+
         exact_pos = ad.calc_ut(jd_worked_ut, b, sidereal=True, ayanamsa=ayanamsa)
         exact_lon = exact_pos.longitude_deg % 360.0
-        diff_arcsec = abs(((manual_lon - exact_lon + 180.0) % 360.0) - 180.0) * 3600.0
+        diff_arcsec = abs(((manual_lon_1st - exact_lon + 180.0) % 360.0) - 180.0) * 3600.0
+        diff_2nd_arcsec = abs(((manual_lon_2nd - exact_lon + 180.0) % 360.0) - 180.0) * 3600.0
         nak_w = nakshatra_position(exact_lon)
+        kp_w = kp_coordinate_lords(exact_lon)
         worked_planets[b] = {
             "tabulated_0530_dms": c0.classical_dms,
             "daily_motion_dms": c0.daily_motion_dms,
             "motion_increment_dms": format_daily_motion_dms(interp_fraction * c0.speed_deg_per_day),
-            "manual_trairashika_dms": format_classical_rashi_dms(manual_lon),
+            "manual_trairashika_dms": format_classical_rashi_dms(manual_lon_1st),
+            "manual_bessel_2nd_order_dms": format_classical_rashi_dms(manual_lon_2nd),
             "software_exact_dms": format_classical_rashi_dms(exact_lon),
             "manual_vs_software_diff_arcsec": round(diff_arcsec, 2),
+            "bessel_vs_software_diff_arcsec": round(diff_2nd_arcsec, 2),
             "nakshatra_pada": f"{nak_w.name} Pada {nak_w.pada}",
+            "kp_lords": f"{kp_w.sign_lord} / {kp_w.star_lord} / {kp_w.sub_lord} / {kp_w.sub_sub_lord}",
             "d1_sign": varga_sign(exact_lon, "D1").sign_name,
             "d9_navamsa_sign": varga_sign(exact_lon, "D9").sign_name,
             "d10_dasamsa_sign": varga_sign(exact_lon, "D10").sign_name,
+            "d60_shashtiamsa_sign": varga_sign(exact_lon, "D60").sign_name,
         }
 
     worked_houses = ad.houses_ut(jd_worked_ut, lat, lon, system="placidus", ayanamsa=ayanamsa)
@@ -486,6 +554,58 @@ def generate_human_manual_ephemeris_compendium(
     bal_m = int(bal_m_rem)
     bal_d = int(round((bal_m_rem - bal_m) * 30.0))
 
+    p_day_worked = panchang_cal.days[sample_idx]
+    vishesha_worked = compute_vishesha_lagnas_and_special_points(
+        jd_worked_ut,
+        lat,
+        lon,
+        sunrise_jd_ut=p_day_worked.sunrise_jd_ut,
+        ayanamsa=ayanamsa,
+        adapter=ad,
+    )
+    sun_w_lon = ad.calc_ut(jd_worked_ut, "sun", sidereal=True, ayanamsa=ayanamsa).longitude_deg % 360.0
+    upagrahas_worked = compute_11_upagrahas(
+        sun_w_lon,
+        p_day_worked.sunrise_jd_ut,
+        p_day_worked.sunset_jd_ut,
+        jd_ut=jd_worked_ut,
+        next_sunrise_jd=p_day_worked.sunrise_jd_ut + 1.0,
+        vara_index=p_day_worked.vara_index,
+        lagna_lon_deg=worked_houses.ascendant_deg,
+        ascendant_fn=lambda j: ad.houses_ut(j, lat, lon, system="placidus", ayanamsa=ayanamsa).ascendant_deg,
+    )
+    sphutas_worked = compute_prashna_sphutas(
+        worked_houses.ascendant_deg,
+        sun_w_lon,
+        moon_exact_lon,
+        upagrahas_worked.gulika.longitude_deg,
+        jupiter_deg=ad.calc_ut(jd_worked_ut, "jupiter", sidereal=True, ayanamsa=ayanamsa).longitude_deg % 360.0,
+        venus_deg=ad.calc_ut(jd_worked_ut, "venus", sidereal=True, ayanamsa=ayanamsa).longitude_deg % 360.0,
+        mars_deg=ad.calc_ut(jd_worked_ut, "mars", sidereal=True, ayanamsa=ayanamsa).longitude_deg % 360.0,
+        rahu_deg=ad.calc_ut(jd_worked_ut, "rahu", sidereal=True, ayanamsa=ayanamsa).longitude_deg % 360.0,
+    )
+    kundali_worked = compute_vedic_chart_analysis(
+        {
+            p.capitalize(): ad.calc_ut(jd_worked_ut, p, sidereal=True, ayanamsa=ayanamsa).longitude_deg % 360.0
+            for p in ("sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn", "rahu", "ketu")
+        },
+        worked_houses.ascendant_deg,
+        jd_ut=jd_worked_ut,
+        sunrise_jd_ut=p_day_worked.sunrise_jd_ut,
+        sunset_jd_ut=p_day_worked.sunset_jd_ut,
+        ayanamsa_deg=ad.get_ayanamsa_ut(jd_worked_ut, mode=ayanamsa),
+        ayanamsa_system=ayanamsa,
+    )
+    kalachakra_worked = compute_kalachakra_dasha(moon_exact_lon, jd_worked_ut)
+    sahams_worked = compute_tajika_sahams(
+        {
+            p: ad.calc_ut(jd_worked_ut, p, sidereal=True, ayanamsa=ayanamsa).longitude_deg % 360.0
+            for p in ("sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn")
+        },
+        worked_houses.ascendant_deg,
+        is_day_birth=True,
+    )
+
     worked_example = {
         "civil_date": row_d0.civil_date,
         "birth_time_local": "10:42:00 IST (UTC+05:30)",
@@ -494,515 +614,1668 @@ def generate_human_manual_ephemeris_compendium(
         "observer_location": f"Lat {lat:.4f} deg, Lon {lon:.4f} deg",
         "ascendant_dms": format_classical_rashi_dms(worked_houses.ascendant_deg),
         "mc_10th_cusp_dms": format_classical_rashi_dms(worked_houses.mc_deg),
+        "house_cusps_dms": [format_classical_rashi_dms(c) for c in worked_houses.cusps_deg],
         "moon_nakshatra": f"{moon_nak.name} Pada {moon_nak.pada} (Lord: {maha_lord})",
         "remaining_arcminutes_bhogyamsha": round(rem_arcmin_in_nak, 2),
         "vimshottari_dasha_balance_at_birth": f"{maha_lord} Mahadasha: {bal_y} Years, {bal_m} Months, {bal_d} Days remaining",
         "planets": worked_planets,
+        "vishesha_report": vishesha_worked,
+        "upagrahas_report": upagrahas_worked,
+        "sphutas_report": sphutas_worked,
+        "kundali_bundle": kundali_worked,
+        "sahams_report": sahams_worked,
+        "kalachakra_report": kalachakra_worked,
     }
 
-    receipt = {
-        "engine": "ephemeris-oss",
+    receipt_payload = {
+        "engine": "ephemeris_oss.almanac.human_ephemeris",
         "version": __version__,
-        "calculation": "human_manual_ephemeris_compendium",
         "year": yr,
         "month": mo,
-        "latitude_deg": lat,
-        "longitude_deg": lon,
-        "tz_offset_hours": tz_off,
+        "chapter_count": 20,
+        "latitude_deg": round(lat, 6),
+        "longitude_deg": round(lon, 6),
         "ayanamsa": ayanamsa,
-        "num_days": len(daily_rows),
+        "days_count": len(daily_rows),
         "first_day_sun_dms": daily_rows[0].planets["sun"].classical_dms,
         "last_day_moon_dms": daily_rows[-1].planets["moon"].classical_dms,
+        "worked_ascendant_dms": worked_example["ascendant_dms"],
     }
-    r_sha = canonical_hash(receipt)
+    receipt_sha256 = canonical_hash(receipt_payload)
 
     return HumanManualEphemerisCompendium(
         year=yr,
         month=mo,
-        latitude_deg=lat,
-        longitude_deg=lon,
+        reference_epoch_label="05:30:00 IST (00:00:00 UTC)",
+        observer_latitude_deg=lat,
+        observer_longitude_deg=lon,
         tz_offset_hours=tz_off,
         ayanamsa_mode=ayanamsa,
-        reference_time_label="00:00 UTC / 05:30 IST",
         daily_rows=tuple(daily_rows),
         worked_example=worked_example,
-        receipt=receipt,
-        receipt_sha256=r_sha,
+        receipt=receipt_payload,
+        receipt_sha256=receipt_sha256,
+        full_sky_rows=tuple(full_sky_rows),
+        phenomena_summary=phenomena_summary,
+        chapter_count=20,
     )
 
 
 def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
-    """Render the complete 7-section Human-Readable Classical Ephemeris & Jyotish Academy Manual."""
+    """Render the complete 20-Chapter Human-Readable Classical Ephemeris & Jyotish Academy Master Compendium."""
     lines: list[str] = []
-    lines.append("# The RDG Classical Human-Readable Ephemeris & Pt. Maheshji's Jyotish Academy Manual Calculation Compendium")
-    lines.append("")
+    ad = EphemerisAdapter()
+    jd_epoch = comp.daily_rows[0].jd_reference_ut
+
     lines.append(
-        "> **Designed for Human Consumption, Classical Hand-Calculation (*Ganita*), and Gurukul Teaching:** "
-        "Before computers existed, master Jyotishis cast complete natal horoscopes (*Kundalis*), divisional charts "
-        "(*Shodashvarga*), planetary strengths (*Shadbala*), *Ashtakavarga* bindu matrices, and *Dasha* timelines "
-        "by reading printed ephemeris tables (*Panchanga*) and performing *Trairashika* (proportional interpolation) "
-        "by hand. This compendium provides every table, classical formula, and step-by-step worksheet required so that "
-        "**everything possible in the RDG software engine can also be calculated 100% manually by any astrologer, "
-        "student, or researcher on paper.**"
+        f"# RDG Ephemeris — Human-Readable Classical *Nirayana* & *Sayana* Ephemeris & Pt. Maheshji's Jyotish Academy Manual Calculation Compendium ({comp.year}-{comp.month:02d})"
     )
     lines.append("")
-    lines.append(f"- **Tabulated Period:** `{comp.year}-{comp.month:02d}` (`{len(comp.daily_rows)}` Civil Days)")
-    lines.append(f"- **Planetary Tabulation Epoch:** `{comp.reference_time_label}` (Standard Indian Ephemeris Epoch)")
     lines.append(
-        f"- **Sunrise Panchanga Observer Location:** Latitude `{comp.latitude_deg:.4f}°`, "
-        f"Longitude `{comp.longitude_deg:.4f}°`, Timezone `UTC{comp.tz_offset_hours:+.1f}h`"
+        "> **For Practising Jyotishis, Positional Astronomers, Classical Researchers, and Students of Pt. Maheshji's Jyotish Academy:**\n"
+        "> Before computers existed, every master astrologer cast a *Kundali* (natal chart), *Shodashvarga* (16 divisional charts), "
+        "*Panchanga* (5-limb daily almanac), *Vishesha Lagnas* (8 special ascendants), *Upagrahas* (11 shadow planets), "
+        "*KP 249 Sub-Lords*, *Jaimini Arudha Padas & Chara Karakas*, *Vimshottari/Yogini/Ashtottari/Kalachakra Dashas*, "
+        "*Shadbala* (6-fold planetary strength), *Ashtakavarga* (337-bindu transit grid), *Ayurdaya* (longevity), and "
+        "*Tajika Varshphal* (annual solar return with 36 Sahams) **entirely by hand** using printed ephemeris tables. "
+        "This 20-chapter master volume restores that unbroken lineage with sub-arcsecond NASA JPL DE440/DE441 astronomical precision."
     )
-    lines.append(f"- **Sidereal Ayanamsha Convention:** `{comp.ayanamsa_mode}` (NASA JPL DE440/DE441 Precision)")
-    lines.append(f"- **Cryptographic Verification Receipt (SHA-256):** `{comp.receipt_sha256}`")
     lines.append("")
-    lines.append("---")
+    lines.append("## Master Document Metadata & Cryptographic Provenance Receipt")
+    lines.append(f"- **Ephemeris Month & Year:** `{comp.year}-{comp.month:02d}` (`20 Complete Chapters`)")
+    lines.append(f"- **Daily Tabular Reference Epoch:** `{comp.reference_epoch_label}`")
+    lines.append(
+        f"- **Reference Meridian / Location:** Latitude `{comp.observer_latitude_deg:.4f}°`, "
+        f"Longitude `{comp.observer_longitude_deg:.4f}°` (UTC`+{comp.tz_offset_hours:.2f}h` — Ujjain Mahakaleshwar Prime Meridian)"
+    )
+    lines.append(f"- **Primary Sidereal Ayanamsha:** `{comp.ayanamsa_mode}` (Chitrapaksha / IAE 1989 Lahiri Standard + 25-Ayanamsha Conversion Table in Chapter 1)")
+    lines.append(f"- **Astronomical Kernel Backbone:** NASA JPL DE440 / DE441 + IAU 2006/2000A Precession-Nutation (`ephemeris-oss v{__version__}`)")
+    lines.append(f"- **Cryptographic SHA-256 Receipt:** `sha256:{comp.receipt_sha256}`")
     lines.append("")
 
-    # SECTION 1: Daily Sidereal Planetary Ephemeris Grid
-    lines.append("## Section 1 — Daily Sidereal (*Nirayana*) Planetary Ephemeris Table (`05:30 IST / 00:00 UTC`)")
+    # =========================================================================
+    # CHAPTER 1: Fundamental Astronomical Constants, Julian Days & 25 Ayanamshas
+    # =========================================================================
+    lines.append("## Chapter 1 — Fundamental Astronomical Constants, Julian Day Tables (`1900–2050`), $\\Delta T$, & 25-Ayanamsha Master Conversion Table")
+    lines.append("")
+    lines.append("### Table 1A — Fundamental Astronomical & Vedic Siddhantic Constants")
+    lines.append("")
+    lines.append("| Constant / Parameter | Exact Numerical Value | Classical / IAU Standard Reference |")
+    lines.append("|---|---|---|")
+    lines.append("| **J2000.0 Fundamental Epoch** | `JD 2451545.0 TT` (`2000-01-01 12:00:00 TT`) | IAU 2006 / 2000A Standard Epoch |")
+    lines.append("| **Kali Yuga Fundamental Epoch** | `JD 588465.5 UT` (`3102 BCE Feb 18 00:00 Ujjain`) | *Surya Siddhanta* & *Aryabhatiya* |")
+    lines.append("| **Astronomical Unit ($1\\text{ AU}$)** | `149,597,870.700 km` (exact) | IAU 2012 Resolution B2 |")
+    lines.append("| **Speed of Light ($c$)** | `299,792.458 km/s` (`173.144632674 AU/day`) | IAU / SI Exact Constant |")
+    lines.append("| **Mean Obliquity at J2000.0 ($\\varepsilon_0$)** | `23° 26' 21.406\"` (`84381.406\"`) | Capitaine et al. (2003) / IAU 2006 |")
+    lines.append("| **General Precession Rate ($p_A$ at J2000)** | `50.28796195\" / Julian year` (`1° in 71.5877 years`) | IAU 2006 Precession Model |")
+    lines.append("| **Mean Tropical Year ($Y_{\\text{trop}}$)** | `365.24218967 days` (`365d 05h 48m 45.2s`) | Simon et al. (1994) |")
+    lines.append("| **Mean Sidereal Year ($Y_{\\text{sid}}$)** | `365.256363004 days` (`365d 06h 09m 09.8s`) | IAU Standard Sidereal Year |")
+    lines.append("| **Surya Siddhanta Sidereal Year** | `365.25875648 days` (`365d 15g 31p 31.4v`) | `1,577,917,828 / 4,320,000` Savana days |")
+    lines.append("| **Mean Synodic Lunar Month** | `29.530588853 days` (`29d 12h 44m 02.9s`) | Mean New Moon to New Moon |")
+    lines.append("| **Mean Sidereal Lunar Month** | `27.321661547 days` (`27d 07h 43m 11.6s`) | `1 Nakshatra` $\\approx 24\\text{h } 18\\text{m}$ |")
+    lines.append("| **Vedic Time Units (*Ghati / Pala / Vipala*)** | `1 Day = 60 Ghatis = 3,600 Palas = 216,000 Vipalas` | `1 Ghati = 24 min`, `1 Pala = 24 sec`, `1 Vipala = 0.4 sec` |")
+    lines.append("")
+
+    lines.append("### Table 1B — Master 25-Ayanamsha Reference & Conversion Table (Evaluated at Epoch `2026-11-01 00:00 UTC`)")
     lines.append("")
     lines.append(
-        "**How to Read This Table:** Each cell shows the planet's classical Sidereal Sign (*Rashi*), Degrees, "
-        "Minutes, and Seconds (`DD° MM' SS\"`), followed by its status flag (`D` = *Margi*/Direct, `R` = *Vakri*/Retrograde, "
-        "`S` = *Stambhana*/Stationary, `C` = *Asta*/Combust), its **27-Nakshatra and Pada (`P1..P4`)**, and its "
-        "**Daily Motion (`±DD° MM' SS\"/d`)** for manual interpolation."
+        "**How to Convert Any Position in This Compendium to Another Ayanamsha:** Every sidereal table in this book "
+        "is printed in **Chitrapaksha / Lahiri (`IAE 1989`)**. To convert any longitude to another Ayanamsha, simply "
+        "**subtract $\\Delta = (\\text{Target Ayanamsha} - \\text{Lahiri Ayanamsha})$** listed in the column below:"
     )
     lines.append("")
-    lines.append("### Table 1A — Daily Inner & Luminary Grahas (*Surya, Chandra, Mangala, Budha*)")
-    lines.append("")
-    lines.append("| Date (Vara) | Ayanamsha | Sidereal Time | Surya (Sun) | Chandra (Moon) | Mangala (Mars) | Budha (Mercury) |")
+    lines.append("| # | Ayanamsha Key | Canonical Name & Lineage | Value on `2026-11-01` (`DD° MM' SS\"`) | Decimal (`deg`) | Offset vs Lahiri ($\\Delta = A - A_{\\text{Lahiri}}$) | Precession / Anchor Model |")
     lines.append("|---|---|---|---|---|---|---|")
-    for r in comp.daily_rows:
-        s = r.planets["sun"]
-        m = r.planets["moon"]
-        ma = r.planets["mars"]
-        me = r.planets["mercury"]
+    lahiri_base = ad.get_ayanamsa_ut(jd_epoch, mode="lahiri")
+    ay_idx = 0
+    for ay_key, ay_def in AYANAMSA_CATALOG.items():
+        try:
+            val_deg = ad.get_ayanamsa_ut(jd_epoch, mode=ay_key)
+        except Exception:
+            continue
+        ay_idx += 1
+        tot_s = int(round(val_deg * 3600.0))
+        ad_d = tot_s // 3600
+        ad_m = (tot_s % 3600) // 60
+        ad_s = (tot_s % 3600) % 60
+        delta_deg = val_deg - lahiri_base
+        delta_sign = "+" if delta_deg >= 0 else "-"
+        d_abs_s = int(round(abs(delta_deg) * 3600.0))
+        dd_d = d_abs_s // 3600
+        dd_m = (d_abs_s % 3600) // 60
+        dd_s = (d_abs_s % 3600) % 60
         lines.append(
-            f"| **{r.civil_date}** ({r.vara_name[:3]}) | `{r.ayanamsa_dms}` | `{r.local_sidereal_time_hms}` | "
-            f"{s.classical_dms} [{s.status_flags}] ({s.nakshatra_name} P{s.pada}, `{s.daily_motion_dms}`) | "
-            f"{m.classical_dms} [{m.status_flags}] ({m.nakshatra_name} P{m.pada}, `{m.daily_motion_dms}`) | "
-            f"{ma.classical_dms} [{ma.status_flags}] ({ma.nakshatra_name} P{ma.pada}, `{ma.daily_motion_dms}`) | "
-            f"{me.classical_dms} [{me.status_flags}] ({me.nakshatra_name} P{me.pada}, `{me.daily_motion_dms}`) |"
+            f"| **{ay_idx:02d}** | `{ay_key}` | **{ay_def.label}** | `{ad_d:02d}° {ad_m:02d}' {ad_s:02d}\"` | "
+            f"`{val_deg:.6f}°` | `{delta_sign}{dd_d:02d}° {dd_m:02d}' {dd_s:02d}\"` | {ay_def.model} |"
         )
     lines.append("")
 
-    lines.append("### Table 1B — Daily Outer Grahas & Lunar Nodes (*Guru, Shukra, Shani, Mean Rahu, True Rahu, Ketu*)")
-    lines.append("")
-    lines.append("| Date | Guru (Jupiter) | Shukra (Venus) | Shani (Saturn) | Mean Rahu | True Rahu | Mean Ketu |")
-    lines.append("|---|---|---|---|---|---|---|")
-    for r in comp.daily_rows:
-        ju = r.planets["jupiter"]
-        ve = r.planets["venus"]
-        sa = r.planets["saturn"]
-        ra = r.planets["rahu"]
-        tra = r.planets["true_rahu"]
-        ke = r.planets["ketu"]
-        lines.append(
-            f"| **{r.civil_date}** | "
-            f"{ju.classical_dms} [{ju.status_flags}] ({ju.nakshatra_name} P{ju.pada}, `{ju.daily_motion_dms}`) | "
-            f"{ve.classical_dms} [{ve.status_flags}] ({ve.nakshatra_name} P{ve.pada}, `{ve.daily_motion_dms}`) | "
-            f"{sa.classical_dms} [{sa.status_flags}] ({sa.nakshatra_name} P{sa.pada}, `{sa.daily_motion_dms}`) | "
-            f"{ra.classical_dms} ({ra.nakshatra_name} P{ra.pada}) | "
-            f"{tra.classical_dms} ({tra.nakshatra_name} P{tra.pada}) | "
-            f"{ke.classical_dms} ({ke.nakshatra_name} P{ke.pada}) |"
-        )
-    lines.append("")
-
-    # SECTION 2: Daily Sunrise Drik Panchanga & Muhurta
-    lines.append("## Section 2 — Daily Sunrise-Anchored *Drik Panchanga* & *Muhurta* Table")
+    lines.append("### Table 1C — Manual Julian Day Number (`JDN`) Lookup Table for Years `1900` to `2050` (`Jan 0.0 UTC`)")
     lines.append("")
     lines.append(
-        "**How to Read This Table:** In classical Vedic tradition, the civil day (*Savana Vara*) begins at local "
-        "**topocentric sunrise (*Suryodaya*)**. One full day equals **60 Ghatis (Nadis)** (`1 Ghati = 24 minutes`, "
-        "`1 Pala = 24 seconds`). Both standard clock times (`HH:MM`) and Vedic *Ghati-Pala* durations from sunrise are given."
+        "**How to Compute Any Julian Date (`JD`) by Hand:**\n"
+        "$$\\text{JD} = \\text{JD}_{\\text{Jan 0.0}}(\\text{Year}) + \\text{Month Offset (Table 1D)} + \\text{Day of Month} + \\frac{\\text{UTC Hours}}{24}$$"
     )
     lines.append("")
-    lines.append("| Date | Vara | Sunrise / Sunset | Dinamana (Day Span) | Sunrise Tithi (Ends Clock / Ghati) | Sunrise Nakshatra | Sunrise Yoga | Karana | Rahu Kala | Abhijit Muhurta | Vratas & Sankranti |")
-    lines.append("|---|---|---|---|---|---|---|---|---|---|---|")
-    for r in comp.daily_rows:
-        vrata_text = ", ".join(r.vratas) if r.vratas else "—"
-        lines.append(
-            f"| **{r.civil_date}** | {r.vara_name} | `{r.sunrise_local_hms}` / `{r.sunset_local_hms}` | "
-            f"`{r.dinamana_hours:.2f}h` (`{r.dinamana_ghati_pala}`) | "
-            f"{r.tithi_name} (`{r.tithi_end_local_hm}` / `{r.tithi_end_ghati_pala}`) | "
-            f"{r.nakshatra_at_sunrise} | {r.yoga_at_sunrise} | {r.karana_at_sunrise} | "
-            f"`{r.rahu_kala_window}` | `{r.abhijit_muhurta_window}` | {vrata_text} |"
-        )
-    lines.append("")
-
-    # SECTION 3: Manual Spashta Graha Interpolation & Lagna / Bhava Tables
-    lines.append("## Section 3 — Manual *Spashta Graha* (Planetary Interpolation) & *Lagna / Bhava* Tables")
-    lines.append("")
-    lines.append("### 3.1 The Classical *Trairashika* (Rule of Three) Formula for Planetary Longitude at Birth")
-    lines.append("")
-    lines.append(
-        "Because the daily ephemeris tabulates planetary positions at `05:30 IST` (`00:00 UTC`), an astrologer finds "
-        "the exact longitude (*Spashta Graha*) at any birth time $T_{\\text{birth}}$ using the classical proportional formula:"
-    )
-    lines.append("")
-    lines.append("$$\\Delta t_{\\text{hours}} = T_{\\text{birth (IST)}} - 5.50\\text{ hours}, \\qquad f = \\frac{\\Delta t_{\\text{hours}}}{24.0} = \\frac{\\text{Elapsed Ghatis}}{60.0}$$")
-    lines.append("")
-    lines.append("$$\\lambda_{\\text{birth}} = \\lambda_{05:30} + f \\times (\\text{Daily Motion } v_{\\text{day}})$$")
-    lines.append("")
-    lines.append("*Note:* If a planet is Retrograde (`R` / *Vakri*, where $v_{\\text{day}} < 0$), subtract the proportional motion from $\\lambda_{05:30}$. Rahu's mean motion (`-00° 03' 11\"/day`) is always subtracted.")
-    lines.append("")
-    lines.append("### Table 3A — *Trairashika* Proportional Time-Fraction & Motion Ready-Reckoner")
-    lines.append("")
-    lines.append("| Elapsed Time from `05:30 IST` | Vedic *Ghati-Pala* | Day Fraction $f$ | Surya / Shukra (`~1°00'/d`) | Chandra (`12°00'/d`) | Chandra (`13°10'/d` Mean) | Chandra (`15°00'/d` Fast) | Mangala (`0°32'/d`) | Guru (`0°08'/d`) | Shani / Rahu (`0°03'/d`) |")
+    lines.append("| Year | `JD (Jan 0.0)` | Year | `JD (Jan 0.0)` | Year | `JD (Jan 0.0)` | Year | `JD (Jan 0.0)` | Year | `JD (Jan 0.0)` |")
     lines.append("|---|---|---|---|---|---|---|---|---|---|")
-    for hrs in (1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 18, 21, 24):
-        f_val = hrs / 24.0
-        gp = format_ghati_pala(hrs)
+    for base_y in range(1900, 1930):
+        row_cells = []
+        for col_offset in (0, 30, 60, 90, 120):
+            y_val = base_y + col_offset
+            if y_val <= 2050:
+                jd_jan0 = ad.julday(y_val, 1, 1, 0.0) - 1.0
+                leap_mark = "*" if (y_val % 4 == 0 and (y_val % 100 != 0 or y_val % 400 == 0)) else ""
+                row_cells.append(f"**{y_val}{leap_mark}** | `{jd_jan0:.1f}`")
+            else:
+                row_cells.append("— | —")
+        lines.append("| " + " | ".join(row_cells) + " |")
+    lines.append("")
+
+    lines.append("### Table 1D — Cumulative Month Day-Offsets & Historical $\\Delta T = \\text{TT} - \\text{UT1}$ Table")
+    lines.append("")
+    lines.append("| Month | Regular Year Offset | Leap Year (`*`) Offset | Historical Epoch | $\\Delta T = \\text{TT} - \\text{UT1}$ (Seconds) | $\\Delta T$ (Minutes) |")
+    lines.append("|---|---|---|---|---|---|")
+    month_names = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
+    reg_offsets = (0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334)
+    leap_offsets = (0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335)
+    dt_epochs = (-500, 0, 500, 1000, 1500, 1700, 1800, 1900, 1950, 2000, 2026, 2100)
+    for m_i in range(12):
+        ep_y = dt_epochs[m_i]
+        dt_sec = estimate_delta_t(float(ep_y)).seconds
+        ep_label = f"{abs(ep_y)} BCE" if ep_y < 0 else (f"{ep_y} CE" if ep_y > 0 else "1 BCE / 0")
         lines.append(
-            f"| **{hrs:02d}h 00m** | `{gp}` | `{f_val:.4f}` | "
-            f"`{format_daily_motion_dms(f_val * 1.0)}` | "
-            f"`{format_daily_motion_dms(f_val * 12.0)}` | "
-            f"`{format_daily_motion_dms(f_val * 13.1764)}` | "
-            f"`{format_daily_motion_dms(f_val * 15.0)}` | "
-            f"`{format_daily_motion_dms(f_val * (32.0 / 60.0))}` | "
-            f"`{format_daily_motion_dms(f_val * (8.0 / 60.0))}` | "
-            f"`{format_daily_motion_dms(f_val * (3.0 / 60.0))}` |"
+            f"| **{month_names[m_i]}** | `+{reg_offsets[m_i]} days` | `+{leap_offsets[m_i]} days` | "
+            f"**{ep_label}** | `{dt_sec:+.1f} s` | `{dt_sec / 60.0:+.2f} min` |"
         )
     lines.append("")
 
-    lines.append("### Table 3B — Classical *Rasimana / Udayamana* (Sign Rising Durations) for Manual Lagna Calculation")
+    # =========================================================================
+    # CHAPTER 2 (Section 1): Complete Daily Sidereal & Tropical Longitude Grid
+    # =========================================================================
+    lines.append("## Chapter 2 — Section 1 — Daily Sidereal (*Nirayana*) & Tropical (*Sayana*) Planetary Ephemeris Grid (`05:30 IST / 00:00 UTC`)")
     lines.append("")
     lines.append(
-        "**How to Compute *Udaya Lagna* (Ascendant) by Hand:**\n"
-        "1. Note the **Sun's Tropical (*Sayana*) Longitude** at sunrise: $\\lambda_{\\text{Sayana}} = \\lambda_{\\text{Nirayana}} + \\text{Ayanamsha}$.\n"
-        "2. Find the remaining degrees of the Sun's sign to rise: $\\Delta \\lambda = 30^\\circ - (\\lambda_{\\text{Sayana}} \\bmod 30^\\circ)$.\n"
-        "3. Multiply $\\Delta \\lambda / 30^\\circ$ by that sign's rising duration (*Rasimana* in minutes or *Palas* from the table below) to get the time the Sun's sign finishes rising.\n"
-        "4. Subtract that duration from the birth time elapsed since sunrise (*Ishta Kala*), and continue subtracting subsequent signs' rising durations until the remainder is smaller than the next sign's *Rasimana*.\n"
-        "5. Convert the remaining minutes proportionally into degrees (`0°..30°`) of that rising sign (*Sayana Lagna*), and subtract the day's **Ayanamsha** to obtain the exact **Nirayana Lagna (Sidereal Ascendant)**!"
+        "**How to Read This Grid:** Each cell gives (1) the exact sidereal longitude in `Rashi DD° MM' SS\"`, "
+        "(2) the 27-Nakshatra and Pada (`P1..P4`) plus KP Sub-Lord, and (3) the signed 24-hour daily motion "
+        "(`±DD° MM' SS\"/d`) with status flags (`D` = Direct, `R` = Retrograde/*Vakri*, `S` = Stationary, "
+        "`C` = Combust/*Asta*, `V` = *Vargottama*, `PN` = *Pushkara Navamsa*, `MB` = *Mrityu Bhaga*)."
     )
     lines.append("")
-    lines.append("| Sign (*Sayana Rashi*) | Equatorial *Lankodaya* (`0°` Lat) | Rising Minutes at `0°` Equator | Ujjain (`23°11'N`) Minutes | New Delhi (`28°37'N`) Minutes | Toronto (`43°39'N`) Minutes | London (`51°30'N`) Minutes |")
+    lines.append("### Table 2A — Daily *Navagraha* Sidereal Longitudes, Nakshatra-Padas, & Daily Angular Velocities")
+    lines.append("")
+    lines.append(
+        "| Date | Vara | Lahiri Ayanamsha | LST | Surya (Sun) | Chandra (Moon) | Mangala (Mars) | Budha (Mercury) | Guru (Jupiter) | Shukra (Venus) | Shani (Saturn) | Mean Rahu | True Rahu | Ketu |"
+    )
+    lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+    for r in comp.daily_rows:
+        cells: list[str] = [
+            f"`{r.civil_date}`",
+            r.vara_name.split(" ")[0],
+            f"`{r.ayanamsa_dms}`",
+            f"`{r.local_sidereal_time_hms}`",
+        ]
+        for b in ("sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn", "rahu", "true_rahu", "ketu"):
+            c = r.planets[b]
+            cells.append(
+                f"**{c.classical_dms}**<br/>{c.nakshatra_name} P{c.pada} ({c.status_flags})<br/>`{c.daily_motion_dms}/d`"
+            )
+        lines.append("| " + " | ".join(cells) + " |")
+    lines.append("")
+
+    lines.append("### Table 2B — Daily Outer Planets (*Aruna / Uranus, Varuna / Neptune, Yama / Pluto*), Tropical (*Sayana*) Luminaries, & Second-Order Tabular Differences ($\\Delta^2 \\lambda$)")
+    lines.append("")
+    lines.append(
+        "| Date | Kali *Ahargana* | Tropical Sun ($\\lambda_{\\text{trop}}$) | Tropical Moon ($\\lambda_{\\text{trop}}$) | Uranus (*Aruna*) Sidereal | Neptune (*Varuna*) Sidereal | Pluto (*Yama*) Sidereal | Moon $\\Delta^2 \\lambda$ (`\"/d²`) | Mercury $\\Delta^2 \\lambda$ (`\"/d²`) | Venus $\\Delta^2 \\lambda$ (`\"/d²`) | Mars $\\Delta^2 \\lambda$ (`\"/d²`) |"
+    )
+    lines.append("|---|---|---|---|---|---|---|---|---|---|---|")
+    for idx_r, r in enumerate(comp.daily_rows):
+        sky = comp.full_sky_rows[idx_r]
+        lines.append(
+            f"| `{r.civil_date}` | `{r.ahargana_kali_days:.1f}` | `{sky['sun'].tropical_dms}` | `{sky['moon'].tropical_dms}` | "
+            f"**{sky['uranus'].sidereal_dms}** (`{sky['uranus'].daily_motion_dms}/d`) | "
+            f"**{sky['neptune'].sidereal_dms}** (`{sky['neptune'].daily_motion_dms}/d`) | "
+            f"**{sky['pluto'].sidereal_dms}** (`{sky['pluto'].daily_motion_dms}/d`) | "
+            f"`{sky['moon'].second_difference_arcsec_per_day2:+.1f}\"` | "
+            f"`{sky['mercury'].second_difference_arcsec_per_day2:+.1f}\"` | "
+            f"`{sky['venus'].second_difference_arcsec_per_day2:+.1f}\"` | "
+            f"`{sky['mars'].second_difference_arcsec_per_day2:+.1f}\"` |"
+        )
+    lines.append("")
+
+    # =========================================================================
+    # CHAPTER 3: Complete Daily Spherical & Physical Ephemeris Grid
+    # =========================================================================
+    lines.append("## Chapter 3 — Daily Spherical & Physical Ephemeris Grid (Declination $\\delta$, Right Ascension $\\alpha$, Ecliptic Latitude $\\beta$, Distance $R$, Parallax, Diameter, Phase & Magnitude)")
+    lines.append("")
+    lines.append(
+        "**Why Spherical & Physical Coordinates Are Essential for Manual Jyotish:**\n"
+        "- **Declination ($\\delta$ / *Kranti*):** Required to compute *Ayana Bala* in *Shadbala*, Parallel/Contra-Parallel Declination aspects (*Kranti Yoga*), and *Vyatipata / Vaidhriti Mahapata*.\n"
+        "- **Ecliptic Latitude ($\\beta$ / *Shara / Vikshepa*):** Required to adjudicate the winner of a *Graha Yuddha* (Planetary War — the planet with the more northern latitude wins) and *Nakshatra Tara Bheda*.\n"
+        "- **True Distance ($R$ in AU), Horizontal Parallax (`HP`), Apparent Diameter (`\"`), & Visual Magnitude ($V_{\\text{mag}}$):** Required for topocentric Moon correction, eclipse contact sizing, and *Cheshta / Brihat Samhita* brightness diagnostics."
+    )
+    lines.append("")
+    lines.append("### Table 3A — Daily Declination ($\\delta$ / *Kranti*) & Right Ascension ($\\alpha$) Across the *Navagrahas* (`05:30 IST`)")
+    lines.append("")
+    lines.append("| Date | Sun $\\delta$ / $\\alpha$ | Moon $\\delta$ / $\\alpha$ | Mars $\\delta$ / $\\alpha$ | Mercury $\\delta$ / $\\alpha$ | Jupiter $\\delta$ / $\\alpha$ | Venus $\\delta$ / $\\alpha$ | Saturn $\\delta$ / $\\alpha$ | Rahu $\\delta$ |")
+    lines.append("|---|---|---|---|---|---|---|---|---|")
+    for idx_r, r in enumerate(comp.daily_rows):
+        sky = comp.full_sky_rows[idx_r]
+        lines.append(
+            f"| `{r.civil_date}` | `{sky['sun'].declination_dms}`<br/>`{sky['sun'].right_ascension_hms}` | "
+            f"`{sky['moon'].declination_dms}`<br/>`{sky['moon'].right_ascension_hms}` | "
+            f"`{sky['mars'].declination_dms}`<br/>`{sky['mars'].right_ascension_hms}` | "
+            f"`{sky['mercury'].declination_dms}`<br/>`{sky['mercury'].right_ascension_hms}` | "
+            f"`{sky['jupiter'].declination_dms}`<br/>`{sky['jupiter'].right_ascension_hms}` | "
+            f"`{sky['venus'].declination_dms}`<br/>`{sky['venus'].right_ascension_hms}` | "
+            f"`{sky['saturn'].declination_dms}`<br/>`{sky['saturn'].right_ascension_hms}` | "
+            f"`{sky['rahu'].declination_dms}` |"
+        )
+    lines.append("")
+
+    lines.append("### Table 3B — Daily Ecliptic Latitude ($\\beta$ / *Shara*), Geocentric Distance ($R$ in AU), Lunar Parallax (`HP`), Disk Illumination (`%`), & Visual Magnitude ($V_{\\text{mag}}$)")
+    lines.append("")
+    lines.append("| Date | Moon $\\beta$ (`DMS`) | Moon `HP` / Diam | Moon Illum `%` | Mars $\\beta$ / Dist (`AU`) / $V_{\\text{mag}}$ | Mercury $\\beta$ / Dist (`AU`) / $V_{\\text{mag}}$ | Jupiter $\\beta$ / Dist (`AU`) / $V_{\\text{mag}}$ | Venus $\\beta$ / Dist (`AU`) / $V_{\\text{mag}}$ | Saturn $\\beta$ / Dist (`AU`) / $V_{\\text{mag}}$ |")
+    lines.append("|---|---|---|---|---|---|---|---|---|")
+    for idx_r, r in enumerate(comp.daily_rows):
+        sky = comp.full_sky_rows[idx_r]
+        lines.append(
+            f"| `{r.civil_date}` | `{sky['moon'].ecliptic_latitude_dms}` | "
+            f"`{sky['moon'].horizontal_parallax_arcsec:.1f}\"` / `{sky['moon'].apparent_diameter_arcsec:.1f}\"` | "
+            f"**`{sky['moon'].illuminated_fraction_pct:.1f}%`** | "
+            f"`{sky['mars'].ecliptic_latitude_dms}`<br/>`{sky['mars'].distance_au:.4f} AU` (`{sky['mars'].visual_magnitude:+.2f}m`) | "
+            f"`{sky['mercury'].ecliptic_latitude_dms}`<br/>`{sky['mercury'].distance_au:.4f} AU` (`{sky['mercury'].visual_magnitude:+.2f}m`) | "
+            f"`{sky['jupiter'].ecliptic_latitude_dms}`<br/>`{sky['jupiter'].distance_au:.4f} AU` (`{sky['jupiter'].visual_magnitude:+.2f}m`) | "
+            f"`{sky['venus'].ecliptic_latitude_dms}`<br/>`{sky['venus'].distance_au:.4f} AU` (`{sky['venus'].visual_magnitude:+.2f}m`) | "
+            f"`{sky['saturn'].ecliptic_latitude_dms}`<br/>`{sky['saturn'].distance_au:.4f} AU` (`{sky['saturn'].visual_magnitude:+.2f}m`) |"
+        )
+    lines.append("")
+
+    # =========================================================================
+    # CHAPTER 4: Monthly Astronomical & Astrological Phenomena Almanac
+    # =========================================================================
+    lines.append("## Chapter 4 — Monthly Astronomical & Astrological Phenomena Almanac (Exact Sign Ingresses, Nakshatra Ingresses, Synodic Aspects, & *Krantisamya Mahapata* Windows)")
+    lines.append("")
+    phen = comp.phenomena_summary or {}
+    lines.append("### Table 4A — Exact Planetary Sign Ingresses (*Rashi Sankranti*) During the Month")
+    lines.append("")
+    lines.append("| Planet | From Rashi | To Rashi | Exact Ingress Longitude | Exact UTC Timestamp | Exact Julian Date (`JD UT`) | Direction |")
     lines.append("|---|---|---|---|---|---|---|")
-    # Classical Charakhanda adjustments across latitudes
-    chara_factors = (
-        ("Mesha / Meena (1, 12)", 278, -1.0),
-        ("Vrishabha / Kumbha (2, 11)", 299, -0.8),
-        ("Mithuna / Makara (3, 10)", 323, -0.35),
-        ("Karka / Dhanu (4, 9)", 323, +0.35),
-        ("Simha / Vrishchika (5, 8)", 299, +0.8),
-        ("Kanya / Tula (6, 7)", 278, +1.0),
-    )
-    for label, vinadis, lat_sign in chara_factors:
-        eq_min = vinadis * 0.4  # 1 Vinadi (Pala) = 24 seconds = 0.4 minutes
-        uj_min = eq_min + lat_sign * 14.5
-        dl_min = eq_min + lat_sign * 18.6
-        to_min = eq_min + lat_sign * 32.4
-        ln_min = eq_min + lat_sign * 43.2
-        lines.append(
-            f"| **{label}** | `{vinadis} Vinadis` | `{eq_min:.1f} min` | `{uj_min:.1f} min` | "
-            f"`{dl_min:.1f} min` | `{to_min:.1f} min` | `{ln_min:.1f} min` |"
-        )
+    r_ing = phen.get("rashi_ingresses", ())
+    if r_ing:
+        for ev in r_ing:
+            lines.append(
+                f"| **{ev.body}** | {ev.from_name} | **{ev.to_name}** | `{ev.longitude_deg:.4f}°` | "
+                f"`{ev.iso_utc}` | `{ev.jd_ut:.6f}` | {'Retrograde Ingress' if ev.is_retrograde else 'Direct Ingress'} |"
+            )
+    else:
+        lines.append("| *None* | — | — | — | — | — | — |")
     lines.append("")
 
-    # SECTION 4: Complete Shodashvarga D1-D60 Manual Reckoning Tables
-    lines.append("## Section 4 — Complete Manual Divisional Chart (*Shodashvarga D1–D60*) Reckoning Tables")
+    lines.append("### Table 4B — Exact Planetary *Nakshatra* Ingresses During the Month")
+    lines.append("")
+    lines.append("| Planet | From Nakshatra | To Nakshatra | Exact UTC Timestamp | Exact Julian Date (`JD UT`) | Motion |")
+    lines.append("|---|---|---|---|---|---|")
+    n_ing = phen.get("nakshatra_ingresses", ())
+    if n_ing:
+        for ev in n_ing[:40]:
+            lines.append(
+                f"| **{ev.body}** | {ev.from_name} | **{ev.to_name}** | `{ev.iso_utc}` | "
+                f"`{ev.jd_ut:.6f}` | {'Retrograde' if ev.is_retrograde else 'Direct'} |"
+            )
+    else:
+        lines.append("| *None* | — | — | — | — | — |")
+    lines.append("")
+
+    lines.append("### Table 4C — Exact Synodic Planetary Aspects (`0°, 60°, 90°, 120°, 180°`) During the Month")
+    lines.append("")
+    lines.append("| Body 1 | Body 2 | Aspect Type | Exact Angle | Body 1 Longitude | Body 2 Longitude | Exact UTC Timestamp |")
+    lines.append("|---|---|---|---|---|---|---|")
+    asp_list = phen.get("major_aspects", ())
+    if asp_list:
+        for ev in asp_list[:45]:
+            lines.append(
+                f"| **{ev.body_a}** | **{ev.body_b}** | **{ev.aspect_name}** | `{ev.aspect_angle_deg:.0f}°` | "
+                f"`{format_classical_rashi_dms(ev.longitude_a_deg)}` | `{format_classical_rashi_dms(ev.longitude_b_deg)}` | `{ev.iso_utc}` |"
+            )
+    else:
+        lines.append("| *None* | — | — | — | — | — | — |")
+    lines.append("")
+
+    lines.append("### Table 4D — Exact *Surya Siddhanta Krantisamya* (*Vyatipata* & *Vaidhriti Mahapata*) Declination-Equality Windows")
+    lines.append("")
+    lines.append("| Mahapata Type | Classical Condition | Peak Exact JD (`UT`) | Window Start (`JD UT`) | Window End (`JD UT`) | Sun Declination ($\\delta_\\odot$) | Moon Declination ($\\delta_{\\mathbb{C}}$) |")
+    lines.append("|---|---|---|---|---|---|---|")
+    mp_rep = phen.get("mahapata_report")
+    if mp_rep and mp_rep.events:
+        for mp in mp_rep.events:
+            cond = "$\\delta_\\odot = +\\delta_{\\mathbb{C}}$ (Same Hemisphere)" if mp.mahapata_type == "Vyatipata" else "$\\delta_\\odot = -\\delta_{\\mathbb{C}}$ (Opposite Hemisphere)"
+            lines.append(
+                f"| **{mp.mahapata_type} Mahapata** | {cond} | `{mp.exact_jd_ut:.5f}` | "
+                f"`{mp.window_start_jd_ut:.5f}` | `{mp.window_end_jd_ut:.5f}` | "
+                f"`{mp.sun_declination_deg:+.4f}°` | `{mp.moon_declination_deg:+.4f}°` |"
+            )
+    else:
+        lines.append("| *None in interval* | — | — | — | — | — | — |")
+    lines.append("")
+
+    # =========================================================================
+    # CHAPTER 5 (Section 2): Daily Sunrise-Anchored Drik Panchanga & Muhurta
+    # =========================================================================
+    lines.append("## Chapter 5 — Section 2 — Daily Sunrise-Anchored *Drik Panchanga*, *Ghati-Pala* Almanac, & *Muhurta* Table")
     lines.append("")
     lines.append(
-        "**How to Cast All 16 Vargas by Hand:** Take any planet's degree and minute within its Rashi (`0°00'` to `30°00'`) "
-        "and use the classical rules and lookup tables below."
+        "**Vedic Timekeeping Conversion:** $1\\text{ Solar Day} = 24\\text{ Hours} = 60\\text{ Ghatis (Nadis)}$; "
+        "$1\\text{ Hour} = 2.5\\text{ Ghatis}$; $1\\text{ Ghati} = 24\\text{ Minutes} = 60\\text{ Palas (Vinadis)}$; "
+        "$1\\text{ Pala} = 24\\text{ Seconds}$."
     )
     lines.append("")
-    lines.append("### Table 4A — Master Formula Reference for All 16 Parashari Vargas (*Shodashvarga*)")
-    lines.append("")
-    lines.append("| Varga | Sanskrit Name | Segment Span | Classical Counting Rule (Brihat Parashara Hora Shastra) | Life Domain |")
-    lines.append("|---|---|---|---|---|")
-    varga_rules = (
-        ("D1", "Rashi / Kshetra", "30° 00'", "Direct sidereal sign (1..12)", "Physical body, general destiny, root chart"),
-        ("D2", "Hora", "15° 00'", "Odd signs: 0°-15° Sun (Simha), 15°-30° Moon (Karka); Even signs: 0°-15° Moon (Karka), 15°-30° Sun (Simha)", "Wealth, treasury, family sustenance"),
-        ("D3", "Drekkana", "10° 00'", "0°-10° same sign (1st); 10°-20° 5th sign; 20°-30° 9th sign", "Siblings, courage, co-borns, initiative"),
-        ("D4", "Chaturthamsa / Turyamsa", "07° 30'", "4 segments of 7°30': 1st, 4th, 7th, and 10th Kendra signs from the Rashi", "Real estate, landed property, happiness, fortune"),
-        ("D7", "Saptamsa", "04° 17' 08.57\"", "7 segments: Odd signs count forward from same sign; Even signs count forward from 7th sign", "Children, progeny, creative legacy"),
-        ("D9", "Navamsa / Dharmamsa", "03° 20'", "9 segments of 3°20': Fiery (1,5,9) start Mesha; Earthy (2,6,10) start Makara; Airy (3,7,11) start Tula; Watery (4,8,12) start Karka", "Marriage, spouse, dharma, inner planetary fruit"),
-        ("D10", "Dasamsa / Karmamsa", "03° 00'", "10 segments of 3°00': Odd signs start from same sign; Even signs start from 9th sign", "Career, profession, authority, public action"),
-        ("D12", "Dwadasamsa", "02° 30'", "12 segments of 2°30': Always count forward starting from the same sign", "Parents, ancestry, lineage"),
-        ("D16", "Shodasamsa / Kalamsa", "01° 52' 30\"", "16 segments: Movable (1,4,7,10) start Mesha; Fixed (2,5,8,11) start Simha; Dual (3,6,9,12) start Dhanu", "Vehicles, conveyances, material comforts"),
-        ("D20", "Vimsamsa", "01° 30'", "20 segments: Movable start Mesha; Fixed start Dhanu; Dual start Simha", "Spiritual sadhana, upasana, devotion"),
-        ("D24", "Chaturvimsamsa / Siddhamsa", "01° 15'", "24 segments: Odd signs start from Simha (Leo) forward; Even signs start from Karka (Cancer) forward", "Higher learning, vidya, scholarship"),
-        ("D27", "Bhamsha / Saptavimsamsa", "01° 06' 40\"", "27 segments: Fiery start Mesha; Earthy start Karka; Airy start Tula; Watery start Makara", "Physical stamina, vital strengths and weaknesses"),
-        ("D30", "Trimsamsa (Unequal)", "5°/5°/8°/7°/5°", "Odd: Mars 5°(Mesha), Sat 5°(Kumbha), Jup 8°(Dhanu), Merc 7°(Mithuna), Ven 5°(Tula); Even: Ven 5°(Vrishabha), Merc 7°(Kanya), Jup 8°(Meena), Sat 5°(Makara), Mars 5°(Vrishchika)", "Arishta, misfortunes, moral character"),
-        ("D40", "Khavedamsa", "00° 45'", "40 segments: Odd signs start from Mesha; Even signs start from Tula", "Maternal lineage, auspicious/inauspicious karmas"),
-        ("D45", "Akshavedamsa", "00° 40'", "45 segments: Movable start Mesha; Fixed start Simha; Dual start Dhanu", "Paternal lineage, ethical conduct"),
-        ("D60", "Shashtiamsa", "00° 30'", "60 segments of 30 arcminutes: Sign = ((segment_index - 1) mod 12) counted from the planet's own Rashi + 60 named Deities", "Past-life root karma, twin differentiation"),
+    lines.append(
+        "| Date | Vara | Sunrise | Sunset | *Dinamana* (`Hours / Ghatis`) | Sunrise Tithi | Tithi Ends (`Clock / Ghati-Pala`) | Sunrise Nakshatra | Sunrise Yoga | Sunrise Karana | *Rahu Kala* | *Abhijit Muhurta* | Observances (*Vratas*) |"
     )
-    for code, name, span, rule, dom in varga_rules:
-        lines.append(f"| **{code}** | *{name}* | `{span}` | {rule} | {dom} |")
-    lines.append("")
-
-    lines.append("### Table 4B — Complete 108-Pada *Navamsa (D9)* Direct Eye-Lookup Grid")
-    lines.append("")
-    lines.append("| Pada # | Degree Range in Sign | Fiery Signs (*Mesha, Simha, Dhanu* — 1, 5, 9) | Earthy Signs (*Vrishabha, Kanya, Makara* — 2, 6, 10) | Airy Signs (*Mithuna, Tula, Kumbha* — 3, 7, 11) | Watery Signs (*Karka, Vrishchika, Meena* — 4, 8, 12) |")
-    lines.append("|---|---|---|---|---|---|")
-    nav_ranges = (
-        (1, "00° 00' – 03° 20'", 0, 9, 6, 3),
-        (2, "03° 20' – 06° 40'", 1, 10, 7, 4),
-        (3, "06° 40' – 10° 00'", 2, 11, 8, 5),
-        (4, "10° 00' – 13° 20'", 3, 0, 9, 6),
-        (5, "13° 20' – 16° 40'", 4, 1, 10, 7),
-        (6, "16° 40' – 20° 00'", 5, 2, 11, 8),
-        (7, "20° 00' – 23° 20'", 6, 3, 0, 9),
-        (8, "23° 20' – 26° 40'", 7, 4, 1, 10),
-        (9, "26° 40' – 30° 00'", 8, 5, 2, 11),
-    )
-    for idx, rng, f_i, e_i, a_i, w_i in nav_ranges:
+    lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+    for r in comp.daily_rows:
+        vrata_str = ", ".join(r.vratas) if r.vratas else "—"
         lines.append(
-            f"| **Navamsa {idx}** | `{rng}` | **{RASHI_NAMES[f_i]}** ({RASI_LORDS[f_i]}) | "
-            f"**{RASHI_NAMES[e_i]}** ({RASI_LORDS[e_i]}) | **{RASHI_NAMES[a_i]}** ({RASI_LORDS[a_i]}) | "
-            f"**{RASHI_NAMES[w_i]}** ({RASI_LORDS[w_i]}) |"
+            f"| `{r.civil_date}` | {r.vara_name} | `{r.sunrise_local_hms}` | `{r.sunset_local_hms}` | "
+            f"`{r.dinamana_hours:.2f}h` (`{r.dinamana_ghati_pala}`) | **{r.tithi_name}** | "
+            f"`{r.tithi_end_local_hm}` (`{r.tithi_end_ghati_pala}`) | {r.nakshatra_at_sunrise} | "
+            f"{r.yoga_at_sunrise} | {r.karana_at_sunrise} | `{r.rahu_kala_window}` | "
+            f"`{r.abhijit_muhurta_window}` | {vrata_str} |"
         )
     lines.append("")
 
-    lines.append("### Table 4C — Complete *Dasamsa (D10)* & *Dwadasamsa (D12)* Eye-Lookup Table")
+    # =========================================================================
+    # CHAPTER 6 (Section 3): Manual Spashta Graha Interpolation (1st & 2nd Order)
+    # =========================================================================
+    lines.append("## Chapter 6 — Section 3 — Manual *Spashta Graha* Interpolation Compendium (1st-Order *Trairashika* & 2nd-Order Bessel Lunar Tables)")
     lines.append("")
-    lines.append("| Segment | D10 Range (`3°00'` step) | D10 Offset (Odd Sign) | D10 Offset (Even Sign) | D12 Range (`2°30'` step) | D12 Offset (All Signs) |")
+    lines.append(
+        "### 6.1 First-Order *Trairashika* (Rule of Three) & Second-Order Bessel Formula\n"
+        "- **First-Order Formula (Sufficient for Sun, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu to `< 0.5\"`):**\n"
+        "  $$\\lambda_1(t) = \\lambda(05\\text{:}30\\text{ IST}) + f \\times v_{\\text{day}}, \\quad f = \\frac{\\Delta t_{\\text{hours}}}{24} = \\frac{\\Delta G_{\\text{ghatis}}}{60}$$\n"
+        "- **Second-Order Bessel Formula (For Sub-Arcsecond Manual Interpolation of the Fast-Moving Moon):**\n"
+        "  $$\\lambda_2(t) = \\lambda_1(t) + \\frac{f(f - 1)}{4} \\times \\Delta^2 \\lambda$$\n"
+        "  where $\\Delta^2 \\lambda$ is printed in **Table 2B** and the Bessel multiplier $B_2(f) = \\frac{f(f-1)}{4}$ is printed in **Table 6A** below."
+    )
+    lines.append("")
+    lines.append("### Table 6A — Complete 96-Row 15-Minute (`00:00` to `24:00`) *Trairashika* Fraction ($f$), *Ghati-Pala*, & Bessel 2nd-Difference Coefficient ($B_2(f)$) Table")
+    lines.append("")
+    lines.append("| Elapsed Time (`HH:MM`) | Elapsed *Ghati-Pala* | Fraction $f = \\Delta t / 24$ | Bessel $B_2(f)$ | Sun Incr (`+59'08\"/d`) | Mean Moon Incr (`+13°10'35\"/d`) | Elapsed Time (`HH:MM`) | Elapsed *Ghati-Pala* | Fraction $f = \\Delta t / 24$ | Bessel $B_2(f)$ | Sun Incr (`+59'08\"/d`) | Mean Moon Incr (`+13°10'35\"/d`) |")
+    lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
+    for q_idx in range(1, 49):
+        # Left column: 00:15 to 12:00; Right column: 12:15 to 24:00
+        row_pair = []
+        for k_q in (q_idx, q_idx + 48):
+            hrs = k_q * 0.25
+            hh = int(hrs)
+            mm = int(round((hrs - hh) * 60))
+            f_val = hrs / 24.0
+            b2_val = f_val * (f_val - 1.0) / 4.0
+            gp_s = format_ghati_pala(hrs)
+            sun_i = format_daily_motion_dms(f_val * (59.1333 / 60.0))
+            moon_i = format_daily_motion_dms(f_val * 13.17639)
+            row_pair.append(f"`{hh:02d}:{mm:02d}` | `{gp_s}` | **`{f_val:.5f}`** | `{b2_val:+.5f}` | `{sun_i}` | `{moon_i}`")
+        lines.append("| " + " | ".join(row_pair) + " |")
+    lines.append("")
+
+    # =========================================================================
+    # CHAPTER 7: Master Tables of Ascendants (Lagna) & 10th House Across Latitudes
+    # =========================================================================
+    lines.append("## Chapter 7 — Master Tables of Ascendants (*Udaya Lagna*), 10th House Midheaven (*Madhya Lagna*), & *Sripathi Bhava Chalit* Across World Latitudes")
+    lines.append("")
+    lines.append(
+        "**How to Find the Exact Sidereal Ascendant (*Udaya Lagna*) and 10th Cusp (*Madhya Lagna*) from Table 7A:**\n"
+        "1. Take the **Local Sidereal Time (LST)** at `05:30 IST` from **Table 2A**.\n"
+        "2. Add the time elapsed from `05:30 IST` to Birth Time, plus `10 seconds per hour` of elapsed solar time (`+3m 56.56s` per 24h), and adjust by `(Observer Longitude - 75.7885°) × 4 minutes/degree` to get **Birth Local Sidereal Time (RAMC)**.\n"
+        "3. Look up the Birth LST row in **Table 7A** under your city's latitude column and subtract `(Current Lahiri Ayanamsha - 24° 13' 55\")` if casting for another century."
+    )
+    lines.append("")
+    lines.append("### Table 7A — Master Sidereal Ascendant (*Udaya Lagna*) & 10th Cusp (*MC*) Lookup Grid (`00h 00m` to `23h 52m` LST across 9 World Latitudes, Lahiri `2026` Epoch)")
+    lines.append("")
+    lines.append(
+        "| LST (`HH:MM`) | RAMC (`°`) | Sidereal 10th Cusp (*MC*) | `0°00'` Equator (*Lanka*) | `13°05'N` Chennai / Bengaluru | `19°05'N` Mumbai | `23°11'N` Ujjain / Kolkata | `28°37'N` New Delhi | `34°03'N` Los Angeles | `40°43'N` New York | `43°39'N` Toronto | `51°30'N` London |"
+    )
+    lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
+    eps_rad = math.radians(23.4392911)
+    ay_ref = lahiri_base
+    world_lats = (0.0, 13.0827, 19.0760, 23.1765, 28.6139, 34.0522, 40.7128, 43.6532, 51.5074)
+    for step_ramc in range(0, 360, 4):  # Every 4 degrees = 16 minutes of Sidereal Time (90 rows covering 24h)
+        ramc_deg = float(step_ramc)
+        lst_tot_min = step_ramc * 4
+        lst_hh = lst_tot_min // 60
+        lst_mm = lst_tot_min % 60
+        ramc_rad = math.radians(ramc_deg)
+        # Tropical MC: tan(MC) = tan(RAMC) / cos(eps)
+        mc_trop = math.degrees(math.atan2(math.sin(ramc_rad), math.cos(ramc_rad) * math.cos(eps_rad))) % 360.0
+        mc_sid = (mc_trop - ay_ref) % 360.0
+        lat_cells = []
+        for w_lat in world_lats:
+            phi_rad = math.radians(w_lat)
+            # Standard spherical astronomy Ascendant formula:
+            # tan(lambda_asc) = cos(RAMC) / (-sin(RAMC)*cos(eps) - tan(phi)*sin(eps))
+            y_asc = math.cos(ramc_rad)
+            x_asc = -math.sin(ramc_rad) * math.cos(eps_rad) - math.tan(phi_rad) * math.sin(eps_rad)
+            asc_trop = math.degrees(math.atan2(y_asc, x_asc)) % 360.0
+            asc_sid = (asc_trop - ay_ref) % 360.0
+            lat_cells.append(f"`{format_classical_rashi_dms(asc_sid, compact_sign_number=True)}`")
+        lines.append(
+            f"| **`{lst_hh:02d}h {lst_mm:02d}m`** | `{ramc_deg:03.0f}°` | `{format_classical_rashi_dms(mc_sid, compact_sign_number=True)}` | "
+            + " | ".join(lat_cells) + " |"
+        )
+    lines.append("")
+
+    lines.append("### Table 7B — Classical *Lankodaya* (Equatorial Rising Durations) & *Charakhanda* Latitude Adjustments")
+    lines.append("")
+    lines.append("| Rashi # | Sanskrit Rashi | Western Sign | *Lankodaya* (*Vinadis*) | *Lankodaya* (*Ghatis & Palas*) | *Lankodaya* (Clock Minutes) | *odaya* Type (*Shirshodaya / Prishtodaya*) |")
+    lines.append("|---|---|---|---|---|---|---|")
+    odaya_types = (
+        "Prishtodaya (Rises by Hind Part)",
+        "Prishtodaya (Rises by Hind Part)",
+        "Ubhayodaya (Rises Both Ways)",
+        "Prishtodaya (Rises by Hind Part)",
+        "Shirshodaya (Rises by Head)",
+        "Shirshodaya (Rises by Head)",
+        "Shirshodaya (Rises by Head)",
+        "Shirshodaya (Rises by Head)",
+        "Prishtodaya (Rises by Hind Part)",
+        "Prishtodaya (Rises by Hind Part)",
+        "Shirshodaya (Rises by Head)",
+        "Ubhayodaya (Rises Both Ways)",
+    )
+    western_names = ("Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces")
+    for idx_s, r_name in enumerate(RASHI_NAMES):
+        vin = LANKODAYA_VINADIS[idx_s]
+        gh = vin // 60
+        pl = vin % 60
+        mins = vin * 0.4
+        lines.append(
+            f"| `{idx_s + 1:02d}` | **{r_name}** | {western_names[idx_s]} | `{vin} v` | "
+            f"`{gh}g {pl:02d}p` | `{mins:.1f} min` | {odaya_types[idx_s]} |"
+        )
+    lines.append("")
+
+    # =========================================================================
+    # CHAPTER 8: Special Lagnas (Vishesha Lagnas), 11 Upagrahas, Yogi, & Sphutas
+    # =========================================================================
+    lines.append("## Chapter 8 — Complete Manual Compendium of All 8 *Vishesha Lagnas*, 11 *Upagrahas*, *Yogi/Avayogi*, & 9 *Prashna Sphutas*")
+    lines.append("")
+    lines.append("### Table 8A — Complete Manual Formulas for the 8 *Vishesha Lagnas* (Special Ascendants)")
+    lines.append("")
+    lines.append("| # | Special Lagna (*Vishesha Lagna*) | Rate of Motion | Exact Classical Manual Formula (*Brihat Parashara Hora Shastra* & *Uttara Kalamrita*) | Primary Predictive Domain |")
+    lines.append("|---|---|---|---|---|")
+    lines.append("| **1** | **Udaya Lagna (Birth Ascendant)** | `~1° per 4 min` (`12 signs / 24h`) | Eastern horizon intersection with the sidereal ecliptic at birth (Table 7A) | Physical body, vitality, self, overall life trajectory |")
+    lines.append("| **2** | **Hora Lagna (HL)** | `1° per 2.5 min` (`24 signs / 24h`) | $\\text{HL} = \\lambda_\\odot(\\text{Sunrise}) + \\frac{\\text{Elapsed Minutes since Sunrise}}{2.5}$ | Personal wealth, sustenance, liquid resources, financial inflow |")
+    lines.append("| **3** | **Ghati Lagna (GL)** | `1.25° per min` (`1 sign per Ghati`) | $\\text{GL} = \\lambda_\\odot(\\text{Sunrise}) + (\\text{Elapsed Ghatis since Sunrise} \\times 30^\\circ)$ | Power, royal authority, political/executive rank, fame |")
+    lines.append("| **4** | **Bhava Lagna (BL)** | `0.25° per min` (`1 sign per 5 Ghatis`) | $\\text{BL} = \\lambda_\\odot(\\text{Sunrise}) + (\\text{Elapsed Ghatis since Sunrise} \\times 6^\\circ)$ | Inner psychological disposition and bodily constitution |")
+    lines.append("| **5** | **Sree Lagna (SL)** | Linked to Moon's Pada | $\\text{SL} = \\lambda_{\\text{Udaya Lagna}} + \\left(\\frac{\\lambda_{\\mathbb{C}} \\bmod 13^\\circ 20'}{13^\\circ 20'} \\times 360^\\circ\\right)$ | Goddess Lakshmi's grace, prosperity, marriage fortune |")
+    lines.append("| **6** | **Indu Lagna (IL)** | Planetary *Kala* Sum | Sum *Kalas* (`Sun 30, Moon 16, Mars 6, Mercury 8, Jupiter 10, Venus 12, Saturn 1`) of 9th Lord from Lagna + 9th Lord from Moon; take $\\text{Sum} \\bmod 12$ (`0 -> 12`) and count that many signs from Natal Moon | Millionaire/billionaire *Dhana Yogas* and windfall wealth Dasha triggers |")
+    lines.append("| **7** | **Pranapada Lagna (PL)** | `4° per minute` (`1° per 15 Palas`) | $\\text{PL} = \\lambda_\\odot + \\frac{\\text{Elapsed Palas since Sunrise}}{15} + \\begin{cases} 0^\\circ & \\text{Sun in Movable Sign} \\\\ 240^\\circ & \\text{Sun in Fixed Sign} \\\\ 120^\\circ & \\text{Sun in Dual Sign} \\end{cases}$ | Birth-time rectification (must fall in trine/10th to Moon or Lagna) |")
+    lines.append("| **8** | **Varnada Lagna (VL)** | Sign-Parity Vector | Count Udaya Lagna & Hora Lagna from Mesha (if Odd) or Meena backwards (if Even); add if same parity, subtract if opposite parity | Social class, vocational calling, and public duty |")
+    lines.append("")
+
+    lines.append("### Table 8B — Complete Manual Formulas for the 5 Solar *Upagrahas* & 6 *Kalavela* Time-of-Day *Upagrahas* (*Gulika/Mandi*)")
+    lines.append("")
+    lines.append("| Category | Upagraha Name | Ruling Planet | Exact Manual Calculation Formula | Daytime Octant (`Sun..Sat`, out of 8) | Nighttime Octant (`Sun..Sat`, out of 8) |")
     lines.append("|---|---|---|---|---|---|")
-    for seg in range(1, 13):
-        d12_lo = (seg - 1) * 2.5
-        d12_hi = seg * 2.5
-        d12_lo_d, d12_lo_m = int(d12_lo), int(round((d12_lo % 1.0) * 60))
-        d12_hi_d, d12_hi_m = int(d12_hi), int(round((d12_hi % 1.0) * 60))
-        if seg <= 10:
-            d10_lo = (seg - 1) * 3
-            d10_hi = seg * 3
-            d10_rng = f"`{d10_lo:02d}° 00' – {d10_hi:02d}° 00'`"
-            d10_odd = f"+{seg - 1} signs ({seg}th from Rashi)"
-            even_house = ((8 + seg - 1) % 12) + 1
-            d10_even = f"+{(8 + seg - 1) % 12} signs ({even_house}th from Rashi)"
+    lines.append("| **Solar Upagraha 1** | **Dhuma** | Mars (Fiery Smoke) | $\\lambda_{\\text{Dhuma}} = (\\lambda_\\odot + 133^\\circ 20') \\bmod 360^\\circ$ | Instantaneous from $\\lambda_\\odot$ | Instantaneous from $\\lambda_\\odot$ |")
+    lines.append("| **Solar Upagraha 2** | **Vyatipata** | Rahu (Calamity) | $\\lambda_{\\text{Vyatipata}} = (360^\\circ - \\lambda_{\\text{Dhuma}}) \\bmod 360^\\circ$ | Instantaneous from $\\lambda_\\odot$ | Instantaneous from $\\lambda_\\odot$ |")
+    lines.append("| **Solar Upagraha 3** | **Parivesha** | Moon (Halo) | $\\lambda_{\\text{Parivesha}} = (\\lambda_{\\text{Vyatipata}} + 180^\\circ) \\bmod 360^\\circ$ | Instantaneous from $\\lambda_\\odot$ | Instantaneous from $\\lambda_\\odot$ |")
+    lines.append("| **Solar Upagraha 4** | **Indrachapa (Kodanda)** | Venus (Rainbow Bow) | $\\lambda_{\\text{Indrachapa}} = (360^\\circ - \\lambda_{\\text{Parivesha}}) \\bmod 360^\\circ$ | Instantaneous from $\\lambda_\\odot$ | Instantaneous from $\\lambda_\\odot$ |")
+    lines.append("| **Solar Upagraha 5** | **Upaketu (Sikhi)** | Ketu (Comet Crest) | $\\lambda_{\\text{Upaketu}} = (\\lambda_{\\text{Indrachapa}} + 16^\\circ 40') \\bmod 360^\\circ = (\\lambda_\\odot - 30^\\circ)$ | Instantaneous from $\\lambda_\\odot$ | Instantaneous from $\\lambda_\\odot$ |")
+    lines.append("| **Kalavela 1** | **Gulika (Mandi)** | Saturn's Son | Ascendant rising at start of Saturn's 1/8th portion of *Dinamana* / *Ratrimana* | `Sun:7, Mon:6, Tue:5, Wed:4, Thu:3, Fri:2, Sat:1` | `Sun:3, Mon:2, Tue:1, Wed:7, Thu:6, Fri:5, Sat:4` |")
+    lines.append("| **Kalavela 2** | **Kala** | Sun's Portion | Ascendant rising at start of Sun's 1/8th portion | `Sun:1, Mon:7, Tue:6, Wed:5, Thu:4, Fri:3, Sat:2` | `Sun:4, Mon:3, Tue:2, Wed:1, Thu:7, Fri:6, Sat:5` |")
+    lines.append("| **Kalavela 3** | **Mrityu** | Mars's Portion | Ascendant rising at start of Mars's 1/8th portion | `Sun:3, Mon:2, Tue:1, Wed:7, Thu:6, Fri:5, Sat:4` | `Sun:6, Mon:5, Tue:4, Wed:3, Thu:2, Fri:1, Sat:7` |")
+    lines.append("| **Kalavela 4** | **Ardhaprahara** | Mercury's Portion | Ascendant rising at start of Mercury's 1/8th portion | `Sun:4, Mon:3, Tue:2, Wed:1, Thu:7, Fri:6, Sat:5` | `Sun:7, Mon:6, Tue:5, Wed:4, Thu:3, Fri:2, Sat:1` |")
+    lines.append("| **Kalavela 5** | **Yamaghantaka** | Jupiter's Portion | Ascendant rising at start of Jupiter's 1/8th portion | `Sun:5, Mon:4, Tue:3, Wed:2, Thu:1, Fri:7, Sat:6` | `Sun:1, Mon:7, Tue:6, Wed:5, Thu:4, Fri:3, Sat:2` |")
+    lines.append("")
+
+    lines.append("### Table 8C — Complete Manual Formulas for *Yogi / Sahayogi / Avayogi* & the 9 Kerala *Prashna Marga Sphutas*")
+    lines.append("")
+    lines.append("| Sensitive Point (*Sphuta*) | Exact Mathematical Formula (`Mod 360°`) | Classical Interpretation Rule (*Prashna Marga* & *BPHS*) |")
+    lines.append("|---|---|---|")
+    lines.append("| **Yogi Point & Yogi Planet** | $\\lambda_{\\text{Yogi}} = (\\lambda_\\odot + \\lambda_{\\mathbb{C}} + 93^\\circ 20') \\bmod 360^\\circ$ | Nakshatra Lord of $\\lambda_{\\text{Yogi}}$ is **Yogi Planet** (supreme prosperity significator); Sign Lord is **Sahayogi** |")
+    lines.append("| **Avayogi Point & Planet** | $\\lambda_{\\text{Avayogi}} = (\\lambda_{\\text{Yogi}} + 186^\\circ 40') \\bmod 360^\\circ$ | Nakshatra Lord of $\\lambda_{\\text{Avayogi}}$ is **Avayogi Planet** (obstruction/drain significator) |")
+    lines.append("| **1. Trisphuta** | $(\\lambda_{\\text{Lagna}} + \\lambda_{\\mathbb{C}} + \\lambda_{\\text{Gulika}}) \\bmod 360^\\circ$ | Core vitality, health, and immediate horary crisis indicator |")
+    lines.append("| **2. Chatusphuta** | $(\\lambda_{\\text{Trisphuta}} + \\lambda_\\odot) \\bmod 360^\\circ$ | Soul-level endurance and royal/spiritual support |")
+    lines.append("| **3. Panchasphuta** | $(\\lambda_{\\text{Chatusphuta}} + \\lambda_{\\text{Rahu}}) \\bmod 360^\\circ$ | Karmic destiny and hidden snakes/curses in Prashna |")
+    lines.append("| **4. Prana Sphuta** | $(5 \\times \\lambda_{\\text{Lagna}} + \\lambda_{\\text{Gulika}}) \\bmod 360^\\circ$ | Vital breath (*Prana*) — conjunction with Mrityu Sphuta indicates acute danger |")
+    lines.append("| **5. Deha Sphuta** | $(8 \\times \\lambda_{\\mathbb{C}} + \\lambda_{\\text{Gulika}}) \\bmod 360^\\circ$ | Physical body resilience and recovery capacity |")
+    lines.append("| **6. Mrityu Sphuta** | $(7 \\times \\lambda_{\\text{Gulika}} + \\lambda_\\odot) \\bmod 360^\\circ$ | Mortality / critical vulnerability point |")
+    lines.append("| **7. Tithi Sphuta** | $\\left(\\lambda_{\\text{Lagna}} + (\\lambda_{\\mathbb{C}} - \\lambda_\\odot)\\right) \\bmod 360^\\circ$ | Lunar-phase harmony in relationships and undertakings |")
+    lines.append("| **8. Beeja Sphuta (Male)** | $(\\lambda_\\odot + \\lambda_{\\text{Venus}} + \\lambda_{\\text{Jupiter}}) \\bmod 360^\\circ$ | Male virility and progeny seed strength (must occupy odd signs/navamsas with benefic aspect) |")
+    lines.append("| **9. Kshetra Sphuta (Female)** | $(\\lambda_{\\mathbb{C}} + \\lambda_{\\text{Mars}} + \\lambda_{\\text{Jupiter}}) \\bmod 360^\\circ$ | Female fertility and womb strength (must occupy even signs/navamsas with benefic aspect) |")
+    lines.append("")
+
+    # =========================================================================
+    # CHAPTER 9 (Section 4): Complete Shodashvarga D1-D60 Master Lookup Tables
+    # =========================================================================
+    lines.append("## Chapter 9 — Section 4 — Complete Manual Divisional Chart (*Shodashvarga D1–D60*) Master Lookup Tables, 36 *Drekkana Swarupas*, & *Vimsopaka Bala*")
+    lines.append("")
+    lines.append("### Table 9A — All 16 Parashari *Shodashvarga* Divisional Rules & *Vimsopaka Bala* Weights (`20-Point Scale`)")
+    lines.append("")
+    lines.append("| Varga | Sanskrit Name | Slice Size | Classical Manual Counting Rule | Primary Life Domain | *Shadvarga* Wt | *Saptavarga* Wt | *Dashavarga* Wt | *Shodashvarga* Wt |")
+    lines.append("|---|---|---|---|---|---|---|---|---|")
+    varga_specs = (
+        ("D1", "Rashi", "30° 00'", "1st sign itself (`0°–30°`)", "Physical body, general fortune & identity", "6", "5", "3", "3.5"),
+        ("D2", "Hora", "15° 00'", "Odd signs: `0°–15°` Simha (Sun), `15°–30°` Karka (Moon); Even signs: reversed", "Wealth, family sustenance & speech", "2", "2", "1.5", "1.0"),
+        ("D3", "Drekkana", "10° 00'", "`0°–10°` 1st sign; `10°–20°` 5th sign; `20°–30°` 9th sign", "Siblings, courage, enterprise & co-born", "4", "3", "1.5", "1.0"),
+        ("D4", "Chaturthamsa", "07° 30'", "4 slices of `7°30'`: 1st, 4th, 7th, and 10th (Kendra) signs from the Rashi", "Real estate, homes, fixed assets & happiness", "—", "—", "—", "0.5"),
+        ("D7", "Saptamsa", "04° 17' 08.6\"", "7 slices: Odd signs count from same sign; Even signs count from 7th sign", "Children, grandchildren & creative legacy", "—", "1", "1.5", "0.5"),
+        ("D9", "Navamsa", "03° 20'", "9 slices: Fire from Mesha, Earth from Makara, Air from Tula, Water from Karka", "Marriage, spouse, Dharma & inner fruit of planets", "5", "2.5", "1.5", "3.0"),
+        ("D10", "Dasamsa", "03° 00'", "10 slices of `3°`: Odd signs count from same sign; Even signs count from 9th sign", "Career, profession, authority, fame & karma", "—", "—", "1.5", "1.5"),
+        ("D12", "Dwadasamsa", "02° 30'", "12 slices of `2°30'`: Always count consecutively starting from the same sign", "Parents, ancestral lineage & hereditary karma", "2", "4.5", "1.5", "0.5"),
+        ("D16", "Shodasamsa", "01° 52' 30\"", "16 slices: Movable from Mesha, Fixed from Simha, Dual from Dhanu", "Vehicles, luxury, conveyances & inner contentment", "—", "—", "1.5", "2.0"),
+        ("D20", "Vimsamsa", "01° 30'", "20 slices: Movable from Mesha, Fixed from Dhanu, Dual from Simha", "Spiritual sadhana, Upasana, mantra & devotion", "—", "—", "—", "0.5"),
+        ("D24", "Chaturvimsamsa", "01° 15'", "24 slices: Odd signs count from Simha (`04`); Even signs count from Karka (`03`)", "Higher learning, scholarship, Vidya & wisdom", "—", "—", "—", "0.5"),
+        ("D27", "Saptavimsamsa", "01° 06' 40\"", "27 slices: Fire from Mesha, Earth from Karka, Air from Tula, Water from Makara", "Physical stamina, bodily strength & vitality", "—", "—", "—", "0.5"),
+        ("D30", "Trimsamsa", "Unequal (5/5/8/7/5°)", "Odd: Mars 5°, Sat 5°, Jup 8°, Mer 7°, Ven 5°; Even: Ven 5°, Mer 7°, Jup 8°, Sat 5°, Mars 5°", "Arishta, misfortune, character & crisis resilience", "1", "2", "1.5", "1.0"),
+        ("D40", "Khavedamsa", "00° 45'", "40 slices: Odd signs count from Mesha (`00`); Even signs count from Tula (`06`)", "Matrilineal karma & auspicious/inauspicious habits", "—", "—", "—", "0.5"),
+        ("D45", "Akshavedamsa", "00° 40'", "45 slices: Movable from Mesha, Fixed from Simha, Dual from Dhanu", "Patrilineal karma, ethical conduct & royal character", "—", "—", "—", "0.5"),
+        ("D60", "Shashtiamsa", "00° 30'", "60 slices of `30'`: Count `⌊deg × 2⌋` from the same sign; 60 named Sanskrit deities", "Past-life Sanchita Karma & twin birth differentiation", "—", "—", "5.0", "4.0"),
+    )
+    for vc, vn, vs, vr, vd, w6, w7, w10, w16 in varga_specs:
+        lines.append(f"| **{vc}** | *{vn}* | `{vs}` | {vr} | {vd} | `{w6}` | `{w7}` | `{w10}` | **`{w16}`** |")
+    lines.append("")
+
+    lines.append("### Table 9B — Complete 108-Pada *Navamsa* (`D9`), *Pushkara Navamsa* (`*PN*`), & *Vargottama* (`*V*`) Master Lookup Grid")
+    lines.append("")
+    lines.append(
+        "| Slice # | Degree Range in Sign | Arcminutes | Fire Signs (`Mesha, Simha, Dhanu`) | Earth Signs (`Vrishabha, Kanya, Makara`) | Air Signs (`Mithuna, Tula, Kumbha`) | Water Signs (`Karka, Vrishchika, Meena`) |"
+    )
+    lines.append("|---|---|---|---|---|---|---|")
+    for p_idx in range(9):
+        start_min = p_idx * 200
+        end_min = (p_idx + 1) * 200
+        sd, sm = start_min // 60, start_min % 60
+        ed, em = end_min // 60, end_min % 60
+        f_s = RASHI_NAMES[(0 + p_idx) % 12]
+        e_s = RASHI_NAMES[(9 + p_idx) % 12]
+        a_s = RASHI_NAMES[(6 + p_idx) % 12]
+        w_s = RASHI_NAMES[(3 + p_idx) % 12]
+        pn_f = " *PN*" if ((0 + p_idx) % 12) in (6, 8) else ""
+        pn_e = " *PN*" if ((9 + p_idx) % 12) in (11, 1) else ""
+        pn_a = " *PN*" if ((6 + p_idx) % 12) in (11, 3) else ""
+        pn_w = " *PN*" if ((3 + p_idx) % 12) in (3, 5) else ""
+        lines.append(
+            f"| **Navamsa {p_idx + 1}** | `{sd:02d}° {sm:02d}' – {ed:02d}° {em:02d}'` | `{start_min}'–{end_min}'` | "
+            f"**{f_s}**{pn_f} | **{e_s}**{pn_e} | **{a_s}**{pn_a} | **{w_s}**{pn_w} |"
+        )
+    lines.append("")
+
+    lines.append("### Table 9C — Complete *Dasamsa* (`D10` — `3° 00'` per Slice) & *Dwadasamsa* (`D12` — `2° 30'` per Slice) Lookup Grid")
+    lines.append("")
+    lines.append("| Slice # | D10 Degree Span | D10 Odd Signs (`1,3,5,7,9,11`) | D10 Even Signs (`2,4,6,8,10,12`) | D12 Degree Span | D12 Any Sign (Offset from Sign) |")
+    lines.append("|---|---|---|---|---|---|")
+    for s_i in range(12):
+        d12_s = s_i * 150
+        d12_e = (s_i + 1) * 150
+        d12_span = f"`{d12_s // 60:02d}° {d12_s % 60:02d}' – {d12_e // 60:02d}° {d12_e % 60:02d}'`"
+        d12_rule = f"**+{s_i} signs** ({s_i + 1}th sign from Rashi)"
+        if s_i < 10:
+            d10_s = s_i * 3
+            d10_e = (s_i + 1) * 3
+            d10_span = f"`{d10_s:02d}° 00' – {d10_e:02d}° 00'`"
+            d10_odd = f"**+{s_i} signs** ({s_i + 1}th from Rashi)"
+            d10_even = f"**+{(8 + s_i) % 12} signs** ({(8 + s_i) % 12 + 1}th from Rashi)"
         else:
-            d10_rng = "—"
-            d10_odd = "—"
-            d10_even = "—"
+            d10_span, d10_odd, d10_even = "—", "—", "—"
+        lines.append(f"| **{s_i + 1:02d}** | {d10_span} | {d10_odd} | {d10_even} | {d12_span} | {d12_rule} |")
+    lines.append("")
+
+    lines.append("### Table 9D — Complete 36 *Drekkana Swarupas* (`D3` Decanates — *Brihat Jataka* & *Phaladeepika* Classification)")
+    lines.append("")
+    lines.append("| # | Rashi | Decanate (`D3` Span) | Resulting D3 Sign & Lord | Classical *Drekkana Swarupa* Name | Nature (*Sarpa / Pakshi / Ayudha / Chatushpada / Pasa*) |")
+    lines.append("|---|---|---|---|---|---|")
+    for d3_entry in DREKKANA_SWARUPA_CATALOG:
+        r_name = d3_entry.sign_name
+        dec_idx = d3_entry.decanate_number
+        span_str = f"`{(dec_idx - 1) * 10:02d}°–{dec_idx * 10:02d}°`"
+        d3_sign_name = d3_entry.d3_sign_name
+        d3_lord = d3_entry.ruling_planet.capitalize()
+        cats = ", ".join(d3_entry.secondary_tags) if d3_entry.secondary_tags else d3_entry.swarupa
         lines.append(
-            f"| **#{seg:02d}** | {d10_rng} | {d10_odd} | {d10_even} | "
-            f"`{d12_lo_d:02d}° {d12_lo_m:02d}' – {d12_hi_d:02d}° {d12_hi_m:02d}'` | +{seg - 1} signs ({seg}th from Rashi) |"
+            f"| **{(d3_entry.drekkana_index + 1):02d}** | **{r_name}** | Decanate {dec_idx} ({span_str}) | "
+            f"**{d3_sign_name}** ({d3_lord}) | *{d3_entry.description}* | `{d3_entry.swarupa} ({cats})` |"
         )
     lines.append("")
 
-    lines.append("### Table 4D — Complete 60-Segment *Shashtiamsa (D60)* Classical Deity & Nature Table (`0°30'` Steps)")
+    lines.append("### Table 9E — Complete 60 *Shashtiamsa* (`D60` — `00° 30'` Each) Deities & *Shubha / Krura* Classification")
     lines.append("")
-    lines.append("| # | Arc Range (`30'` step) | Sign Offset from Rashi | Odd Sign D60 Deity (Nature) | Even Sign D60 Deity (Nature) |")
+    lines.append("| # | Odd Sign Span | Even Sign Span (Reversed) | Sanskrit *Shashtiamsa* Deity | Nature | # | Odd Sign Span | Even Sign Span (Reversed) | Sanskrit *Shashtiamsa* Deity | Nature |")
+    lines.append("|---|---|---|---|---|---|---|---|---|---|")
+    for idx_60 in range(30):
+        # Print 2 columns of 30 rows = all 60 Shashtiamsas
+        pair_60 = []
+        for k_60 in (idx_60, idx_60 + 30):
+            _, s_name, s_nature = SHASHTIAMSA_CATALOG[k_60]
+            odd_s_m = k_60 * 30
+            odd_e_m = (k_60 + 1) * 30
+            ev_s_m = (59 - k_60) * 30
+            ev_e_m = (60 - k_60) * 30
+            odd_sp = f"`{odd_s_m // 60:02d}°{odd_s_m % 60:02d}'–{odd_e_m // 60:02d}°{odd_e_m % 60:02d}'`"
+            ev_sp = f"`{ev_s_m // 60:02d}°{ev_s_m % 60:02d}'–{ev_e_m // 60:02d}°{ev_e_m % 60:02d}'`"
+            nat_lbl = "Shubha (Benefic)" if s_nature == "benefic" else "Krura (Malefic)"
+            pair_60.append(f"**{k_60 + 1:02d}** | {odd_sp} | {ev_sp} | **{s_name}** | {nat_lbl}")
+        lines.append("| " + " | ".join(pair_60) + " |")
+    lines.append("")
+
+    # =========================================================================
+    # CHAPTER 10: Complete Mrityu Bhaga (132 Fatal Degrees), 22nd Drekkana & 64th Navamsa
+    # =========================================================================
+    lines.append("## Chapter 10 — Complete 132-Cell *Mrityu Bhaga* (Fatal Degrees), 22nd *Khara Drekkana*, & 64th *Khara Navamsa* Master Vulnerability Tables")
+    lines.append("")
+    lines.append("### Table 10A — Complete 132-Cell *Mrityu Bhaga* (Fatal Degree) Master Table Across All 12 Signs (`Phaladeepika` & `Jataka Parijata`)")
+    lines.append("")
+    lines.append("| Rashi (Sign) | *Pushkara Bhaga* (Auspicious) | Lagna | Surya (Sun) | Chandra (Moon) | Mangala (Mars) | Budha (Mercury) | Guru (Jupiter) | Shukra (Venus) | Shani (Saturn) | Rahu | Ketu | Mandi (Gulika) |")
+    lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+    mb_keys = ("lagna", "sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn", "rahu", "ketu")
+    mandi_mb = (23, 24, 16, 12, 19, 28, 14, 13, 4, 20, 15, 9)
+    for r_i, r_name in enumerate(RASHI_NAMES):
+        pb_deg = PUSHKARA_BHAGA_DEGREES[r_i]
+        mb_cells = [f"`{int(MRITYU_BHAGA_DEGREE_TABLE[mk][r_i]):02d}°`" for mk in mb_keys]
+        mb_cells.append(f"`{mandi_mb[r_i]:02d}°`")
+        lines.append(f"| **{r_name}** | **`{pb_deg:02.0f}°`** | " + " | ".join(mb_cells) + " |")
+    lines.append("")
+
+    lines.append("### Table 10B — Complete 22nd *Khara Drekkana* & 64th *Khara Navamsa* Lookup Table for Every Ascendant / Moon Position")
+    lines.append("")
+    lines.append("| Natal Sign (`D1`) | Decanate 1 (`0°–10°`) 22nd Drekkana Sign & Lord | Decanate 2 (`10°–20°`) 22nd Drekkana Sign & Lord | Decanate 3 (`20°–30°`) 22nd Drekkana Sign & Lord | 64th *Khara Navamsa* Rule (From Any Natal `D9` Sign) |")
     lines.append("|---|---|---|---|---|")
-    for idx in range(60):
-        lo_m = idx * 30
-        hi_m = (idx + 1) * 30
-        lo_deg, lo_min = lo_m // 60, lo_m % 60
-        hi_deg, hi_min = hi_m // 60, hi_m % 60
-        _odd_num, odd_name, odd_benefic = SHASHTIAMSA_CATALOG[idx]
-        _even_num, even_name, even_benefic = SHASHTIAMSA_CATALOG[59 - idx]
-        odd_nat = "Shubha (Benefic)" if odd_benefic else "Krura (Malefic)"
-        even_nat = "Shubha (Benefic)" if even_benefic else "Krura (Malefic)"
+    for r_i, r_name in enumerate(RASHI_NAMES):
+        # 22nd Drekkana is the Drekkana of the 8th house from the Natal Drekkana sign
+        d_cells = []
+        for dec_k in (0, 1, 2):
+            natal_d3 = (r_i + dec_k * 4) % 12
+            khara_d3 = (natal_d3 + 7) % 12
+            d_cells.append(f"**{RASHI_NAMES[khara_d3]}** ({RASI_LORDS[khara_d3]})")
+        khara_d9 = (r_i + 3) % 12  # 64th Navamsa = 7 signs + 1 navamsa = 4th sign from Natal D9 sign!
         lines.append(
-            f"| **{idx + 1:02d}** | `{lo_deg:02d}° {lo_min:02d}' – {hi_deg:02d}° {hi_min:02d}'` | "
-            f"`+{idx % 12}` ({(idx % 12) + 1}th from Rashi) | **{odd_name}** ({odd_nat}) | **{even_name}** ({even_nat}) |"
+            f"| **{r_name}** | {d_cells[0]} | {d_cells[1]} | {d_cells[2]} | "
+            f"If Natal `D9` is **{r_name}**, 64th *Khara D9* is **{RASHI_NAMES[khara_d9]}** ({RASI_LORDS[khara_d9]}) |"
         )
     lines.append("")
 
-    # SECTION 5: Manual Dasha Balance & Progression Tables
-    lines.append("## Section 5 — Complete Manual *Dasha* Balance (*Bhogyamsha*) & Progression Tables")
+    # =========================================================================
+    # CHAPTER 11: Complete KP 249 Sub-Lord Master Table & 4-Fold Significators
+    # =========================================================================
+    lines.append("## Chapter 11 — Complete Krishnamurti Padhati (*KP*) 249 Sub-Lord Master Table (`#001` to `#249`) & 4-Fold Significator Rules")
     lines.append("")
-    lines.append("### 5.1 Manual *Vimshottari Dasha* (120-Year Cycle) Formula & Ready-Reckoner")
+    lines.append("### Table 11A — Complete 249-Division *KP* Sign-Star-Sub Master Reference Table (`000° 00' 00\"` to `360° 00' 00\"`)")
     lines.append("")
-    lines.append(
-        "**How to Compute the Birth Dasha Balance by Hand:**\n"
-        "1. Look up the **Moon's Sidereal Longitude ($\\lambda_{\\text{Moon}}$)** at birth.\n"
-        "2. Identify the Moon's **Nakshatra (`1..27`)** and its starting boundary (`Nakshatra span = 13° 20' = 800 arcminutes`).\n"
-        "3. Find the **remaining arcminutes (*Bhogyamsha*)** yet to be traversed in that Nakshatra: $B_{\\text{arcmin}} = 800' - \\text{elapsed arcminutes}$.\n"
-        "4. Multiply by the Mahadasha Lord's total years $Y_{\\text{lord}}$ and divide by $800'$:"
-    )
-    lines.append("")
-    lines.append("$$\\text{Remaining Dasha Balance (Years)} = \\frac{B_{\\text{arcmin}}}{800'} \\times Y_{\\text{lord}}$$")
+    lines.append("| Sub # | Zodiac Sign (`Rashi`) | Sign Lord | Nakshatra (`Star`) | Star Lord | Sub Lord | Start (`DMS` in Sign) | End (`DMS` in Sign) | Span (`MM' SS\"`) |")
+    lines.append("|---|---|---|---|---|---|---|---|---|")
+    for kp_entry in kp_sub_table_249():
+        s_in_sign = kp_entry.start_deg - kp_entry.rasi_index * 30.0
+        e_in_sign = kp_entry.end_deg - kp_entry.rasi_index * 30.0
+        if e_in_sign <= 0.0001 and kp_entry.end_deg > kp_entry.start_deg:
+            e_in_sign = 30.0
+        sd_s = int(round(s_in_sign * 3600.0))
+        ed_s = int(round(e_in_sign * 3600.0))
+        sp_s = max(0, ed_s - sd_s)
+        s_str = f"`{sd_s // 3600:02d}° {(sd_s % 3600) // 60:02d}' {sd_s % 60:02d}\"`"
+        e_str = f"`{ed_s // 3600:02d}° {(ed_s % 3600) // 60:02d}' {ed_s % 60:02d}\"`"
+        sp_str = f"`{sp_s // 60:02d}' {sp_s % 60:02d}\"`"
+        lines.append(
+            f"| **`#{kp_entry.number:03d}`** | **{kp_entry.rasi_name}** | {kp_entry.sign_lord.capitalize()} | "
+            f"{kp_entry.nakshatra_name} | **{kp_entry.star_lord.capitalize()}** | **`{kp_entry.sub_lord.capitalize()}`** | {s_str} | {e_str} | {sp_str} |"
+        )
     lines.append("")
 
-    lines.append("### Table 5A — Complete 9×9 *Vimshottari Mahadasha × Antardasha (Bhukti)* Exact Duration Table")
+    lines.append("### Table 11B — *KP* 4-Fold Hierarchy of Planetary Significators (Manual Worksheet Rule)")
+    lines.append("")
+    lines.append("| Significator Level | Priority | Classical *KP* Definition | Predictive Rule |")
+    lines.append("|---|---|---|---|")
+    lines.append("| **Level A (1st Order)** | Highest (`4x`) | Planet(s) occupying the **Nakshatra (Star)** of the Occupants of House $H$ | Strongest driver of the event when its Dasha/Bhukti/Antara runs |")
+    lines.append("| **Level B (2nd Order)** | High (`3x`) | Planet(s) directly **occupying** House $H$ in the *Placidus Bhava Chalit* chart | Delivers the house result directly unless vacated by Star tenants |")
+    lines.append("| **Level C (3rd Order)** | Moderate (`2x`) | Planet(s) occupying the **Nakshatra (Star)** of the Cusp Sign Lord of House $H$ | Activates the house promise through stellar rulership over the cusp lord |")
+    lines.append("| **Level D (4th Order)** | Baseline (`1x`) | The **Sign Lord** of the Cusp of House $H$ itself | Background significator; strong when untenanted in both house and star |")
+    lines.append("| **Cuspal Sub-Lord Gate** | **Decider** | The **Sub-Lord (`#001–#249`)** of Cusp $H$ | **The Star Lord shows the nature of the involvement; the Sub-Lord decides YES or NO** |")
+    lines.append("")
+
+    # =========================================================================
+    # CHAPTER 12 (Section 5): Multi-System Dasha Manual Compendium
+    # =========================================================================
+    lines.append("## Chapter 12 — Section 5 — Complete Manual Dasha Balance & Multi-System *Dasha* Compendium (*Vimshottari, Yogini, Ashtottari, & Kalachakra*)")
     lines.append("")
     lines.append(
-        "**Formula:** $\\text{Antardasha Months} = (\\text{Mahadasha Years} \\times \\text{Antardasha Lord Years}) \\div 10$. "
-        "The integer part is **Months**, and $(\\text{decimal part} \\times 3)$ is **Days**!"
+        "**Classical Formula for Balance of Dasha at Birth (*Bhogyamsha*):**\n"
+        "- Each Nakshatra spans $13^\\circ 20' = 800\\text{ arcminutes}$ ($4\\text{ Padas} \\times 200' = 800'$).\n"
+        "- If the Natal Moon is at $\\lambda_{\\mathbb{C}}$, find its elapsed arcminutes inside the current Nakshatra ($G_{\\text{elapsed}}$) "
+        "and the remaining arcminutes to complete the Nakshatra ($B_{\\text{rem}} = 800' - G_{\\text{elapsed}}$).\n"
+        "$$\\text{Balance of Mahadasha at Birth (Years)} = Y_{\\text{Mahadasha}} \\times \\frac{800' - G_{\\text{elapsed}}}{800'}$$"
     )
     lines.append("")
-    header_lords = " | ".join(f"{ld} ({VIMSHOTTARI_YEARS[ld]}y)" for ld in VIMSHOTTARI_LORDS)
-    lines.append(f"| Mahadasha \\ Bhukti | {header_lords} |")
-    lines.append("|---|" + "|".join("---" for _ in VIMSHOTTARI_LORDS) + "|")
+    lines.append("### Table 12A — 80-Row *Vimshottari Dasha* Balance Ready Reckoner (For Every `10'` of Remaining Lunar Arc `800'` down to `10'`)")
+    lines.append("")
+    lines.append("| Rem. Arc (`B'`) | Deg:Min Left | Pada | Ketu (`7y`) | Venus (`20y`) | Sun (`6y`) | Moon (`10y`) | Mars (`7y`) | Rahu (`18y`) | Jupiter (`16y`) | Saturn (`19y`) | Mercury (`17y`) |")
+    lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
+    for rem_min in range(800, 0, -10):
+        deg_l = rem_min // 60
+        min_l = rem_min % 60
+        elapsed_m = 800 - rem_min
+        pada_n = min(4, (elapsed_m // 200) + 1)
+        cells = []
+        for lord in VIMSHOTTARI_LORDS:
+            y_tot = VIMSHOTTARI_YEARS[lord]
+            y_bal = y_tot * (rem_min / 800.0)
+            yi = int(y_bal)
+            mr = (y_bal - yi) * 12.0
+            mi = int(mr)
+            di = int(round((mr - mi) * 30.0))
+            if di == 30:
+                di = 0
+                mi += 1
+            if mi == 12:
+                mi = 0
+                yi += 1
+            cells.append(f"`{yi:02d}y {mi:02d}m {di:02d}d`")
+        lines.append(f"| **`{rem_min:03d}'`** | `{deg_l:02d}° {min_l:02d}'` | P{pada_n} | " + " | ".join(cells) + " |")
+    lines.append("")
+
+    lines.append("### Table 12B — Complete 81-Cell *Vimshottari Mahadasha × Antardasha (Bhukti)* Exact Duration Matrix (`Years-Months-Days`)")
+    lines.append("")
+    lines.append("| Mahadasha \\ Antardasha | Ketu (`7y`) | Venus (`20y`) | Sun (`6y`) | Moon (`10y`) | Mars (`7y`) | Rahu (`18y`) | Jupiter (`16y`) | Saturn (`19y`) | Mercury (`17y`) |")
+    lines.append("|---|---|---|---|---|---|---|---|---|---|")
     for m_lord in VIMSHOTTARI_LORDS:
         m_yrs = VIMSHOTTARI_YEARS[m_lord]
-        row_cells: list[str] = []
+        row_cells = []
         for a_lord in VIMSHOTTARI_LORDS:
             a_yrs = VIMSHOTTARI_YEARS[a_lord]
             total_months = (m_yrs * a_yrs) / 10.0
-            whole_months = int(total_months)
-            days = int(round((total_months - whole_months) * 30.0))
-            yrs = whole_months // 12
-            mos = whole_months % 12
-            row_cells.append(f"`{yrs}y {mos:02d}m {days:02d}d`")
-        lines.append(f"| **{m_lord} ({m_yrs}y)** | " + " | ".join(row_cells) + " |")
+            y_part = int(total_months // 12)
+            m_part = int(total_months % 12)
+            d_part = int(round((total_months - int(total_months)) * 30.0))
+            if d_part == 30:
+                d_part = 0
+                m_part += 1
+            if m_part == 12:
+                m_part = 0
+                y_part += 1
+            row_cells.append(f"`{y_part}y {m_part:02d}m {d_part:02d}d`")
+        lines.append(f"| **{m_lord} ({int(m_yrs)}y)** | " + " | ".join(row_cells) + " |")
     lines.append("")
 
-    lines.append("### Table 5B — *Bhogyamsha* Remaining Arcminutes (`800'` Span) to Birth Dasha Balance Ready-Reckoner")
+    lines.append("### Table 12C — Complete 36-Year *Yogini Dasha* (`8 Yoginis`) & 108-Year *Ashtottari Dasha* (`8 Grahas`) Reference Tables")
     lines.append("")
-    lines.append("| Remaining Arcminutes in Nakshatra | Remaining Degrees | Fraction of Nakshatra | Ketu (`7y`) | Shukra (`20y`) | Surya (`6y`) | Chandra (`10y`) | Mangala (`7y`) | Rahu (`18y`) | Guru (`16y`) | Shani (`19y`) | Budha (`17y`) |")
-    lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
-    for rem_min in (800, 700, 600, 500, 400, 300, 200, 100, 50, 20, 10):
-        frac = rem_min / 800.0
-        deg_part = rem_min // 60
-        min_part = rem_min % 60
-        cells_b: list[str] = []
-        for ld in VIMSHOTTARI_LORDS:
-            y_val = frac * VIMSHOTTARI_YEARS[ld]
-            wy = int(y_val)
-            rem_m = (y_val - wy) * 12.0
-            wm = int(rem_m)
-            wd = int(round((rem_m - wm) * 30.0))
-            cells_b.append(f"`{wy}y {wm:02d}m {wd:02d}d`")
-        lines.append(f"| **`{rem_min}'`** | `{deg_part:02d}° {min_part:02d}'` | `{frac:.4f}` | " + " | ".join(cells_b) + " |")
-    lines.append("")
-
-    lines.append("### Table 5C — Classical BPHS *Kalachakra Dasha* Complete 108-Pada (*Savya* & *Apasavya*) Master Wheel")
-    lines.append("")
-    lines.append(
-        "**Sign Durations:** *Mesha/Vrishchika* (Mars) = `7y`, *Vrishabha/Tula* (Venus) = `16y`, *Mithuna/Kanya* (Mercury) = `9y`, "
-        "*Karka* (Moon) = `21y`, *Simha* (Sun) = `5y`, *Dhanu/Meena* (Jupiter) = `10y`, *Makara/Kumbha* (Saturn) = `4y`."
-    )
-    lines.append("")
-    lines.append("| Cycle Group | Nakshatras Included | Pada | 9-Sign Kalachakra Sequence | *Deha* (Body Sign) | *Jeeva* (Soul Sign) | *Paramayus* (Total Years) |")
-    lines.append("|---|---|---|---|---|---|---|")
-    savya_groups = (
-        ("Savya Group I (Trijanma)", "Ashwini, Punarvasu, Hasta, Mula, Purva Bhadrapada (1, 7, 13, 19, 25)", 0),
-        ("Savya Group II (Trijanma)", "Bharani, Pushya, Chitra, Purva Ashadha, Uttara Bhadrapada (2, 8, 14, 20, 26)", 1),
-        ("Savya Group III (Trijanma)", "Krittika, Ashlesha, Swati, Uttara Ashadha, Revati (3, 9, 15, 21, 27)", 2),
-    )
-    for grp_name, naks_str, pos_in_triad in savya_groups:
-        for pada_num in (1, 2, 3, 4):
-            seq = KALACHAKRA_SAVYA_SEQUENCES[(pos_in_triad, pada_num)]
-            paramayus = int(sum(KALACHAKRA_SIGN_YEARS[s] for s in seq))
-            seq_names = " → ".join(RASHI_NAMES[s] for s in seq)
-            deha = RASHI_NAMES[seq[0]]
-            jeeva = RASHI_NAMES[seq[-1]]
-            lines.append(f"| **{grp_name}** | {naks_str} | **Pada {pada_num}** | {seq_names} | **{deha}** | **{jeeva}** | `{paramayus}y` |")
-    apasavya_groups = (
-        ("Apasavya Group I (Trijanma)", "Rohini, Magha, Vishakha, Shravana (4, 10, 16, 22)", 0),
-        ("Apasavya Group II (Trijanma)", "Mrigashira, Purva Phalguni, Anuradha, Dhanishta (5, 11, 17, 23)", 1),
-        ("Apasavya Group III (Trijanma)", "Ardra, Uttara Phalguni, Jyeshtha, Shatabhisha (6, 12, 18, 24)", 2),
-    )
-    for grp_name, naks_str, pos_in_triad in apasavya_groups:
-        for pada_num in (1, 2, 3, 4):
-            seq = KALACHAKRA_APASAVYA_SEQUENCES[(pos_in_triad, pada_num)]
-            paramayus = int(sum(KALACHAKRA_SIGN_YEARS[s] for s in seq))
-            seq_names = " → ".join(RASHI_NAMES[s] for s in seq)
-            jeeva = RASHI_NAMES[seq[0]]
-            deha = RASHI_NAMES[seq[-1]]
-            lines.append(f"| **{grp_name}** | {naks_str} | **Pada {pada_num}** | {seq_names} | **{deha}** | **{jeeva}** | `{paramayus}y` |")
-    lines.append("")
-
-    # SECTION 6: Manual Ashtakavarga, Shadbala & 30-Star Yogatara Reference Tables
-    lines.append("## Section 6 — Manual *Ashtakavarga* (337-Bindu Matrix), *Shadbala*, & 30-Star *Yogatara* Tables")
-    lines.append("")
-    lines.append("### Table 6A — Complete 337-Bindu *Bhinna Ashtakavarga* Classical Contribution Matrix (Parashara)")
-    lines.append("")
-    lines.append(
-        "**How to Cast *Ashtakavarga* by Hand:** For each target planet, mark `1 Bindu (Rekha)` in the houses "
-        "listed below counted (`1..12` inclusive) from each of the 8 reference points (`Sun, Moon, Mars, Mercury, "
-        "Jupiter, Venus, Saturn, and Lagna`). Sum all 7 planetary tables to obtain **Sarvashtakavarga (`337 Total Bindus`)**."
-    )
-    lines.append("")
-    lines.append("| Target Planet (Total Bindus) | From Sun | From Moon | From Mars | From Mercury | From Jupiter | From Venus | From Saturn | From Lagna |")
+    lines.append("| Yogini # | Yogini Name | Planetary Ruler | Duration (`Years`) | Starting Nakshatra Rule $(N + 3) \\bmod 8$ | Ashtottari # | Ashtottari Lord | Duration (`Years`) | Assigned 28-Nakshatra Group |")
     lines.append("|---|---|---|---|---|---|---|---|---|")
-    donor_keys = ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Lagna")
-    for target_p, donor_map in BAV_BENEFIC_HOUSES.items():
-        total_b = sum(len(v) for v in donor_map.values())
-        cols_bav = [", ".join(str(h) for h in donor_map[dk]) for dk in donor_keys]
-        lines.append(f"| **{target_p} (`{total_b}`)** | " + " | ".join(f"`{c}`" for c in cols_bav) + " |")
-    lines.append("")
-
-    lines.append("### Table 6B — Classical *Shadbala* (Six-Fold Planetary Strength) Manual Formula & Minimum Rupa Sheet")
-    lines.append("")
-    lines.append("| Planet | Exaltation Point (*Parama Uchcha*) | Directional Power (*Digbala* Peak House) | *Naisargika Bala* (Virupas) | Minimum Required *Shadbala* (Rupas / Virupas) |")
-    lines.append("|---|---|---|---|---|")
-    shadbala_specs = (
-        ("Surya (Sun)", "Mesha 10° (Debil: Tula 10°)", "10th House (South / Meridian)", "60.00", "6.5 Rupas (390 Virupas)"),
-        ("Chandra (Moon)", "Vrishabha 03° (Debil: Vrishchika 03°)", "4th House (North / Nadir)", "51.43", "6.0 Rupas (360 Virupas)"),
-        ("Mangala (Mars)", "Makara 28° (Debil: Karka 28°)", "10th House (South / Meridian)", "17.14", "5.0 Rupas (300 Virupas)"),
-        ("Budha (Mercury)", "Kanya 15° (Debil: Meena 15°)", "1st House (East / Lagna)", "25.71", "7.0 Rupas (420 Virupas)"),
-        ("Guru (Jupiter)", "Karka 05° (Debil: Makara 05°)", "1st House (East / Lagna)", "34.29", "6.5 Rupas (390 Virupas)"),
-        ("Shukra (Venus)", "Meena 27° (Debil: Kanya 27°)", "4th House (North / Nadir)", "42.86", "5.5 Rupas (330 Virupas)"),
-        ("Shani (Saturn)", "Tula 20° (Debil: Mesha 20°)", "7th House (West / Descendant)", "8.57", "5.0 Rupas (300 Virupas)"),
+    ashto_groups = (
+        "Ardra, Punarvasu, Pushya, Ashlesha (4)",
+        "Magha, P.Phalguni, U.Phalguni (3)",
+        "Hasta, Chitra, Swati, Vishakha (4)",
+        "Anuradha, Jyeshtha, Mula (3)",
+        "P.Ashadha, U.Ashadha, Abhijit, Shravana (4)",
+        "Dhanishta, Shatabhisha, P.Bhadrapada (3)",
+        "U.Bhadrapada, Revati, Ashwini, Bharani (4)",
+        "Krittika, Rohini, Mrigashirsha (3)",
     )
-    for p_label, uchcha, dig, nais, min_r in shadbala_specs:
-        lines.append(f"| **{p_label}** | `{uchcha}` | {dig} | `{nais}` | **`{min_r}`** |")
-    lines.append("")
-
-    lines.append("### Table 6C — 30-Star *Yogatara* Junction Stars & *Kalansha* Visibility Catalog")
-    lines.append("")
-    lines.append("| # | Nakshatra / Star | Classical Star (*IAU / Bayer*) | HIP ID | V-Mag | *Kalansha* Arc |")
-    lines.append("|---|---|---|---|---|---|")
-    for idx, st in enumerate(YOGATARA_30_CATALOG, start=1):
+    for idx_d in range(8):
+        y_name = YOGINI_NAMES[idx_d]
+        y_lord = YOGINI_RULERS[y_name]
+        y_yrs = int(YOGINI_YEARS[y_name])
+        a_lord = ASHTOTTARI_LORDS[idx_d]
+        a_yrs = int(ASHTOTTARI_YEARS[a_lord])
         lines.append(
-            f"| **{idx:02d}** | **{st.vedic_name}** | {st.western_designation} | "
-            f"`HIP {st.hip_id}` | `{st.visual_magnitude:.2f}` | `{st.kalansha_visibility_arc_deg:.1f}°` |"
+            f"| **{idx_d + 1}** | **{y_name}** | {y_lord} | `{y_yrs} Years` | Remainder `{(idx_d + 1) % 8}` | "
+            f"**{idx_d + 1}** | **{a_lord}** | `{a_yrs} Years` | {ashto_groups[idx_d]} |"
         )
     lines.append("")
 
-    # SECTION 7: Pt. Maheshji's Jyotish Academy Step-by-Step Worked Manual Worksheet
-    we = comp.worked_example
-    lines.append("## Section 7 — Pt. Maheshji's Jyotish Academy Step-by-Step Worked Manual Kundali Worksheet")
+    lines.append("### Table 12D — Complete 108-Pada *Kalachakra Dasha* (*Savya* & *Apasavya*) Master Sequence & *Dehamsha / Jeevamsha* Table")
     lines.append("")
     lines.append(
-        "> **From the Desk of Pt. Maheshji (Jyotish Academy / Jyotish Gurukul):**\n"
-        "> *\"A true Jyotishi must never be a blind prisoner of a computer screen. When you understand how to read "
-        "the daily ephemeris lines, interpolate the Moon and Grahas by hand, derive the Lagna from sunrise and "
-        "Sidereal Time, and map the Navamsa and Dasha balance with your own pen, you develop direct intuitive sight "
-        "(*Jyotish Chakshu*) into the living sky.\"*"
+        "**Sign Durations in *Kalachakra Dasha*:** Mesha/Vrishchika (`7y`), Vrishabha/Tula (`16y`), Mithuna/Kanya (`9y`), "
+        "Karka (`21y`), Simha (`5y`), Dhanu/Meena (`10y`), Makara/Kumbha (`4y`)."
     )
     lines.append("")
-    lines.append("### Worked Example Birth Data")
-    lines.append(f"- **Date of Birth:** `{we['civil_date']}`")
-    lines.append(f"- **Clock Time of Birth:** `{we['birth_time_local']}` (`{we['elapsed_after_0530_ist']}` after `05:30 IST` table epoch)")
-    lines.append(f"- **Time-Fraction Factor ($f$):** $f = 5.20\\text{{ hours}} \\div 24.0\\text{{ hours}} = {we['trairashika_fraction']:.6f}$ (`13 Ghatis / 60 Ghatis`)")
-    lines.append(f"- **Place of Birth:** `{we['observer_location']}`")
+    lines.append("| Cycle Group | Nakshatra Triad | Pada | *Dehamsha* (First Sign) | *Jeevamsha* (Last Sign) | Total Cycle (`Paramayus`) | 9-Sign *Kalachakra* Progression Sequence |")
+    lines.append("|---|---|---|---|---|---|---|")
+    for g_idx in range(3):
+        triad_lbl = ("Ashwini, Punarvasu, Hasta, Mula, P.Bhadra (I)", "Bharani, Pushya, Chitra, P.Ashadha, U.Bhadra (II)", "Krittika, Ashlesha, Swati, U.Ashadha, Revati (III)")[g_idx]
+        for p_no in range(1, 5):
+            seq_tuple = KALACHAKRA_SAVYA_SEQUENCES[(g_idx, p_no)]
+            seq_names = [RASHI_NAMES[s] for s in seq_tuple]
+            tot_y = sum(int(KALACHAKRA_SIGN_YEARS[s]) for s in seq_tuple)
+            lines.append(
+                f"| **Savya {g_idx + 1}** | {triad_lbl} | **Pada {p_no}** | **{seq_names[0]}** | **{seq_names[-1]}** | "
+                f"`{tot_y} Years` | " + " → ".join(seq_names) + " |"
+            )
+    for g_idx in range(3):
+        triad_lbl = ("Rohini, Magha, Vishakha, Shravana (I)", "Mrigashirsha, P.Phalguni, Anuradha, Dhanishta (II)", "Ardra, U.Phalguni, Jyeshtha, Shatabhisha (III)")[g_idx]
+        for p_no in range(1, 5):
+            seq_tuple = KALACHAKRA_APASAVYA_SEQUENCES[(g_idx, p_no)]
+            seq_names = [RASHI_NAMES[s] for s in seq_tuple]
+            tot_y = sum(int(KALACHAKRA_SIGN_YEARS[s]) for s in seq_tuple)
+            lines.append(
+                f"| **Apasavya {g_idx + 1}** | {triad_lbl} | **Pada {p_no}** | **{seq_names[0]}** | **{seq_names[-1]}** | "
+                f"`{tot_y} Years` | " + " → ".join(seq_names) + " |"
+            )
     lines.append("")
-    lines.append("### Step-by-Step Manual *Spashta Graha* Interpolation vs. Exact Software Calculation")
+
+    # =========================================================================
+    # CHAPTER 13: Complete Jaimini Upadesha Sutras Manual Compendium
+    # =========================================================================
+    lines.append("## Chapter 13 — Complete *Jaimini Upadesha Sutras* Manual Compendium (*Chara Karakas*, *Arudha Padas*, *Rashi Drishti*, *Argala*, & *Jaimini Ayurdaya*)")
     lines.append("")
-    lines.append("| Graha | Tabulated at `05:30 IST` | Daily Motion ($v_{\\text{day}}$) | Proportional Increment ($f \\times v_{\\text{day}}$) | Hand-Calculated Longitude (*Trairashika*) | Exact Software Longitude (DE440) | Hand vs Software Difference | Nakshatra & Pada | D1 Sign | D9 Navamsa | D10 Dasamsa |")
-    lines.append("|---|---|---|---|---|---|---|---|---|---|---|")
-    for b_key, b_info in we["planets"].items():
+    lines.append("### Table 13A — Complete 144-Cell `12 × 12` *Jaimini Arudha Pada* (*Swastha* 1st/7th Exception Included) Master Lookup Matrix")
+    lines.append("")
+    lines.append(
+        "**How to Read This Table:** Find the **Sign of the House ($H$)** in the left column, and the **Sign Occupied by Its Lord ($L$)** "
+        "across the top row. The cell gives the **exact Arudha Pada Sign** (automatically applying the Jaimini *Swastha* rule: when the Lord is in the 1st or 7th from the house, the Arudha jumps 10 signs from the raw position)."
+    )
+    lines.append("")
+    lines.append("| House Sign \\ Lord Sign | " + " | ".join(f"**{r[:5]}**" for r in RASHI_NAMES) + " |")
+    lines.append("|---|" + "|".join(["---"] * 12) + "|")
+    for h_s in range(12):
+        row_arudha = []
+        for l_s in range(12):
+            dist = (l_s - h_s) % 12
+            raw_a = (l_s + dist) % 12
+            if dist in (0, 6):
+                final_a = (raw_a + 9) % 12
+                row_arudha.append(f"**{RASHI_NAMES[final_a][:5]}***")
+            else:
+                row_arudha.append(f"{RASHI_NAMES[raw_a][:5]}")
+        lines.append(f"| **{h_s + 1:02d} {RASHI_NAMES[h_s]}** | " + " | ".join(row_arudha) + " |")
+    lines.append("")
+
+    lines.append("### Table 13B — Complete `12 × 12` *Jaimini Rashi Drishti* (Sign Aspect) Matrix & *Argala / Virodhargala* Rules")
+    lines.append("")
+    lines.append("| Sign (`Rashi`) | Modality | Signs Aspected by *Jaimini Rashi Drishti* (`Abhimukha` Rule) | Primary *Argala* Houses (`2nd, 4th, 11th`) | *Virodhargala* Obstruction Houses (`12th, 10th, 3rd`) | *Shoola Dasha* (`9y/sign`) | *Sthira Dasha* (`7/8/9y`) |")
+    lines.append("|---|---|---|---|---|---|---|")
+    for r_i, r_name in enumerate(RASHI_NAMES):
+        mod_str = ("Chara (Movable)", "Sthira (Fixed)", "Dwiswabhava (Dual)")[r_i % 3]
+        asp_names = ", ".join(f"**{RASHI_NAMES[a]}**" for a in RASHI_DRISHTI_TABLE[r_i])
+        arg_names = f"`2nd:` {RASHI_NAMES[(r_i + 1) % 12]}, `4th:` {RASHI_NAMES[(r_i + 3) % 12]}, `11th:` {RASHI_NAMES[(r_i + 10) % 12]}"
+        vir_names = f"`12th:` {RASHI_NAMES[(r_i + 11) % 12]}, `10th:` {RASHI_NAMES[(r_i + 9) % 12]}, `3rd:` {RASHI_NAMES[(r_i + 2) % 12]}"
+        sthira_y = (7, 8, 9)[r_i % 3]
+        lines.append(f"| **{r_name}** | {mod_str} | {asp_names} | {arg_names} | {vir_names} | `9 Years` | `{sthira_y} Years` |")
+    lines.append("")
+
+    lines.append("### Table 13C — *Jaimini Chara Karakas*, *Karakamsa* Deities (`Ishta / Palana / Dharma Devata`), & *Three-Pair Ayurdaya* Matrix")
+    lines.append("")
+    lines.append("| Graha | *Jaimini Devata* (`Ishta / Dharma`) | Modality Pair 1 (`Lagna + Moon`) | Modality Pair 2 (`Lagna + Hora Lagna`) | Modality Pair 3 (`Lagna + 8th`) | Resulting *Ayurdaya* Tier (`Years`) |")
+    lines.append("|---|---|---|---|---|---|")
+    ayur_rows = (
+        ("Sun", JAIMINI_DEITY_MAP["Sun"], "Movable + Movable", "Fixed + Dual", "Movable + Movable", "**Purnayu** (`66–100 Years`)"),
+        ("Moon", JAIMINI_DEITY_MAP["Moon"], "Movable + Fixed", "Movable + Dual", "Fixed + Fixed", "**Madhyayu** (`33–66 Years`)"),
+        ("Mars", JAIMINI_DEITY_MAP["Mars"], "Fixed + Fixed", "Movable + Movable", "Dual + Dual", "**Alpayu** (`0–33 Years`)"),
+        ("Mercury", JAIMINI_DEITY_MAP["Mercury"], "Dual + Dual", "Movable + Fixed", "Movable + Dual", "**Madhyayu** (`33–66 Years`)"),
+        ("Jupiter", JAIMINI_DEITY_MAP["Jupiter"], "Movable + Dual", "Fixed + Fixed", "Movable + Fixed", "**Purnayu** (with Jupiter in Lagna/7th: *Kakshya Vriddhi* +1 tier)"),
+        ("Venus", JAIMINI_DEITY_MAP["Venus"], "Fixed + Dual", "Dual + Dual", "Fixed + Dual", "**Purnayu** (`66–100 Years`)"),
+        ("Saturn", JAIMINI_DEITY_MAP["Saturn"], "Malefic in 8th/Lagna", "Afflicted Rudra", "Saturn un-elevated", "**Kakshya Hrasa** (-1 tier reduction when unassisted)"),
+        ("Rahu / Ketu", f"{JAIMINI_DEITY_MAP['Rahu']} / {JAIMINI_DEITY_MAP['Ketu']}", "8-Karaka Scheme (`Rahu` at $30^\\circ - d$)", "*Moksha Karaka* (`Ketu` in 12th from *Karakamsa*)", "—", "Ketu in 4th/8th/12th from *Karakamsa* grants final liberation"),
+    )
+    for g_n, dev_n, mp1, mp2, mp3, ay_res in ayur_rows:
+        lines.append(f"| **{g_n}** | **{dev_n}** | {mp1} | {mp2} | {mp3} | {ay_res} |")
+    lines.append("")
+
+    # =========================================================================
+    # CHAPTER 14: Complete Six-Fold Shadbala, 36-Row Drishti Table & Bhava Bala
+    # =========================================================================
+    lines.append("## Chapter 14 — Complete Six-Fold *Shadbala*, 36-Row Continuous Parashari *Sphuta Drishti* Table, *Ishta/Kashta Phala*, & *Bhava Bala*")
+    lines.append("")
+    lines.append("### Table 14A — Complete Six-Fold *Shadbala* Formulas, Deep Exaltation Points, *Naisargika Bala*, & Minimum Required *Rupas*")
+    lines.append("")
+    lines.append("| Graha | Deep Exaltation (`Uchcha` = `60v`) | Deep Debilitation (`Neecha` = `0v`) | Zero *Dig Bala* House | Max *Dig Bala* House (`60v`) | *Naisargika Bala* (`Virupas`) | *Kala Bala* Day/Night Ruler | Min Required *Shadbala* (`Virupas` / `Rupas`) |")
+    lines.append("|---|---|---|---|---|---|---|---|")
+    shadbala_ref = (
+        ("Sun", "`10° Mesha (010°)`", "`10° Tula (190°)`", "4th Cusp (`IC`)", "10th Cusp (`MC`)", "`60.00v`", "Day (`Diwa`) +60v", "**`390v` (`6.50 Rupas`)**"),
+        ("Moon", "`03° Vrishabha (033°)`", "`03° Vrishchika (213°)`", "10th Cusp (`MC`)", "4th Cusp (`IC`)", "`51.43v`", "Night (`Ratri`) +60v", "**`360v` (`6.00 Rupas`)**"),
+        ("Mars", "`28° Makara (298°)`", "`28° Karka (118°)`", "4th Cusp (`IC`)", "10th Cusp (`MC`)", "`17.14v`", "Night (`Ratri`) +60v", "**`300v` (`5.00 Rupas`)**"),
+        ("Mercury", "`15° Kanya (165°)`", "`15° Meena (345°)`", "7th Cusp (`Desc`)", "1st Cusp (`Lagna`)", "`25.71v`", "Always (`Sarvada`) +60v", "**`420v` (`7.00 Rupas`)**"),
+        ("Jupiter", "`05° Karka (095°)`", "`05° Makara (275°)`", "7th Cusp (`Desc`)", "1st Cusp (`Lagna`)", "`34.29v`", "Day (`Diwa`) +60v", "**`390v` (`6.50 Rupas`)**"),
+        ("Venus", "`27° Meena (357°)`", "`27° Kanya (177°)`", "10th Cusp (`MC`)", "4th Cusp (`IC`)", "`42.86v`", "Day (`Diwa`) +60v", "**`330v` (`5.50 Rupas`)**"),
+        ("Saturn", "`20° Tula (200°)`", "`20° Mesha (020°)`", "1st Cusp (`Lagna`)", "7th Cusp (`Desc`)", "`08.57v`", "Night (`Ratri`) +60v", "**`300v` (`5.00 Rupas`)**"),
+    )
+    for gn, ux, nx, z_d, m_d, nb_v, kb_r, req_r in shadbala_ref:
+        lines.append(f"| **{gn}** | {ux} | {nx} | {z_d} | {m_d} | {nb_v} | {kb_r} | {req_r} |")
+    lines.append("")
+
+    lines.append("### Table 14B — Complete 36-Row Continuous Parashari *Sphuta Drishti* (Aspectual Strength in *Virupas* `0v–60v`) Lookup Table")
+    lines.append("")
+    lines.append(
+        "**Classical Piecewise Formula (*Brihat Parashara Hora Shastra*):** Let $\\Delta = (\\lambda_{\\text{Target}} - \\lambda_{\\text{Aspecting}}) \\bmod 360^\\circ$. "
+        "Base *Drishti* is `0v` for $0^\\circ..30^\\circ$ and $300^\\circ..360^\\circ$; rises from $30^\\circ..60^\\circ$ (`(Δ-30)/2`); "
+        "rises from $60^\\circ..90^\\circ$ (`(Δ-60)+15`); drops from $90^\\circ..120^\\circ$ (`45-(Δ-90)/2`); drops from $120^\\circ..150^\\circ$ (`30-(Δ-120)`); "
+        "rises sharply from $150^\\circ..180^\\circ$ (`2*(Δ-150)` peaking at `60v` at $180^\\circ$); and decreases linearly from $180^\\circ..300^\\circ$ (`(300-Δ)/2`). "
+        "**Special Vishesha Drishti:** Mars gets `60v` across $90^\\circ..120^\\circ$ & $210^\\circ..240^\\circ$; Jupiter gets `60v` across $120^\\circ..150^\\circ$ & $240^\\circ..270^\\circ$; Saturn gets `60v` across $60^\\circ..90^\\circ$ & $270^\\circ..300^\\circ$."
+    )
+    lines.append("")
+    lines.append("| Separation $\\Delta$ | House Span | Standard (*Sun, Moon, Mer, Ven*) | Mars (*4th & 8th Vishesha*) | Jupiter (*5th & 9th Vishesha*) | Saturn (*3rd & 10th Vishesha*) |")
+    lines.append("|---|---|---|---|---|---|")
+    for deg_step in range(0, 360, 10):
+        d = float(deg_step)
+        if d < 30.0 or d >= 300.0:
+            base_v = 0.0
+        elif d < 60.0:
+            base_v = (d - 30.0) / 2.0
+        elif d < 90.0:
+            base_v = 15.0 + (d - 60.0)
+        elif d < 120.0:
+            base_v = 45.0 - (d - 90.0) / 2.0
+        elif d < 150.0:
+            base_v = 30.0 - (d - 120.0)
+        elif d < 180.0:
+            base_v = 2.0 * (d - 150.0)
+        else:
+            base_v = (300.0 - d) / 2.0
+        mars_v = 60.0 if (90.0 <= d < 120.0 or 210.0 <= d < 240.0) else min(60.0, base_v + 15.0 if base_v > 0 else 0.0)
+        jup_v = 60.0 if (120.0 <= d < 150.0 or 240.0 <= d < 270.0) else min(60.0, base_v + 30.0 if base_v > 0 else 0.0)
+        sat_v = 60.0 if (60.0 <= d < 90.0 or 270.0 <= d < 300.0) else min(60.0, base_v + 45.0 if base_v > 0 else 0.0)
+        h_no = (deg_step // 30) + 1
         lines.append(
-            f"| **{b_key.capitalize()}** | `{b_info['tabulated_0530_dms']}` | `{b_info['daily_motion_dms']}` | "
-            f"`{b_info['motion_increment_dms']}` | **`{b_info['manual_trairashika_dms']}`** | "
-            f"`{b_info['software_exact_dms']}` | `{b_info['manual_vs_software_diff_arcsec']}\"` | "
-            f"{b_info['nakshatra_pada']} | {b_info['d1_sign']} | **{b_info['d9_navamsa_sign']}** | {b_info['d10_dasamsa_sign']} |"
+            f"| **`{deg_step:03d}°`** | House {h_no:02d} | `{base_v:05.2f}v` | **`{mars_v:05.2f}v`** | **`{jup_v:05.2f}v`** | **`{sat_v:05.2f}v`** |"
         )
     lines.append("")
-    lines.append("### Hand-Calculated Lagna (Ascendant) & Birth *Vimshottari Dasha* Balance")
-    lines.append(f"- **Exact Sidereal Ascendant (*Udaya Lagna*):** `{we['ascendant_dms']}`")
-    lines.append(f"- **Exact 10th House Cusp (*Madhya Lagna / Dashama*):** `{we['mc_10th_cusp_dms']}`")
-    lines.append(f"- **Birth Moon Nakshatra:** `{we['moon_nakshatra']}`")
-    lines.append(f"- **Remaining Arcminutes in Nakshatra (*Bhogyamsha*):** `{we['remaining_arcminutes_bhogyamsha']}'` out of `800'`")
-    lines.append(f"- **Hand-Calculated Birth Dasha Balance:** **`{we['vimshottari_dasha_balance_at_birth']}`**")
+
+    # =========================================================================
+    # CHAPTER 15: Complete Ashtakavarga, Shodhana, Pindas, & 8-Lord Kakshya
+    # =========================================================================
+    lines.append("## Chapter 15 — Complete *Ashtakavarga* (337-Bindu BAV/SAV), *Shodhana* Reductions, *Pinda* Multipliers, & 8-Lord *Kakshya* (`3°45'`) Transit Table")
     lines.append("")
-    return "\n".join(lines) + "\n"
+    lines.append("### Table 15A — Complete 337-Bindu *Bhinna Ashtakavarga* (`BAV`) Benefic House Contribution Matrix (*Brihat Parashara Hora Shastra*)")
+    lines.append("")
+    lines.append("| BAV Planet | Total Bindus | From Sun | From Moon | From Mars | From Mercury | From Jupiter | From Venus | From Saturn | From Lagna |")
+    lines.append("|---|---|---|---|---|---|---|---|---|---|")
+    bav_totals = {"Sun": 48, "Moon": 49, "Mars": 39, "Mercury": 54, "Jupiter": 56, "Venus": 52, "Saturn": 39}
+    for p_bav in ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"):
+        contrib_map = BAV_BENEFIC_HOUSES[p_bav]
+        cells_b = []
+        for src_k in ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Lagna"):
+            houses_str = ",".join(str(h) for h in contrib_map[src_k])
+            cells_b.append(f"`{houses_str}` ({len(contrib_map[src_k])})")
+        lines.append(f"| **{p_bav}** | **`{bav_totals[p_bav]}`** | " + " | ".join(cells_b) + " |")
+    lines.append("")
+
+    lines.append("### Table 15B — *Rashi Gunakara*, *Graha Gunakara* (*Shodhya Pinda* Multipliers), & 8-Lord *Kakshya* (`3° 45'`) Sub-Sign Transit Grid")
+    lines.append("")
+    lines.append("| Kakshya # | Degree Span in Sign | Arcminutes | Ruling *Kakshya* Lord | Speed Order | *Rashi Gunakara* (Signs 1–12) | *Graha Gunakara* (Planets) |")
+    lines.append("|---|---|---|---|---|---|---|")
+    rasi_mult_strs = (
+        "Mesha `7`, Vrishabha `10`",
+        "Mithuna `8`, Karka `4`",
+        "Simha `10`, Kanya `5`",
+        "Tula `7`, Vrishchika `8`",
+        "Dhanu `9`, Makara `5`",
+        "Kumbha `11`, Meena `12`",
+        "Trikona Reduction: Subtract minimum of `(1,5,9), (2,6,10), (3,7,11), (4,8,12)`",
+        "Ekadhipatya Reduction: Reduce dual-lord signs (`Mesha/Vrishchika`, `Vrishabha/Tula`, etc.)",
+    )
+    graha_mult_strs = (
+        "Sun `5`",
+        "Moon `5`",
+        "Mars `8`",
+        "Mercury `5`",
+        "Jupiter `10`",
+        "Venus `7`",
+        "Saturn `5`",
+        "Shodhya Pinda = Rashi Pinda + Graha Pinda",
+    )
+    for k_i, k_lord in enumerate(KAKSHYA_LORDS):
+        s_m = int(round(k_i * 225.0))
+        e_m = int(round((k_i + 1) * 225.0))
+        sp_lbl = f"`{s_m // 60:02d}° {s_m % 60:02d}' – {e_m // 60:02d}° {e_m % 60:02d}'`"
+        lines.append(
+            f"| **Kakshya {k_i + 1}** | {sp_lbl} | `{s_m}'–{e_m}'` | **{k_lord}** | Orbit #{k_i + 1} | "
+            f"{rasi_mult_strs[k_i]} | {graha_mult_strs[k_i]} |"
+        )
+    lines.append("")
+
+    # =========================================================================
+    # CHAPTER 16: Complete Classical Longevity (Ayurdaya) Manual Compendium
+    # =========================================================================
+    lines.append("## Chapter 16 — Complete Classical Mathematical Longevity (*Ayurdaya* — *Pindayu, Nisargayu, & Amsayu*) Manual Calculation Compendium")
+    lines.append("")
+    lines.append("### Table 16A — Maximum *Pindayu* & *Nisargayu* Planetary Years & The Four Classical Reductions (*Harana*)")
+    lines.append("")
+    lines.append("| Graha | Deep Exaltation | *Pindayu* Max Years | *Nisargayu* Max Years | *Astangata Harana* (Combustion Reduction) | *Shatru Kshetra Harana* (Enemy Sign Reduction) | *Chakrapata Harana* (Visible Hemisphere `H12..H7` Reduction) |")
+    lines.append("|---|---|---|---|---|---|---|")
+    chakrapata_notes = (
+        "`H12:` Lose `100%` (Malefic) / `50%` (Benefic)",
+        "`H11:` Lose `50%` (Malefic) / `25%` (Benefic)",
+        "`H10:` Lose `1/3` (Malefic) / `1/6` (Benefic)",
+        "`H9:` Lose `1/4` (Malefic) / `1/8` (Benefic)",
+        "`H8:` Lose `1/5` (Malefic) / `1/10` (Benefic)",
+        "`H7:` Lose `1/6` (Malefic) / `1/12` (Benefic)",
+        "**Amsayu Rule:** Total Elapsed Arcminutes $\\div 200' \\bmod 12 =$ Base Years (multiplied by $2\\times$ or $3\\times$ in Own/Exalted Rashi or D9)",
+    )
+    for idx_ay, p_ay in enumerate(("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn")):
+        p_max = PINDAYU_MAX_YEARS.get(p_ay, PINDAYU_MAX_YEARS.get(p_ay.lower(), 0.0))
+        n_max = NISARGAYU_MAX_YEARS.get(p_ay, NISARGAYU_MAX_YEARS.get(p_ay.lower(), 0.0))
+        ast_note = "**Exempt** (Saturn & Venus never lose years by combustion)" if p_ay in ("Saturn", "Venus") else ("N/A (Luminary)" if p_ay == "Sun" else "Lose **`1/2` (`50%`)** when combust")
+        shatru_note = "**Exempt** when Retrograde (*Vakri*)" if p_ay not in ("Sun", "Moon") else "Lose **`1/3` (`33.3%`)** in Enemy Sign"
+        if p_ay not in ("Sun", "Moon"):
+            shatru_note = "Lose **`1/3` (`33.3%`)** in Enemy Sign (Exempt if Retrograde)"
+        lines.append(
+            f"| **{p_ay}** | `{shadbala_ref[idx_ay][1]}` | **`{p_max:.0f} Years`** | **`{n_max:.0f} Years`** | "
+            f"{ast_note} | {shatru_note} | {chakrapata_notes[idx_ay]} |"
+        )
+    lines.append("")
+
+    # =========================================================================
+    # CHAPTER 17: Complete Tajika Varshphal Manual Compendium & 36 Sahams
+    # =========================================================================
+    lines.append("## Chapter 17 — Complete *Tajika Varshphal* (Annual Solar Return) Manual Compendium, 100-Year *Dhruvanka* Table, *Hadda* Bounds, & All 36 *Tajika Sahams*")
+    lines.append("")
+    lines.append("### Table 17A — 100-Year *Tajika Varsha Pravesha Dhruvanka* (Constant Sidereal Solar Return Time Advance Table `Ages 1 to 100`)")
+    lines.append("")
+    lines.append(
+        "**How to Find Any Annual Solar Return (*Varsha Pravesha*) Epoch by Hand:** 1 Sidereal Solar Year = `365d 06h 09m 09.8s` "
+        "(`1d 06h 09m 09.8s` mod 7 weekdays). Add the **Cumulative Weekday + Hours:Minutes:Seconds Advance (*Dhruvanka*)** "
+        "for the native's completed age to the Natal Birth Weekday and Time (then refine by final solar arcminutes using daily solar motion):"
+    )
+    lines.append("")
+    lines.append("| Completed Age | Weekday & Time Advance (`d hh:mm:ss`) | Completed Age | Weekday & Time Advance (`d hh:mm:ss`) | Completed Age | Weekday & Time Advance (`d hh:mm:ss`) | Completed Age | Weekday & Time Advance (`d hh:mm:ss`) |")
+    lines.append("|---|---|---|---|---|---|---|---|")
+    sid_excess_sec = (365.256363004 - 364.0) * 86400.0  # 1d 06h 09m 09.76s in seconds
+    for age_row in range(1, 26):
+        age_cells = []
+        for col_offset in (0, 25, 50, 75):
+            age_val = age_row + col_offset
+            tot_sec = (age_val * sid_excess_sec) % (7.0 * 86400.0)
+            w_days = int(tot_sec // 86400.0)
+            rem_s = int(round(tot_sec % 86400.0))
+            hh = rem_s // 3600
+            mm = (rem_s % 3600) // 60
+            ss = rem_s % 60
+            age_cells.append(f"**Age {age_val:03d}** | `+{w_days}d {hh:02d}:{mm:02d}:{ss:02d}`")
+        lines.append("| " + " | ".join(age_cells) + " |")
+    lines.append("")
+
+    lines.append("### Table 17B — Complete 12-Sign *Tajika Hadda* (Egyptian Terms) & *Tri-Rashi Pati* Table (*Tajika Neelakanthi*)")
+    lines.append("")
+    lines.append("| Rashi (Sign) | Hadda 1 | Hadda 2 | Hadda 3 | Hadda 4 | Hadda 5 | *Tri-Rashi Pati* (Day / Night) |")
+    lines.append("|---|---|---|---|---|---|---|")
+    tri_rashi_names = (
+        "Sun / Jupiter", "Venus / Moon", "Saturn / Mercury", "Venus / Mars",
+        "Jupiter / Sun", "Moon / Venus", "Mercury / Saturn", "Mars / Venus",
+        "Saturn / Saturn", "Mars / Mars", "Jupiter / Jupiter", "Moon / Moon",
+    )
+    for r_i, r_name in enumerate(RASHI_NAMES):
+        h_row = TAJIKA_HADDA_TABLE[r_i]
+        h_strs = []
+        prev_d = 0
+        for end_d, h_lord in h_row:
+            h_strs.append(f"`{prev_d:02d}°–{int(end_d):02d}°` **{h_lord.capitalize()}**")
+            prev_d = int(end_d)
+        lines.append(f"| **{r_name}** | " + " | ".join(h_strs) + f" | **{tri_rashi_names[r_i]}** |")
+    lines.append("")
+
+    lines.append("### Table 17C — Complete Catalog of All 36 Classical *Tajika Sahams* (Arabic Lots — Day & Night Manual Formulas)")
+    lines.append("")
+    lines.append(
+        "**Universal Saham Rule (*Tajika Neelakanthi*):** Compute $\\lambda_{\\text{Saham}} = (A - B + C) \\bmod 360^\\circ$. "
+        "Whenever the Ascendant ($C$) is **not** geometrically situated on the zodiacal arc moving forward from $B$ to $A$, "
+        "**add $+30^\\circ$ ($1\\text{ Sign}$)** to the result."
+    )
+    lines.append("")
+    lines.append("| # | Classical *Saham* Name | Life Domain / Signification | Day Birth Formula ($A - B + C$) | Night Birth Formula ($A - B + C$) |")
+    lines.append("|---|---|---|---|---|")
+    saham_catalog_36 = (
+        ("01", "Punya Saham (Fortune)", "Overall fortune, dharma, prosperity & grace", "Moon - Sun + Lagna", "Sun - Moon + Lagna"),
+        ("02", "Vidya Saham (Learning)", "Education, scholarship, wisdom & intellect", "Sun - Moon + Lagna", "Moon - Sun + Lagna"),
+        ("03", "Yashas Saham (Fame)", "Fame, public honour, reputation & prestige", "Jupiter - Punya + Lagna", "Punya - Jupiter + Lagna"),
+        ("04", "Mitra Saham (Friends)", "Alliances, patrons, benefactors & friendships", "Jupiter - Punya + Venus", "Punya - Jupiter + Venus"),
+        ("05", "Mahatmya Saham (Greatness)", "Eminence, nobility, high rank & grandeur", "Punya - Mars + Lagna", "Mars - Punya + Lagna"),
+        ("06", "Asha Saham (Desires)", "Fulfilment of hopes, wishes & long-term ambitions", "Saturn - Venus + Lagna", "Venus - Saturn + Lagna"),
+        ("07", "Samarthya Saham (Enterprise)", "Capability, courage, stamina & executive power", "Mars - Lagna_Lord + Lagna", "Lagna_Lord - Mars + Lagna"),
+        ("08", "Bhratri Saham (Brothers)", "Siblings, co-born, valour & teamwork", "Jupiter - Saturn + Lagna", "Jupiter - Saturn + Lagna (Same)"),
+        ("09", "Gaurava Saham (Respect)", "Social standing, dignity & respect from elders", "Jupiter - Moon + Sun", "Moon - Jupiter + Sun"),
+        ("10", "Pitri Saham (Father)", "Father's health, fortune, authority & blessings", "Saturn - Sun + Lagna", "Sun - Saturn + Lagna"),
+        ("11", "Matri Saham (Mother)", "Mother's health, domestic peace & nourishment", "Moon - Venus + Lagna", "Venus - Moon + Lagna"),
+        ("12", "Putra Saham (Children)", "Progeny, childbirth, creativity & disciples", "Jupiter - Moon + Lagna", "Moon - Jupiter + Lagna"),
+        ("13", "Jeeva Saham (Vitality)", "Life force, longevity, recovery & bodily vigour", "Saturn - Jupiter + Lagna", "Jupiter - Saturn + Lagna"),
+        ("14", "Karma Saham (Action/Deeds)", "Profession, career execution & righteous action", "Mars - Mercury + Lagna", "Mercury - Mars + Lagna"),
+        ("15", "Roga Saham (Disease)", "Illness, vulnerability, diagnosis & convalescence", "Lagna - Moon + Lagna", "Lagna - Moon + Lagna (Same)"),
+        ("16", "Kali Saham (Strife/Great Effort)", "Sudden upheaval, crisis or heroic breakthrough", "Jupiter - Mars + Lagna", "Mars - Jupiter + Lagna"),
+        ("17", "Sastra Saham (Scriptures)", "Mastery of sacred texts, sciences & philosophy", "Jupiter - Saturn + Mercury", "Saturn - Jupiter + Mercury"),
+        ("18", "Bandhu Saham (Relatives)", "Kinsmen, extended family & community support", "Mercury - Moon + Lagna", "Moon - Mercury + Lagna"),
+        ("19", "Mrityu Saham (Death/Danger)", "Mortal danger, severe crisis & transformation", "8th Cusp - Moon + Lagna", "8th Cusp - Moon + Lagna (Same)"),
+        ("20", "Paradesa Saham (Foreign Travel)", "Foreign residence, long journeys & pilgrimage", "9th Cusp - 9th Lord + Lagna", "9th Cusp - 9th Lord + Lagna (Same)"),
+        ("21", "Artha / Dhana Saham (Wealth)", "Liquid wealth, treasury, income & financial gain", "2nd Cusp - 2nd Lord + Lagna", "2nd Cusp - 2nd Lord + Lagna (Same)"),
+        ("22", "Paradara Saham (Illicit Liaison)", "Romantic entanglement & boundary testing", "Venus - Sun + Lagna", "Venus - Sun + Lagna (Same)"),
+        ("23", "Vanik Saham (Commerce/Trade)", "Business, merchandising, trading & negotiation", "Moon - Mercury + Lagna", "Mercury - Moon + Lagna"),
+        ("24", "Karyasiddhi Saham (Success)", "Completion of undertakings & victory in projects", "Saturn - Sun + Sun_Sign_Lord", "Saturn - Moon + Moon_Sign_Lord"),
+        ("25", "Vivaha Saham (Marriage)", "Marriage, partnership, wedding & spousal bond", "Venus - Saturn + Lagna", "Venus - Saturn + Lagna (Same)"),
+        ("26", "Santapa Saham (Grief/Sorrow)", "Mental anguish, bereavement & emotional trials", "Saturn - Moon + 6th Cusp", "Saturn - Moon + 6th Cusp (Same)"),
+        ("27", "Shraddha Saham (Faith/Devotion)", "Religious devotion, trust, integrity & piety", "Venus - Mars + Lagna", "Mars - Venus + Lagna"),
+        ("28", "Preeti Saham (Love/Affection)", "Deep affection, harmony & cordiality", "Vidya - Punya + Lagna", "Punya - Vidya + Lagna"),
+        ("29", "Bala Saham (Strength)", "Physical and moral authority & command", "Punya - Vidya + Lagna", "Vidya - Punya + Lagna"),
+        ("30", "Manmatha Saham (Passion)", "Romantic passion, artistic charm & attraction", "Moon - Lagna_Lord + Lagna", "Lagna_Lord - Moon + Lagna"),
+        ("31", "Vyapara Saham (Business Venture)", "Commercial expansion, contracts & deals", "Mars - Saturn + Lagna", "Mars - Saturn + Lagna (Same)"),
+        ("32", "Paniyapatana Saham (Water)", "Maritime travel, liquids, rainfall & water hazards", "Saturn - Moon + Lagna", "Moon - Saturn + Lagna"),
+        ("33", "Shatru Saham (Enemies)", "Litigation, rivals, competitors & opposition", "Mars - Saturn + Lagna", "Saturn - Mars + Lagna"),
+        ("34", "Bandhana Saham (Confinement)", "Restraint, hospitalization, debt or captivity", "Punya - Saturn + Lagna", "Saturn - Punya + Lagna"),
+        ("35", "Apamrityu Saham (Accidents)", "Sudden accidents, surgical risk & acute hazards", "8th Cusp - Mars + Lagna", "Mars - 8th Cusp + Lagna"),
+        ("36", "Labha Saham (Gains/Profits)", "Net profits, windfalls, dividends & awards", "11th Cusp - 11th Lord + Lagna", "11th Cusp - 11th Lord + Lagna (Same)"),
+    )
+    for s_no, s_nm, s_dom, s_day, s_night in saham_catalog_36:
+        lines.append(f"| **`#{s_no}`** | **{s_nm}** | {s_dom} | `{s_day}` | `{s_night}` |")
+    lines.append("")
+
+    # =========================================================================
+    # CHAPTER 18: Ashtakoota, Yoni Matrix, Sarvatobhadra Chakra & Muhurta
+    # =========================================================================
+    lines.append("## Chapter 18 — Complete *Ashtakoota* (36-Guna) Compatibility, `14 × 14` *Yoni* Matrix, 81-Cell *Sarvatobhadra Chakra*, & *Muhurta* Compendium")
+    lines.append("")
+    lines.append("### Table 18A — Complete 27-Nakshatra *Ashtakoota* & *Dashakoota* Classification Directory (`Gana, Nadi, Yoni, Rajju, & Tara`)")
+    lines.append("")
+    lines.append("| # | Nakshatra | Span (`Rashi` & Degrees) | Ruler | *Gana* (`6 pts`) | *Nadi* (`8 pts`) | *Yoni* Animal (`4 pts`) | *Rajju* Group (`Dashakoota`) |")
+    lines.append("|---|---|---|---|---|---|---|---|")
+    rajju_cycle = ("Pada (Foot)", "Kati (Waist)", "Nabhi (Navel)", "Kantha (Neck)", "Shiro (Head)", "Kantha (Neck)", "Nabhi (Navel)", "Kati (Waist)", "Pada (Foot)")
+    for n_i, n_name in enumerate(NAKSHATRA_NAMES):
+        s_deg = n_i * (360.0 / 27.0)
+        e_deg = (n_i + 1) * (360.0 / 27.0)
+        gana_s = str(NAKSHATRA_GANA[n_i])
+        nadi_s = str(NAKSHATRA_NADI[n_i])
+        yoni_s = YONI_NAMES[NAKSHATRA_YONI_INDEX[n_i]]
+        rajju_s = rajju_cycle[n_i % 9]
+        lines.append(
+            f"| **{n_i + 1:02d}** | **{n_name}** | `{format_classical_rashi_dms(s_deg)}` – `{format_classical_rashi_dms(e_deg)}` | "
+            f"{VIMSHOTTARI_LORDS[n_i % 9]} | {gana_s} | **{nadi_s}** | {yoni_s} | {rajju_s} |"
+        )
+    lines.append("")
+
+    lines.append("### Table 18B — Complete `14 × 14` *Yoni Koota* (`0 to 4 Points`) Classical Compatibility Matrix")
+    lines.append("")
+    lines.append("| Yoni \\ Yoni | " + " | ".join(f"**{y[:5]}**" for y in YONI_NAMES) + " |")
+    lines.append("|---|" + "|".join(["---"] * 14) + "|")
+    for y_r in range(14):
+        y_cells = [f"`{YONI_SCORE_MATRIX[y_r][y_c]}`" for y_c in range(14)]
+        lines.append(f"| **{y_r + 1:02d} {YONI_NAMES[y_r]}** | " + " | ".join(y_cells) + " |")
+    lines.append("")
+
+    lines.append("### Table 18C — Complete `9 × 9` (81-Cell) *Sarvatobhadra Chakra* Master Transit & *Vedha* Grid")
+    lines.append("")
+    lines.append("| Row \\ Col | Col 0 (West) | Col 1 | Col 2 | Col 3 | Col 4 (Center) | Col 5 | Col 6 | Col 7 | Col 8 (East) |")
+    lines.append("|---|---|---|---|---|---|---|---|---|---|")
+    sbc_grid = build_sarvatobhadra_grid()
+    for r_idx, sbc_row in enumerate(sbc_grid):
+        c_strs = [f"**{c.label}** *({c.cell_type[:3]})*" for c in sbc_row]
+        lines.append(f"| **Row {r_idx}** | " + " | ".join(c_strs) + " |")
+    lines.append("")
+
+    lines.append("### Table 18D — *Muhurta* Electional Compendium: *Amrita Siddhi*, *Sarvartha Siddhi*, & *Dagdha Rashi* (Burnt Signs by Tithi)")
+    lines.append("")
+    lines.append("| Weekday (*Vara*) | *Amrita Siddhi* Nakshatra (Avoid Tithi) | *Sarvartha Siddhi* Nakshatras | Paksha Tithis | *Dagdha Rashi* (Burnt Signs to Avoid in Lagna) |")
+    lines.append("|---|---|---|---|---|")
+    vara_full = ("Sunday (Ravivara)", "Monday (Somavara)", "Tuesday (Mangalavara)", "Wednesday (Budhavara)", "Thursday (Guruvara)", "Friday (Shukravara)", "Saturday (Shanivara)")
+    excl_tithis = ("Panchami (5)", "Shashthi (6)", "Saptami (7)", "Ashtami (8)", "Navami (9)", "Dashami (10)", "Ekadashi (11)")
+    for w_i in range(7):
+        am_nak = NAKSHATRA_NAMES[AMRITA_SIDDHI_NAKSHATRA[w_i]]
+        ss_naks = ", ".join(NAKSHATRA_NAMES[n] for n in sorted(SARVARTHA_SIDDHI_NAKSHATRAS[w_i]))
+        t_pair_1 = w_i * 2 + 1
+        t_pair_2 = w_i * 2 + 2
+        d_s1 = ", ".join(RASHI_NAMES[r] for r in DAGDHA_RASI_BY_PAKSHA_TITHI.get(t_pair_1, ()))
+        d_s2 = ", ".join(RASHI_NAMES[r] for r in DAGDHA_RASI_BY_PAKSHA_TITHI.get(t_pair_2, ())) if t_pair_2 <= 15 else "Amavasya: None"
+        t15_extra = f"; Tithi 15: {', '.join(RASHI_NAMES[r] for r in DAGDHA_RASI_BY_PAKSHA_TITHI.get(15, ()))}" if w_i == 6 else ""
+        lines.append(
+            f"| **{vara_full[w_i]}** | **{am_nak}** *(excl. {excl_tithis[w_i]})* | {ss_naks} | "
+            f"Tithi {t_pair_1} & {t_pair_2} | `T{t_pair_1}:` **{d_s1}**; `T{t_pair_2}:` **{d_s2}**{t15_extra} |"
+        )
+    lines.append("")
+
+    # =========================================================================
+    # CHAPTER 19: Classical Parashari Yogas, 30-Star Yogatara & Surya Siddhanta
+    # =========================================================================
+    lines.append("## Chapter 19 — Complete Classical Parashari Yoga Identification Directory, 30-Star *Yogatara* Catalog, & *Surya Siddhanta* Reference")
+    lines.append("")
+    lines.append("### Table 19A — Complete 30-Star *Yogatara* (Junction Star) Astrometric Reference Catalog (*Surya Siddhanta* Chapter 8)")
+    lines.append("")
+    lines.append("| # | Nakshatra / Star | Sanskrit *Yogatara* Name | Modern IAU Star | J2000 RA (`deg`) | J2000 Dec (`deg`) | Visual Mag ($V$) | *Kalansha* Heliacal Arc |")
+    lines.append("|---|---|---|---|---|---|---|---|")
+    for st_i, st in enumerate(YOGATARA_30_CATALOG, start=1):
+        nak_lbl = f"Nakshatra #{st.nakshatra_number}" if st.nakshatra_number else "Seasonal Star"
+        lines.append(
+            f"| **{st_i:02d}** | **{st.vedic_name}** *({nak_lbl})* | `{st.key}` (`HIP {st.hip_id}`) | `{st.western_designation}` | "
+            f"`{st.ra_icrs_deg_j2000:07.3f}°` | `{st.dec_icrs_deg_j2000:+07.3f}°` | `{st.visual_magnitude:+05.2f}` | `{st.kalansha_visibility_arc_deg:.1f}°` |"
+        )
+    lines.append("")
+
+    lines.append("### Table 19B — Classical *Surya Siddhanta* *Mahayuga Bhagana*, *Mandocca* (Apogees), & Epicycle (*Paridhi*) Constants")
+    lines.append("")
+    lines.append("| Graha | *Mahayuga Bhagana* (`4,320,000` Solar Years) | *Mandocca* at Kali Epoch (`deg`) | *Manda Paridhi* (`Even / Odd` Quadrants) | *Sighra Paridhi* (`Even / Odd` Quadrants) |")
+    lines.append("|---|---|---|---|---|")
+    for p_ss in ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"):
+        p_ss_low = p_ss.lower()
+        bhag = MAHAYUGA_BHAGANA.get(p_ss_low, MAHAYUGA_BHAGANA.get(f"{p_ss_low}_sighrocca", 0))
+        mand = MANDOCCA_KALI_EPOCH_DEG.get(p_ss_low, 0.0)
+        mp_e, mp_o = MANDA_PARIDHI_EVEN_ODD_DEG.get(p_ss_low, (0.0, 0.0))
+        sp_e, sp_o = SIGHRA_PARIDHI_EVEN_ODD_DEG.get(p_ss_low, (0.0, 0.0))
+        sp_str = f"`{sp_e:.1f}° / {sp_o:.1f}°`" if sp_e > 0 else "— (No Sighra Samskara)"
+        lines.append(
+            f"| **{p_ss}** | `{bhag:,}` revolutions | `{mand:.4f}°` | `{mp_e:.1f}° / {mp_o:.1f}°` | {sp_str} |"
+        )
+    lines.append("")
+
+    # =========================================================================
+    # CHAPTER 20 (Section 7): Pt. Maheshji's Complete 15-Step Worked Manual Kundali
+    # =========================================================================
+    lines.append("## Chapter 20 — Section 7 — Pt. Maheshji's Jyotish Academy Step-by-Step Worked Manual Kundali Worksheet (Complete 15-Step Master Case Study)")
+    lines.append("")
+    we = comp.worked_example
+    vis_rep = we["vishesha_report"]
+    upa_rep = we["upagrahas_report"]
+    sph_rep = we["sphutas_report"]
+    kun_rep = we["kundali_bundle"]
+    sah_rep = we["sahams_report"]
+    kc_rep = we["kalachakra_report"]
+
+    lines.append(f"- **Case Study Date & Time:** `{we['civil_date']}` at `{we['birth_time_local']}`")
+    lines.append(f"- **Observer Location:** `{we['observer_location']}` (Ujjain Prime Meridian Reference)")
+    lines.append(f"- **Elapsed Time After `05:30 IST` Tabular Epoch:** `{we['elapsed_after_0530_ist']}` (Interpolation Fraction $f = {we['trairashika_fraction']:.6f}$)")
+    lines.append(f"- **Manual Ascendant (*Udaya Lagna*):** `{we['ascendant_dms']}` | **10th Cusp (*Madhya Lagna*):** `{we['mc_10th_cusp_dms']}`")
+    lines.append(f"- **Natal Moon Nakshatra & Pada:** `{we['moon_nakshatra']}` (`{we['remaining_arcminutes_bhogyamsha']:.2f}'` *Bhogyamsha* remaining)")
+    lines.append(f"- **Natal *Vimshottari Dasha* Balance at Birth:** **`{we['vimshottari_dasha_balance_at_birth']}`**")
+    lines.append("")
+
+    lines.append("### Step 1 & Step 2 — Complete 1st-Order (*Trairashika*) & 2nd-Order (*Bessel*) Manual *Spashta Graha* Worksheet")
+    lines.append("")
+    lines.append("| Body | `05:30 IST` Day $D$ | `05:30 IST` Day $D+1$ | Daily Motion $v_1$ | 1st-Order *Trairashika* | 2nd-Order *Bessel* Exact | `D9` Navamsa | `D10` Dasamsa | `D60` Shashtiamsa | *KP* Star / Sub / Sub-Sub |")
+    lines.append("|---|---|---|---|---|---|---|---|---|---|")
+    for b_key, b_label in (
+        ("sun", "Surya (Sun)"),
+        ("moon", "Chandra (Moon)"),
+        ("mars", "Mangala (Mars)"),
+        ("mercury", "Budha (Mercury)"),
+        ("jupiter", "Guru (Jupiter)"),
+        ("venus", "Shukra (Venus)"),
+        ("saturn", "Shani (Saturn)"),
+        ("rahu", "Rahu (Node)"),
+        ("ketu", "Ketu (S. Node)"),
+    ):
+        wp = we["planets"][b_key]
+        lines.append(
+            f"| **{b_label}** | `{wp['tabulated_0530_dms']}` | `{wp['motion_increment_dms']}` | `{wp['daily_motion_dms']}` | "
+            f"`{wp['manual_trairashika_dms']}` | **`{wp['manual_bessel_2nd_order_dms']}`** | **{wp['d9_navamsa_sign']}** | "
+            f"**{wp['d10_dasamsa_sign']}** | {wp['d60_shashtiamsa_sign']} | `{wp['kp_lords']}` |"
+        )
+    lines.append("")
+
+    lines.append("### Step 3 & Step 4 — All 12 *Sripathi Bhava* Cusps, 8 *Vishesha Lagnas*, *Yogi/Avayogi*, 11 *Upagrahas*, & 9 *Prashna Sphutas*")
+    lines.append("")
+    lines.append("| Special Point Category | Point Name | Computed Sidereal Longitude (`DMS`) | Sign (`Rashi`) | `D9` Navamsa / Nakshatra Details |")
+    lines.append("|---|---|---|---|---|")
+    for vl_pt in (
+        vis_rep.udaya_lagna,
+        vis_rep.hora_lagna,
+        vis_rep.ghati_lagna,
+        vis_rep.bhava_lagna,
+        vis_rep.sree_lagna,
+        vis_rep.indu_lagna,
+        vis_rep.pranapada_lagna,
+        vis_rep.varnada_lagna,
+    ):
+        lines.append(
+            f"| **8 Vishesha Lagnas** | **{vl_pt.title}** | **`{vl_pt.classical_dms}`** | {vl_pt.rashi_name} ({vl_pt.rashi_lord}) | "
+            f"`D9:` **{vl_pt.d9_navamsa_sign}**; *{vl_pt.nakshatra_name}* P{vl_pt.pada} ({vl_pt.formula_summary}) |"
+        )
+    lines.append(
+        f"| **Yogi & Avayogi** | **Yogi Point & Yogi Planet** | **`{vis_rep.yogi_point_dms}`** | Yogi: **{vis_rep.yogi_planet}** | "
+        f"Nakshatra: *{vis_rep.yogi_nakshatra_name}*; Sahayogi: **{vis_rep.sahayogi_planet}** |"
+    )
+    lines.append(
+        f"| **Yogi & Avayogi** | **Avayogi Point & Planet** | **`{vis_rep.avayogi_point_dms}`** | Avayogi: **{vis_rep.avayogi_planet}** | "
+        f"Nakshatra: *{vis_rep.avayogi_nakshatra_name}* |"
+    )
+    for upa_k, upa_pt in (
+        ("Dhuma", upa_rep.dhuma),
+        ("Vyatipata", upa_rep.vyatipata),
+        ("Parivesha", upa_rep.parivesha),
+        ("Indrachapa", upa_rep.indrachapa),
+        ("Upaketu", upa_rep.upaketu),
+        ("Gulika (Mandi)", upa_rep.gulika),
+        ("Kala", upa_rep.kala),
+        ("Mrityu", upa_rep.mrityu),
+        ("Ardhaprahara", upa_rep.ardhaprahara),
+        ("Yamaghantaka", upa_rep.yamaghantaka),
+        ("Ochcha", upa_rep.ochcha),
+    ):
+        lines.append(
+            f"| **11 Upagrahas** | **{upa_k}** | `{format_classical_rashi_dms(upa_pt.longitude_deg)}` | "
+            f"{upa_pt.sign_name} | *{upa_pt.nakshatra.name}* Pada {upa_pt.nakshatra.pada} |"
+        )
+    for sph_pt in (
+        sph_rep.trisphuta,
+        sph_rep.chatusphuta,
+        sph_rep.panchasphuta,
+        sph_rep.prana_sphuta,
+        sph_rep.deha_sphuta,
+        sph_rep.mrityu_sphuta,
+        sph_rep.tithi_sphuta,
+        sph_rep.beeja_sphuta,
+        sph_rep.kshetra_sphuta,
+    ):
+        lines.append(
+            f"| **9 Prashna Sphutas** | **{sph_pt.name}** | `{format_classical_rashi_dms(sph_pt.longitude_deg)}` | "
+            f"{sph_pt.sign_name} | *{sph_pt.nakshatra.name}* Pada {sph_pt.nakshatra.pada} |"
+        )
+    lines.append("")
+
+    lines.append("### Step 5 & Step 6 — Worked Case Study: *Jaimini Chara Karakas*, 12 *Arudha Padas*, *Shadbala*, & *Sarvashtakavarga*")
+    lines.append("")
+    lines.append("| Graha | 7-Karaka Role | 8-Karaka Role | Total *Shadbala* (`Virupas` / `Rupas`) | Required (`Rupas`) | *Shadbala* Ratio | *Vimshopaka* (`D16` / `20`) | *Bhinna Ashtakavarga* Total |")
+    lines.append("|---|---|---|---|---|---|---|---|")
+    ck7_map = {c.planet: f"**{c.karaka_code}** ({c.karaka_name})" for c in vis_rep.chara_karakas_7}
+    ck8_map = {c.planet: f"**{c.karaka_code}** ({c.karaka_name})" for c in vis_rep.chara_karakas_8}
+    for p_name in ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu"):
+        c7_s = ck7_map.get(p_name, "—")
+        c8_s = ck8_map.get(p_name, "—")
+        if p_name in kun_rep.shadbala.planets:
+            sb_p = kun_rep.shadbala.planets[p_name]
+            vm_p = kun_rep.vimshopaka_shodashvarga[p_name]
+            bav_p = kun_rep.ashtakavarga.bhinna_tables[p_name].total_bindus
+            lines.append(
+                f"| **{p_name}** | {c7_s} | {c8_s} | **`{sb_p.total_virupas:.1f}v` (`{sb_p.total_rupas:.2f}R`)** | "
+                f"`{sb_p.required_rupas:.2f}R` | `{sb_p.strength_ratio:.2f}x` | `{vm_p.total_score:.2f} / 20` | `{bav_p} Bindus` |"
+            )
+        else:
+            lines.append(f"| **{p_name}** | {c7_s} | {c8_s} | — (Shadow Node) | — | — | — | — |")
+    lines.append("")
+
+    lines.append(
+        "**Worked 12 *Sarvashtakavarga* (`SAV`) Totals by Sign (`Mesha` to `Meena`):** "
+        + ", ".join(
+            f"**{RASHI_NAMES[i]}:** `{kun_rep.ashtakavarga.sarvashtakavarga_7[i]}`"
+            for i in range(12)
+        )
+        + f" (Grand Total = **`{kun_rep.ashtakavarga.sarvashtakavarga_7_total} Bindus`**)."
+    )
+    lines.append("")
+    lines.append(
+        "**Worked 12 *Jaimini Arudha Padas* (`AL` to `UL`):** "
+        + ", ".join(
+            f"**{ap.pada_code}:** {ap.arudha_sign_name}{' *(Swastha)*' if ap.swastha_exception_applied else ''}"
+            for ap in vis_rep.arudha_padas
+        )
+        + "."
+    )
+    lines.append("")
+    lines.append(
+        f"**Worked *Kalachakra Dasha* at Birth:** Chakra Group = **{kc_rep.chakra_group}**, "
+        f"*Dehamsha* = **{kc_rep.deha_sign_name}**, *Jeevamsha* = **{kc_rep.jeeva_sign_name}**, "
+        f"Paramayus = `{kc_rep.paramayus_years:.0f} Years`, Birth Period = **{kc_rep.mahadashas[0].sign_name}** (`{kc_rep.mahadashas[0].gati}` Gati)."
+    )
+    lines.append("")
+    lines.append(
+        "**Worked Sample of 36 *Tajika Sahams*:** "
+        + ", ".join(
+            f"**{sh.sanskrit_name}:** `{format_classical_rashi_dms(sh.longitude_deg)}`"
+            for sh in list(sah_rep.values())[:12]
+        )
+        + f" *(all `{len(sah_rep)}` Sahams computed deterministically)*."
+    )
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _format_inline_md(text: str) -> str:
+    """Convert inline Markdown formatting (bold, italic, inline code) to clean HTML."""
+    escaped = html_mod.escape(text)
+    escaped = re.sub(r"`([^`]+)`", r"<code>\1</code>", escaped)
+    escaped = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", escaped)
+    escaped = re.sub(r"\*([^*]+)\*", r"<em>\1</em>", escaped)
+    return escaped
 
 
 def _render_compendium_html(comp: HumanManualEphemerisCompendium) -> str:
-    """Render a clean, print-ready HTML edition of the Human-Readable Ephemeris Compendium."""
-    md_text = _render_compendium_markdown(comp)
-    import html as html_mod
+    """Render a richly formatted, multi-chapter, print-ready HTML book edition with real HTML tables and a Table of Contents."""
+    md_text = comp.to_markdown()
+    md_lines = md_text.splitlines()
 
-    escaped = html_mod.escape(md_text)
-    return (
-        "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\"/>\n"
-        f"<title>RDG Human-Readable Ephemeris & Jyotish Academy Compendium ({comp.year}-{comp.month:02d})</title>\n"
-        "<style>\n"
-        "body { font-family: 'Georgia', 'Times New Roman', serif; max-width: 1180px; margin: 2rem auto; "
-        "padding: 0 1.5rem; color: #1b1917; background: #fbf9f5; line-height: 1.55; }\n"
-        "pre { white-space: pre-wrap; word-wrap: break-word; font-family: 'Consolas', monospace; "
-        "font-size: 0.88rem; background: #f3efe6; padding: 1.25rem; border: 1px solid #d6cbb5; border-radius: 6px; }\n"
-        "</style>\n</head>\n<body>\n"
-        f"<pre>{escaped}</pre>\n"
-        "</body>\n</html>\n"
-    )
+    toc_items: list[tuple[str, str]] = []
+    body_parts: list[str] = []
+    in_table = False
+    in_list = False
+    in_blockquote = False
+    chapter_idx = 0
+
+    def close_blocks() -> None:
+        nonlocal in_table, in_list, in_blockquote
+        if in_table:
+            body_parts.append("</tbody></table></div>")
+            in_table = False
+        if in_list:
+            body_parts.append("</ul>")
+            in_list = False
+        if in_blockquote:
+            body_parts.append("</blockquote>")
+            in_blockquote = False
+
+    i = 0
+    while i < len(md_lines):
+        raw_line = md_lines[i]
+        stripped = raw_line.strip()
+
+        if not stripped:
+            close_blocks()
+            i += 1
+            continue
+
+        if stripped.startswith("# "):
+            close_blocks()
+            title_html = _format_inline_md(stripped[2:].strip())
+            body_parts.append(f"<header class='book-header'><h1>{title_html}</h1></header>")
+            i += 1
+            continue
+
+        if stripped.startswith("## "):
+            close_blocks()
+            chapter_idx += 1
+            sec_id = f"chapter-{chapter_idx:02d}"
+            sec_title = stripped[3:].strip()
+            toc_items.append((sec_id, _format_inline_md(sec_title)))
+            body_parts.append(f"<section class='chapter-section' id='{sec_id}'><h2>{_format_inline_md(sec_title)}</h2></section>")
+            i += 1
+            continue
+
+        if stripped.startswith("### "):
+            close_blocks()
+            sub_title = stripped[4:].strip()
+            body_parts.append(f"<h3>{_format_inline_md(sub_title)}</h3>")
+            i += 1
+            continue
+
+        if stripped.startswith(">"):
+            if in_table or in_list:
+                close_blocks()
+            if not in_blockquote:
+                body_parts.append("<blockquote class='academy-callout'>")
+                in_blockquote = True
+            q_content = stripped.lstrip(">").strip()
+            body_parts.append(f"<p>{_format_inline_md(q_content)}</p>")
+            i += 1
+            continue
+
+        if stripped.startswith("- "):
+            if in_table or in_blockquote:
+                close_blocks()
+            if not in_list:
+                body_parts.append("<ul class='compendium-list'>")
+                in_list = True
+            body_parts.append(f"<li>{_format_inline_md(stripped[2:].strip())}</li>")
+            i += 1
+            continue
+
+        if stripped.startswith("|") and stripped.endswith("|"):
+            if in_list or in_blockquote:
+                close_blocks()
+            cells = [c.strip() for c in stripped.strip("|").split("|")]
+            if not in_table:
+                body_parts.append("<div class='table-scroll'><table class='ephemeris-table'><thead><tr>")
+                for c in cells:
+                    body_parts.append(f"<th>{_format_inline_md(c)}</th>")
+                body_parts.append("</tr></thead><tbody>")
+                in_table = True
+                # Skip separator row if next line is |---|---|
+                if i + 1 < len(md_lines) and re.match(r"^\|\s*[-:]+", md_lines[i + 1].strip()):
+                    i += 2
+                    continue
+            else:
+                if all(re.match(r"^[-:\s]+$", c) for c in cells if c):
+                    i += 1
+                    continue
+                body_parts.append("<tr>")
+                for c in cells:
+                    body_parts.append(f"<td>{_format_inline_md(c)}</td>")
+                body_parts.append("</tr>")
+            i += 1
+            continue
+
+        close_blocks()
+        body_parts.append(f"<p>{_format_inline_md(stripped)}</p>")
+        i += 1
+
+    close_blocks()
+
+    toc_html = "<nav class='toc-box'><h2>Master Table of Contents (20 Chapters)</h2><ol>" + "".join(
+        f"<li><a href='#{cid}'>{ctitle}</a></li>" for cid, ctitle in toc_items
+    ) + "</ol></nav>"
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RDG Ephemeris — 20-Chapter Classical Ephemeris &amp; Pt. Maheshji's Jyotish Academy Compendium ({comp.year}-{comp.month:02d})</title>
+<style>
+  :root {{
+    --bg: #fdfaf3;
+    --paper: #ffffff;
+    --ink: #1a1815;
+    --muted: #5a5246;
+    --accent: #7a2012;
+    --gold: #b8860b;
+    --border: #d8cebe;
+    --row-alt: #f8f3e8;
+    --code-bg: #f1ead8;
+  }}
+  * {{ box-sizing: border-box; }}
+  body {{
+    font-family: "Georgia", "Cambria", "Times New Roman", serif;
+    background: var(--bg);
+    color: var(--ink);
+    margin: 0;
+    padding: 28px 36px;
+    line-height: 1.55;
+  }}
+  .page-container {{
+    max-width: 1560px;
+    margin: 0 auto;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.06);
+    padding: 36px 44px;
+  }}
+  .book-header h1 {{
+    font-size: 1.95rem;
+    color: var(--accent);
+    border-bottom: 3px double var(--gold);
+    padding-bottom: 14px;
+    margin-top: 0;
+  }}
+  h2 {{
+    font-size: 1.42rem;
+    color: var(--accent);
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 6px;
+    margin-top: 38px;
+  }}
+  h3 {{
+    font-size: 1.12rem;
+    color: #2f261d;
+    margin-top: 24px;
+    margin-bottom: 8px;
+  }}
+  .toc-box {{
+    background: var(--row-alt);
+    border: 1px solid var(--border);
+    border-left: 5px solid var(--gold);
+    padding: 18px 26px;
+    margin: 22px 0 32px 0;
+    border-radius: 4px;
+  }}
+  .toc-box h2 {{
+    margin-top: 0;
+    font-size: 1.2rem;
+    border-bottom: none;
+  }}
+  .toc-box ol {{
+    columns: 2;
+    column-gap: 36px;
+    margin: 0;
+    padding-left: 22px;
+  }}
+  .toc-box li {{
+    margin-bottom: 6px;
+    font-size: 0.94rem;
+  }}
+  .toc-box a {{
+    color: var(--accent);
+    text-decoration: none;
+  }}
+  .toc-box a:hover {{
+    text-decoration: underline;
+  }}
+  .academy-callout {{
+    background: #fbf5e6;
+    border-left: 4px solid var(--accent);
+    padding: 14px 20px;
+    margin: 16px 0;
+    font-size: 0.98rem;
+  }}
+  .table-scroll {{
+    overflow-x: auto;
+    margin: 12px 0 24px 0;
+  }}
+  table.ephemeris-table {{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    font-family: "Consolas", "Menlo", "Monaco", monospace;
+  }}
+  table.ephemeris-table th {{
+    background: #2b2118;
+    color: #fdfaf3;
+    text-align: left;
+    padding: 7px 9px;
+    border: 1px solid #3d3024;
+    font-weight: 600;
+    white-space: nowrap;
+  }}
+  table.ephemeris-table td {{
+    padding: 5px 9px;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }}
+  table.ephemeris-table tbody tr:nth-child(even) {{
+    background: var(--row-alt);
+  }}
+  code {{
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: "Consolas", "Menlo", monospace;
+    font-size: 0.86em;
+  }}
+  @media print {{
+    body {{ background: #fff; padding: 0; }}
+    .page-container {{ box-shadow: none; border: none; padding: 10px; }}
+    .chapter-section {{ page-break-before: always; }}
+    table.ephemeris-table {{ font-size: 7.5pt; }}
+  }}
+</style>
+</head>
+<body>
+<div class="page-container">
+{toc_html}
+{''.join(body_parts)}
+</div>
+</body>
+</html>
+"""
 
 
 __all__ = [
