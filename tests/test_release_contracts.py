@@ -393,4 +393,91 @@ def test_printed_d60_nature_matches_the_boolean_catalog(benefic: bool) -> None:
     assert actual and any(f"**{name}** | {label}" in line for line in actual)
 
 
+class _RecordingNodeAdapter:
+    def __init__(self) -> None:
+        self.flags: list[bool] = []
+
+    def calc_ut(self, jd_ut: float, body: str, **kwargs):
+        flag = bool(kwargs.get("true_node", False))
+        self.flags.append(flag)
+        return SimpleNamespace(longitude_deg=30.0 if flag else 0.0)
+
+
+@pytest.mark.parametrize(
+    "alias,true_node_flag,use_nak",
+    [
+        ("true_rahu", False, False),
+        ("true_node", False, False),
+        ("true_ketu", False, False),
+        ("true_rahu", False, True),
+        ("rahu", True, False),
+    ],
+)
+def test_explicit_node_alias_preserves_model_in_signs_and_nakshatras(
+    alias: str, true_node_flag: bool, use_nak: bool
+) -> None:
+    ad = _RecordingNodeAdapter()
+    rep = solve_chart_date_from_planetary_constraints(
+        2026,
+        2026,
+        {} if use_nak else {alias: "Aries"},
+        nakshatra_constraints={alias: "Ashwini"} if use_nak else None,
+        true_node=true_node_flag,
+        adapter=ad,
+        max_results=1,
+    )
+    assert ad.flags and all(ad.flags)
+    assert rep.match_count == 0
+
+
+class _ConfiguredAnalyticalAdapter:
+    def __init__(self, ayanamsa: str) -> None:
+        from ephemeris_oss.adapter import AnalyticalEphemerisProvider
+
+        self.provider = AnalyticalEphemerisProvider()
+        self.provider.set_ayanamsa(ayanamsa)
+
+    def calc_ut(self, jd_ut: float, body: str, sidereal: bool = True, ayanamsa: str = "lahiri"):
+        from ephemeris_oss.adapter import FLG_SIDEREAL
+
+        vals, _ = self.provider.calc_ut(jd_ut, body.capitalize(), flags=FLG_SIDEREAL if sidereal else 0)
+        return SimpleNamespace(longitude_deg=float(vals[0]), longitude_speed_deg_per_day=float(vals[3]))
+
+    def rise_trans(self, jd_ut: float, body: str, rsmi: int, geopos):
+        return self.provider.rise_trans(jd_ut, body.capitalize(), rsmi, geopos)
+
+
+@pytest.mark.parametrize("mode", ["lahiri", "raman"])
+def test_default_monthly_provider_obeys_the_requested_convention(mode: str) -> None:
+    from ephemeris_oss.almanac.panchang_calendar import generate_monthly_panchang
+
+    default_sheet = generate_monthly_panchang(2026, 11, 28.6139, 77.209, ayanamsa=mode)
+    configured = generate_monthly_panchang(
+        2026, 11, 28.6139, 77.209, ayanamsa=mode, adapter=_ConfiguredAnalyticalAdapter(mode)
+    )
+    assert default_sheet.days[0].sun_sidereal_lon_deg == pytest.approx(configured.days[0].sun_sidereal_lon_deg)
+    assert default_sheet.days[0].moon_sidereal_lon_deg == pytest.approx(configured.days[0].moon_sidereal_lon_deg)
+
+
+class _RayAdapter:
+    def __init__(self, target_body: str, speed: float) -> None:
+        self.target_body = target_body.lower()
+        self.speed = speed
+
+    def calc_ut(self, jd_ut: float, body: str, sidereal: bool = True, ayanamsa: str = "lahiri"):
+        is_target = body.lower() == self.target_body
+        lon = 30.0 if is_target else 120.0
+        spd = self.speed if is_target else 1.0
+        return SimpleNamespace(longitude_deg=lon, longitude_speed_deg_per_day=spd)
+
+
+@pytest.mark.parametrize("body,speed,expect_hit", [("mars", 1.0, False), ("mars", -1.0, True), ("sun", 1.0, True)])
+def test_only_motion_active_rays_can_hit_the_natal_moon(body: str, speed: float, expect_hit: bool) -> None:
+    rep = compute_sarvatobhadra_81_ray_vedha(2451545.0, 14.0, adapter=_RayAdapter(body, speed))
+    cap = body.capitalize()
+    assert (cap in rep.janma_nakshatra_vedha_planets) is expect_hit
+    assert any(h.transiting_body == cap and h.hits_natal_janma_nakshatra for h in rep.active_ray_hits) is expect_hit
+
+
+
 

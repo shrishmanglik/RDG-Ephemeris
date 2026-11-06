@@ -535,6 +535,14 @@ def compute_sarvatobhadra_81_ray_vedha(
         else:
             nature = "KRURA_MALEFIC_VEDHA"
 
+        if body_name in ("Sun", "Moon"):
+            active_ray_names = {"FRONT_SAMMUKHA", "LEFT_DIAGONAL_VAMA", "RIGHT_DIAGONAL_DAKSHINA"}
+        elif spd < 0.0:
+            active_ray_names = {"FRONT_SAMMUKHA", "RIGHT_DIAGONAL_DAKSHINA"}
+        else:
+            active_ray_names = {"FRONT_SAMMUKHA", "LEFT_DIAGONAL_VAMA"}
+        rays = [r_item for r_item in rays if r_item[0] in active_ray_names]
+
         for ray_name, dr, dc in rays:
             rr, cc = r0 + dr, c0 + dc
             while 0 <= rr <= 8 and 0 <= cc <= 8:

@@ -1,7 +1,7 @@
 {
   "pr": 26,
   "repository": "shrishmanglik/RDG-Ephemeris",
-  "previous_head": "4d17a82e0f90a6dadd3882a4ad0009266ae83e95",
+  "previous_head": "4a474a961fa48a27098ddaf160cc2d63fc7c27ca",
   "dispositions": [
     {
       "id": 4493166187,
@@ -218,6 +218,24 @@
       "path": "src/ephemeris_oss/almanac/human_ephemeris.py",
       "status": "FIXED_AND_VERIFIED",
       "resolution": "Evaluated s_nature is True or str(s_nature).lower() == 'benefic' when rendering Table 9E D60 Shashtyamsa nature labels and regenerated docs/HUMAN-READABLE-EPHEMERIS-AND-JYOTISH-ACADEMY-MANUAL.md and .html."
+    },
+    {
+      "id": 4497920955,
+      "path": "src/ephemeris_oss/impossible_astrology.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Recorded node_true_overrides and effective_true_node when explicit node aliases (true_node, true_rahu, true_ketu, mean_node) are passed in sign_constraints or nakshatra_constraints so ad.calc_ut and _build_inverse_match_window preserve the requested node model."
+    },
+    {
+      "id": 4497920969,
+      "path": "src/ephemeris_oss/almanac/panchang_calendar.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Called analytical.set_ayanamsa(ayanamsa) on the default AnalyticalEphemerisProvider in generate_monthly_panchang so non-Lahiri ayanamsa conventions are respected when no custom adapter is supplied."
+    },
+    {
+      "id": 4497920981,
+      "path": "src/ephemeris_oss/jyotish/harmonic_vedha_and_pinda.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Filtered active Sarvatobhadra Vedha rays by planetary motion in compute_sarvatobhadra_81_ray_vedha (all 3 rays for Sun/Moon, front+left for direct planets, front+right for retrograde planets) matching evaluate_sarvatobhadra_transits."
     }
   ]
 }

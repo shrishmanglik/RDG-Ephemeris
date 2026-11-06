@@ -2081,11 +2081,16 @@ def solve_chart_date_from_planetary_constraints(
 
     parsed_signs: dict[str, int] = {}
     normalized_sign_names: dict[str, str] = {}
+    node_true_overrides: dict[str, bool] = {}
     for body_raw, s_val in (sign_constraints or {}).items():
         b_raw = str(body_raw).strip().lower()
         if b_raw not in body_alias_map:
             raise ValueError(f"Unsupported planetary constraint body: {body_raw!r}")
         b_key = body_alias_map[b_raw]
+        if b_raw in ("true_node", "true_rahu", "true_ketu"):
+            node_true_overrides[b_key] = True
+        elif b_raw == "mean_node":
+            node_true_overrides[b_key] = False
         s_idx = _parse_sign_index(s_val)
         parsed_signs[b_key] = s_idx
         normalized_sign_names[b_key] = RASI_NAMES[s_idx]
@@ -2097,6 +2102,10 @@ def solve_chart_date_from_planetary_constraints(
         if b_raw not in body_alias_map:
             raise ValueError(f"Unsupported planetary constraint body: {body_raw!r}")
         b_key = body_alias_map[b_raw]
+        if b_raw in ("true_node", "true_rahu", "true_ketu"):
+            node_true_overrides[b_key] = True
+        elif b_raw == "mean_node":
+            node_true_overrides[b_key] = False
         if isinstance(n_val, int) and not isinstance(n_val, bool):
             n_idx = n_val if 0 <= n_val <= 26 else n_val - 1
         else:
@@ -2112,6 +2121,13 @@ def solve_chart_date_from_planetary_constraints(
         parsed_naks[b_key] = n_idx
         normalized_nak_names[b_key] = NAKSHATRA_NAMES[n_idx]
 
+    def _node_model_for(b_key: str) -> bool:
+        if b_key in node_true_overrides:
+            return node_true_overrides[b_key]
+        if b_key in ("rahu", "ketu") and ("rahu" in node_true_overrides or "ketu" in node_true_overrides):
+            return node_true_overrides.get("rahu", node_true_overrides.get("ketu", bool(true_node)))
+        return bool(true_node)
+
     slow_bodies = [
         b
         for b in ("pluto", "neptune", "uranus", "saturn", "jupiter", "rahu", "ketu")
@@ -2121,7 +2137,8 @@ def solve_chart_date_from_planetary_constraints(
     fast_bodies = [b for b in ("moon",) if b in parsed_signs or b in parsed_naks]
 
     def _body_matches(j_ut: float, b_key: str) -> bool:
-        pos = ad.calc_ut(j_ut, b_key, sidereal=True, ayanamsa=ayanamsa, true_node=true_node)
+        use_true = _node_model_for(b_key)
+        pos = ad.calc_ut(j_ut, b_key, sidereal=True, ayanamsa=ayanamsa, true_node=use_true)
         lon = float(pos.longitude_deg)
         if b_key in parsed_signs and min(int(lon // 30.0), 11) != parsed_signs[b_key]:
             return False
@@ -2229,13 +2246,17 @@ def solve_chart_date_from_planetary_constraints(
             elif in_m3:
                 in_m3 = False
                 mid_jd = 0.5 * (w3_s + last_good)
-                matches.append(_build_inverse_match_window(ad, mid_jd, w3_s, last_good, ayanamsa, true_node))
+                matches.append(
+                    _build_inverse_match_window(ad, mid_jd, w3_s, last_good, ayanamsa, true_node, node_true_overrides)
+                )
                 if len(matches) >= max_results:
                     break
             t += step3
         if in_m3 and len(matches) < max_results:
             mid_jd = 0.5 * (w3_s + last_good)
-            matches.append(_build_inverse_match_window(ad, mid_jd, w3_s, last_good, ayanamsa, true_node))
+            matches.append(
+                _build_inverse_match_window(ad, mid_jd, w3_s, last_good, ayanamsa, true_node, node_true_overrides)
+            )
 
     receipt = {
         "module": "ephemeris_oss.impossible_astrology.inverse_chart_date_solver",
@@ -2270,12 +2291,20 @@ def _build_inverse_match_window(
     w_end: float,
     ayanamsa: str,
     true_node: bool,
+    node_true_overrides: Mapping[str, bool] | None = None,
 ) -> InverseChartMatchWindow:
     lons: dict[str, float] = {}
     signs: dict[str, str] = {}
     naks: dict[str, str] = {}
+    overrides = node_true_overrides or {}
     for b_key in VEDIC_NINE_GRAHAS + ("uranus", "neptune", "pluto"):
-        pos = ad.calc_ut(mid_jd, b_key, sidereal=True, ayanamsa=ayanamsa, true_node=true_node)
+        if b_key in overrides:
+            use_true = overrides[b_key]
+        elif b_key in ("rahu", "ketu") and ("rahu" in overrides or "ketu" in overrides):
+            use_true = overrides.get("rahu", overrides.get("ketu", bool(true_node)))
+        else:
+            use_true = bool(true_node)
+        pos = ad.calc_ut(mid_jd, b_key, sidereal=True, ayanamsa=ayanamsa, true_node=use_true)
         lon = float(pos.longitude_deg)
         cap = b_key.capitalize()
         lons[cap] = round(lon, 6)

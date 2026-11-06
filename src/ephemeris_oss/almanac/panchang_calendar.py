@@ -166,6 +166,7 @@ def generate_monthly_panchang(
         raise ValueError("longitude_deg must be finite and within [-180.0, 180.0]")
 
     analytical = AnalyticalEphemerisProvider()
+    analytical.set_ayanamsa(ayanamsa)
 
     def _sun_moon_sidereal(jd_ut: float) -> tuple[float, float, float, float]:
         if adapter is not None:
