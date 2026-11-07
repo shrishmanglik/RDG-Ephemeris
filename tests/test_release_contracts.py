@@ -1256,3 +1256,18 @@ def test_round8_skewed_station_phase_spherical_geometry_arudha_and_vimshopaka_pa
         )
         assert c_we["sahams_report"]["punya"].longitude_deg == pytest.approx(exp_sah["punya"].longitude_deg, abs=1e-9)
 
+    # 8. Circumpolar unavailable-event and invalid-JD termination guards:
+    from ephemeris_oss._api import EphemerisError
+
+    jd_arctic_solstice = real_ad.julday(2026, 6, 21, 0.0)
+    for invalid_or_circumpolar_sr in (None, jd_arctic_solstice + 0.5, 1e20, float("inf")):
+        with pytest.raises(EphemerisError):
+            compute_vishesha_lagnas_and_special_points(
+                jd_arctic_solstice,
+                66.6,
+                18.9553,
+                sunrise_jd_ut=invalid_or_circumpolar_sr,
+                adapter=real_ad,
+            )
+
+

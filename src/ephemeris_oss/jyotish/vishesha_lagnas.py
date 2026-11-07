@@ -429,6 +429,7 @@ def compute_vishesha_lagnas_and_special_points(
     """Compute all 8 Special Lagnas (Udaya, Hora, Ghati, Bhava, Sree, Indu, Pranapada, Varnada),
     Yogi/Sahayogi/Avayogi points, 12 Jaimini Arudha Padas (AL..UL), and 7/8 Chara Karakas.
     """
+    from .._api import EphemerisError
     if adapter is None:
         from ..adapter import CALC_RISE as _CALC_RISE, EphemerisAdapter as _EphemerisAdapter
         ad = _EphemerisAdapter()
@@ -438,9 +439,16 @@ def compute_vishesha_lagnas_and_special_points(
     houses = ad.houses_ut(jd_ut, latitude_deg, longitude_deg, system="placidus", ayanamsa=ayanamsa)
     udaya_lagna_deg = normalize_degrees(houses.ascendant_deg)
 
-    if sunrise_jd_ut is None or not math.isfinite(sunrise_jd_ut) or sunrise_jd_ut > jd_ut:
+    if sunrise_jd_ut is not None:
+        if not math.isfinite(sunrise_jd_ut):
+            raise EphemerisError(f"invalid Julian Date {sunrise_jd_ut!r}")
+        if hasattr(ad, "revjul"):
+            ad.revjul(sunrise_jd_ut)
+
+    if sunrise_jd_ut is None or sunrise_jd_ut > jd_ut:
         # Resolve exact most recent local astronomical sunrise <= jd_ut
         resolved_sr: float | None = None
+        last_rise_error: EphemerisError | None = None
         for offset_days in (1.5, 1.25, 1.0, 0.75, 0.5, 0.25, 0.0):
             try:
                 _, (cand,) = ad.rise_trans(
@@ -453,19 +461,17 @@ def compute_vishesha_lagnas_and_special_points(
                 if math.isfinite(cand_f) and cand_f <= jd_ut:
                     if resolved_sr is None or cand_f > resolved_sr:
                         resolved_sr = cand_f
-            except Exception:
-                pass
+            except EphemerisError as exc:
+                last_rise_error = exc
         if resolved_sr is not None:
             sunrise_jd_ut = round(resolved_sr, 8)
-        elif sunrise_jd_ut is not None and math.isfinite(sunrise_jd_ut) and sunrise_jd_ut > jd_ut:
-            while sunrise_jd_ut > jd_ut:
-                sunrise_jd_ut -= 1.0
+        elif last_rise_error is not None:
+            raise last_rise_error
         else:
-            local_solar_jd = jd_ut + (longitude_deg / 360.0)
-            sr_approx = math.floor(local_solar_jd - 0.5) + 0.5 + (6.0 / 24.0) - (longitude_deg / 360.0)
-            if sr_approx > jd_ut:
-                sr_approx -= 1.0
-            sunrise_jd_ut = sr_approx
+            raise EphemerisError(
+                f"unable to resolve preceding astronomical sunrise at latitude {latitude_deg} deg, "
+                f"longitude {longitude_deg} deg on or before JD {jd_ut!r}"
+            )
 
     sun_birth = ad.calc_ut(jd_ut, "sun", sidereal=True, ayanamsa=ayanamsa).longitude_deg % 360.0
     moon_birth = ad.calc_ut(jd_ut, "moon", sidereal=True, ayanamsa=ayanamsa).longitude_deg % 360.0
