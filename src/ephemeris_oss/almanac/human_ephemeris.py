@@ -40,7 +40,7 @@ from typing import Any, Mapping
 
 from .._version import __version__
 from ..adapter import EphemerisAdapter, FLG_SIDEREAL
-from ..engine.conventions import AYANAMSA_CATALOG
+from ..engine.conventions import AYANAMSA_CATALOG, _canonical_ayanamsa
 from ..engine.earth_orientation import estimate_delta_t
 from ..engine.receipt import canonical_hash
 from ..engine.stellar_anchors import YOGATARA_30_CATALOG
@@ -397,6 +397,7 @@ def generate_human_manual_ephemeris_compendium(
     lon = float(longitude_deg)
     tz_off = float(tz_offset_hours)
     ref_h_ut = float(reference_hour_ut)
+    ayanamsa = _canonical_ayanamsa(str(ayanamsa or "lahiri").strip().lower().replace("-", "_")).key
 
     ad = adapter if adapter is not None else EphemerisAdapter()
     panchang_cal = generate_monthly_panchang(
@@ -856,8 +857,8 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     lines.append("### Table 1B — Master 25-Ayanamsha Reference & Conversion Table (Evaluated at Epoch `2026-11-01 00:00 UTC`)")
     lines.append("")
     lahiri_base = ad.get_ayanamsa_ut(jd_epoch, mode="lahiri")
-    selected_ay_key = comp.ayanamsa_mode if comp.ayanamsa_mode in AYANAMSA_CATALOG else "lahiri"
-    selected_ay_def = AYANAMSA_CATALOG[selected_ay_key]
+    selected_ay_def = _canonical_ayanamsa(str(comp.ayanamsa_mode or "lahiri").strip().lower().replace("-", "_"))
+    selected_ay_key = selected_ay_def.key
     selected_base = ad.get_ayanamsa_ut(jd_epoch, mode=selected_ay_key)
     lines.append(
         "**How to Convert Any Position in This Compendium to Another Ayanamsha:** Every sidereal table in this book "

@@ -289,7 +289,7 @@
       "id": 4498855661,
       "path": "src/ephemeris_oss/almanac/human_ephemeris.py",
       "status": "FIXED_AND_VERIFIED",
-      "resolution": "Based Table 1B conversion instructions and delta offsets on comp.ayanamsa_mode (selected_base = ad.get_ayanamsa_ut(jd_epoch, mode=selected_ay_key)) so compendia generated in any ayanamsa print offsets relative to that active ayanamsa."
+      "resolution": "Normalized ayanamsa via _canonical_ayanamsa(str(mode or 'lahiri').strip().lower().replace('-', '_')) in both generate_human_manual_ephemeris_compendium and _render_compendium_markdown Table 1B so canonical, uppercase, space-padded, and alias spellings print offsets relative to the active ayanamsa and unsupported conventions raise explicitly instead of silently falling back to Lahiri."
     },
     {
       "id": 4498855667,

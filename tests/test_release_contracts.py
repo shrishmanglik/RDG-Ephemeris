@@ -1102,18 +1102,67 @@ def test_round8_skewed_station_phase_spherical_geometry_arudha_and_vimshopaka_pa
             ]
             assert cols == exp_cols, f"Drishti mismatch in {rep_name} at {deg_step}: {cols} != {exp_cols}"
 
-    # 8. Table 1B non-Lahiri ayanamsa offset parity (generating with raman and kp bases offsets on the selected ayanamsa):
+    # 8. Table 1B non-Lahiri ayanamsa offset parity across canonical, uppercase, space-padded, and alias spellings:
+    import ast
     from dataclasses import replace as dc_replace
+    from ephemeris_oss.almanac import human_ephemeris as h_mod
+    from ephemeris_oss.engine.contracts import AstronomyDataUnavailable
 
-    comp_raman = dc_replace(comp, ayanamsa_mode="raman")
-    md_raman = comp_raman.to_markdown()
-    assert "printed in **Raman (Hand/NOVA modern realization) (`raman`)**" in md_raman
-    assert "Offset vs `raman` (`Δ = A − A_raman`)" in md_raman
-    sec_1b = md_raman.split("### Table 1B", 1)[1].split("### Table 1C", 1)[0]
-    raman_row = next(ln for ln in sec_1b.splitlines() if "| `raman` |" in ln)
-    lahiri_row = next(ln for ln in sec_1b.splitlines() if "| `lahiri` |" in ln)
-    assert "| `+00° 00' 00\"` |" in raman_row
-    assert "| `+00° 00' 00\"` |" not in lahiri_row
+    for mode_variant in ("raman", "RAMAN", " raman ", "bv_raman", "BV_RAMAN"):
+        comp_raman = dc_replace(comp, ayanamsa_mode=mode_variant)
+        md_raman = comp_raman.to_markdown()
+        assert "printed in **Raman (Hand/NOVA modern realization) (`raman`)**" in md_raman
+        assert "Offset vs `raman` (`Δ = A − A_raman`)" in md_raman
+        sec_1b = md_raman.split("### Table 1B", 1)[1].split("### Table 1C", 1)[0]
+        raman_row = next(ln for ln in sec_1b.splitlines() if "| `raman` |" in ln)
+        lahiri_row = next(ln for ln in sec_1b.splitlines() if "| `lahiri` |" in ln)
+        assert "| `+00° 00' 00\"` |" in raman_row
+        assert "| `+01° 26' 47\"` |" in lahiri_row
+
+    h_src = Path(h_mod.__file__).read_text(encoding="utf-8")
+    h_fn = next(
+        n for n in ast.parse(h_src).body if isinstance(n, ast.FunctionDef) and n.name == "_render_compendium_markdown"
+    )
+    def _is_marker(node: ast.stmt, txt: str) -> bool:
+        return (
+            isinstance(node, ast.Expr)
+            and isinstance(node.value, ast.Call)
+            and bool(node.value.args)
+            and isinstance(node.value.args[0], ast.Constant)
+            and txt in str(node.value.args[0].value)
+        )
+    idx_1b = next(i for i, n in enumerate(h_fn.body) if _is_marker(n, "### Table 1B"))
+    idx_1c = next(i for i, n in enumerate(h_fn.body) if _is_marker(n, "### Table 1C"))
+    blk_1b = compile(ast.Module(body=h_fn.body[idx_1b:idx_1c], type_ignores=[]), str(Path(h_mod.__file__)), "exec")
+    jd_1b = real_ad.julday(2026, 11, 1, 0.0)
+    sup_modes: list[str] = []
+    for k_ay in h_mod.AYANAMSA_CATALOG:
+        try:
+            real_ad.get_ayanamsa_ut(jd_1b, mode=k_ay)
+            sup_modes.append(k_ay)
+        except Exception:
+            pass
+    assert len(sup_modes) == 21
+    for canon_m in sup_modes:
+        for var_m in (canon_m, canon_m.upper(), f" {canon_m} "):
+            base_ay = real_ad.get_ayanamsa_ut(jd_1b, mode=var_m)
+            env_1b = vars(h_mod).copy()
+            env_1b.update(lines=[], ad=real_ad, jd_epoch=jd_1b, comp=SimpleNamespace(ayanamsa_mode=var_m))
+            exec(blk_1b, env_1b)
+            for tgt_m in sup_modes:
+                ln_t = next(x for x in env_1b["lines"] if f"| `{tgt_m}` |" in x)
+                c_t = [c.strip() for c in ln_t.strip("|").split("|")]
+                m_off = re.search(r"([+-])(\d+)° (\d+)' (\d+)\"", c_t[5])
+                assert m_off is not None, ln_t
+                sg, d_s, m_s, s_s = m_off.groups()
+                act_d = (1.0 if sg == "+" else -1.0) * (float(d_s) + float(m_s) / 60.0 + float(s_s) / 3600.0)
+                exp_d = real_ad.get_ayanamsa_ut(jd_1b, mode=tgt_m) - base_ay
+                assert abs(act_d - exp_d) <= 0.5001 / 3600.0, (var_m, tgt_m, act_d, exp_d)
+
+    with pytest.raises(AstronomyDataUnavailable):
+        dc_replace(comp, ayanamsa_mode="unsupported_mode_xyz").to_markdown()
+    with pytest.raises(AstronomyDataUnavailable):
+        generate_human_manual_ephemeris_compendium(2026, 11, ayanamsa="unsupported_mode_xyz")
 
 
 
