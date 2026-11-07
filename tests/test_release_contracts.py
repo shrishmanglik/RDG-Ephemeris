@@ -1256,7 +1256,3 @@ def test_round8_skewed_station_phase_spherical_geometry_arudha_and_vimshopaka_pa
         )
         assert c_we["sahams_report"]["punya"].longitude_deg == pytest.approx(exp_sah["punya"].longitude_deg, abs=1e-9)
 
-
-
-
-
