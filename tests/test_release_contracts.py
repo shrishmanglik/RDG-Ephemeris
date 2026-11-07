@@ -1164,6 +1164,99 @@ def test_round8_skewed_station_phase_spherical_geometry_arudha_and_vimshopaka_pa
     with pytest.raises(AstronomyDataUnavailable):
         generate_human_manual_ephemeris_compendium(2026, 11, ayanamsa="unsupported_mode_xyz")
 
+    # 9. Round-11 worked-example preceding-sunrise and solar-day context parity across 5 world cities (20 cases):
+    from unittest.mock import patch
+    from ephemeris_oss.almanac.panchang_calendar import generate_monthly_panchang
+    from ephemeris_oss.jyotish_advanced.varshphal import compute_tajika_sahams
+    from ephemeris_oss.jyotish_transit.prashna import compute_11_upagrahas
+
+    city_grid = (
+        ("Ujjain", 23.1765, 75.7885, 5.5, True),
+        ("Sydney", -33.8688, 151.2093, 11.0, True),
+        ("New York", 40.7128, -74.0060, -5.0, False),
+        ("Toronto", 43.6532, -79.3832, -5.0, False),
+        ("Los Angeles", 34.0522, -118.2437, -8.0, False),
+    )
+    for city_name, c_lat, c_lon, c_tz, exp_is_day in city_grid:
+        c_cal = generate_monthly_panchang(2026, 11, c_lat, c_lon, tz_offset_hours=c_tz, adapter=real_ad)
+        if city_name == "Ujjain":
+            c_comp = comp
+        elif city_name == "New York":
+            c_comp = generate_human_manual_ephemeris_compendium(
+                2026, 11, latitude_deg=c_lat, longitude_deg=c_lon, tz_offset_hours=c_tz, adapter=real_ad
+            )
+        else:
+            with (
+                patch.object(h_mod, "scan_ingresses_and_aspects", return_value=SimpleNamespace(rashi_ingresses=(), nakshatra_ingresses=(), aspects=())),
+                patch.object(h_mod, "solve_krantisamya_mahapata_windows", return_value=comp.phenomena_summary["mahapata_report"]),
+                patch.object(h_mod, "solve_synodic_retrograde_loops_and_triple_passes", return_value=comp.worked_example["frontier_retro_report"]),
+                patch.object(h_mod, "evaluate_lifetime_eclipse_natal_sensitivity", return_value=comp.worked_example["frontier_eclipse_report"]),
+                patch.object(h_mod, "solve_golden_muhurta_electional_windows", return_value=comp.worked_example["frontier_muhurta_report"]),
+            ):
+                c_comp = generate_human_manual_ephemeris_compendium(
+                    2026, 11, latitude_deg=c_lat, longitude_deg=c_lon, tz_offset_hours=c_tz, adapter=real_ad
+                )
+        c_we = c_comp.worked_example
+        jd_w = c_comp.daily_rows[14].jd_reference_ut + 5.2 / 24.0
+        preceding_days = [
+            (idx, d) for idx, d in enumerate(c_cal.days) if d.sunrise_jd_ut <= jd_w
+        ]
+        assert preceding_days, city_name
+        p_idx, p_day = preceding_days[-1]
+        exp_next_sr = c_cal.days[p_idx + 1].sunrise_jd_ut
+        assert c_we["solar_day_civil_date"] == p_day.civil_date, city_name
+        assert c_we["sunrise_jd_ut"] == pytest.approx(p_day.sunrise_jd_ut, abs=1e-7), city_name
+        assert c_we["sunset_jd_ut"] == pytest.approx(p_day.sunset_jd_ut, abs=1e-7), city_name
+        assert c_we["next_sunrise_jd_ut"] == pytest.approx(exp_next_sr, abs=1e-7), city_name
+        assert c_we["is_day_birth"] is exp_is_day, city_name
+
+        exp_vis = compute_vishesha_lagnas_and_special_points(
+            jd_w, c_lat, c_lon, sunrise_jd_ut=p_day.sunrise_jd_ut, adapter=real_ad
+        )
+        act_vis = c_we["vishesha_report"]
+        assert act_vis.elapsed_hours_since_sunrise > 0.0, city_name
+        for pt_attr in ("hora_lagna", "ghati_lagna", "bhava_lagna", "pranapada_lagna"):
+            act_deg = getattr(act_vis, pt_attr).longitude_deg
+            exp_deg = getattr(exp_vis, pt_attr).longitude_deg
+            assert act_deg == pytest.approx(exp_deg, abs=1e-9), (city_name, pt_attr)
+
+        # Direct call with future civil-day sunrise or None must also resolve preceding sunrise <= jd_w:
+        future_or_civil_sr = c_cal.days[14].sunrise_jd_ut
+        direct_vis = compute_vishesha_lagnas_and_special_points(
+            jd_w, c_lat, c_lon, sunrise_jd_ut=future_or_civil_sr, adapter=real_ad
+        )
+        for pt_attr in ("hora_lagna", "ghati_lagna", "bhava_lagna", "pranapada_lagna"):
+            assert getattr(direct_vis, pt_attr).longitude_deg == pytest.approx(
+                getattr(exp_vis, pt_attr).longitude_deg, abs=1e-9
+            ), (city_name, pt_attr)
+
+        # Upagrahas and Sahams must match the active solar day's sunrise/sunset/next_sunrise/is_day_birth:
+        sun_w = real_ad.calc_ut(jd_w, "sun", sidereal=True).longitude_deg % 360.0
+        asc_w = real_ad.houses_ut(jd_w, c_lat, c_lon, system="placidus").ascendant_deg
+        exp_upa = compute_11_upagrahas(
+            sun_w,
+            p_day.sunrise_jd_ut,
+            p_day.sunset_jd_ut,
+            jd_ut=jd_w,
+            next_sunrise_jd=exp_next_sr,
+            vara_index=p_day.vara_index,
+            lagna_lon_deg=asc_w,
+            ascendant_fn=lambda j, lt=c_lat, ln=c_lon: real_ad.houses_ut(
+                j, lt, ln, system="placidus"
+            ).ascendant_deg,
+        )
+        assert c_we["upagrahas_report"].gulika.longitude_deg == pytest.approx(exp_upa.gulika.longitude_deg, abs=1e-9)
+        exp_sah = compute_tajika_sahams(
+            {
+                p: real_ad.calc_ut(jd_w, p, sidereal=True).longitude_deg % 360.0
+                for p in ("sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn")
+            },
+            asc_w,
+            is_day_birth=exp_is_day,
+        )
+        assert c_we["sahams_report"]["punya"].longitude_deg == pytest.approx(exp_sah["punya"].longitude_deg, abs=1e-9)
+
+
 
 
 

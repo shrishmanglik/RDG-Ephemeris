@@ -430,20 +430,42 @@ def compute_vishesha_lagnas_and_special_points(
     Yogi/Sahayogi/Avayogi points, 12 Jaimini Arudha Padas (AL..UL), and 7/8 Chara Karakas.
     """
     if adapter is None:
-        from ..adapter import EphemerisAdapter as _EphemerisAdapter
+        from ..adapter import CALC_RISE as _CALC_RISE, EphemerisAdapter as _EphemerisAdapter
         ad = _EphemerisAdapter()
     else:
+        from ..adapter import CALC_RISE as _CALC_RISE
         ad = adapter
     houses = ad.houses_ut(jd_ut, latitude_deg, longitude_deg, system="placidus", ayanamsa=ayanamsa)
     udaya_lagna_deg = normalize_degrees(houses.ascendant_deg)
 
-    if sunrise_jd_ut is None:
-        # Approximate local sunrise on the active solar day
-        local_solar_jd = jd_ut + (longitude_deg / 360.0)
-        sr_approx = math.floor(local_solar_jd - 0.5) + 0.5 + (6.0 / 24.0) - (longitude_deg / 360.0)
-        if sr_approx > jd_ut:
-            sr_approx -= 1.0
-        sunrise_jd_ut = sr_approx
+    if sunrise_jd_ut is None or not math.isfinite(sunrise_jd_ut) or sunrise_jd_ut > jd_ut:
+        # Resolve exact most recent local astronomical sunrise <= jd_ut
+        resolved_sr: float | None = None
+        for offset_days in (1.5, 1.25, 1.0, 0.75, 0.5, 0.25, 0.0):
+            try:
+                _, (cand,) = ad.rise_trans(
+                    jd_ut - offset_days,
+                    "sun",
+                    _CALC_RISE,
+                    (longitude_deg, latitude_deg, 0.0),
+                )
+                cand_f = float(cand)
+                if math.isfinite(cand_f) and cand_f <= jd_ut:
+                    if resolved_sr is None or cand_f > resolved_sr:
+                        resolved_sr = cand_f
+            except Exception:
+                pass
+        if resolved_sr is not None:
+            sunrise_jd_ut = round(resolved_sr, 8)
+        elif sunrise_jd_ut is not None and math.isfinite(sunrise_jd_ut) and sunrise_jd_ut > jd_ut:
+            while sunrise_jd_ut > jd_ut:
+                sunrise_jd_ut -= 1.0
+        else:
+            local_solar_jd = jd_ut + (longitude_deg / 360.0)
+            sr_approx = math.floor(local_solar_jd - 0.5) + 0.5 + (6.0 / 24.0) - (longitude_deg / 360.0)
+            if sr_approx > jd_ut:
+                sr_approx -= 1.0
+            sunrise_jd_ut = sr_approx
 
     sun_birth = ad.calc_ut(jd_ut, "sun", sidereal=True, ayanamsa=ayanamsa).longitude_deg % 360.0
     moon_birth = ad.calc_ut(jd_ut, "moon", sidereal=True, ayanamsa=ayanamsa).longitude_deg % 360.0

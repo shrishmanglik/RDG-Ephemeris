@@ -599,7 +599,32 @@ def generate_human_manual_ephemeris_compendium(
     bal_m = int(bal_m_rem)
     bal_d = int(round((bal_m_rem - bal_m) * 30.0))
 
-    p_day_worked = panchang_cal.days[sample_idx]
+    preceding_solar_days = [
+        (idx, d)
+        for idx, d in enumerate(panchang_cal.days)
+        if d.sunrise_jd_ut is not None and math.isfinite(d.sunrise_jd_ut) and d.sunrise_jd_ut <= jd_worked_ut
+    ]
+    if preceding_solar_days:
+        worked_solar_idx, p_day_worked = preceding_solar_days[-1]
+        if (
+            worked_solar_idx + 1 < len(panchang_cal.days)
+            and panchang_cal.days[worked_solar_idx + 1].sunrise_jd_ut is not None
+            and math.isfinite(panchang_cal.days[worked_solar_idx + 1].sunrise_jd_ut)
+        ):
+            next_sunrise_worked_jd = float(panchang_cal.days[worked_solar_idx + 1].sunrise_jd_ut)
+        else:
+            next_sunrise_worked_jd = float(p_day_worked.sunrise_jd_ut) + 1.0
+    else:
+        worked_solar_idx = sample_idx
+        p_day_worked = panchang_cal.days[sample_idx]
+        next_sunrise_worked_jd = float(p_day_worked.sunrise_jd_ut) + 1.0
+
+    is_day_birth_worked = bool(
+        math.isfinite(p_day_worked.sunrise_jd_ut)
+        and math.isfinite(p_day_worked.sunset_jd_ut)
+        and p_day_worked.sunrise_jd_ut <= jd_worked_ut < p_day_worked.sunset_jd_ut
+    )
+
     vishesha_worked = compute_vishesha_lagnas_and_special_points(
         jd_worked_ut,
         lat,
@@ -614,7 +639,7 @@ def generate_human_manual_ephemeris_compendium(
         p_day_worked.sunrise_jd_ut,
         p_day_worked.sunset_jd_ut,
         jd_ut=jd_worked_ut,
-        next_sunrise_jd=p_day_worked.sunrise_jd_ut + 1.0,
+        next_sunrise_jd=next_sunrise_worked_jd,
         vara_index=p_day_worked.vara_index,
         lagna_lon_deg=worked_houses.ascendant_deg,
         ascendant_fn=lambda j: ad.houses_ut(j, lat, lon, system="placidus", ayanamsa=ayanamsa).ascendant_deg,
@@ -648,7 +673,7 @@ def generate_human_manual_ephemeris_compendium(
             for p in ("sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn")
         },
         worked_houses.ascendant_deg,
-        is_day_birth=True,
+        is_day_birth=is_day_birth_worked,
     )
     natal_lons_worked = {
         p: ad.calc_ut(jd_worked_ut, p, sidereal=True, ayanamsa=ayanamsa).longitude_deg % 360.0
@@ -687,7 +712,7 @@ def generate_human_manual_ephemeris_compendium(
         sun_w_lon,
         natal_lons_worked,
         jd_worked_ut,
-        is_day_birth=True,
+        is_day_birth=is_day_birth_worked,
         query_jd=jd_worked_ut + 365.2425 * 24.0,
     )
     frontier_prana_worked = compute_vimshottari_5_level_prana_chronometer(
@@ -736,6 +761,11 @@ def generate_human_manual_ephemeris_compendium(
 
     worked_example = {
         "civil_date": row_d0.civil_date,
+        "solar_day_civil_date": p_day_worked.civil_date,
+        "sunrise_jd_ut": round(float(p_day_worked.sunrise_jd_ut), 8),
+        "sunset_jd_ut": round(float(p_day_worked.sunset_jd_ut), 8),
+        "next_sunrise_jd_ut": round(float(next_sunrise_worked_jd), 8),
+        "is_day_birth": is_day_birth_worked,
         "birth_time_local": "10:42:00 IST (UTC+05:30)",
         "elapsed_after_0530_ist": "5 hours 12 minutes (13 Ghatis 00 Palas)",
         "trairashika_fraction": round(interp_fraction, 6),
