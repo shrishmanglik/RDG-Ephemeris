@@ -408,6 +408,19 @@ def main(argv: list[str] | None = None) -> int:
     tb.add_argument("--step-days", type=float, default=1.0)
     tb.add_argument("--format", choices=("markdown", "csv", "json"), default="markdown")
 
+    he = commands.add_parser(
+        "human-ephemeris",
+        help="generate Human-Readable Classical Ephemeris & Jyotish Academy Manual Calculation Compendium",
+    )
+    he.add_argument("--year", type=int, required=True, help="Calendar year (e.g. 2026)")
+    he.add_argument("--month", type=int, default=11, help="Calendar month 1..12 (default: 11)")
+    he.add_argument("--lat", type=float, default=28.6139, help="Observer latitude in degrees")
+    he.add_argument("--lon", type=float, default=77.2090, help="Observer longitude in degrees")
+    he.add_argument("--tz-offset", type=float, default=5.5, help="Timezone offset in hours from UTC (default: 5.5 IST)")
+    he.add_argument("--ayanamsa", default="lahiri", help="Sidereal ayanamsa mode (default: lahiri)")
+    he.add_argument("--format", choices=("markdown", "html", "json"), default="markdown")
+    he.add_argument("--out", default=None, help="Optional file path to save the compendium")
+
     mc = commands.add_parser("mcp", help="start built-in Model Context Protocol (MCP) JSON-RPC 2.0 server over stdio")
     mc.add_argument("--dump-tools", action="store_true", help="print MCP tool schemas as JSON and exit")
 
@@ -461,6 +474,30 @@ def main(argv: list[str] | None = None) -> int:
             return _siddhanta(args)
         if args.command == "table":
             return _table(args)
+        if args.command == "human-ephemeris":
+            from .almanac import generate_human_manual_ephemeris_compendium
+
+            comp = generate_human_manual_ephemeris_compendium(
+                args.year,
+                args.month,
+                latitude_deg=args.lat,
+                longitude_deg=args.lon,
+                tz_offset_hours=args.tz_offset,
+                ayanamsa=args.ayanamsa,
+            )
+            if args.format == "html":
+                rendered = comp.to_html()
+            elif args.format == "json":
+                rendered = json.dumps(comp.to_dict(), indent=2, sort_keys=True) + "\n"
+            else:
+                rendered = comp.to_markdown()
+            if args.out:
+                out_path = Path(args.out)
+                out_path.parent.mkdir(parents=True, exist_ok=True)
+                out_path.write_text(rendered, encoding="utf-8", newline="\n")
+            else:
+                print(rendered, end="")
+            return 0
         if args.command == "mcp":
             from .mcp_server import main as mcp_main
 

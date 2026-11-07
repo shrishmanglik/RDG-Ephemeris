@@ -18,6 +18,17 @@ from .ephemeris_tables import (
     generate_ephemeris_table,
     scan_ingresses_and_aspects,
 )
+from .human_ephemeris import (
+    CLASSICAL_COMBUSTION_ORBS_DEG,
+    HumanDailyEphemerisRow,
+    HumanDailyPlanetCell,
+    HumanManualEphemerisCompendium,
+    LANKODAYA_VINADIS,
+    format_classical_rashi_dms,
+    format_daily_motion_dms,
+    format_ghati_pala,
+    generate_human_manual_ephemeris_compendium,
+)
 from .panchang_calendar import (
     DailyPanchangEntry,
     MonthlyPanchangSheet,
@@ -89,9 +100,18 @@ __all__ = [
     "compute_regional_solar_calendar",
     "evaluate_crescent_visibility",
     "evaluate_heliacal_visibility",
+    "format_classical_rashi_dms",
+    "format_daily_motion_dms",
     "format_dms",
+    "format_ghati_pala",
     "generate_ephemeris_table",
+    "generate_human_manual_ephemeris_compendium",
     "generate_monthly_panchang",
+    "HumanDailyEphemerisRow",
+    "HumanDailyPlanetCell",
+    "HumanManualEphemerisCompendium",
+    "LANKODAYA_VINADIS",
+    "CLASSICAL_COMBUSTION_ORBS_DEG",
     "resolve_heliacal_body",
     "scan_ingresses_and_aspects",
 ]

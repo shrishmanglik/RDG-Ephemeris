@@ -3,6 +3,7 @@
 An independently built, permissively licensed (`Apache-2.0`) planetary ephemeris and classical Indian astronomy (Jyotish) engine designed for real Jyotish applications with **40 years of lived traditional Jyotish practice** (in tribute to **Raj Dulari Gupta  -  RDG**) and modern clean-room software engineering. Derived directly from NASA JPL DE440/DE441 Chebyshev polynomials, IAU 2006/2000A precession-nutation, Vondrák-2011 long-term precession, and primary astronomical and Jyotish treatises, every calculation carries explicit conventions, transparent accuracy and limitation disclosures, and a deterministic SHA-256 cryptographic receipt.
 
 - **Technical White Paper & 9,074-Month Full-Span DE440 Benchmark:** [`docs/RDG-EPHEMERIS-WHITEPAPER-AND-BENCHMARKS.md`](docs/RDG-EPHEMERIS-WHITEPAPER-AND-BENCHMARKS.md)
+- **28-Chapter Human-Readable Classical Ephemeris & Pt. Maheshji's Jyotish Academy Manual Calculation Compendium:** [`docs/HUMAN-READABLE-EPHEMERIS-AND-JYOTISH-ACADEMY-MANUAL.md`](docs/HUMAN-READABLE-EPHEMERIS-AND-JYOTISH-ACADEMY-MANUAL.md)
 - **AI Agent, MCP Server, CLI & REST Plugin Integration Guide:** [`docs/AI-MCP-AND-PLUGIN-INTEGRATION-GUIDE.md`](docs/AI-MCP-AND-PLUGIN-INTEGRATION-GUIDE.md)
 - **Jyotish Capabilities & Lineage Conventions:** [`docs/JYOTISH-CAPABILITIES-AND-CONVENTIONS.md`](docs/JYOTISH-CAPABILITIES-AND-CONVENTIONS.md)
 - **Scientific Limitations, Precision Regimes & Honest Roadmap:** [`docs/ROADMAP-AND-LIMITATIONS.md`](docs/ROADMAP-AND-LIMITATIONS.md)
@@ -39,10 +40,10 @@ The table below separates reproduced `ephemeris-oss` measurements from sourced c
 | **Reproduced Fidelity vs Full NASA JPL DE440 (`1800..2100 CE`, `12:00 TT`)** | **`<= 0.000717 arcsec` max** (`0.000019 arcsec` median across 3,612 monthly TT epochs/planet) | UNKNOWN (not executed in this clean-room repository; depends on external `.se1`/`.bsp` files) | UNKNOWN (not executed in this clean-room repository; depends on selected SPK file) | UNKNOWN (not executed in this clean-room repository; depends on selected ephemeris) |
 | **Reproduced Month-by-Month Fidelity vs Full NASA JPL DE440 (`1550-01` to `2306-02`, `9,074` Months)** | **`<= 0.026041 arcsec` max** across **63,518 live body-epoch evaluations** (`0` failures; `0.011989"` in `1550..1800`, `0.026041"` in `1800..2100`, `0.013609"` in `2101..2306`) | UNKNOWN (not executed in this clean-room repository; depends on external `.se1` files) | UNKNOWN (not executed in this clean-room repository; depends on selected SPK file) | UNKNOWN (not executed in this clean-room repository; depends on selected ephemeris) |
 | **Cryptographic Receipts (`SHA-256`)** | **Built-in on every result** (binds kernel SHA-256, NAIF IDs, conventions, and output) | None (mutable C arrays) | None | None |
-| **Built-in LLM MCP Server (`stdio`)** | **Built-in (`rdg-ephemeris-mcp`)** with **9 tools** + AI hallucination auditor | None | None | None |
-| **Built-in HTTP REST API (`OpenAPI 3.1`)** | **Built-in (`rdg-ephemeris-api`)** zero-dependency JSON server (**12 endpoints**) | None | None | None |
-| **Classical Jyotish & Almanac Stack** | **23 Vargas (`D1..D144`), 86 Classical & Tajika Yogas, Shadbala, 337-Bindu Ashtakavarga, 8 Dashas, Jaimini, Nadi, Tajika, Drik Panchang, SVG** | Coordinates, ayanamsa, houses, and basic phenomena only | None | None |
-| **Inverse & Personalization Solvers** | **5 built-in solvers**: Sub-second Varga cusp solver, Kunda 81x / Pranapada / Tattwa rectification, Graha Yuddha scanner, Siddhanta drift analyzer, Personalized Astro Fingerprint | None | None | None |
+| **Built-in LLM MCP Server (`stdio`)** | **Built-in (`rdg-ephemeris-mcp`)** with **18 tools** + AI hallucination auditor | None | None | None |
+| **Built-in HTTP REST API (`OpenAPI 3.1`)** | **Built-in (`rdg-ephemeris-api`)** zero-dependency JSON server (**21 endpoints**) | None | None | None |
+| **Classical Jyotish & Almanac Stack** | **25 Ayanamshas, 13 Bodies (inc. Uranus/Neptune/Pluto + NAIF 599/699 physical centers), 23 Vargas (`D1..D144`), 150-Division *Nadi Amsa* (`1,800` slices), 10 Conditional *BPHS* Nakshatra Dashas + 108-Pada *Kalachakra* + 5-Level *Prana* Chronometer, 3-Ring *Sudarshana Chakra*, 8 *Vishesha Lagnas*, 11 *Upagrahas*, 9 *Prashna Sphutas*, 86 Classical & *Tajika* Yogas, 36 *Tajika Sahams*, *Shadbala*, 337-Bindu *Ashtakavarga*, *Jaimini*, *Ayurdaya*, 30-Star *Yogatara* Catalog, 28-Chapter Human Manual Compendium, SVG** | Coordinates, ayanamsa, houses, and basic phenomena only | None | None |
+| **Frontier Astrodynamics & Inverse Solvers** | **12 built-in solvers**: WGS84 Topocentric/Relativistic Astrometry & Varga Flip Auditor, Synodic Retrograde Phase-Space Loop & Triple-Pass Solver, Solar/Lunar Eclipse Local Obscuration & Natal *Grahan* Scanner, Inverse Sky-to-Date Time-Machine (`3102 BCE..3000 CE`), Triple-Lock Life-Event Convergence, *Krantisamya Mahapata* Root Solver, 30-Star *Yogatara Bheda*, Sub-Second Varga Cusp Solver, Bayesian Rectification, *Graha Yuddha* Scanner, *Surya Siddhanta* Drift Analyzer, Golden *Muhurta* Electional Optimizer | None | None | None |
 | **Rust & Browser WebAssembly SDK** | **Included** (`rust/ephemeris-core` + `web/ephemeris-browser.js`) | C source requiring Emscripten port and AGPL compliance | Python only | Python/C only |
 
 ---
@@ -122,6 +123,9 @@ ephemeris-oss impossible --at 2026-10-06T12:00:00Z --lat 28.6139 --lon 77.2090
 
 # Compute the Personalized Astrological Fingerprint (16-domain clock confidence decay, 16-Varga phase stability, Digbala, 8-Kaksha transit resonance)
 ephemeris-oss fingerprint --at 2026-10-06T12:00:00Z --lat 28.6139 --lon 77.2090 --uncertainty-sec 60
+
+# Generate the Human-Readable Classical Ephemeris & Pt. Maheshji's Jyotish Academy Manual Calculation Compendium
+ephemeris-oss human-ephemeris --year 2026 --month 11 --format markdown --out docs/HUMAN-READABLE-EPHEMERIS-AND-JYOTISH-ACADEMY-MANUAL.md
 ```
 
 ### 3. Model Context Protocol (MCP) Server for LLMs (`rdg-ephemeris-mcp`)

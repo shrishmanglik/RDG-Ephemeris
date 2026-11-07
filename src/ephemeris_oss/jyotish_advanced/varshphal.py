@@ -1339,6 +1339,17 @@ def compute_tajika_sahams(
         ("vanijya", "Vanijya Saham", "Trade and commerce", lons["moon"], lons["mercury"], asc, False),
         ("vivaha", "Vivaha Saham", "Marriage and partnership", lons["venus"], lons["saturn"], asc, False),
         ("raja", "Raja Saham", "Authority and sovereignty", lons["saturn"], lons["sun"], asc, True),
+        ("santapa", "Santapa Saham", "Grief and affliction", lons["saturn"], lons["moon"], house_cusp(6), True),
+        ("sraddha", "Sraddha Saham", "Devotion and reverence", lons["venus"], lons["mars"], asc, True),
+        ("preeti", "Preeti Saham", "Love and affection", vidya_lon, punya_lon, asc, True),
+        ("jadya", "Jadya Saham", "Chronic dullness or stupor", lons["mars"], lons["saturn"], lons["mercury"], True),
+        ("vyapara", "Vyapara Saham", "Business enterprise", lons["mars"], lons["mercury"], asc, False),
+        ("paniya", "Paniya Saham", "Water and liquids", lons["saturn"], lons["moon"], asc, True),
+        ("shatru", "Shatru Saham", "Enemies and competitors", lons["mars"], lons["saturn"], asc, True),
+        ("jalapatha", "Jalapatha Saham", "Sea and overseas voyages", lons["saturn"], house_cusp(4), asc, True),
+        ("bandhana", "Bandhana Saham", "Confinement and restraint", punya_lon, lons["saturn"], asc, True),
+        ("apamrityu", "Apamrityu Saham", "Sudden danger or crisis", house_cusp(8), lons["mars"], asc, True),
+        ("labha", "Labha Saham", "Material gains and profit", house_cusp(11), house_lord_lon(11), asc, False),
     )
 
     out: dict[str, TajikaSahamEntry] = {}

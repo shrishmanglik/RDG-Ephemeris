@@ -59,10 +59,18 @@ def _get_cached_compact_provider() -> Any:
         _CACHED_COMPACT_PROVIDER = Engine.load(kernels="compact-extended")._provider
     return _CACHED_COMPACT_PROVIDER
 from .engine.receipt import canonical_hash
+from .engine.stellar_anchors import YOGATARA_30_CATALOG, propagate_yogatara_apparent
 from .jyotish.ashtakavarga import compute_ashtakavarga, evaluate_gochara_vedha
-from .jyotish.dasha import compute_chara_karakas, jd_to_iso_utc
-from .jyotish.nakshatra import nakshatra_position, normalize_degrees
+from .jyotish.dasha import (
+    compute_chara_dasha,
+    compute_chara_karakas,
+    compute_kalachakra_dasha,
+    compute_vimshottari_dasha,
+    jd_to_iso_utc,
+)
+from .jyotish.nakshatra import NAKSHATRA_NAMES, RASI_NAMES, nakshatra_position, normalize_degrees
 from .jyotish.vargas import (
+    RASI_LORDS,
     SHODASHVARGA_KEYS,
     compute_shodashvarga,
     compute_vimshopaka_bala,
@@ -1538,15 +1546,1397 @@ def compute_personalized_astro_fingerprint(
     )
 
 
+# ---------------------------------------------------------------------------
+# 6. 30-Star Yogatara Stellar Piercing (Tara Bheda / Rohini Shakata Bheda)
+#    & Heliacal Visibility (Kalansha Udaya/Asta) Solver
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class YogataraStellarBhedaReport:
+    """30-star Gaia/Hipparcos ICRS Yogatara apparent catalog, Tara Bheda, and Rohini Shakata Bheda report."""
+
+    jd_ut: float
+    iso_utc: str
+    ayanamsa: str
+    ayanamsa_deg: float
+    orb_deg: float
+    ephemeris_source: str
+    yogatara_count: int
+    visible_star_count: int
+    combust_star_count: int
+    rohini_shakata_bheda_active: bool
+    rohini_shakata_bheda_planets: tuple[str, ...]
+    active_tara_bheda_events: tuple[Mapping[str, Any], ...]
+    yogatara_states: tuple[Mapping[str, Any], ...]
+    receipt: Mapping[str, Any]
+    receipt_sha256: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+def evaluate_yogatara_stellar_bheda_and_visibility(
+    jd_ut: float,
+    *,
+    ayanamsa: str = "lahiri",
+    orb_deg: float = 1.5,
+    true_node: bool = False,
+    adapter: EphemerisAdapter | None = None,
+) -> YogataraStellarBhedaReport:
+    """Propagate all 30 Yogataras relativistically via IAU SOFA/ERFA and detect:
+
+    1. Apparent tropical and sidereal ecliptic coordinates of all 27 Nakshatra
+       Yogataras + 28th Abhijit (Vega) + Agastya (Canopus) + Lubdhaka (Sirius).
+    2. Heliacal visibility state (*Udaya* visible vs *Asta* solar combustion)
+       against each star's classical *Surya Siddhanta Kalansha* arc.
+    3. *Tara Bheda* (planetary-stellar longitudinal conjunction & ecliptic
+       latitude piercing) and **Rohini Shakata Bheda** (*Brihat Samhita* Ch. 9:
+       when Saturn, Mars, or Rahu transits Rohini near Aldebaran and pierces the
+       Hyades cart asterism).
+    """
+    ad = adapter if adapter is not None else EphemerisAdapter()
+    base_jd = float(jd_ut)
+    max_orb = max(float(orb_deg), 0.05)
+    jd_tt = ad._jd_ut_to_jd_tt(base_jd)
+    ayan_deg = float(ad.get_ayanamsa_ut(base_jd, mode=ayanamsa))
+    ephem_source = (
+        "de440-chebyshev"
+        if COMPACT_EARLY_START_JD <= base_jd <= COMPACT_LATE_END_JD
+        else "vondrak2011-analytical"
+    )
+
+    planet_coords: dict[str, tuple[float, float, float]] = {}
+    for body_key in VEDIC_NINE_GRAHAS:
+        pos = ad.calc_ut(base_jd, body_key, sidereal=True, ayanamsa=ayanamsa, true_node=true_node)
+        planet_coords[body_key.capitalize()] = (
+            float(pos.longitude_deg),
+            float(pos.latitude_deg),
+            float(pos.longitude_speed_deg_per_day),
+        )
+
+    sun_sid_lon = planet_coords["Sun"][0]
+    sun_trop_lon = normalize_degrees(sun_sid_lon + ayan_deg)
+    tt_pair = (2451545.0, jd_tt - 2451545.0)
+    yogatara_states: list[Mapping[str, Any]] = []
+    bheda_events: list[Mapping[str, Any]] = []
+    rohini_bheda_planets: list[str] = []
+    visible_count = 0
+    combust_count = 0
+
+    for star in YOGATARA_30_CATALOG:
+        star_pos = propagate_yogatara_apparent(
+            star,
+            tt=tt_pair,
+            ayanamsa_deg=ayan_deg,
+            sun_tropical_lon_deg=sun_trop_lon,
+        )
+        trop_lon = float(star_pos.tropical_longitude_deg)
+        trop_lat = float(star_pos.ecliptic_latitude_shara_deg)
+        sid_lon = float(star_pos.sidereal_longitude_deg)
+        solar_elong_deg = float(star_pos.solar_elongation_deg)
+        is_combust = not bool(star_pos.is_heliacally_visible)
+        if is_combust:
+            combust_count += 1
+        else:
+            visible_count += 1
+
+        star_row = {
+            "key": star.key,
+            "nakshatra_number": star.nakshatra_number,
+            "vedic_name": star.vedic_name,
+            "western_designation": star.western_designation,
+            "hip_id": star.hip_id,
+            "visual_magnitude": star.visual_magnitude,
+            "tropical_longitude_deg": round(trop_lon, 6),
+            "sidereal_longitude_deg": round(sid_lon, 6),
+            "ecliptic_latitude_deg": round(trop_lat, 6),
+            "rasi_name": RASI_NAMES[min(int(sid_lon // 30.0), 11)],
+            "solar_elongation_deg": round(solar_elong_deg, 4),
+            "kalansha_threshold_deg": star.kalansha_visibility_arc_deg,
+            "visibility_state": "Asta_Combust" if is_combust else "Udaya_Visible",
+        }
+        yogatara_states.append(star_row)
+
+        for p_name, (p_lon, p_lat, p_speed) in planet_coords.items():
+            if p_name == "Sun":
+                continue
+            dlon_raw = abs(normalize_degrees(p_lon - sid_lon))
+            dlon = 360.0 - dlon_raw if dlon_raw > 180.0 else dlon_raw
+            if dlon <= max_orb:
+                dlat = abs(p_lat - trop_lat)
+                angular_sep = math.hypot(dlon, dlat)
+                is_lat_piercing = bool(dlat <= 1.0)
+                is_rohini_shakata = bool(
+                    star.key == "rohini"
+                    and p_name in ("Saturn", "Mars", "Rahu")
+                    and dlon <= max(max_orb, 2.0)
+                )
+                if is_rohini_shakata and p_name not in rohini_bheda_planets:
+                    rohini_bheda_planets.append(p_name)
+                bheda_events.append(
+                    {
+                        "yogatara_key": star.key,
+                        "vedic_name": star.vedic_name,
+                        "star_designation": star.western_designation,
+                        "planet": p_name,
+                        "planet_sidereal_longitude_deg": round(p_lon, 6),
+                        "star_sidereal_longitude_deg": round(sid_lon, 6),
+                        "longitude_separation_deg": round(dlon, 6),
+                        "latitude_separation_deg": round(dlat, 6),
+                        "total_angular_separation_deg": round(angular_sep, 6),
+                        "is_direct_latitude_bheda": is_lat_piercing,
+                        "is_rohini_shakata_bheda": is_rohini_shakata,
+                        "planet_is_retrograde": bool(p_speed < 0.0),
+                    }
+                )
+
+    # Also check broader Rohini Nakshatra span (40..53.333 deg Taurus) for classical Rohini Shakata Bheda
+    for malefic in ("Saturn", "Mars", "Rahu"):
+        m_lon, m_lat, _ = planet_coords[malefic]
+        if 45.0 <= m_lon <= 52.5 and -6.5 <= m_lat <= -1.0:
+            if malefic not in rohini_bheda_planets:
+                rohini_bheda_planets.append(malefic)
+
+    receipt = {
+        "module": "ephemeris_oss.impossible_astrology.yogatara_stellar_bheda",
+        "version": __version__,
+        "jd_ut": round(base_jd, 9),
+        "ayanamsa": ayanamsa,
+        "ayanamsa_deg": round(ayan_deg, 8),
+        "orb_deg": round(max_orb, 6),
+        "ephemeris_source": ephem_source,
+        "yogatara_count": len(yogatara_states),
+        "visible_star_count": visible_count,
+        "combust_star_count": combust_count,
+        "rohini_shakata_bheda_active": bool(rohini_bheda_planets),
+        "active_bheda_count": len(bheda_events),
+    }
+    return YogataraStellarBhedaReport(
+        jd_ut=base_jd,
+        iso_utc=jd_to_iso_utc(base_jd),
+        ayanamsa=ayanamsa,
+        ayanamsa_deg=round(ayan_deg, 8),
+        orb_deg=max_orb,
+        ephemeris_source=ephem_source,
+        yogatara_count=len(yogatara_states),
+        visible_star_count=visible_count,
+        combust_star_count=combust_count,
+        rohini_shakata_bheda_active=bool(rohini_bheda_planets),
+        rohini_shakata_bheda_planets=tuple(rohini_bheda_planets),
+        active_tara_bheda_events=tuple(bheda_events),
+        yogatara_states=tuple(yogatara_states),
+        receipt=receipt,
+        receipt_sha256=canonical_hash(receipt),
+    )
+
+
+# ---------------------------------------------------------------------------
+# 7. Exact Krantisamya (Vyatipata & Vaidhriti Mahapata) Declination-Equality Solver
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class KrantisamyaMahapataEvent:
+    """Single exact solar-lunar declination equality (*Krantisamya Mahapata*) event."""
+
+    mahapata_type: str  # "Vyatipata" (same declination, opposite solstice) or "Vaidhriti" (opposite declination)
+    exact_jd_ut: float
+    exact_iso_utc: str
+    window_start_jd_ut: float
+    window_end_jd_ut: float
+    duration_minutes: float
+    sun_declination_deg: float
+    moon_declination_deg: float
+    sun_sidereal_longitude_deg: float
+    moon_sidereal_longitude_deg: float
+    tropical_longitude_sum_deg: float
+
+
+@dataclass(frozen=True)
+class KrantisamyaMahapataReport:
+    """Report of all exact Vyatipata and Vaidhriti Mahapata windows in a time span."""
+
+    start_jd_ut: float
+    end_jd_ut: float
+    start_iso_utc: str
+    end_iso_utc: str
+    event_count: int
+    events: tuple[KrantisamyaMahapataEvent, ...]
+    receipt: Mapping[str, Any]
+    receipt_sha256: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+def solve_krantisamya_mahapata_windows(
+    start_jd_ut: float,
+    end_jd_ut: float,
+    *,
+    step_hours: float = 6.0,
+    ayanamsa: str = "lahiri",
+    adapter: EphemerisAdapter | None = None,
+) -> KrantisamyaMahapataReport:
+    """Solve exact *Surya Siddhanta* (Ch. 11, *Pata Adhikara*) *Krantisamya Mahapata* events:
+
+    - **Vyatipata Mahapata:** Sun and Moon have equal apparent equatorial declination
+      in the **same hemisphere** (``dec_Sun == +dec_Moon``) while moving in opposite
+      solstitial directions (``trop_lon_Sun + trop_lon_Moon ~= 180 deg``).
+    - **Vaidhriti Mahapata:** Sun and Moon have equal apparent equatorial declination
+      magnitude in **opposite hemispheres** (``dec_Sun == -dec_Moon``) while
+      ``trop_lon_Sun + trop_lon_Moon ~= 360 deg``.
+    """
+    t0 = float(start_jd_ut)
+    t1 = float(end_jd_ut)
+    if t1 <= t0:
+        raise ValueError("end_jd_ut must be greater than start_jd_ut")
+    ad = adapter if adapter is not None else EphemerisAdapter()
+    dt_days = max(float(step_hours) / 24.0, 0.02)
+
+    def _equatorial_declinations_and_sum(j_ut: float) -> tuple[float, float, float, float, float]:
+        sun_tr = ad.calc_ut(j_ut, "sun", sidereal=False)
+        moon_tr = ad.calc_ut(j_ut, "moon", sidereal=False)
+        j_tt = ad._jd_ut_to_jd_tt(j_ut)
+        eps_rad = float(erfa.obl06(2451545.0, j_tt - 2451545.0))
+
+        def _ecl_to_dec_deg(lon_deg: float, lat_deg: float) -> float:
+            l_rad = math.radians(lon_deg)
+            b_rad = math.radians(lat_deg)
+            sin_dec = math.sin(b_rad) * math.cos(eps_rad) + math.cos(b_rad) * math.sin(eps_rad) * math.sin(l_rad)
+            return math.degrees(math.asin(max(-1.0, min(1.0, sin_dec))))
+
+        dec_sun = _ecl_to_dec_deg(float(sun_tr.longitude_deg), float(sun_tr.latitude_deg))
+        dec_moon = _ecl_to_dec_deg(float(moon_tr.longitude_deg), float(moon_tr.latitude_deg))
+        trop_sum = normalize_degrees(float(sun_tr.longitude_deg) + float(moon_tr.longitude_deg))
+        return dec_sun, dec_moon, trop_sum, float(sun_tr.longitude_deg), float(moon_tr.longitude_deg)
+
+    def _find_root(f_func: Callable[[float], float], a: float, b: float) -> float:
+        fa = f_func(a)
+        fb = f_func(b)
+        left, right = a, b
+        for _ in range(36):
+            mid = 0.5 * (left + right)
+            if (right - left) * 86400.0 <= 0.05:
+                return mid
+            fm = f_func(mid)
+            if fa * fm <= 0.0:
+                right = mid
+                fb = fm
+            else:
+                left = mid
+                fa = fm
+        return 0.5 * (left + right)
+
+    events: list[KrantisamyaMahapataEvent] = []
+    curr = t0
+    prev_dec_s, prev_dec_m, _, _, _ = _equatorial_declinations_and_sum(curr)
+    prev_f_vyatipata = prev_dec_s - prev_dec_m
+    prev_f_vaidhriti = prev_dec_s + prev_dec_m
+
+    while curr < t1:
+        nxt = min(curr + dt_days, t1)
+        dec_s, dec_m, _, _, _ = _equatorial_declinations_and_sum(nxt)
+        f_vyatipata = dec_s - dec_m
+        f_vaidhriti = dec_s + dec_m
+
+        # Check Vyatipata (dec_Sun - dec_Moon == 0 near trop_sum ~ 180 deg)
+        if prev_f_vyatipata * f_vyatipata <= 0.0:
+            root_jd = _find_root(
+                lambda x: _equatorial_declinations_and_sum(x)[0] - _equatorial_declinations_and_sum(x)[1],
+                curr,
+                nxt,
+            )
+            ds, dm, t_sum, s_tr_lon, m_tr_lon = _equatorial_declinations_and_sum(root_jd)
+            # Distinguish Vyatipata (trop_sum near 180 deg) from simple conjunction (trop_sum near 0/360)
+            if 115.0 <= t_sum <= 245.0:
+                ayan_val = ad.get_ayanamsa_ut(root_jd, mode=ayanamsa)
+                # Rate of declination separation (~0.22 deg/hour typical) -> half-window for solar+lunar semi-diameter (~0.53 deg)
+                dt_probe = 1.0 / 24.0
+                ds2, dm2, _, _, _ = _equatorial_declinations_and_sum(root_jd + dt_probe)
+                rate_deg_per_day = max(abs((ds2 - dm2) - (ds - dm)) / dt_probe, 0.5)
+                half_win_days = 0.53 / rate_deg_per_day
+                events.append(
+                    KrantisamyaMahapataEvent(
+                        mahapata_type="Vyatipata",
+                        exact_jd_ut=round(root_jd, 8),
+                        exact_iso_utc=jd_to_iso_utc(root_jd),
+                        window_start_jd_ut=round(root_jd - half_win_days, 8),
+                        window_end_jd_ut=round(root_jd + half_win_days, 8),
+                        duration_minutes=round(2.0 * half_win_days * 1440.0, 2),
+                        sun_declination_deg=round(ds, 6),
+                        moon_declination_deg=round(dm, 6),
+                        sun_sidereal_longitude_deg=round(normalize_degrees(s_tr_lon - ayan_val), 6),
+                        moon_sidereal_longitude_deg=round(normalize_degrees(m_tr_lon - ayan_val), 6),
+                        tropical_longitude_sum_deg=round(t_sum, 4),
+                    )
+                )
+
+        # Check Vaidhriti (dec_Sun + dec_Moon == 0 near trop_sum ~ 360/0 deg)
+        if prev_f_vaidhriti * f_vaidhriti <= 0.0:
+            root_jd = _find_root(
+                lambda x: _equatorial_declinations_and_sum(x)[0] + _equatorial_declinations_and_sum(x)[1],
+                curr,
+                nxt,
+            )
+            ds, dm, t_sum, s_tr_lon, m_tr_lon = _equatorial_declinations_and_sum(root_jd)
+            if t_sum >= 295.0 or t_sum <= 65.0:
+                ayan_val = ad.get_ayanamsa_ut(root_jd, mode=ayanamsa)
+                dt_probe = 1.0 / 24.0
+                ds2, dm2, _, _, _ = _equatorial_declinations_and_sum(root_jd + dt_probe)
+                rate_deg_per_day = max(abs((ds2 + dm2) - (ds + dm)) / dt_probe, 0.5)
+                half_win_days = 0.53 / rate_deg_per_day
+                events.append(
+                    KrantisamyaMahapataEvent(
+                        mahapata_type="Vaidhriti",
+                        exact_jd_ut=round(root_jd, 8),
+                        exact_iso_utc=jd_to_iso_utc(root_jd),
+                        window_start_jd_ut=round(root_jd - half_win_days, 8),
+                        window_end_jd_ut=round(root_jd + half_win_days, 8),
+                        duration_minutes=round(2.0 * half_win_days * 1440.0, 2),
+                        sun_declination_deg=round(ds, 6),
+                        moon_declination_deg=round(dm, 6),
+                        sun_sidereal_longitude_deg=round(normalize_degrees(s_tr_lon - ayan_val), 6),
+                        moon_sidereal_longitude_deg=round(normalize_degrees(m_tr_lon - ayan_val), 6),
+                        tropical_longitude_sum_deg=round(t_sum, 4),
+                    )
+                )
+
+        curr = nxt
+        prev_f_vyatipata = f_vyatipata
+        prev_f_vaidhriti = f_vaidhriti
+
+    events.sort(key=lambda e: e.exact_jd_ut)
+    receipt = {
+        "module": "ephemeris_oss.impossible_astrology.krantisamya_mahapata",
+        "version": __version__,
+        "start_jd_ut": round(t0, 8),
+        "end_jd_ut": round(t1, 8),
+        "event_count": len(events),
+        "events": [asdict(e) for e in events],
+    }
+    return KrantisamyaMahapataReport(
+        start_jd_ut=t0,
+        end_jd_ut=t1,
+        start_iso_utc=jd_to_iso_utc(t0),
+        end_iso_utc=jd_to_iso_utc(t1),
+        event_count=len(events),
+        events=tuple(events),
+        receipt=receipt,
+        receipt_sha256=canonical_hash(receipt),
+    )
+
+
+# ---------------------------------------------------------------------------
+# 8. Inverse Sky-to-Date "Astronomical Time-Machine" Solver
+# ---------------------------------------------------------------------------
+
+
+_SIGN_LOOKUP: Mapping[str, int] = {
+    name.lower(): idx for idx, name in enumerate(RASI_NAMES)
+}
+_SIGN_SANSKRIT_ALIASES: Mapping[str, int] = {
+    "aries": 0,
+    "taurus": 1,
+    "gemini": 2,
+    "cancer": 3,
+    "leo": 4,
+    "virgo": 5,
+    "libra": 6,
+    "scorpio": 7,
+    "sagittarius": 8,
+    "capricorn": 9,
+    "aquarius": 10,
+    "pisces": 11,
+    "mesha": 0,
+    "vrishabha": 1,
+    "mithuna": 2,
+    "karka": 3,
+    "karkata": 3,
+    "simha": 4,
+    "kanya": 5,
+    "tula": 6,
+    "vrishchika": 7,
+    "dhanu": 8,
+    "dhanus": 8,
+    "makara": 9,
+    "kumbha": 10,
+    "meena": 11,
+}
+
+
+def _parse_sign_index(val: str | int) -> int:
+    if isinstance(val, int) and not isinstance(val, bool):
+        if 0 <= val <= 11:
+            return val
+        if 1 <= val <= 12:
+            return val - 1
+        raise ValueError(f"Sign integer must be 0..11 (or 1..12), got {val}")
+    s = str(val).strip().lower()
+    if s in _SIGN_LOOKUP:
+        return _SIGN_LOOKUP[s]
+    if s in _SIGN_SANSKRIT_ALIASES:
+        return _SIGN_SANSKRIT_ALIASES[s]
+    for idx, r_name in enumerate(RASI_NAMES):
+        if s in r_name.lower():
+            return idx
+    raise ValueError(f"Unrecognized zodiac sign constraint: {val!r}")
+
+
+@dataclass(frozen=True)
+class InverseChartMatchWindow:
+    """Matched historical or future epoch satisfying all planetary sign/nakshatra constraints."""
+
+    matched_jd_ut: float
+    matched_iso_utc: str
+    window_start_jd_ut: float
+    window_end_jd_ut: float
+    window_duration_hours: float
+    planetary_longitudes_deg: Mapping[str, float]
+    planetary_signs: Mapping[str, str]
+    planetary_nakshatras: Mapping[str, str]
+
+
+@dataclass(frozen=True)
+class InverseChartDateSearchReport:
+    """Result of the Inverse Sky-to-Date 'Astronomical Time-Machine' search."""
+
+    start_year: int
+    end_year: int
+    start_jd_ut: float
+    end_jd_ut: float
+    ayanamsa: str
+    sign_constraints: Mapping[str, str]
+    nakshatra_constraints: Mapping[str, str]
+    match_count: int
+    matches: tuple[InverseChartMatchWindow, ...]
+    receipt: Mapping[str, Any]
+    receipt_sha256: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+def solve_chart_date_from_planetary_constraints(
+    start_year: int,
+    end_year: int,
+    sign_constraints: Mapping[str, str | int],
+    *,
+    nakshatra_constraints: Mapping[str, str | int] | None = None,
+    ayanamsa: str = "lahiri",
+    true_node: bool = False,
+    max_results: int = 20,
+    adapter: EphemerisAdapter | None = None,
+) -> InverseChartDateSearchReport:
+    """Inverse Sky-to-Date 'Astronomical Time-Machine' Solver (`3102 BCE` to `3000 CE`).
+
+    Given any combination of planetary Rashi (sign) constraints (e.g.,
+    ``{"Saturn": "Libra", "Jupiter": "Cancer", "Sun": "Aries", "Moon": "Taurus"}``)
+    and optional 27-Nakshatra constraints, searches across years, decades, or
+    centuries using a hierarchical orbital-period sieve:
+      - Stage 1 (12-day coarse sieve): Filters slow planets (`Saturn`, `Jupiter`, `Rahu`, `Ketu`).
+      - Stage 2 (1-day medium sieve): Filters intermediate planets (`Mars`, `Sun`, `Venus`, `Mercury`).
+      - Stage 3 (3-hour fine sieve): Resolves fast `Moon` Rashi and Nakshatra windows.
+    """
+    if not sign_constraints and not nakshatra_constraints:
+        raise ValueError("At least one planetary sign or nakshatra constraint must be provided.")
+    y0 = int(start_year)
+    y1 = int(end_year)
+    if y1 < y0:
+        raise ValueError("end_year must be >= start_year")
+
+    ad = adapter if adapter is not None else EphemerisAdapter()
+    jd_start = max(float(erfa.cal2jd(y0, 1, 1)[0] + erfa.cal2jd(y0, 1, 1)[1]), 588465.5)
+    jd_end = min(float(erfa.cal2jd(y1, 12, 31)[0] + erfa.cal2jd(y1, 12, 31)[1] + 0.999), 2817152.5)
+
+    body_alias_map: dict[str, str] = {
+        "sun": "sun",
+        "surya": "sun",
+        "ravi": "sun",
+        "moon": "moon",
+        "chandra": "moon",
+        "soma": "moon",
+        "mars": "mars",
+        "mangala": "mars",
+        "kuja": "mars",
+        "mercury": "mercury",
+        "budha": "mercury",
+        "jupiter": "jupiter",
+        "guru": "jupiter",
+        "brihaspati": "jupiter",
+        "venus": "venus",
+        "shukra": "venus",
+        "saturn": "saturn",
+        "shani": "saturn",
+        "rahu": "rahu",
+        "mean_node": "rahu",
+        "true_node": "rahu",
+        "true_rahu": "rahu",
+        "ketu": "ketu",
+        "true_ketu": "ketu",
+        "uranus": "uranus",
+        "neptune": "neptune",
+        "pluto": "pluto",
+    }
+
+    parsed_signs: dict[str, int] = {}
+    normalized_sign_names: dict[str, str] = {}
+    node_true_overrides: dict[str, bool] = {}
+    for body_raw, s_val in (sign_constraints or {}).items():
+        b_raw = str(body_raw).strip().lower()
+        if b_raw not in body_alias_map:
+            raise ValueError(f"Unsupported planetary constraint body: {body_raw!r}")
+        b_key = body_alias_map[b_raw]
+        if b_raw in ("true_node", "true_rahu", "true_ketu"):
+            node_true_overrides[b_key] = True
+        elif b_raw == "mean_node":
+            node_true_overrides[b_key] = False
+        s_idx = _parse_sign_index(s_val)
+        parsed_signs[b_key] = s_idx
+        normalized_sign_names[b_key] = RASI_NAMES[s_idx]
+
+    parsed_naks: dict[str, int] = {}
+    normalized_nak_names: dict[str, str] = {}
+    for body_raw, n_val in (nakshatra_constraints or {}).items():
+        b_raw = str(body_raw).strip().lower()
+        if b_raw not in body_alias_map:
+            raise ValueError(f"Unsupported planetary constraint body: {body_raw!r}")
+        b_key = body_alias_map[b_raw]
+        if b_raw in ("true_node", "true_rahu", "true_ketu"):
+            node_true_overrides[b_key] = True
+        elif b_raw == "mean_node":
+            node_true_overrides[b_key] = False
+        if isinstance(n_val, int) and not isinstance(n_val, bool):
+            n_idx = n_val if 0 <= n_val <= 26 else n_val - 1
+        else:
+            n_str = str(n_val).strip().lower()
+            matched_n = None
+            for idx, nk_name in enumerate(NAKSHATRA_NAMES):
+                if n_str == nk_name.lower() or n_str in nk_name.lower():
+                    matched_n = idx
+                    break
+            if matched_n is None:
+                raise ValueError(f"Unrecognized Nakshatra constraint: {n_val!r}")
+            n_idx = matched_n
+        parsed_naks[b_key] = n_idx
+        normalized_nak_names[b_key] = NAKSHATRA_NAMES[n_idx]
+
+    def _node_model_for(b_key: str) -> bool:
+        if b_key in node_true_overrides:
+            return node_true_overrides[b_key]
+        if b_key in ("rahu", "ketu") and ("rahu" in node_true_overrides or "ketu" in node_true_overrides):
+            return node_true_overrides.get("rahu", node_true_overrides.get("ketu", bool(true_node)))
+        return bool(true_node)
+
+    slow_bodies = [
+        b
+        for b in ("pluto", "neptune", "uranus", "saturn", "jupiter", "rahu", "ketu")
+        if b in parsed_signs or b in parsed_naks
+    ]
+    med_bodies = [b for b in ("mars", "sun", "venus", "mercury") if b in parsed_signs or b in parsed_naks]
+    fast_bodies = [b for b in ("moon",) if b in parsed_signs or b in parsed_naks]
+
+    def _body_lon(j_ut: float, b_key: str) -> float:
+        use_true = _node_model_for(b_key)
+        pos = ad.calc_ut(j_ut, b_key, sidereal=True, ayanamsa=ayanamsa, true_node=use_true)
+        return float(pos.longitude_deg) % 360.0
+
+    def _body_matches(j_ut: float, b_key: str) -> bool:
+        lon = _body_lon(j_ut, b_key)
+        if b_key in parsed_signs and min(int(lon // 30.0), 11) != parsed_signs[b_key]:
+            return False
+        if b_key in parsed_naks and min(int(lon // (360.0 / 27.0)), 26) != parsed_naks[b_key]:
+            return False
+        return True
+
+    def _target_arc_mid(b_key: str) -> float | None:
+        s_i = parsed_signs.get(b_key)
+        n_i = parsed_naks.get(b_key)
+        if s_i is not None and n_i is not None:
+            s_lo, s_hi = s_i * 30.0, (s_i + 1) * 30.0
+            n_span = 360.0 / 27.0
+            n_lo, n_hi = n_i * n_span, (n_i + 1) * n_span
+            lo = max(s_lo, n_lo)
+            hi = min(s_hi, n_hi)
+            return 0.5 * (lo + hi) if lo < hi else None
+        if s_i is not None:
+            return s_i * 30.0 + 15.0
+        if n_i is not None:
+            n_span = 360.0 / 27.0
+            return (n_i + 0.5) * n_span
+        return None
+
+    def _target_arc_bounds(b_key: str) -> tuple[float, float] | None:
+        s_i = parsed_signs.get(b_key)
+        n_i = parsed_naks.get(b_key)
+        if s_i is not None and n_i is not None:
+            s_lo, s_hi = s_i * 30.0, (s_i + 1) * 30.0
+            n_span = 360.0 / 27.0
+            n_lo, n_hi = n_i * n_span, (n_i + 1) * n_span
+            lo = max(s_lo, n_lo)
+            hi = min(s_hi, n_hi)
+            return (lo, hi) if lo < hi else None
+        if s_i is not None:
+            return (s_i * 30.0, (s_i + 1) * 30.0)
+        if n_i is not None:
+            n_span = 360.0 / 27.0
+            return (n_i * n_span, (n_i + 1) * n_span)
+        return None
+
+    def _substep_interior_sample(b_key: str, t_a: float, t_b: float) -> float | None:
+        """If body crosses into and out of its target arc strictly inside (t_a, t_b), including stationary turnarounds, return an interior matching JD."""
+        bounds = _target_arc_bounds(b_key)
+        if bounds is None or t_b <= t_a:
+            return None
+        arc_lo, arc_hi = bounds
+        lon_a = _body_lon(t_a, b_key)
+        lon_b = _body_lon(t_b, b_key)
+        delta = ((lon_b - lon_a + 180.0) % 360.0) - 180.0
+        if delta > 1e-9:
+            dist_lo = (arc_lo - lon_a) % 360.0
+            dist_hi = (arc_hi - lon_a) % 360.0
+            if 0.0 < dist_lo <= delta:
+                reach = min(delta, dist_hi if dist_hi > dist_lo else delta)
+                frac = 0.5 * (dist_lo + reach) / delta
+                t_cand = t_a + frac * (t_b - t_a)
+                if _body_matches(t_cand, b_key):
+                    return t_cand
+        elif delta < -1e-9:
+            abs_d = -delta
+            dist_hi = (lon_a - arc_hi) % 360.0
+            dist_lo = (lon_a - arc_lo) % 360.0
+            if 0.0 < dist_hi <= abs_d:
+                reach = min(abs_d, dist_lo if dist_lo > dist_hi else abs_d)
+                frac = 0.5 * (dist_hi + reach) / abs_d
+                t_cand = t_a + frac * (t_b - t_a)
+                if _body_matches(t_cand, b_key):
+                    return t_cand
+
+        # Non-monotonic / stationary excursion discovery: when endpoints lie within 30 deg of target arc,
+        # probe the midpoint, 3-point quadratic station vertex, an 8-subinterval bracket grid,
+        # and golden-section minimization of angular distance to the target arc midpoint.
+        min_edge_dist = min(
+            abs(((lon_a - arc_lo + 180.0) % 360.0) - 180.0),
+            abs(((lon_a - arc_hi + 180.0) % 360.0) - 180.0),
+            abs(((lon_b - arc_lo + 180.0) % 360.0) - 180.0),
+            abs(((lon_b - arc_hi + 180.0) % 360.0) - 180.0),
+        )
+        if min_edge_dist <= 30.0:
+            t_mid = 0.5 * (t_a + t_b)
+            if _body_matches(t_mid, b_key):
+                return t_mid
+            lon_m = _body_lon(t_mid, b_key)
+            y_m = ((lon_m - lon_a + 180.0) % 360.0) - 180.0
+            denom = 4.0 * (2.0 * y_m - delta)
+            if abs(denom) > 1e-12:
+                u_v = (4.0 * y_m - delta) / denom
+                if 0.0 < u_v < 1.0:
+                    t_v = t_a + u_v * (t_b - t_a)
+                    if _body_matches(t_v, b_key):
+                        return t_v
+
+            arc_span = (arc_hi - arc_lo) % 360.0 or (arc_hi - arc_lo)
+            arc_mid = (arc_lo + 0.5 * arc_span) % 360.0
+
+            def _dist_to_mid(lon_val: float) -> float:
+                return abs(((lon_val - arc_mid + 180.0) % 360.0) - 180.0)
+
+            grid_n = 16
+            grid_t: list[float] = [t_a]
+            grid_d: list[float] = [_dist_to_mid(lon_a)]
+            for k_idx in range(1, grid_n):
+                t_k = t_a + (k_idx / grid_n) * (t_b - t_a)
+                if k_idx * 2 == grid_n:
+                    lon_k = lon_m
+                else:
+                    lon_k = _body_lon(t_k, b_key)
+                    if _body_matches(t_k, b_key):
+                        return t_k
+                grid_t.append(t_k)
+                grid_d.append(_dist_to_mid(lon_k))
+            grid_t.append(t_b)
+            grid_d.append(_dist_to_mid(lon_b))
+
+            best_k = min(range(1, grid_n), key=lambda idx: grid_d[idx])
+            if max(grid_d) - min(grid_d) <= 1e-12:
+                return None
+
+            cand_brackets: list[tuple[float, float]] = [(grid_t[best_k - 1], grid_t[best_k + 1])]
+            if grid_d[best_k] >= min(grid_d[0], grid_d[-1]) - 1e-12:
+                cand_brackets.extend(
+                    [
+                        (grid_t[0], grid_t[2]),
+                        (grid_t[-3], grid_t[-1]),
+                    ]
+                )
+
+            inv_phi = (math.sqrt(5.0) - 1.0) * 0.5
+            inv_phi2 = (3.0 - math.sqrt(5.0)) * 0.5
+            for b_lo, b_hi in cand_brackets:
+                g_lo = b_lo
+                g_hi = b_hi
+                span_g = g_hi - g_lo
+                c_t = g_lo + inv_phi2 * span_g
+                d_t = g_lo + inv_phi * span_g
+                if _body_matches(c_t, b_key):
+                    return c_t
+                if _body_matches(d_t, b_key):
+                    return d_t
+                f_c = _dist_to_mid(_body_lon(c_t, b_key))
+                f_d = _dist_to_mid(_body_lon(d_t, b_key))
+                for _ in range(12):
+                    if f_c < f_d:
+                        g_hi = d_t
+                        d_t = c_t
+                        f_d = f_c
+                        span_g = inv_phi * span_g
+                        c_t = g_lo + inv_phi2 * span_g
+                        if _body_matches(c_t, b_key):
+                            return c_t
+                        f_c = _dist_to_mid(_body_lon(c_t, b_key))
+                    else:
+                        g_lo = c_t
+                        c_t = d_t
+                        f_c = f_d
+                        span_g = inv_phi * span_g
+                        d_t = g_lo + inv_phi * span_g
+                        if _body_matches(d_t, b_key):
+                            return d_t
+                        f_d = _dist_to_mid(_body_lon(d_t, b_key))
+        return None
+
+    def _intersect_interval_lists(
+        list_a: list[tuple[float, float]],
+        list_b: list[tuple[float, float]],
+    ) -> list[tuple[float, float]]:
+        out: list[tuple[float, float]] = []
+        for a0, a1 in list_a:
+            for b0, b1 in list_b:
+                lo = max(a0, b0)
+                hi = min(a1, b1)
+                if lo <= hi:
+                    if out and lo <= out[-1][1]:
+                        out[-1] = (out[-1][0], max(out[-1][1], hi))
+                    else:
+                        out.append((lo, hi))
+        return out
+
+    # Stage 1: Build conservative padded intervals per slow body and intersect so short overlaps (<10d) are preserved
+    step1 = 10.0
+    stage1_intervals: list[tuple[float, float]] = [(jd_start, jd_end)]
+    for s_body in slow_bodies:
+        if _target_arc_bounds(s_body) is None:
+            stage1_intervals = []
+            break
+        b_intervals: list[tuple[float, float]] = []
+        t = jd_start
+        in_match = False
+        win_s = jd_start
+        t_prev_s1 = jd_start
+        while True:
+            ok = _body_matches(t, s_body)
+            if not ok and not in_match and t > t_prev_s1:
+                t_in = _substep_interior_sample(s_body, t_prev_s1, t)
+                if t_in is not None:
+                    b_intervals.append((max(jd_start, t_prev_s1 - step1), min(jd_end, t + step1)))
+            if ok and not in_match:
+                in_match = True
+                win_s = max(jd_start, t - step1)
+            elif not ok and in_match:
+                in_match = False
+                b_intervals.append((win_s, min(jd_end, t + step1)))
+            if t >= jd_end:
+                break
+            t_prev_s1 = t
+            t = min(jd_end, t + step1)
+        if in_match:
+            b_intervals.append((win_s, jd_end))
+        stage1_intervals = _intersect_interval_lists(stage1_intervals, b_intervals)
+        if not stage1_intervals:
+            break
+
+    # Stage 2: 1-day conservative per-body padded intervals inside Stage 1 where medium + slow bodies match
+    step2 = 1.0
+    stage2_intervals: list[tuple[float, float]] = list(stage1_intervals)
+    for m_body in med_bodies:
+        if _target_arc_bounds(m_body) is None:
+            stage2_intervals = []
+            break
+        m_intervals: list[tuple[float, float]] = []
+        for s1_start, s1_end in stage2_intervals:
+            t = s1_start
+            in_m2 = False
+            w2_s = s1_start
+            t_prev_s2 = s1_start
+            while True:
+                ok = _body_matches(t, m_body)
+                if not ok and not in_m2 and t > t_prev_s2:
+                    t_in = _substep_interior_sample(m_body, t_prev_s2, t)
+                    if t_in is not None:
+                        m_intervals.append((max(s1_start, t_prev_s2 - step2), min(s1_end, t + step2)))
+                if ok and not in_m2:
+                    in_m2 = True
+                    w2_s = max(s1_start, t - step2)
+                elif not ok and in_m2:
+                    in_m2 = False
+                    m_intervals.append((w2_s, min(s1_end, t + step2)))
+                if t >= s1_end:
+                    break
+                t_prev_s2 = t
+                t = min(s1_end, t + step2)
+            if in_m2:
+                m_intervals.append((w2_s, s1_end))
+        stage2_intervals = _intersect_interval_lists(stage2_intervals, m_intervals)
+        if not stage2_intervals:
+            break
+
+    # Stage 3: 0.125-day (3-hour) per-body transition bisection and exact interval intersection
+    matches: list[InverseChartMatchWindow] = []
+    step3 = 0.125
+    all_constrained = slow_bodies + med_bodies + fast_bodies
+
+    def _bisect_match_edge(b_key: str, t_a: float, t_b: float, ok_a: bool) -> float:
+        lo_t, hi_t = t_a, t_b
+        for _ in range(24):
+            mid_t = 0.5 * (lo_t + hi_t)
+            if _body_matches(mid_t, b_key) == ok_a:
+                lo_t = mid_t
+            else:
+                hi_t = mid_t
+        return hi_t if not ok_a else lo_t
+
+    for s2_start, s2_end in stage2_intervals:
+        if len(matches) >= max_results:
+            break
+        cur_intervals: list[tuple[float, float]] = [(s2_start, s2_end)]
+        for c_body in all_constrained:
+            if _target_arc_bounds(c_body) is None:
+                cur_intervals = []
+                break
+            body_ivs: list[tuple[float, float]] = []
+            for iv0, iv1 in cur_intervals:
+                t_prev = iv0
+                ok_prev = _body_matches(t_prev, c_body)
+                win_start = iv0 if ok_prev else None
+                t_cur = min(iv1, iv0 + step3) if iv1 > iv0 else iv0
+                while True:
+                    ok_cur = _body_matches(t_cur, c_body) if t_cur > t_prev else ok_prev
+                    if not ok_prev and not ok_cur and t_cur > t_prev:
+                        t_in = _substep_interior_sample(c_body, t_prev, t_cur)
+                        if t_in is not None:
+                            sub_s = _bisect_match_edge(c_body, t_prev, t_in, False)
+                            sub_e = _bisect_match_edge(c_body, t_in, t_cur, True)
+                            if sub_s <= sub_e:
+                                body_ivs.append((sub_s, sub_e))
+                    elif not ok_prev and ok_cur:
+                        win_start = _bisect_match_edge(c_body, t_prev, t_cur, False)
+                    elif ok_prev and not ok_cur and win_start is not None:
+                        win_end = _bisect_match_edge(c_body, t_prev, t_cur, True)
+                        if win_start <= win_end:
+                            body_ivs.append((win_start, win_end))
+                        win_start = None
+                    if t_cur >= iv1:
+                        break
+                    t_prev = t_cur
+                    ok_prev = ok_cur
+                    t_cur = min(iv1, t_cur + step3)
+                if win_start is not None and win_start <= iv1:
+                    body_ivs.append((win_start, iv1))
+            cur_intervals = body_ivs
+            if not cur_intervals:
+                break
+
+        for w3_s, last_good in cur_intervals:
+            if len(matches) >= max_results:
+                break
+            mid_jd = 0.5 * (w3_s + last_good)
+            if all(_body_matches(mid_jd, b) for b in all_constrained):
+                matches.append(
+                    _build_inverse_match_window(ad, mid_jd, w3_s, last_good, ayanamsa, true_node, node_true_overrides)
+                )
+
+    receipt = {
+        "module": "ephemeris_oss.impossible_astrology.inverse_chart_date_solver",
+        "version": __version__,
+        "start_year": y0,
+        "end_year": y1,
+        "ayanamsa": ayanamsa,
+        "sign_constraints": normalized_sign_names,
+        "nakshatra_constraints": normalized_nak_names,
+        "match_count": len(matches),
+        "first_match_jd_ut": matches[0].matched_jd_ut if matches else None,
+    }
+    return InverseChartDateSearchReport(
+        start_year=y0,
+        end_year=y1,
+        start_jd_ut=round(jd_start, 6),
+        end_jd_ut=round(jd_end, 6),
+        ayanamsa=ayanamsa,
+        sign_constraints=normalized_sign_names,
+        nakshatra_constraints=normalized_nak_names,
+        match_count=len(matches),
+        matches=tuple(matches),
+        receipt=receipt,
+        receipt_sha256=canonical_hash(receipt),
+    )
+
+
+def _build_inverse_match_window(
+    ad: EphemerisAdapter,
+    mid_jd: float,
+    w_start: float,
+    w_end: float,
+    ayanamsa: str,
+    true_node: bool,
+    node_true_overrides: Mapping[str, bool] | None = None,
+) -> InverseChartMatchWindow:
+    lons: dict[str, float] = {}
+    signs: dict[str, str] = {}
+    naks: dict[str, str] = {}
+    overrides = node_true_overrides or {}
+    for b_key in VEDIC_NINE_GRAHAS + ("uranus", "neptune", "pluto"):
+        if b_key in overrides:
+            use_true = overrides[b_key]
+        elif b_key in ("rahu", "ketu") and ("rahu" in overrides or "ketu" in overrides):
+            use_true = overrides.get("rahu", overrides.get("ketu", bool(true_node)))
+        else:
+            use_true = bool(true_node)
+        pos = ad.calc_ut(mid_jd, b_key, sidereal=True, ayanamsa=ayanamsa, true_node=use_true)
+        lon = float(pos.longitude_deg)
+        cap = b_key.capitalize()
+        lons[cap] = round(lon, 6)
+        signs[cap] = RASI_NAMES[min(int(lon // 30.0), 11)]
+        naks[cap] = nakshatra_position(lon).name
+    return InverseChartMatchWindow(
+        matched_jd_ut=round(mid_jd, 6),
+        matched_iso_utc=jd_to_iso_utc(mid_jd),
+        window_start_jd_ut=round(w_start, 6),
+        window_end_jd_ut=round(w_end, 6),
+        window_duration_hours=round(max((w_end - w_start) * 24.0, 0.0), 2),
+        planetary_longitudes_deg=lons,
+        planetary_signs=signs,
+        planetary_nakshatras=naks,
+    )
+
+
+# ---------------------------------------------------------------------------
+# 9. Triple-Lock Life-Event Peak Window Convergence Solver
+# ---------------------------------------------------------------------------
+
+
+_LIFE_DOMAIN_CONFIG: Mapping[str, Mapping[str, Any]] = {
+    "career": {
+        "primary_house": 10,
+        "supporting_houses": (10, 1, 6, 11, 9),
+        "karaka": "Saturn",
+        "secondary_karaka": "Sun",
+    },
+    "marriage": {
+        "primary_house": 7,
+        "supporting_houses": (7, 2, 11, 1, 5),
+        "karaka": "Venus",
+        "secondary_karaka": "Jupiter",
+    },
+    "wealth": {
+        "primary_house": 2,
+        "supporting_houses": (2, 11, 5, 9, 1),
+        "karaka": "Jupiter",
+        "secondary_karaka": "Venus",
+    },
+    "health_vitality": {
+        "primary_house": 1,
+        "supporting_houses": (1, 5, 9, 11),
+        "karaka": "Sun",
+        "secondary_karaka": "Mars",
+    },
+    "spiritual_awakening": {
+        "primary_house": 9,
+        "supporting_houses": (9, 12, 5, 8, 4),
+        "karaka": "Jupiter",
+        "secondary_karaka": "Ketu",
+    },
+}
+
+
+@dataclass(frozen=True)
+class TripleLockWindowEntry:
+    """Single evaluated date in the Triple-Lock Life-Event Convergence scan."""
+
+    jd_ut: float
+    iso_utc: str
+    lock1_natal_dasha_score_0_to_100: float
+    lock2_double_transit_score_0_to_100: float
+    lock3_ashtakavarga_kaksha_score_0_to_100: float
+    total_convergence_score_0_to_100: float
+    is_triple_lock_gold_window: bool
+    vimshottari_mahadasha: str
+    vimshottari_antardasha: str
+    kalachakra_sign: str
+    kalachakra_gati: str
+    kalachakra_touches_deha_or_jeeva: bool
+    chara_dasha_sign: str
+    jupiter_aspects_primary_house_or_lord: bool
+    saturn_aspects_primary_house_or_lord: bool
+    double_transit_locked: bool
+    karaka_kaksha_lord: str
+    karaka_kaksha_has_bindu: bool
+    primary_house_sav_bindus: int
+    bhrigu_bindu_triggered: bool
+
+
+@dataclass(frozen=True)
+class TripleLockConvergenceReport:
+    """Multi-system Triple-Lock Life-Event Convergence report."""
+
+    birth_jd_ut: float
+    birth_iso_utc: str
+    start_jd_ut: float
+    end_jd_ut: float
+    domain: str
+    primary_house: int
+    primary_house_sign: str
+    primary_house_lord: str
+    bhrigu_bindu_longitude_deg: float
+    kalachakra_deha_sign: str
+    kalachakra_jeeva_sign: str
+    peak_window: TripleLockWindowEntry
+    gold_windows: tuple[TripleLockWindowEntry, ...]
+    sampled_timeline: tuple[TripleLockWindowEntry, ...]
+    receipt: Mapping[str, Any]
+    receipt_sha256: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+def compute_triple_lock_life_event_convergence(
+    birth_jd_ut: float,
+    latitude_deg: float,
+    longitude_deg: float,
+    start_jd_ut: float,
+    end_jd_ut: float,
+    *,
+    domain: str = "career",
+    step_days: float = 5.0,
+    ayanamsa: str = "lahiri",
+    true_node: bool = False,
+    adapter: EphemerisAdapter | None = None,
+) -> TripleLockConvergenceReport:
+    """Synthesize three orthogonal Jyotish timing locks across ``[start_jd_ut, end_jd_ut]``:
+
+    - **Lock 1 (Multi-Dasha Natal Promise):** Combines active *Vimshottari*
+      Mahadasha/Antardasha house placement/lordship, BPHS *Kalachakra Dasha*
+      (*Deha/Jeeva* activation & *Gati*), and *Jaimini Chara Dasha*.
+    - **Lock 2 (Guru-Shani Double Transit Gochara Lock):** Evaluates whether
+      transiting **Jupiter** (1st/5th/7th/9th houses) and **Saturn**
+      (1st/3rd/7th/10th houses) simultaneously aspect or occupy the target
+      domain house or its natal lord's sign.
+    - **Lock 3 (Ashtakavarga 8-Kakshya Bindu & Bhrigu Bindu Trigger):** Evaluates
+      Sarvashtakavarga bindus in the transited domain sign, 8-Kakshya (`3 deg 45'`)
+      bindu activation of the domain Karaka, and transit contact with the
+      seeker's **Bhrigu Bindu** (Rahu-Moon midpoint).
+    """
+    dom_key = str(domain).strip().lower()
+    if dom_key not in _LIFE_DOMAIN_CONFIG:
+        raise ValueError(f"Unsupported domain {domain!r}; choose from {sorted(_LIFE_DOMAIN_CONFIG)}")
+    cfg = _LIFE_DOMAIN_CONFIG[dom_key]
+    t0 = float(start_jd_ut)
+    t1 = float(end_jd_ut)
+    if t1 < t0:
+        raise ValueError("end_jd_ut must be >= start_jd_ut")
+
+    ad = adapter if adapter is not None else EphemerisAdapter()
+    b_jd = float(birth_jd_ut)
+    lat = float(latitude_deg)
+    lon = float(longitude_deg)
+    dt = max(float(step_days), 1.0)
+
+    houses = ad.houses_ut(b_jd, lat, lon, system="whole_sign", ayanamsa=ayanamsa)
+    asc_deg = float(houses.ascendant_deg)
+    lagna_sign = min(int(asc_deg // 30.0), 11)
+
+    natal_lons: dict[str, float] = {}
+    for b_key in VEDIC_NINE_GRAHAS:
+        pos = ad.calc_ut(b_jd, b_key, sidereal=True, ayanamsa=ayanamsa, true_node=true_node)
+        natal_lons[b_key.capitalize()] = float(pos.longitude_deg)
+
+    natal_signs = {p: min(int(l_deg // 30.0), 11) for p, l_deg in natal_lons.items()}
+    natal_houses = {p: ((s - lagna_sign) % 12) + 1 for p, s in natal_signs.items()}
+
+    primary_house: int = int(cfg["primary_house"])
+    supporting_houses: tuple[int, ...] = tuple(cfg["supporting_houses"])
+    primary_sign = (lagna_sign + primary_house - 1) % 12
+    primary_lord = RASI_LORDS[primary_sign]
+    primary_lord_natal_sign = natal_signs[primary_lord]
+    karaka_planet = str(cfg["karaka"])
+
+    # Bhrigu Bindu = Rahu -> Moon arc midpoint
+    moon_lon = natal_lons["Moon"]
+    rahu_lon = natal_lons["Rahu"]
+    bhrigu_bindu_lon = normalize_degrees(rahu_lon + 0.5 * normalize_degrees(moon_lon - rahu_lon))
+
+    # Precompute Dasha timelines and Ashtakavarga (extend cycles so any query horizon is covered)
+    req_years = max(120.0, (t1 - b_jd) / 365.2425 + 24.0)
+    vim_cycles = max(1, int(math.ceil(req_years / 120.0)) + 1)
+    vim_dasha = compute_vimshottari_dasha(moon_lon, b_jd, max_level=2, cycles=vim_cycles)
+    kc_dasha = compute_kalachakra_dasha(moon_lon, b_jd)
+    kc_full_cycle_days = float(kc_dasha.paramayus_years) * float(kc_dasha.year_days)
+    chara_timeline = compute_chara_dasha(asc_deg, natal_lons, b_jd, max_level=1)
+    chara_periods = chara_timeline.mahadashas
+    chara_span = (chara_periods[-1].end_jd - b_jd) if chara_periods else 0.0
+    ashtaka = compute_ashtakavarga(natal_lons, asc_deg)
+
+    # Which planets are connected to the target domain houses (by occupancy or lordship)?
+    domain_connected_planets: set[str] = {primary_lord, karaka_planet, str(cfg["secondary_karaka"])}
+    for p_name, h_num in natal_houses.items():
+        if h_num in supporting_houses:
+            domain_connected_planets.add(p_name)
+    for s_idx in range(12):
+        h_num = ((s_idx - lagna_sign) % 12) + 1
+        if h_num in supporting_houses:
+            domain_connected_planets.add(RASI_LORDS[s_idx])
+
+    sampled_entries: list[TripleLockWindowEntry] = []
+    curr = t0
+    while curr <= t1 + 1.0e-9:
+        # 1. Lock 1: Multi-Dasha Natal Promise
+        vim_maha = "Ket"
+        vim_antar = "Ket"
+        for m_p in vim_dasha.mahadashas:
+            if m_p.start_jd <= curr < m_p.end_jd:
+                vim_maha = m_p.lord
+                for a_p in m_p.sub_periods:
+                    if a_p.start_jd <= curr < a_p.end_jd:
+                        vim_antar = a_p.lord
+                        break
+                break
+        maha_full = {
+            "Sun": "Sun",
+            "Moon": "Moon",
+            "Mars": "Mars",
+            "Mercury": "Mercury",
+            "Jupiter": "Jupiter",
+            "Venus": "Venus",
+            "Saturn": "Saturn",
+            "Rahu": "Rahu",
+            "Ketu": "Ketu",
+        }.get(vim_maha, vim_maha)
+        antar_full = {
+            "Sun": "Sun",
+            "Moon": "Moon",
+            "Mars": "Mars",
+            "Mercury": "Mercury",
+            "Jupiter": "Jupiter",
+            "Venus": "Venus",
+            "Saturn": "Saturn",
+            "Rahu": "Rahu",
+            "Ketu": "Ketu",
+        }.get(vim_antar, vim_antar)
+
+        kc_sign_name = kc_dasha.deha_sign_name
+        kc_gati = "Mandooka_Regular"
+        kc_touches_vital = False
+        kc_sign_idx = kc_dasha.deha_sign_index
+        curr_kc = (
+            b_jd + ((curr - b_jd) % kc_full_cycle_days)
+            if (kc_full_cycle_days > 0.0 and curr >= b_jd)
+            else curr
+        )
+        matched_kc = False
+        for kp in kc_dasha.mahadashas:
+            if kp.start_jd <= curr_kc < kp.end_jd:
+                kc_sign_name = kp.sign_name
+                kc_gati = kp.gati
+                kc_touches_vital = bool(kp.is_deha_sign or kp.is_jeeva_sign)
+                kc_sign_idx = kp.sign_index
+                matched_kc = True
+                break
+        if not matched_kc and kc_dasha.mahadashas:
+            kp0 = kc_dasha.mahadashas[0]
+            kc_sign_name = kp0.sign_name
+            kc_gati = kp0.gati
+            kc_touches_vital = bool(kp0.is_deha_sign or kp0.is_jeeva_sign)
+            kc_sign_idx = kp0.sign_index
+
+        chara_sign_name = RASI_NAMES[lagna_sign]
+        chara_sign_idx = lagna_sign
+        curr_chara = b_jd + ((curr - b_jd) % chara_span) if (chara_span > 0.0 and curr >= chara_periods[-1].end_jd) else curr
+        for cp in chara_periods:
+            if cp.start_jd <= curr_chara < cp.end_jd:
+                chara_sign_name = cp.lord
+                chara_sign_idx = RASI_NAMES.index(cp.lord) if cp.lord in RASI_NAMES else lagna_sign
+                break
+
+        lock1_score = 25.0
+        if maha_full in domain_connected_planets:
+            lock1_score += 25.0
+        if antar_full in domain_connected_planets:
+            lock1_score += 25.0
+        kc_house = ((kc_sign_idx - lagna_sign) % 12) + 1
+        if kc_house in supporting_houses or kc_touches_vital:
+            lock1_score += 15.0
+        chara_house = ((chara_sign_idx - lagna_sign) % 12) + 1
+        if chara_house in supporting_houses:
+            lock1_score += 10.0
+        lock1_score = min(lock1_score, 100.0)
+
+        # 2. Lock 2: Guru-Shani Double Transit Gochara Lock
+        jup_pos = ad.calc_ut(curr, "jupiter", sidereal=True, ayanamsa=ayanamsa, true_node=true_node)
+        sat_pos = ad.calc_ut(curr, "saturn", sidereal=True, ayanamsa=ayanamsa, true_node=true_node)
+        kar_pos = (
+            jup_pos
+            if karaka_planet == "Jupiter"
+            else (
+                sat_pos
+                if karaka_planet == "Saturn"
+                else ad.calc_ut(curr, karaka_planet.lower(), sidereal=True, ayanamsa=ayanamsa, true_node=true_node)
+            )
+        )
+        jup_sign = min(int(float(jup_pos.longitude_deg) // 30.0), 11)
+        sat_sign = min(int(float(sat_pos.longitude_deg) // 30.0), 11)
+
+        # Jupiter aspects 1st (occupancy), 5th, 7th, 9th signs from itself
+        jup_aspected_signs = {
+            jup_sign,
+            (jup_sign + 4) % 12,
+            (jup_sign + 6) % 12,
+            (jup_sign + 8) % 12,
+        }
+        # Saturn aspects 1st (occupancy), 3rd, 7th, 10th signs from itself
+        sat_aspected_signs = {
+            sat_sign,
+            (sat_sign + 2) % 12,
+            (sat_sign + 6) % 12,
+            (sat_sign + 9) % 12,
+        }
+        target_signs = {primary_sign, primary_lord_natal_sign}
+        jup_hit = bool(jup_aspected_signs & target_signs)
+        sat_hit = bool(sat_aspected_signs & target_signs)
+        double_transit_locked = bool(jup_hit and sat_hit)
+        if double_transit_locked:
+            lock2_score = 100.0
+        elif jup_hit or sat_hit:
+            lock2_score = 60.0
+        else:
+            lock2_score = 20.0
+
+        # 3. Lock 3: Ashtakavarga 8-Kakshya Bindu & Bhrigu Bindu Trigger
+        kar_lon = float(kar_pos.longitude_deg)
+        kar_sign = min(int(kar_lon // 30.0), 11)
+        kar_deg_in_sign = kar_lon - kar_sign * 30.0
+        kaksha_idx = min(int(kar_deg_in_sign // 3.75), 7)
+        kaksha_lord = _KAKSHA_LORDS_8[kaksha_idx]
+        bav_Lookup_planet = karaka_planet if karaka_planet in ashtaka.bhinna_tables else "Jupiter"
+        bav_table = ashtaka.bhinna_tables[bav_Lookup_planet]
+        kaksha_has_bindu = bool(bav_table.contributor_matrix[kaksha_lord][kar_sign] == 1)
+        sav_primary = int(ashtaka.sarvashtakavarga_7[primary_sign])
+        sav_jup = int(ashtaka.sarvashtakavarga_7[jup_sign])
+
+        # Check Bhrigu Bindu activation by Jupiter, Saturn, or Karaka within 5 deg (conjunction/trine/opposition)
+        bb_triggered = False
+        for t_lon in (float(jup_pos.longitude_deg), float(sat_pos.longitude_deg), kar_lon):
+            diff_bb = abs(normalize_degrees(t_lon - bhrigu_bindu_lon))
+            sep_bb = 360.0 - diff_bb if diff_bb > 180.0 else diff_bb
+            if min(abs(sep_bb - 0.0), abs(sep_bb - 120.0), abs(sep_bb - 180.0)) <= 5.0:
+                bb_triggered = True
+                break
+
+        lock3_score = (
+            (40.0 if kaksha_has_bindu else 10.0)
+            + min(sav_jup / 35.0, 1.0) * 35.0
+            + (25.0 if bb_triggered else 5.0)
+        )
+        lock3_score = min(round(lock3_score, 4), 100.0)
+
+        total_score = round(0.40 * lock1_score + 0.35 * lock2_score + 0.25 * lock3_score, 4)
+        is_gold = bool(double_transit_locked and lock1_score >= 65.0 and kaksha_has_bindu)
+
+        sampled_entries.append(
+            TripleLockWindowEntry(
+                jd_ut=round(curr, 6),
+                iso_utc=jd_to_iso_utc(curr),
+                lock1_natal_dasha_score_0_to_100=round(lock1_score, 4),
+                lock2_double_transit_score_0_to_100=round(lock2_score, 4),
+                lock3_ashtakavarga_kaksha_score_0_to_100=round(lock3_score, 4),
+                total_convergence_score_0_to_100=total_score,
+                is_triple_lock_gold_window=is_gold,
+                vimshottari_mahadasha=maha_full,
+                vimshottari_antardasha=antar_full,
+                kalachakra_sign=kc_sign_name,
+                kalachakra_gati=kc_gati,
+                kalachakra_touches_deha_or_jeeva=kc_touches_vital,
+                chara_dasha_sign=chara_sign_name,
+                jupiter_aspects_primary_house_or_lord=jup_hit,
+                saturn_aspects_primary_house_or_lord=sat_hit,
+                double_transit_locked=double_transit_locked,
+                karaka_kaksha_lord=kaksha_lord,
+                karaka_kaksha_has_bindu=kaksha_has_bindu,
+                primary_house_sav_bindus=sav_primary,
+                bhrigu_bindu_triggered=bb_triggered,
+            )
+        )
+        if curr >= t1:
+            break
+        curr = min(curr + dt, t1) if curr + dt > t1 and curr < t1 else curr + dt
+
+    peak_entry = max(sampled_entries, key=lambda e: e.total_convergence_score_0_to_100)
+    gold_list = tuple(e for e in sampled_entries if e.is_triple_lock_gold_window)
+
+    receipt = {
+        "module": "ephemeris_oss.impossible_astrology.triple_lock_convergence",
+        "version": __version__,
+        "birth_jd_ut": round(b_jd, 8),
+        "start_jd_ut": round(t0, 8),
+        "end_jd_ut": round(t1, 8),
+        "domain": dom_key,
+        "primary_house": primary_house,
+        "primary_house_sign": RASI_NAMES[primary_sign],
+        "primary_house_lord": primary_lord,
+        "bhrigu_bindu_longitude_deg": round(bhrigu_bindu_lon, 6),
+        "peak_jd_ut": peak_entry.jd_ut,
+        "peak_score": peak_entry.total_convergence_score_0_to_100,
+        "gold_window_count": len(gold_list),
+    }
+    return TripleLockConvergenceReport(
+        birth_jd_ut=b_jd,
+        birth_iso_utc=jd_to_iso_utc(b_jd),
+        start_jd_ut=t0,
+        end_jd_ut=t1,
+        domain=dom_key,
+        primary_house=primary_house,
+        primary_house_sign=RASI_NAMES[primary_sign],
+        primary_house_lord=primary_lord,
+        bhrigu_bindu_longitude_deg=round(bhrigu_bindu_lon, 6),
+        kalachakra_deha_sign=kc_dasha.deha_sign_name,
+        kalachakra_jeeva_sign=kc_dasha.jeeva_sign_name,
+        peak_window=peak_entry,
+        gold_windows=gold_list,
+        sampled_timeline=tuple(sampled_entries),
+        receipt=receipt,
+        receipt_sha256=canonical_hash(receipt),
+    )
+
+
 __all__ = [
+    "InverseChartDateSearchReport",
+    "InverseChartMatchWindow",
+    "KrantisamyaMahapataEvent",
+    "KrantisamyaMahapataReport",
     "MultiCenturyPhenomenaReport",
     "PersonalizedAstroFingerprintReport",
     "SiddhantaDriftAnalysisReport",
     "SubsecondShodashvargaCuspReport",
+    "TripleLockConvergenceReport",
+    "TripleLockWindowEntry",
     "VargaBoundaryMargin",
+    "YogataraStellarBhedaReport",
     "analyze_siddhanta_vs_jpl_de440_drift",
     "compute_personalized_astro_fingerprint",
+    "compute_triple_lock_life_event_convergence",
+    "evaluate_yogatara_stellar_bheda_and_visibility",
     "rectify_birth_time_bayesian",
     "scan_multi_century_rare_phenomena",
+    "solve_chart_date_from_planetary_constraints",
+    "solve_krantisamya_mahapata_windows",
     "solve_subsecond_shodashvarga_cusp_transitions",
 ]

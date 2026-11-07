@@ -1,0 +1,301 @@
+{
+  "pr": 26,
+  "repository": "shrishmanglik/RDG-Ephemeris",
+  "previous_head": "e6839de73140d2ce98c7f39fcf77d8b089290bc4",
+  "dispositions": [
+    {
+      "id": 4493166187,
+      "path": "src/ephemeris_oss/impossible_astrology.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Normalized Sanskrit/common planet aliases (surya, chandra, mangala, budha, guru, shukra, shani, rahu, ketu, aruna, varuna, yama) and outer planets (uranus, neptune, pluto) in solve_inverse_chart_date, rejecting unsupported constraint keys with ValueError and evaluating outer/slow planets in Stage 1."
+    },
+    {
+      "id": 4493166192,
+      "path": "src/ephemeris_oss/impossible_astrology.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Replaced joint 10-day point-sampling conjunction in Stage 1 of solve_inverse_chart_date with per-body conservative padded intervals (+/- step1) intersected across all constrained slow bodies so sub-10-day overlaps are never missed."
+    },
+    {
+      "id": 4493166203,
+      "path": "src/ephemeris_oss/adapter.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Passed use_physical_center into _calc_ut_historical_analytical and applied _PHYSICAL_CENTER_LON_OFFSET_DEG plus receipt['physical_center_applied'] on the historical fallback path."
+    },
+    {
+      "id": 4493166209,
+      "path": "src/ephemeris_oss/impossible_astrology.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Extended Vimshottari (years=240.0), Chara (repeated 12-sign cycles with modulo index), and Kalachakra (repeated cycle modulo total_kc_span) timelines in compute_triple_lock_life_event_convergence to cover arbitrary later-life scan dates."
+    },
+    {
+      "id": 4493166220,
+      "path": "src/ephemeris_oss/impossible_astrology.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Extended the upper Julian Day bound in solve_inverse_chart_date from 2816787.5 (3000-01-01) to 2817152.5 (3001-01-01) so the full year 3000 CE is searched."
+    },
+    {
+      "id": 4493493508,
+      "path": "src/ephemeris_oss/adapter.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Removed the unconditional analytical bypass for uranus, neptune, and pluto in EphemerisAdapter.calc_ut so full DE440/DE441 SPK kernels evaluate outer planets numerically with light-time and aberration, falling back to _calc_ut_historical_analytical only when unavailable."
+    },
+    {
+      "id": 4493493515,
+      "path": "src/ephemeris_oss/almanac/human_ephemeris.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Added ayanamsa parameter to generate_monthly_panchang in panchang_calendar.py and propagated ayanamsa=ayanamsa from generate_human_manual_ephemeris_compendium."
+    },
+    {
+      "id": 4493493525,
+      "path": "src/ephemeris_oss/engine/stellar_anchors.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Subtracted nutation in longitude math.degrees(float(dpsi)) in propagate_yogatara_apparent before subtracting the mean-frame ayanamsa so stellar and planetary sidereal longitudes share the identical mean reference frame."
+    },
+    {
+      "id": 4493493536,
+      "path": "src/ephemeris_oss/almanac/human_ephemeris.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Explicitly documented the fractional antardasha month-to-day multiplier as 30 (Days = Fractional Month x 30) above Table 12B matching the 30.0 multiplier used in the table cells."
+    },
+    {
+      "id": 4494405959,
+      "path": "src/ephemeris_oss/jyotish/vishesha_lagnas.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Converted Pranapada Lagna elapsed palas to degrees using elapsed_palas * 2.0 ((elapsed_palas / 15) * 30 degrees) in both compute_vishesha_lagnas_and_karakas and Table 8A of human_ephemeris.py."
+    },
+    {
+      "id": 4494405970,
+      "path": "src/ephemeris_oss/jyotish/vishesha_lagnas.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Applied the Jaimini Arudha Pada Swastha exception by testing ((raw_arudha - base_sign) % 12) in (0, 6) in both vishesha_lagnas.py and Table 13A of human_ephemeris.py."
+    },
+    {
+      "id": 4494405982,
+      "path": "src/ephemeris_oss/jyotish/vishesha_lagnas.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Updated Hora Lagna advancement rate to elapsed_minutes / 2.0 (0.5 deg/min = 30 deg/hr) in both vishesha_lagnas.py and Table 8A of human_ephemeris.py."
+    },
+    {
+      "id": 4494405988,
+      "path": "src/ephemeris_oss/almanac/human_ephemeris.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Updated the second-order quadratic interpolation correction for instantaneous velocity v_day and centered second difference Delta^2_lambda to 0.5 * (f ** 2) * Delta^2_lambda in both the worked calculation and Table 6A."
+    },
+    {
+      "id": 4494405995,
+      "path": "src/ephemeris_oss/almanac/human_ephemeris.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Clarified Chapter 7 LST lookup instructions relative to comp.observer_longitude_deg so the reference meridian longitude is never applied twice."
+    },
+    {
+      "id": 4494406005,
+      "path": "src/ephemeris_oss/almanac/human_ephemeris.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Swapped Dehamsha (seq_names[-1]) and Jeevamsha (seq_names[0]) for Apasavya rows in Table 12D to match compute_kalachakra_dasha."
+    },
+    {
+      "id": 4494406027,
+      "path": "src/ephemeris_oss/jyotish/vishesha_lagnas.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Updated Air-sign Pushkara Navamsa D9 sign indices to (11, 1) (Meena and Vrishabha) in both vishesha_lagnas.py and Table 9B of human_ephemeris.py."
+    },
+    {
+      "id": 4494406031,
+      "path": "src/ephemeris_oss/jyotish/vishesha_lagnas.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Computed centered finite-difference latitude speed ((pos_p1.latitude_deg - pos_m1.latitude_deg) * 0.5) and radial distance speed ((pos_p1.distance_au - pos_m1.distance_au) * 0.5) when the numerical adapter returns 0.0."
+    },
+    {
+      "id": 4494934694,
+      "path": "src/ephemeris_oss/jyotish/conditional_dashas_and_nadi.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Delegated Ashtottari opening lord and birth balance in compute_all_10_parashari_nakshatra_dashas and Table 24.1 to compute_ashtottari_dasha (28-nakshatra grouping)."
+    },
+    {
+      "id": 4494934700,
+      "path": "src/ephemeris_oss/frontier_astrodynamics.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Used date-dependent mean obliquity eps_deg = 23.43929111 - (46.8150*t_cent + 0.00059*t_cent^2 - 0.001813*t_cent^3)/3600 in compute_topocentric_relativistic_astrometry."
+    },
+    {
+      "id": 4494934709,
+      "path": "src/ephemeris_oss/frontier_astrodynamics.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Computed exact circular disk-area intersection fraction and searched observer-local daylight contact intervals around geocentric syzygy in evaluate_lifetime_eclipse_natal_sensitivity so local_visible, maximum_jd_ut, and local_obscuration_fraction reflect true local solar disk area obscuration and local eclipse timing."
+    },
+    {
+      "id": 4494934718,
+      "path": "src/ephemeris_oss/frontier_astrodynamics.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Increased retrograde scan padding to 60 days (inner planets) and 180 days (outer planets) in solve_synodic_retrograde_loops_and_triple_passes so overlapping retrograde phases up to 165 days are fully bracketed."
+    },
+    {
+      "id": 4494934725,
+      "path": "src/ephemeris_oss/jyotish/conditional_dashas_and_nadi.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Integrated daily sunrise/sunset compute_muhurta_windows into solve_golden_muhurta_electional_windows to penalize Rahu Kalam, Yamagandam, and Gulika Kalam and reward Abhijit Muhurta."
+    },
+    {
+      "id": 4494934733,
+      "path": "src/ephemeris_oss/almanac/human_ephemeris.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Fixed argument order in generate_human_manual_ephemeris_compendium when calling compute_all_10_parashari_nakshatra_dashas(moon_exact_lon, worked_houses.ascendant_deg, sun_w_lon, ...)."
+    },
+    {
+      "id": 4495697326,
+      "path": "src/ephemeris_oss/jyotish/harmonic_vedha_and_pinda.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Normalized full cell names (_norm_sbc_name) in compute_sarvatobhadra_81_ray_vedha instead of 6-character or 4-character prefix slicing."
+    },
+    {
+      "id": 4495697335,
+      "path": "src/ephemeris_oss/jyotish/conditional_dashas_and_nadi.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Dynamically scaled num_cycles in compute_all_10_parashari_nakshatra_dashas to cover query_jd across arbitrary later-life ages."
+    },
+    {
+      "id": 4495697342,
+      "path": "src/ephemeris_oss/frontier_astrodynamics.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Clamped the final step in evaluate_lifetime_eclipse_natal_sensitivity to end_jd_ut so sub-4-day ranges and final partial intervals are always evaluated."
+    },
+    {
+      "id": 4496319955,
+      "path": "src/ephemeris_oss/jyotish/vishesha_lagnas.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Passed physical_center=use_phys to both neighboring evaluations pos_m1 and pos_p1 in compute_full_astronomical_sky_ephemeris."
+    },
+    {
+      "id": 4496319961,
+      "path": "src/ephemeris_oss/jyotish/harmonic_vedha_and_pinda.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Evaluated both forward and backward roots at each shell k in _find_nearest_heliacal_crossing and returned the root with smaller abs(root_jd - jd_ut)."
+    },
+    {
+      "id": "round3_eclipse_observer_range_consistency",
+      "path": "src/ephemeris_oss/frontier_astrodynamics.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Padded candidate syzygy search by +/- 0.25 days around [start_jd_ut, end_jd_ut], refined syzygy via 24-step bisection, and filtered returned eclipses and natal hits strictly by start_jd_ut <= event_max_jd <= end_jd_ut; verified across all 7 assertions in test_observer_range_contracts.py."
+    },
+    {
+      "id": 4496900886,
+      "path": "src/ephemeris_oss/impossible_astrology.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Wrapped Kalachakra Dasha queries by the full cycle duration float(kc_dasha.paramayus_years) * float(kc_dasha.year_days) and mapped the post-timeline remainder back to kc_dasha.mahadashas[0] so later-life scans never collapse to the final mahadasha."
+    },
+    {
+      "id": 4496900900,
+      "path": "src/ephemeris_oss/adapter.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Added the time derivative of _planet_physical_center_offset_deg (including planet_lon_deg rate and radial distance rate) to speed_deg and is_retro on both the DE440 numerical branch and _calc_ut_historical_analytical."
+    },
+    {
+      "id": 4496900911,
+      "path": "src/ephemeris_oss/jyotish/conditional_dashas_and_nadi.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Used half-open intervals c <= target_jd < c + sub_d - 1e-12 for Mahadasha and _find_sub lookups in compute_vimshottari_5_level_prana_chronometer so exact period boundaries select the incoming period."
+    },
+    {
+      "id": 4497271139,
+      "path": "src/ephemeris_oss/jyotish/conditional_dashas_and_nadi.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Resolved actual sunrise cand_sr_jd via ad.rise_trans(local_midnight_ut, 'sun', 1, ...) before deciding whether t_curr precedes sunrise in solve_golden_muhurta_electional_windows, and derived vara_sun0 from sr_jd."
+    },
+    {
+      "id": 4497485582,
+      "path": "src/ephemeris_oss/impossible_astrology.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Replaced simultaneous daily sampling in Stage 2 of solve_chart_date_from_planetary_constraints with per-body conservative padded intervals intersected across med_bodies, and refined Stage 3 with step3 = 0.125."
+    },
+    {
+      "id": 4497485591,
+      "path": "src/ephemeris_oss/engine/stellar_anchors.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Precessed icrs_dir to the true equator and equinox of date via erfa.ltp(epj) in the historical branch of propagate_yogatara_apparent before extracting ra_deg and dec_deg."
+    },
+    {
+      "id": 4497485597,
+      "path": "src/ephemeris_oss/almanac/human_ephemeris.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Evaluated s_nature is True or str(s_nature).lower() == 'benefic' when rendering Table 9E D60 Shashtyamsa nature labels and regenerated docs/HUMAN-READABLE-EPHEMERIS-AND-JYOTISH-ACADEMY-MANUAL.md and .html."
+    },
+    {
+      "id": 4497920955,
+      "path": "src/ephemeris_oss/impossible_astrology.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Recorded node_true_overrides and effective_true_node when explicit node aliases (true_node, true_rahu, true_ketu, mean_node) are passed in sign_constraints or nakshatra_constraints so ad.calc_ut and _build_inverse_match_window preserve the requested node model."
+    },
+    {
+      "id": 4497920969,
+      "path": "src/ephemeris_oss/almanac/panchang_calendar.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Called analytical.set_ayanamsa(ayanamsa) on the default AnalyticalEphemerisProvider in generate_monthly_panchang so non-Lahiri ayanamsa conventions are respected when no custom adapter is supplied."
+    },
+    {
+      "id": 4497920981,
+      "path": "src/ephemeris_oss/jyotish/harmonic_vedha_and_pinda.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Filtered active Sarvatobhadra Vedha rays by planetary motion in compute_sarvatobhadra_81_ray_vedha (all 3 rays for Sun/Moon, front+left for direct planets, front+right for retrograde planets) matching evaluate_sarvatobhadra_transits."
+    },
+    {
+      "id": 4498147985,
+      "path": "src/ephemeris_oss/impossible_astrology.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Replaced simultaneous 3-hour sampling in Stage 3 of solve_chart_date_from_planetary_constraints with per-body transition bisection (_bisect_match_edge) and interval intersection so short joint constraint overlaps (< 3 hours) and exact window boundaries are preserved."
+    },
+    {
+      "id": 4498148000,
+      "path": "src/ephemeris_oss/almanac/human_ephemeris.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Extended _make_evaluator and scan_ingresses_and_aspects in ephemeris_tables.py to accept ayanamsa and forwarded ayanamsa=ayanamsa from generate_human_manual_ephemeris_compendium so monthly ingress scans match the requested ayanamsa convention."
+    },
+    {
+      "id": 4498437509,
+      "path": "src/ephemeris_oss/impossible_astrology.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Added non-monotonic stationary excursion discovery in _substep_interior_sample (midpoint, 3-point quadratic station vertex, 8-subinterval bracket grid, and 12-step golden-section angular-distance minimization) so Stage 1, Stage 2, and Stage 3 preserve intervals where a body enters a sign/nakshatra around a station and turns back before the next coarse sample."
+    },
+    {
+      "id": 4498437518,
+      "path": "src/ephemeris_oss/jyotish/conditional_dashas_and_nadi.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Normalized planet_longitudes_deg once via _normalize_planet_longitudes across lowercase, title-case, uppercase, and Sanskrit planet keys in compute_all_10_parashari_nakshatra_dashas and compute_nadi_amsa_and_sudarshana_chakra, and raised ValueError when required planet longitudes are missing."
+    },
+    {
+      "id": 4498677978,
+      "path": "src/ephemeris_oss/jyotish/vishesha_lagnas.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Computed physical solar_elongation_deg, heliocentric distance, phase_angle_deg, illuminated_fraction_pct, and visual_magnitude in compute_full_astronomical_sky_ephemeris from full 3D spherical ecliptic coordinates (including planet and solar ecliptic latitudes) while retaining longitudinal separation for traditional Vedic combustion checks."
+    },
+    {
+      "id": 4498677984,
+      "path": "src/ephemeris_oss/jyotish/vishesha_lagnas.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Included Ketu in planet_lons and called resolve_jaimini_sign_lord(base_sign, planet_lons) in compute_vishesha_lagnas_and_special_points so Scorpio (Mars/Ketu) and Aquarius (Saturn/Rahu) co-lord Arudha Padas match vargas.py::arudha_padas."
+    },
+    {
+      "id": 4498677990,
+      "path": "src/ephemeris_oss/almanac/human_ephemeris.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Populated Table 9A Vimshopaka Bala weights (shadvarga, saptavarga, dasavarga, shodashvarga) directly from vargas.py::VIMSHOPAKA_WEIGHTS and regenerated docs/HUMAN-READABLE-EPHEMERIS-AND-JYOTISH-ACADEMY-MANUAL.md and .html."
+    },
+    {
+      "id": 4498855652,
+      "path": "src/ephemeris_oss/frontier_astrodynamics.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Computed observer-relative 3D equatorial topocentric range at both t0 and t1 (including WGS84 observer rotational position vector at local sidereal time) so radial_velocity_km_s and light_time_seconds include the surface observer's diurnal motion."
+    },
+    {
+      "id": 4498855661,
+      "path": "src/ephemeris_oss/almanac/human_ephemeris.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Normalized ayanamsa via _canonical_ayanamsa(str(mode or 'lahiri').strip().lower().replace('-', '_')) in both generate_human_manual_ephemeris_compendium and _render_compendium_markdown Table 1B so canonical, uppercase, space-padded, and alias spellings print offsets relative to the active ayanamsa and unsupported conventions raise explicitly instead of silently falling back to Lahiri."
+    },
+    {
+      "id": 4498855667,
+      "path": "src/ephemeris_oss/almanac/human_ephemeris.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Populated Table 14B Parashari Drishti columns directly from jyotish/shadbala.py::parashari_aspect_virupas() across all 36 ten-degree separation steps and regenerated docs/HUMAN-READABLE-EPHEMERIS-AND-JYOTISH-ACADEMY-MANUAL.md and .html."
+    }
+  ]
+}

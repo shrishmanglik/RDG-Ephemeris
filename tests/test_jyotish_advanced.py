@@ -330,7 +330,7 @@ def test_compute_tajika_sahams_day_night_reversal() -> None:
     }
     day_sahams = compute_tajika_sahams(lons, varsha_asc_lon_deg=15.0, is_day_birth=True)
     night_sahams = compute_tajika_sahams(lons, varsha_asc_lon_deg=15.0, is_day_birth=False)
-    assert len(day_sahams) == 25
+    assert len(day_sahams) == 36
     assert day_sahams["punya"].longitude_deg != night_sahams["punya"].longitude_deg
     # Bhratri Saham does not reverse at night
     assert math.isclose(

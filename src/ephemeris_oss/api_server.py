@@ -180,6 +180,123 @@ def build_openapi_spec(server_url: str = "http://127.0.0.1:8765") -> dict[str, A
                     "responses": _post_responses(),
                 }
             },
+            "/v1/yogatara": {
+                "post": {
+                    "summary": (
+                        "Propagate 30 Gaia/Hipparcos Yogataras and detect Tara Bheda, "
+                        "Rohini Shakata Bheda, and Kalansha heliacal visibility"
+                    ),
+                    "operationId": "evaluateYogataraStellarBheda",
+                    "requestBody": _request_body("evaluate_yogatara_stellar_bheda"),
+                    "responses": _post_responses(),
+                }
+            },
+            "/v1/mahapata": {
+                "post": {
+                    "summary": (
+                        "Solve exact Surya Siddhanta Vyatipata and Vaidhriti Mahapata "
+                        "solar-lunar declination equality windows"
+                    ),
+                    "operationId": "solveKrantisamyaMahapata",
+                    "requestBody": _request_body("solve_krantisamya_mahapata"),
+                    "responses": _post_responses(),
+                }
+            },
+            "/v1/inverse-date": {
+                "post": {
+                    "summary": (
+                        "Inverse Sky-to-Date 'Astronomical Time-Machine' solver across 3102 BCE to 3000 CE"
+                    ),
+                    "operationId": "solveInverseChartDate",
+                    "requestBody": _request_body("solve_inverse_chart_date"),
+                    "responses": _post_responses(),
+                }
+            },
+            "/v1/triple-lock": {
+                "post": {
+                    "summary": (
+                        "Compute Triple-Lock Life-Event Convergence (Multi-Dasha + Guru-Shani Double Transit "
+                        "+ Ashtakavarga 8-Kakshya & Bhrigu Bindu)"
+                    ),
+                    "operationId": "computeTripleLockConvergence",
+                    "requestBody": _request_body("compute_triple_lock_convergence"),
+                    "responses": _post_responses(),
+                }
+            },
+            "/v1/human-ephemeris": {
+                "post": {
+                    "summary": (
+                        "Generate Human-Readable Classical Ephemeris & Jyotish Academy Manual Calculation Compendium"
+                    ),
+                    "operationId": "generateHumanManualEphemeris",
+                    "requestBody": _request_body("generate_human_manual_ephemeris"),
+                    "responses": _post_responses(),
+                }
+            },
+            "/v1/topocentric-astrometry": {
+                "post": {
+                    "summary": (
+                        "Compute WGS84 topocentric parallax, Saemundsson-Bennett refraction, Doppler velocity, "
+                        "Shapiro delay, and Geocentric-vs-Topocentric D9/D60/KP Sub-Lord flips"
+                    ),
+                    "operationId": "computeTopocentricAstrometry",
+                    "requestBody": _request_body("compute_topocentric_astrometry"),
+                    "responses": _post_responses(),
+                }
+            },
+            "/v1/retrograde-loops": {
+                "post": {
+                    "summary": (
+                        "Solve 5-point synodic retrograde phase-space loops and Natal Triple-Pass Transit hits"
+                    ),
+                    "operationId": "solveRetrogradeLoops",
+                    "requestBody": _request_body("solve_retrograde_loops"),
+                    "responses": _post_responses(),
+                }
+            },
+            "/v1/eclipse-sensitivity": {
+                "post": {
+                    "summary": (
+                        "Evaluate Solar/Lunar eclipses, local obscuration, and natal degree Grahan sensitivity"
+                    ),
+                    "operationId": "evaluateEclipseSensitivity",
+                    "requestBody": _request_body("evaluate_eclipse_sensitivity"),
+                    "responses": _post_responses(),
+                }
+            },
+            "/v1/conditional-dashas-nadi": {
+                "post": {
+                    "summary": (
+                        "Compute all 10 BPHS Conditional Nakshatra Dashas, 5-level Prana Chronometer, "
+                        "150-Division Nadi Amsa, and 3-Ring Sudarshana Chakra"
+                    ),
+                    "operationId": "computeConditionalDashasAndNadi",
+                    "requestBody": _request_body("compute_conditional_dashas_and_nadi"),
+                    "responses": _post_responses(),
+                }
+            },
+            "/v1/dignity-heliacal": {
+                "post": {
+                    "summary": (
+                        "Compute continuous sinusoidal Uchcha-Neecha potential, Arohi/Avarohi climb velocity, "
+                        "3D Digbala, and Surya Siddhanta Kalansha heliacal rising/setting (Udaya/Asta)"
+                    ),
+                    "operationId": "computeDignityAndHeliacal",
+                    "requestBody": _request_body("compute_dignity_and_heliacal_phenomena"),
+                    "responses": _post_responses(),
+                }
+            },
+            "/v1/sarvatobhadra-vedha-pinda": {
+                "post": {
+                    "summary": (
+                        "Trace 81-Cell Sarvatobhadra 3-way Trishula Vedha rays, 7-planet Shodhya Pinda "
+                        "Nakshatra triggers, 12-house Vitta-Ayavyaya ratios, and Continuous Harmonic Yogas"
+                    ),
+                    "operationId": "computeSarvatobhadraVedhaAndPinda",
+                    "requestBody": _request_body("compute_sarvatobhadra_vedha_and_shodhya_pinda"),
+                    "responses": _post_responses(),
+                }
+            },
         },
     }
 
@@ -194,6 +311,17 @@ _ROUTE_TO_TOOL: Mapping[str, str] = {
     "/v1/fact-sheet": "compile_verified_ai_fact_sheet",
     "/v1/verify-text": "verify_ai_astrology_text",
     "/v1/fingerprint": "compute_personalized_astro_fingerprint",
+    "/v1/yogatara": "evaluate_yogatara_stellar_bheda",
+    "/v1/mahapata": "solve_krantisamya_mahapata",
+    "/v1/inverse-date": "solve_inverse_chart_date",
+    "/v1/triple-lock": "compute_triple_lock_convergence",
+    "/v1/human-ephemeris": "generate_human_manual_ephemeris",
+    "/v1/topocentric-astrometry": "compute_topocentric_astrometry",
+    "/v1/retrograde-loops": "solve_retrograde_loops",
+    "/v1/eclipse-sensitivity": "evaluate_eclipse_sensitivity",
+    "/v1/conditional-dashas-nadi": "compute_conditional_dashas_and_nadi",
+    "/v1/dignity-heliacal": "compute_dignity_and_heliacal_phenomena",
+    "/v1/sarvatobhadra-vedha-pinda": "compute_sarvatobhadra_vedha_and_shodhya_pinda",
 }
 
 
