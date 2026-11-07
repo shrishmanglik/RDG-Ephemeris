@@ -973,4 +973,148 @@ def test_round8_skewed_station_phase_spherical_geometry_arudha_and_vimshopaka_pa
             assert actual == expected, f"Vimshopaka mismatch in {rep_name} for {scheme}"
             assert sum(actual.values()) == pytest.approx(sum(expected.values()))
 
+    # 5. Moon and planetary 3D finite-distance phase geometry (24 synthetic + 1 real engine = 25 cases):
+    from ephemeris_oss import EphemerisAdapter
+    from ephemeris_oss.frontier_astrodynamics import compute_topocentric_relativistic_astrometry
+    from ephemeris_oss.jyotish.shadbala import parashari_aspect_virupas
+
+    def _vec3(lon_d: float, lat_d: float, dist: float) -> tuple[float, float, float]:
+        l_r, b_r = math.radians(lon_d), math.radians(lat_d)
+        return (dist * math.cos(b_r) * math.cos(l_r), dist * math.cos(b_r) * math.sin(l_r), dist * math.sin(b_r))
+
+    def _phase_oracle(s_v: tuple[float, float, float], p_v: tuple[float, float, float]) -> tuple[float, float, float]:
+        norm = lambda v: math.sqrt(sum(x * x for x in v))
+        ang = lambda a, b: math.degrees(math.acos(max(-1.0, min(1.0, sum(x * y for x, y in zip(a, b)) / (norm(a) * norm(b))))))
+        elong = ang(s_v, p_v)
+        ph = ang(tuple(-x for x in p_v), tuple(x - y for x, y in zip(s_v, p_v)))
+        il = 50.0 * (1.0 + math.cos(math.radians(ph)))
+        return elong, ph, il
+
+    class _DistAdapter:
+        def __init__(self, body: str, lon: float, lat: float, dist: float) -> None:
+            self.body, self.lon, self.lat, self.dist = body, lon, lat, dist
+
+        def get_ayanamsa_ut(self, *args: object, **kwargs: object) -> float:
+            return 0.0
+
+        def calc_ut(self, jd: float, body: str, **kwargs: object) -> SimpleNamespace:
+            sel = body.lower() == self.body
+            return SimpleNamespace(
+                longitude_deg=self.lon if sel else (0.0 if body.lower() == "sun" else 120.0),
+                latitude_deg=self.lat if sel else 0.0,
+                distance_au=self.dist if sel else 1.0,
+                longitude_speed_deg_per_day=1.0,
+                latitude_speed_deg_per_day=0.0,
+                distance_speed_au_per_day=0.0,
+            )
+
+    for b_name, dist_au in (("moon", 0.00257), ("venus", 0.3), ("mars", 1.5), ("jupiter", 5.0)):
+        for lon_v in (0.0, 90.0, 180.0):
+            for lat_v in (0.0, 5.0):
+                row_p = compute_full_astronomical_sky_ephemeris(
+                    2451545.0, adapter=_DistAdapter(b_name, lon_v, lat_v, dist_au)
+                )[b_name]
+                exp_e, exp_ph, exp_il = _phase_oracle((1.0, 0.0, 0.0), _vec3(lon_v, lat_v, dist_au))
+                assert row_p.solar_elongation_deg == pytest.approx(exp_e, abs=5.1e-5)
+                assert row_p.phase_angle_deg == pytest.approx(exp_ph, abs=0.0051)
+                assert row_p.illuminated_fraction_pct == pytest.approx(exp_il, abs=0.0051)
+
+    real_ad = EphemerisAdapter()
+    sun_real = real_ad.calc_ut(2461350.0, "sun", sidereal=True)
+    moon_real = real_ad.calc_ut(2461350.0, "moon", sidereal=True)
+    exp_real = _phase_oracle(
+        _vec3(sun_real.longitude_deg, sun_real.latitude_deg, sun_real.distance_au),
+        _vec3(moon_real.longitude_deg, moon_real.latitude_deg, moon_real.distance_au),
+    )
+    act_moon = compute_full_astronomical_sky_ephemeris(2461350.0, adapter=real_ad)["moon"]
+    assert act_moon.phase_angle_deg == pytest.approx(exp_real[1], abs=0.0051)
+    assert act_moon.illuminated_fraction_pct == pytest.approx(exp_real[2], abs=0.0051)
+
+    # 6. Topocentric Doppler observer diurnal motion (4 cases: rising, setting, zenith, pole):
+    class _StaticBodyAdapter:
+        def get_ayanamsa_ut(self, *args: object, **kwargs: object) -> float:
+            return 0.0
+
+        def calc_ut(self, jd: float, body: str, **kwargs: object) -> SimpleNamespace:
+            return SimpleNamespace(
+                longitude_deg=0.0,
+                latitude_deg=0.0,
+                distance_au=1.0,
+                longitude_speed_deg_per_day=0.0,
+                latitude_speed_deg_per_day=0.0,
+                distance_speed_au_per_day=0.0,
+            )
+
+    # At jd=2451545.0, GMST ~ 280.4606 deg; body at lon=0, lat=0 has RA=0, Dec=0.
+    # Choosing observer longitude so Local Hour Angle HA = LST - RA is -90 (rising), +90 (setting), 0 (zenith):
+    gmst_0 = 280.46061837
+    topo_rising = compute_topocentric_relativistic_astrometry(
+        2451545.0, 0.0, (-90.0 - gmst_0) % 360.0, adapter=_StaticBodyAdapter()
+    ).bodies["mars"]
+    topo_setting = compute_topocentric_relativistic_astrometry(
+        2451545.0, 0.0, (90.0 - gmst_0) % 360.0, adapter=_StaticBodyAdapter()
+    ).bodies["mars"]
+    topo_zenith = compute_topocentric_relativistic_astrometry(
+        2451545.0, 0.0, (0.0 - gmst_0) % 360.0, adapter=_StaticBodyAdapter()
+    ).bodies["mars"]
+    topo_pole = compute_topocentric_relativistic_astrometry(
+        2451545.0, 90.0, 0.0, adapter=_StaticBodyAdapter()
+    ).bodies["mars"]
+    assert topo_rising.radial_velocity_km_s == pytest.approx(-0.4651, abs=0.005)
+    assert topo_setting.radial_velocity_km_s == pytest.approx(0.4651, abs=0.005)
+    assert abs(topo_zenith.radial_velocity_km_s) < 0.005
+    assert abs(topo_pole.radial_velocity_km_s) < 1e-6
+
+    # 7. Table 14B Parashari Drishti parity across all 36 separation steps x 4 columns in fresh/stored MD and HTML:
+    def _extract_drishti(text: str, is_html: bool) -> dict[int, list[float]]:
+        if is_html:
+            parser = _TableParser()
+            parser.feed(text)
+            rows = next(t for t in parser.tables if t and len(t[0]) == 6 and "Separation" in t[0][0])
+        else:
+            sec = text.split("### Table 14B", 1)[1].split("## Chapter 15", 1)[0]
+            rows = [[c.strip() for c in ln.strip().strip("|").split("|")] for ln in sec.splitlines() if ln.startswith("|")]
+        out_d: dict[int, list[float]] = {}
+        for cells in rows:
+            m_deg = re.search(r"(\d{3})°", cells[0])
+            if not m_deg:
+                continue
+            deg_i = int(m_deg.group(1))
+            vals_d = [float(re.sub(r"[^0-9.]", "", c)) for c in cells[2:6]]
+            out_d[deg_i] = vals_d
+        assert len(out_d) == 36
+        return out_d
+
+    drishti_maps = {
+        "fresh_md": _extract_drishti(comp.to_markdown(), False),
+        "fresh_html": _extract_drishti(comp.to_html(), True),
+        "stored_md": _extract_drishti(docs_base.with_suffix(".md").read_text(encoding="utf-8"), False),
+        "stored_html": _extract_drishti(docs_base.with_suffix(".html").read_text(encoding="utf-8"), True),
+    }
+    for rep_name, d_map in drishti_maps.items():
+        for deg_step, cols in d_map.items():
+            d_f = float(deg_step)
+            exp_cols = [
+                round(parashari_aspect_virupas("Sun", 0.0, d_f), 2),
+                round(parashari_aspect_virupas("Mars", 0.0, d_f), 2),
+                round(parashari_aspect_virupas("Jupiter", 0.0, d_f), 2),
+                round(parashari_aspect_virupas("Saturn", 0.0, d_f), 2),
+            ]
+            assert cols == exp_cols, f"Drishti mismatch in {rep_name} at {deg_step}: {cols} != {exp_cols}"
+
+    # 8. Table 1B non-Lahiri ayanamsa offset parity (generating with raman and kp bases offsets on the selected ayanamsa):
+    from dataclasses import replace as dc_replace
+
+    comp_raman = dc_replace(comp, ayanamsa_mode="raman")
+    md_raman = comp_raman.to_markdown()
+    assert "printed in **Raman (Hand/NOVA modern realization) (`raman`)**" in md_raman
+    assert "Offset vs `raman` (`Δ = A − A_raman`)" in md_raman
+    sec_1b = md_raman.split("### Table 1B", 1)[1].split("### Table 1C", 1)[0]
+    raman_row = next(ln for ln in sec_1b.splitlines() if "| `raman` |" in ln)
+    lahiri_row = next(ln for ln in sec_1b.splitlines() if "| `lahiri` |" in ln)
+    assert "| `+00° 00' 00\"` |" in raman_row
+    assert "| `+00° 00' 00\"` |" not in lahiri_row
+
+
+
 

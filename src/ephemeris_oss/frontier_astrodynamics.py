@@ -287,6 +287,20 @@ def compute_topocentric_relativistic_astrometry(
     rho_cos, rho_sin, obs_r_km = _wgs84_geocentric_constants(latitude_deg, elevation_m)
     phi_rad = math.radians(float(latitude_deg))
     lst_rad = math.radians(lst_deg)
+    lst_deg_1 = (280.46061837 + 360.98564736629 * (float(jd_ut + dt_days) - 2451545.0) + float(longitude_deg)) % 360.0
+    lst_rad_1 = math.radians(lst_deg_1)
+
+    def _topo_range_km(state_obj: FullAstronomicalBodyEphemeris, lst_r: float) -> float:
+        ra_r = math.radians(state_obj.right_ascension_deg)
+        dec_r = math.radians(state_obj.declination_deg)
+        r_g = float(state_obj.distance_km)
+        bx = r_g * math.cos(dec_r) * math.cos(ra_r)
+        by = r_g * math.cos(dec_r) * math.sin(ra_r)
+        bz = r_g * math.sin(dec_r)
+        ox = WGS84_EQUATORIAL_RADIUS_KM * rho_cos * math.cos(lst_r)
+        oy = WGS84_EQUATORIAL_RADIUS_KM * rho_cos * math.sin(lst_r)
+        oz = WGS84_EQUATORIAL_RADIUS_KM * rho_sin
+        return math.sqrt((bx - ox) ** 2 + (by - oy) ** 2 + (bz - oz) ** 2)
 
     sun_sky = sky_t0["sun"]
     r_earth_sun_au = max(0.1, float(sun_sky.distance_au))
@@ -366,10 +380,12 @@ def compute_topocentric_relativistic_astrometry(
         )
         parallactic_deg = math.degrees(q_rad)
 
-        # Relativistic & Doppler quantities:
-        dr_km = float(b_next.distance_km - b_state.distance_km)
+        # Relativistic & Topocentric Doppler quantities (including observer rotational velocity):
+        r_topo_t0_km = _topo_range_km(b_state, lst_rad)
+        r_topo_t1_km = _topo_range_km(b_next, lst_rad_1)
+        dr_km = float(r_topo_t1_km - r_topo_t0_km)
         radial_vel_km_s = dr_km / (dt_days * 86400.0)
-        light_time_s = float(b_state.distance_km) / SPEED_OF_LIGHT_KM_S
+        light_time_s = float(r_topo_t0_km) / SPEED_OF_LIGHT_KM_S
 
         # Shapiro gravitational time delay: (2 * GM_sun / c^3) * ln((r_E + r_P + R) / (r_E + r_P - R + eps))
         r_p_au = max(0.0025, float(b_state.distance_au))

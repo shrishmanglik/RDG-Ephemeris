@@ -862,12 +862,8 @@ def compute_full_astronomical_sky_ephemeris(
                 phase_ang = 0.0
                 illum_pct = 100.0
                 helio_r = 1.0
-            elif b_query == "moon":
-                phase_ang = 180.0 - elong_deg
-                illum_pct = 50.0 * (1.0 + math.cos(math.radians(phase_ang)))
-                helio_r = sun_dist_au
             else:
-                # 3D law of cosines for heliocentric distance r and phase angle
+                # 3D law of cosines for heliocentric distance r and phase angle across Moon and all planets
                 helio_r = math.sqrt(max(1e-12, dist_au ** 2 + sun_dist_au ** 2 - 2.0 * dist_au * sun_dist_au * cos_e))
                 cos_i = (helio_r ** 2 + dist_au ** 2 - sun_dist_au ** 2) / max(1e-9, 2.0 * helio_r * dist_au)
                 phase_ang = math.degrees(math.acos(max(-1.0, min(1.0, cos_i))))

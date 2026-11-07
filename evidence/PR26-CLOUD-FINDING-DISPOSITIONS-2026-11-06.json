@@ -278,6 +278,24 @@
       "path": "src/ephemeris_oss/almanac/human_ephemeris.py",
       "status": "FIXED_AND_VERIFIED",
       "resolution": "Populated Table 9A Vimshopaka Bala weights (shadvarga, saptavarga, dasavarga, shodashvarga) directly from vargas.py::VIMSHOPAKA_WEIGHTS and regenerated docs/HUMAN-READABLE-EPHEMERIS-AND-JYOTISH-ACADEMY-MANUAL.md and .html."
+    },
+    {
+      "id": 4498855652,
+      "path": "src/ephemeris_oss/frontier_astrodynamics.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Computed observer-relative 3D equatorial topocentric range at both t0 and t1 (including WGS84 observer rotational position vector at local sidereal time) so radial_velocity_km_s and light_time_seconds include the surface observer's diurnal motion."
+    },
+    {
+      "id": 4498855661,
+      "path": "src/ephemeris_oss/almanac/human_ephemeris.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Based Table 1B conversion instructions and delta offsets on comp.ayanamsa_mode (selected_base = ad.get_ayanamsa_ut(jd_epoch, mode=selected_ay_key)) so compendia generated in any ayanamsa print offsets relative to that active ayanamsa."
+    },
+    {
+      "id": 4498855667,
+      "path": "src/ephemeris_oss/almanac/human_ephemeris.py",
+      "status": "FIXED_AND_VERIFIED",
+      "resolution": "Populated Table 14B Parashari Drishti columns directly from jyotish/shadbala.py::parashari_aspect_virupas() across all 36 ten-degree separation steps and regenerated docs/HUMAN-READABLE-EPHEMERIS-AND-JYOTISH-ACADEMY-MANUAL.md and .html."
     }
   ]
 }

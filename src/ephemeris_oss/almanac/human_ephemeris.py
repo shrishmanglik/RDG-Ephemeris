@@ -855,15 +855,20 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
 
     lines.append("### Table 1B — Master 25-Ayanamsha Reference & Conversion Table (Evaluated at Epoch `2026-11-01 00:00 UTC`)")
     lines.append("")
+    lahiri_base = ad.get_ayanamsa_ut(jd_epoch, mode="lahiri")
+    selected_ay_key = comp.ayanamsa_mode if comp.ayanamsa_mode in AYANAMSA_CATALOG else "lahiri"
+    selected_ay_def = AYANAMSA_CATALOG[selected_ay_key]
+    selected_base = ad.get_ayanamsa_ut(jd_epoch, mode=selected_ay_key)
     lines.append(
         "**How to Convert Any Position in This Compendium to Another Ayanamsha:** Every sidereal table in this book "
-        "is printed in **Chitrapaksha / Lahiri (`IAE 1989`)**. To convert any longitude to another Ayanamsha, simply "
-        "**subtract `Δ = (Target Ayanamsha − Lahiri Ayanamsha)`** listed in the column below:"
+        f"is printed in **{selected_ay_def.label} (`{selected_ay_key}`)**. To convert any longitude to another Ayanamsha, simply "
+        f"**subtract `Δ = (Target Ayanamsha − {selected_ay_def.label} Ayanamsha)`** listed in the column below:"
     )
     lines.append("")
-    lines.append("| # | Ayanamsha Key | Canonical Name & Lineage | Value on `2026-11-01` (`DD° MM' SS\"`) | Decimal (`deg`) | Offset vs Lahiri (`Δ = A − A_Lahiri`) | Precession / Anchor Model |")
+    lines.append(
+        f"| # | Ayanamsha Key | Canonical Name & Lineage | Value on `2026-11-01` (`DD° MM' SS\"`) | Decimal (`deg`) | Offset vs `{selected_ay_key}` (`Δ = A − A_{selected_ay_key}`) | Precession / Anchor Model |"
+    )
     lines.append("|---|---|---|---|---|---|---|")
-    lahiri_base = ad.get_ayanamsa_ut(jd_epoch, mode="lahiri")
     ay_idx = 0
     for ay_key, ay_def in AYANAMSA_CATALOG.items():
         try:
@@ -875,7 +880,7 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
         ad_d = tot_s // 3600
         ad_m = (tot_s % 3600) // 60
         ad_s = (tot_s % 3600) % 60
-        delta_deg = val_deg - lahiri_base
+        delta_deg = val_deg - selected_base
         delta_sign = "+" if delta_deg >= 0 else "-"
         d_abs_s = int(round(abs(delta_deg) * 3600.0))
         dd_d = d_abs_s // 3600
@@ -1176,7 +1181,7 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     )
     lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
     eps_rad = math.radians(23.4392911)
-    ay_ref = lahiri_base
+    ay_ref = selected_base
     world_lats = (0.0, 13.0827, 19.0760, 23.1765, 28.6139, 34.0522, 40.7128, 43.6532, 51.5074)
     for step_ramc in range(0, 360, 4):  # Every 4 degrees = 16 minutes of Sidereal Time (90 rows covering 24h)
         ramc_deg = float(step_ramc)
@@ -1698,30 +1703,19 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
         "Base *Drishti* is `0v` for `0°..30°` and `300°..360°`; rises from `30°..60°` (`(Δ-30)/2`); "
         "rises from `60°..90°` (`(Δ-60)+15`); drops from `90°..120°` (`45-(Δ-90)/2`); drops from `120°..150°` (`30-(Δ-120)`); "
         "rises sharply from `150°..180°` (`2*(Δ-150)` peaking at `60v` at `180°`); and decreases linearly from `180°..300°` (`(300-Δ)/2`). "
-        "**Special Vishesha Drishti:** Mars gets `60v` across `90°..120°` & `210°..240°`; Jupiter gets `60v` across `120°..150°` & `240°..270°`; Saturn gets `60v` across `60°..90°` & `270°..300°`."
+        "**Special Vishesha Drishti:** Mars adds `+15v` (capped at `60v`) across `90°..120°` & `210°..240°`; Jupiter adds `+30v` (capped at `60v`) across `120°..150°` & `240°..270°`; Saturn adds `+45v` (capped at `60v`) across `60°..90°` & `270°..300°`."
     )
     lines.append("")
     lines.append("| Separation `Δ` | House Span | Standard (*Sun, Moon, Mer, Ven*) | Mars (*4th & 8th Vishesha*) | Jupiter (*5th & 9th Vishesha*) | Saturn (*3rd & 10th Vishesha*) |")
     lines.append("|---|---|---|---|---|---|")
+    from ..jyotish.shadbala import parashari_aspect_virupas
+
     for deg_step in range(0, 360, 10):
         d = float(deg_step)
-        if d < 30.0 or d >= 300.0:
-            base_v = 0.0
-        elif d < 60.0:
-            base_v = (d - 30.0) / 2.0
-        elif d < 90.0:
-            base_v = 15.0 + (d - 60.0)
-        elif d < 120.0:
-            base_v = 45.0 - (d - 90.0) / 2.0
-        elif d < 150.0:
-            base_v = 30.0 - (d - 120.0)
-        elif d < 180.0:
-            base_v = 2.0 * (d - 150.0)
-        else:
-            base_v = (300.0 - d) / 2.0
-        mars_v = 60.0 if (90.0 <= d < 120.0 or 210.0 <= d < 240.0) else min(60.0, base_v + 15.0 if base_v > 0 else 0.0)
-        jup_v = 60.0 if (120.0 <= d < 150.0 or 240.0 <= d < 270.0) else min(60.0, base_v + 30.0 if base_v > 0 else 0.0)
-        sat_v = 60.0 if (60.0 <= d < 90.0 or 270.0 <= d < 300.0) else min(60.0, base_v + 45.0 if base_v > 0 else 0.0)
+        base_v = parashari_aspect_virupas("Sun", 0.0, d)
+        mars_v = parashari_aspect_virupas("Mars", 0.0, d)
+        jup_v = parashari_aspect_virupas("Jupiter", 0.0, d)
+        sat_v = parashari_aspect_virupas("Saturn", 0.0, d)
         h_no = (deg_step // 30) + 1
         lines.append(
             f"| **`{deg_step:03d}°`** | House {h_no:02d} | `{base_v:05.2f}v` | **`{mars_v:05.2f}v`** | **`{jup_v:05.2f}v`** | **`{sat_v:05.2f}v`** |"
