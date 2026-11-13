@@ -25,7 +25,14 @@ import math
 from typing import Any, Mapping
 
 from .._version import __version__
-from ..adapter import AnalyticalEphemerisProvider, CALC_RISE, EphemerisAdapter, FLG_SIDEREAL
+from ..adapter import (
+    AnalyticalEphemerisProvider,
+    CALC_RISE,
+    EphemerisAdapter,
+    FLG_SIDEREAL,
+    resolve_observer_solar_day_window,
+    resolve_observer_sunrise_dependent_outputs,
+)
 from ..engine.eclipses import (
     LunarEclipse,
     SolarEclipse,
@@ -204,6 +211,11 @@ class RegionalPanchangReport:
     anchoring_mode: str = "instantaneous"
     ayanamsa_mode: str = "lahiri"
     instantaneous_panchanga: dict[str, Any] | None = None
+    sunset_jd_ut: float | None = None
+    next_sunrise_jd_ut: float | None = None
+    sunrise_status: str = "AVAILABLE"
+    sunrise_unavailable_reason: str | None = None
+    sunrise_dependent: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         payload: dict[str, Any] = {
@@ -213,8 +225,12 @@ class RegionalPanchangReport:
             "longitude_deg": self.longitude_deg,
             "ayanamsa_mode": self.ayanamsa_mode,
             "anchoring_mode": self.anchoring_mode,
+            "sunrise_status": self.sunrise_status,
+            "sunrise_unavailable_reason": self.sunrise_unavailable_reason,
             "sunrise_jd_ut": self.sunrise_jd_ut,
             "active_sunrise_jd_ut": self.active_sunrise_jd_ut,
+            "sunset_jd_ut": self.sunset_jd_ut,
+            "next_sunrise_jd_ut": self.next_sunrise_jd_ut,
             "sun_sidereal_lon_deg": self.sun_sidereal_lon_deg,
             "moon_sidereal_lon_deg": self.moon_sidereal_lon_deg,
             "sun_tropical_lon_deg": self.sun_tropical_lon_deg,
@@ -269,6 +285,8 @@ class RegionalPanchangReport:
         }
         if self.instantaneous_panchanga is not None:
             payload["instantaneous_panchanga"] = self.instantaneous_panchanga
+        if self.sunrise_dependent is not None:
+            payload["sunrise_dependent"] = self.sunrise_dependent
         return payload
 
 
@@ -542,22 +560,50 @@ def compute_regional_panchang(
         s_res_trop, _ = analytical.calc_ut(target_jd, "Sun", flags=0)
         return float(s_res_sid[0]), float(m_res_sid[0]), float(s_res_trop[0])
 
+    provider_obj: Any = adapter if adapter is not None else analytical
+    if adapter is not None:
+        asc_fn = lambda j: adapter.houses_ut(j, lat, lon, system="whole_sign", ayanamsa=ayanamsa_mode).ascendant_deg
+        ref_lagna = asc_fn(jd_val)
+    else:
+        assert analytical is not None
+        asc_fn = lambda j: float(analytical.houses_ex(j, lat, lon, hsys=b"W", flags=FLG_SIDEREAL)[1][0])
+        ref_lagna = asc_fn(jd_val)
+
+    sunrise_dep = resolve_observer_sunrise_dependent_outputs(
+        jd_ut=jd_val,
+        latitude_deg=lat,
+        longitude_deg=lon,
+        provider=provider_obj,
+        ayanamsa=ayanamsa_mode,
+        reference_lagna_deg=ref_lagna,
+        ascendant_fn=asc_fn,
+    )
+
     if sunrise_jd_ut is not None:
         civil_sunrise_jd: float | None = float(sunrise_jd_ut)
         active_sunrise_jd: float | None = civil_sunrise_jd if jd_val >= civil_sunrise_jd else (civil_sunrise_jd - 1.0)
+        sunset_jd: float | None = active_sunrise_jd + 0.5
+        next_sunrise_jd: float | None = active_sunrise_jd + 1.0
+        sunrise_status = "AVAILABLE"
+        sunrise_unavail_reason: str | None = None
     else:
-        civil_sunrise_jd, active_sunrise_jd = _resolve_observer_daily_sunrise_jd(
-            jd_val,
-            lat,
-            lon,
-            adapter=adapter,
-        )
+        win_info = resolve_observer_solar_day_window(jd_val, lat, lon, provider=provider_obj)
+        civil_sunrise_jd = win_info["civil_sunrise_jd_ut"]
+        active_sunrise_jd = win_info["active_sunrise_jd_ut"]
+        sunset_jd = win_info["sunset_jd_ut"]
+        next_sunrise_jd = win_info["next_sunrise_jd_ut"]
+        sunrise_status = str(win_info["status"])
+        sunrise_unavail_reason = win_info["reason"]
 
     s_sid_inst, m_sid_inst, s_trop_inst = _eval_sun_moon_at(jd_val)
     if anchor_to_sunrise and active_sunrise_jd is not None:
         eval_jd = active_sunrise_jd
         s_sid, m_sid, s_trop = _eval_sun_moon_at(eval_jd)
         anchoring_mode = "sunrise"
+    elif anchor_to_sunrise and active_sunrise_jd is None:
+        eval_jd = jd_val
+        s_sid, m_sid, s_trop = s_sid_inst, m_sid_inst, s_trop_inst
+        anchoring_mode = "unavailable_circumpolar"
     else:
         eval_jd = jd_val
         s_sid, m_sid, s_trop = s_sid_inst, m_sid_inst, s_trop_inst
@@ -582,6 +628,11 @@ def compute_regional_panchang(
         sunrise_jd_ut=civil_sunrise_jd if (anchor_to_sunrise or sunrise_jd_ut is not None) else None,
         vara_index=local_vara_index,
         ce_year=ce_year,
+    )
+    vara_name_out = (
+        "UNAVAILABLE"
+        if (anchor_to_sunrise and active_sunrise_jd is None)
+        else panch.vara.english_name
     )
 
     inst_tithi = compute_tithi(s_sid_inst, m_sid_inst)
@@ -658,7 +709,7 @@ def compute_regional_panchang(
         yoga_name=panch.yoga.name,
         karana_number=panch.karana.number,
         karana_name=panch.karana.name,
-        vara_name=panch.vara.english_name,
+        vara_name=vara_name_out,
         lunar_month=lunar_month,
         solar_calendar=solar_cal,
         samvatsara_number=samvatsara.number,
@@ -674,4 +725,9 @@ def compute_regional_panchang(
         anchoring_mode=anchoring_mode,
         ayanamsa_mode=ayanamsa_mode,
         instantaneous_panchanga=instantaneous_snapshot,
+        sunset_jd_ut=sunset_jd,
+        next_sunrise_jd_ut=next_sunrise_jd,
+        sunrise_status=sunrise_status,
+        sunrise_unavailable_reason=sunrise_unavail_reason,
+        sunrise_dependent=sunrise_dep,
     )

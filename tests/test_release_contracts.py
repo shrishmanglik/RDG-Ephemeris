@@ -1465,5 +1465,190 @@ def test_compendium_truthfulness_cross_month_presunrise_polar_provenance_and_pdf
     assert "table.ephemeris-table th code" in ny_html
 
 
+def test_polar_and_midlatitude_presunrise_instant_computable_unit_and_api_contracts() -> None:
+    """Verify polar/circumpolar (Tromso 69.6492N, Longyearbyen 78.2232N) and mid-latitude
+    02:30 local pre-sunrise unit + REST/MCP API contracts without cos(H0) clamping or
+    dropping instant-computable astronomical and Jyotish outputs.
+    """
+    from ephemeris_oss import EphemerisError
+    from ephemeris_oss.almanac.regional_panchang import compute_regional_panchang
+    from ephemeris_oss.api_server import dispatch_api_request
+    from ephemeris_oss.jyotish.vargas import SHODASHVARGA_KEYS
+    from ephemeris_oss.mcp_server import handle_jsonrpc_message
 
+    ad = EphemerisAdapter()
+    nine_grahas = ("sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn", "rahu", "ketu")
 
+    polar_cases = (
+        ("tromso_midnight_sun", "2026-06-21T12:00:00Z", 69.6492, 18.9553, "CIRCUMPOLAR_MIDNIGHT_SUN"),
+        ("tromso_polar_night", "2026-12-21T12:00:00Z", 69.6492, 18.9553, "CIRCUMPOLAR_POLAR_NIGHT"),
+        ("longyearbyen_polar_night", "2026-11-15T12:00:00Z", 78.2232, 15.6267, "CIRCUMPOLAR_POLAR_NIGHT"),
+        ("longyearbyen_midnight_sun", "2026-06-21T12:00:00Z", 78.2232, 15.6267, "CIRCUMPOLAR_MIDNIGHT_SUN"),
+    )
+
+    for label, iso_utc, lat, lon, expected_reason in polar_cases:
+        y, m, d = (int(x) for x in iso_utc[:10].split("-"))
+        hh, mm, ss = (int(x) for x in iso_utc[11:19].split(":"))
+        jd_ut = ad.julday(y, m, d, hh + mm / 60.0 + ss / 3600.0)
+
+        # Direct rise_trans never clamps cos(H0) to +/-0.95 or fabricates 21.574h daylength:
+        with pytest.raises(EphemerisError):
+            ad.rise_trans(jd_ut, "sun", 1, (lon, lat, 0.0))
+
+        # 1. Unit: CompleteKundaliBundle
+        bundle = ad.compute_complete_kundali_bundle(jd_ut, lat, lon, include_svg=False)
+        assert len(bundle.bundle_receipt_sha256) == 64, label
+        assert bundle.polar_geometry is not None
+        assert bundle.polar_geometry["is_polar_circle"] is True, label
+        assert bundle.polar_geometry["polar_ascendant_discontinuity_zone"] is True, label
+        assert bundle.polar_geometry["ascendant_defined"] is True, label
+        assert bundle.polar_geometry["placidus_supported"] is False, label
+        assert bundle.polar_geometry["placidus_unavailable_reason"] == "CIRCUMPOLAR_SEMIARC_UNDEFINED", label
+
+        sr_dep = bundle.sunrise_dependent
+        assert sr_dep is not None
+        assert sr_dep["sunrise_status"] == "UNAVAILABLE", label
+        assert sr_dep["available"] is False, label
+        assert sr_dep["unavailable_reason"] == expected_reason, label
+        assert abs(float(sr_dep["cos_h0"])) > 1.0, label
+        for limb_key in ("vara", "hora", "gulika_mandi", "sunrise_ghati"):
+            limb = sr_dep[limb_key]
+            assert limb["status"] == "UNAVAILABLE", (label, limb_key)
+            assert limb["available"] is False, (label, limb_key)
+            assert limb["value"] is None, (label, limb_key)
+            assert limb["reason"] == expected_reason, (label, limb_key)
+
+        # Instant-computable outputs remain 100% populated on polar charts:
+        assert math.isfinite(bundle.ayanamsa_deg) and 23.0 < bundle.ayanamsa_deg < 25.5, label
+        assert 0.0 <= bundle.houses.ascendant_deg < 360.0, label
+        assert len(bundle.houses.cusps_deg) == 12, label
+        for g in nine_grahas:
+            pos = bundle.positions[g]
+            assert 0.0 <= pos.longitude_deg < 360.0 and math.isfinite(pos.longitude_speed_deg_per_day), (label, g)
+            cap = g.capitalize()
+            nak = bundle.vedic_analysis.planet_nakshatras[cap]
+            assert 1 <= nak.number <= 27 and 1 <= nak.pada <= 4, (label, g)
+            assert set(SHODASHVARGA_KEYS).issubset(bundle.vedic_analysis.planet_vargas[cap].keys()), (label, g)
+        assert set(SHODASHVARGA_KEYS).issubset(bundle.vedic_analysis.lagna_vargas.keys()), label
+        assert 1 <= bundle.vedic_analysis.panchanga.tithi.number <= 30, label
+        assert 1 <= bundle.vedic_analysis.panchanga.nakshatra.number <= 27, label
+        assert 1 <= bundle.vedic_analysis.panchanga.yoga.number <= 27, label
+        assert 1 <= bundle.vedic_analysis.panchanga.karana.number <= 60, label
+        assert len(bundle.vedic_analysis.vimshottari_dasha.mahadashas) == 9, label
+        assert bundle.vedic_analysis.ashtakavarga.sarvashtakavarga_7_total == 337, label
+
+        # 2. Unit: RegionalPanchangReport (anchor_to_sunrise=True)
+        reg = compute_regional_panchang(jd_ut, lat, lon, adapter=ad, anchor_to_sunrise=True)
+        assert reg.anchoring_mode == "unavailable_circumpolar", label
+        assert reg.sunrise_status == "UNAVAILABLE", label
+        assert reg.sunrise_unavailable_reason == expected_reason, label
+        assert reg.vara_name == "UNAVAILABLE", label
+        assert reg.sunrise_jd_ut is None and reg.active_sunrise_jd_ut is None, label
+        assert reg.instantaneous_panchanga is not None
+        assert 1 <= reg.instantaneous_panchanga["tithi_number"] <= 30, label
+
+        # 3. REST & MCP API: POST /v1/kundali & POST /v1/panchanga
+        st_k, k_body = dispatch_api_request(
+            "POST",
+            "/v1/kundali",
+            {"iso_utc": iso_utc, "latitude_deg": lat, "longitude_deg": lon, "ayanamsa": "lahiri"},
+        )
+        assert st_k == 200, (label, k_body)
+        assert k_body["polar_geometry"]["polar_ascendant_discontinuity_zone"] is True, label
+        assert k_body["polar_geometry"]["placidus_supported"] is False, label
+        assert k_body["panchanga"]["vara"]["status"] == "UNAVAILABLE", label
+        assert k_body["panchanga"]["vara"]["english_name"] == "UNAVAILABLE", label
+        assert k_body["panchanga"]["vara"]["reason"] == expected_reason, label
+        assert k_body["sunrise_dependent"]["sunrise_status"] == "UNAVAILABLE", label
+        for limb_key in ("vara", "hora", "gulika_mandi", "sunrise_ghati"):
+            assert k_body["sunrise_dependent"][limb_key]["status"] == "UNAVAILABLE", (label, limb_key)
+            assert k_body["sunrise_dependent"][limb_key]["reason"] == expected_reason, (label, limb_key)
+        assert len(k_body["houses_whole_sign_cusps_deg"]) == 12, label
+        assert set(SHODASHVARGA_KEYS).issubset(k_body["planet_vargas"]["Sun"].keys()), label
+        assert set(SHODASHVARGA_KEYS).issubset(k_body["lagna_vargas"].keys()), label
+        assert len(k_body["vimshottari_dasha"]["mahadashas"]) == 9, label
+        assert k_body["ashtakavarga_sarva_total"] == 337, label
+        assert 1 <= k_body["panchanga"]["tithi"]["number"] <= 30, label
+
+        mcp_k = handle_jsonrpc_message(
+            {
+                "jsonrpc": "2.0",
+                "id": 91,
+                "method": "tools/call",
+                "params": {
+                    "name": "compute_complete_kundali",
+                    "arguments": {"iso_utc": iso_utc, "latitude_deg": lat, "longitude_deg": lon},
+                },
+            }
+        )
+        assert mcp_k is not None and mcp_k["result"]["isError"] is False, label
+        assert mcp_k["result"]["structuredContent"]["panchanga"]["vara"]["status"] == "UNAVAILABLE", label
+
+        st_p, p_body = dispatch_api_request(
+            "POST",
+            "/v1/panchanga",
+            {"iso_utc": iso_utc, "latitude_deg": lat, "longitude_deg": lon, "mode": "sunrise"},
+        )
+        assert st_p == 200, (label, p_body)
+        assert p_body["anchoring_mode"] == "unavailable_circumpolar", label
+        assert p_body["sunrise_status"] == "UNAVAILABLE", label
+        assert p_body["sunrise_unavailable_reason"] == expected_reason, label
+        assert p_body["vara_name"] == "UNAVAILABLE", label
+        assert p_body["sunrise_dependent"]["vara"]["status"] == "UNAVAILABLE", label
+        assert 1 <= p_body["instantaneous_panchanga"]["tithi_number"] <= 30, label
+
+    # Mid-latitude 02:30 local pre-sunrise + EDT 00:15 boundary + 10:30 post-sunrise control:
+    midlat_cases = (
+        # Sunday 2026-11-15 02:30 EST (07:30 UTC) in New York -> preceding Saturday sunrise
+        ("ny_0230_est_presunrise", "2026-11-15T07:30:00Z", 40.7128, -74.0060, "Saturday", "Shanivara", False),
+        # Sunday 2026-11-15 02:30 EST (07:30 UTC) in Toronto -> preceding Saturday sunrise
+        ("toronto_0230_est_presunrise", "2026-11-15T07:30:00Z", 43.6532, -79.3832, "Saturday", "Shanivara", False),
+        # Sunday 2026-07-12 00:15 EDT (04:15 UTC) in New York -> preceding Saturday sunrise
+        ("ny_0015_edt_presunrise", "2026-07-12T04:15:00Z", 40.7128, -74.0060, "Saturday", "Shanivara", False),
+        # Sunday 2026-11-15 10:30 EST (15:30 UTC) in New York -> Sunday sunrise (after-sunrise control)
+        ("ny_1030_est_postsunrise", "2026-11-15T15:30:00Z", 40.7128, -74.0060, "Sunday", "Ravivara", True),
+    )
+
+    for label, iso_utc, lat, lon, expected_eng_vara, expected_san_vara, expected_is_day in midlat_cases:
+        y, m, d = (int(x) for x in iso_utc[:10].split("-"))
+        hh, mm, ss = (int(x) for x in iso_utc[11:19].split(":"))
+        jd_ut = ad.julday(y, m, d, hh + mm / 60.0 + ss / 3600.0)
+
+        bundle = ad.compute_complete_kundali_bundle(jd_ut, lat, lon, include_svg=False)
+        sr_dep = bundle.sunrise_dependent
+        assert sr_dep is not None and sr_dep["sunrise_status"] == "AVAILABLE", label
+        assert sr_dep["active_sunrise_jd_ut"] <= jd_ut < sr_dep["next_sunrise_jd_ut"], label
+        assert sr_dep["vara"]["english_name"] == expected_eng_vara, label
+        assert sr_dep["vara"]["sanskrit_name"] == expected_san_vara, label
+        assert sr_dep["sunrise_ghati"]["is_day_birth"] is expected_is_day, label
+        assert sr_dep["hora"]["available"] is True, label
+        assert sr_dep["gulika_mandi"]["available"] is True, label
+
+        reg = compute_regional_panchang(jd_ut, lat, lon, adapter=ad, anchor_to_sunrise=True)
+        assert reg.sunrise_status == "AVAILABLE", label
+        assert reg.active_sunrise_jd_ut is not None and reg.next_sunrise_jd_ut is not None, label
+        assert reg.active_sunrise_jd_ut <= jd_ut < reg.next_sunrise_jd_ut, label
+        assert reg.vara_name == expected_eng_vara, label
+
+        st_k, k_body = dispatch_api_request(
+            "POST",
+            "/v1/kundali",
+            {"iso_utc": iso_utc, "latitude_deg": lat, "longitude_deg": lon, "ayanamsa": "lahiri"},
+        )
+        assert st_k == 200, label
+        assert k_body["panchanga"]["vara"]["status"] == "AVAILABLE", label
+        assert k_body["panchanga"]["vara"]["english_name"] == expected_eng_vara, label
+        assert k_body["panchanga"]["vara"]["sanskrit_name"] == expected_san_vara, label
+        assert k_body["sunrise_dependent"]["active_sunrise_jd_ut"] <= jd_ut < k_body["sunrise_dependent"]["next_sunrise_jd_ut"], label
+        assert k_body["sunrise_dependent"]["sunrise_ghati"]["is_day_birth"] is expected_is_day, label
+        assert k_body["ashtakavarga_sarva_total"] == 337, label
+
+        st_p, p_body = dispatch_api_request(
+            "POST",
+            "/v1/panchanga",
+            {"iso_utc": iso_utc, "latitude_deg": lat, "longitude_deg": lon, "mode": "sunrise"},
+        )
+        assert st_p == 200, label
+        assert p_body["sunrise_status"] == "AVAILABLE", label
+        assert p_body["vara_name"] == expected_eng_vara, label
+        assert p_body["active_sunrise_jd_ut"] <= jd_ut < p_body["next_sunrise_jd_ut"], label
