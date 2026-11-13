@@ -1079,7 +1079,12 @@ def solve_golden_muhurta_electional_windows(
         n_eval += 1
         s_lon = float(ad.calc_ut(t_curr, "sun", sidereal=True, ayanamsa=ayanamsa).longitude_deg) % 360.0
         m_lon = float(ad.calc_ut(t_curr, "moon", sidereal=True, ayanamsa=ayanamsa).longitude_deg) % 360.0
-        houses = ad.houses_ut(t_curr, latitude_deg, longitude_deg, system="placidus", ayanamsa=ayanamsa)
+        from .._api import EphemerisError
+
+        try:
+            houses = ad.houses_ut(t_curr, latitude_deg, longitude_deg, system="placidus", ayanamsa=ayanamsa)
+        except EphemerisError:
+            houses = ad.houses_ut(t_curr, latitude_deg, longitude_deg, system="whole_sign", ayanamsa=ayanamsa)
         asc_lon = float(houses.ascendant_deg) % 360.0
         asc_rashi = int(asc_lon // 30.0) % 12
 
@@ -1088,6 +1093,7 @@ def solve_golden_muhurta_electional_windows(
 
         jd_local = t_curr + float(longitude_deg) / 360.0
         local_midnight_ut = math.floor(jd_local - 0.5) + 0.5 - (float(longitude_deg) / 360.0)
+        polar_sun_unavailable = False
         try:
             _, (cand_sr_jd,) = ad.rise_trans(local_midnight_ut, "sun", 1, (float(longitude_deg), float(latitude_deg), 0.0))
             if cand_sr_jd > t_curr:
@@ -1096,15 +1102,15 @@ def solve_golden_muhurta_electional_windows(
                 sr_jd = cand_sr_jd
             _, (ss_jd,) = ad.rise_trans(sr_jd, "sun", 2, (float(longitude_deg), float(latitude_deg), 0.0))
             _, (next_sr_jd,) = ad.rise_trans(ss_jd, "sun", 1, (float(longitude_deg), float(latitude_deg), 0.0))
+            if not (0.0 <= (t_curr - sr_jd) <= 1.5 and 0.0 < (ss_jd - sr_jd) < 1.05):
+                polar_sun_unavailable = True
         except Exception:
-            sr_approx = local_midnight_ut + (6.0 / 24.0)
-            if sr_approx > t_curr:
-                sr_approx -= 1.0
-            sr_jd = sr_approx
-            ss_jd = sr_approx + 0.5
-            next_sr_jd = sr_approx + 1.0
+            polar_sun_unavailable = True
+            sr_jd = local_midnight_ut
+            ss_jd = local_midnight_ut
+            next_sr_jd = local_midnight_ut + 1.0
 
-        sr_local = sr_jd + float(longitude_deg) / 360.0
+        sr_local = jd_local if polar_sun_unavailable else (sr_jd + float(longitude_deg) / 360.0)
         vara_sun0 = int(math.floor(sr_local + 1.5)) % 7
         vara_names_sun0 = ("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
         vara_name = vara_names_sun0[vara_sun0]
@@ -1145,34 +1151,40 @@ def solve_golden_muhurta_electional_windows(
             nak_idx in SARVARTHA_SIDDHI_NAKSHATRAS.get(vara_sun0, ())
         )
 
-        # Daily sunrise/sunset time-window checks (Rahu Kalam, Yamagandam, Gulika Kalam, Abhijit Muhurta):
-        m_wins = compute_muhurta_windows(sr_jd, ss_jd, next_sunrise_jd=next_sr_jd, vara_index=vara_sun0)
-        in_rahu = m_wins.rahu_kalam.start_jd <= t_curr < m_wins.rahu_kalam.end_jd
-        in_yama = m_wins.yamagandam.start_jd <= t_curr < m_wins.yamagandam.end_jd
-        in_gulika = m_wins.gulika_kalam.start_jd <= t_curr < m_wins.gulika_kalam.end_jd
-        in_abhijit = m_wins.abhijit_muhurta.start_jd <= t_curr < m_wins.abhijit_muhurta.end_jd
-
         # Scoring across the 12 Muhurta constraints:
         score = 50.0
         passed: list[str] = []
         warns: list[str] = []
 
-        if in_rahu:
-            score -= 25.0
-            warns.append("Rahu Kalam (Inauspicious Daily Window)")
+        in_rahu = False
+        in_yama = False
+        if polar_sun_unavailable:
+            warns.append(
+                "Sunrise/Sunset UNAVAILABLE (circumpolar — daily sunrise-anchored Kalam/Abhijit windows undefined)"
+            )
         else:
-            passed.append("Free of Rahu Kalam")
-        if in_yama:
-            score -= 18.0
-            warns.append("Yamagandam (Inauspicious Daily Window)")
-        else:
-            passed.append("Free of Yamagandam")
-        if in_gulika:
-            score -= 10.0
-            warns.append("Gulika Kalam")
-        if in_abhijit:
-            score += 10.0
-            passed.append("Abhijit Muhurta (Midday Victory Window)")
+            m_wins = compute_muhurta_windows(sr_jd, ss_jd, next_sunrise_jd=next_sr_jd, vara_index=vara_sun0)
+            in_rahu = m_wins.rahu_kalam.start_jd <= t_curr < m_wins.rahu_kalam.end_jd
+            in_yama = m_wins.yamagandam.start_jd <= t_curr < m_wins.yamagandam.end_jd
+            in_gulika = m_wins.gulika_kalam.start_jd <= t_curr < m_wins.gulika_kalam.end_jd
+            in_abhijit = m_wins.abhijit_muhurta.start_jd <= t_curr < m_wins.abhijit_muhurta.end_jd
+
+            if in_rahu:
+                score -= 25.0
+                warns.append("Rahu Kalam (Inauspicious Daily Window)")
+            else:
+                passed.append("Free of Rahu Kalam")
+            if in_yama:
+                score -= 18.0
+                warns.append("Yamagandam (Inauspicious Daily Window)")
+            else:
+                passed.append("Free of Yamagandam")
+            if in_gulika:
+                score -= 10.0
+                warns.append("Gulika Kalam")
+            if in_abhijit:
+                score += 10.0
+                passed.append("Abhijit Muhurta (Midday Victory Window)")
 
         if vara_sun0 in (1, 3, 4, 5):  # Mon, Wed, Thu, Fri
             score += 8.0

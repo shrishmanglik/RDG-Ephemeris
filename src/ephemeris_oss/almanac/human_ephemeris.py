@@ -35,11 +35,16 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 import html as html_mod
 import math
+from pathlib import Path
 import re
+import shutil
+import subprocess
+import tempfile
 from typing import Any, Mapping
 
+from .._api import EphemerisError
 from .._version import __version__
-from ..adapter import EphemerisAdapter, FLG_SIDEREAL
+from ..adapter import CALC_RISE, CALC_SET, EphemerisAdapter, FLG_SIDEREAL
 from ..engine.conventions import AYANAMSA_CATALOG, _canonical_ayanamsa
 from ..engine.earth_orientation import estimate_delta_t
 from ..engine.receipt import canonical_hash
@@ -129,7 +134,13 @@ from ..jyotish_transit.muhurta_search import (
 )
 from ..jyotish_transit.prashna import compute_11_upagrahas, compute_prashna_sphutas
 from .ephemeris_tables import scan_ingresses_and_aspects
-from .panchang_calendar import generate_monthly_panchang
+from .panchang_calendar import (
+    TITHI_NAMES,
+    VARA_NAMES,
+    YOGA_NAMES,
+    _karana_from_elongation,
+    generate_monthly_panchang,
+)
 
 # Classical combustion orbs (degrees from Sun) per Surya Siddhanta / BPHS
 CLASSICAL_COMBUSTION_ORBS_DEG: Mapping[str, tuple[float, float]] = {
@@ -219,6 +230,191 @@ def _jd_to_local_hhmmss(jd_ut: float, tz_offset_hours: float) -> str:
     mm = rem // 60
     ss = rem % 60
     return f"{hh:02d}:{mm:02d}:{ss:02d}"
+
+
+def _format_utc_offset(tz_offset_hours: float) -> str:
+    sign = "-" if float(tz_offset_hours) < 0.0 else "+"
+    total_min = int(round(abs(float(tz_offset_hours)) * 60.0))
+    hh, mm = divmod(total_min, 60)
+    return f"UTC{sign}{hh:02d}:{mm:02d}"
+
+
+def _format_jd_utc_iso(jd_ut: float) -> str:
+    y, m, d, h_ut = EphemerisAdapter.revjul(float(jd_ut))
+    total_sec = int(round(h_ut * 3600.0))
+    carry_days, rem_sec = divmod(total_sec, 86400)
+    dt_d = date(int(y), int(m), int(d)) + timedelta(days=carry_days)
+    hh, rem = divmod(rem_sec, 3600)
+    mm, ss = divmod(rem, 60)
+    return f"{dt_d.isoformat()}T{hh:02d}:{mm:02d}:{ss:02d}Z"
+
+
+def _format_jd_local_datetime(jd_ut: float, tz_offset_hours: float) -> tuple[str, str]:
+    y, m, d, h_loc = EphemerisAdapter.revjul(float(jd_ut) + float(tz_offset_hours) / 24.0)
+    total_sec = int(round(h_loc * 3600.0))
+    carry_days, rem_sec = divmod(total_sec, 86400)
+    dt_d = date(int(y), int(m), int(d)) + timedelta(days=carry_days)
+    hh, rem = divmod(rem_sec, 3600)
+    mm, ss = divmod(rem, 60)
+    return dt_d.isoformat(), f"{hh:02d}:{mm:02d}:{ss:02d}"
+
+
+def _is_ujjain_reference(latitude_deg: float, longitude_deg: float, tz_offset_hours: float) -> bool:
+    return (
+        abs(float(latitude_deg) - 23.1765) < 1e-3
+        and abs(float(longitude_deg) - 75.7885) < 1e-3
+        and abs(float(tz_offset_hours) - 5.5) < 1e-6
+    )
+
+
+@dataclass(frozen=True)
+class _ScheduleDayEntry:
+    """Internal daily schedule record supporting both normal sunrise days and circumpolar days."""
+
+    civil_date: str
+    sunrise_jd_ut: float | None
+    sunset_jd_ut: float | None
+    vara_index: int
+    vara_name: str
+    tithi_name: str
+    tithi_end_jd_ut: float
+    nakshatra_name: str
+    yoga_name: str
+    karana_name: str
+    vratas: tuple[str, ...]
+    polar_unavailable_label: str | None = None
+
+
+def _build_polar_safe_monthly_schedule(
+    year: int,
+    month: int,
+    latitude_deg: float,
+    longitude_deg: float,
+    *,
+    tz_offset_hours: float,
+    ayanamsa: str,
+    reference_hour_ut: float,
+    adapter: EphemerisAdapter,
+) -> list[_ScheduleDayEntry]:
+    start_date = date(year, month, 1)
+    next_month_start = date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)
+    num_days = (next_month_start - start_date).days
+
+    def _sun_moon_sidereal(jd_ut: float) -> tuple[float, float, float, float]:
+        s_pos = adapter.calc_ut(jd_ut, "sun", sidereal=True, ayanamsa=ayanamsa)
+        m_pos = adapter.calc_ut(jd_ut, "moon", sidereal=True, ayanamsa=ayanamsa)
+        return (
+            float(s_pos.longitude_deg),
+            float(m_pos.longitude_deg),
+            float(s_pos.longitude_speed_deg_per_day),
+            float(m_pos.longitude_speed_deg_per_day),
+        )
+
+    def _tithi_at(jd_ut: float) -> tuple[int, float, float]:
+        s_lon, m_lon, s_spd, m_spd = _sun_moon_sidereal(jd_ut)
+        elong = (m_lon - s_lon) % 360.0
+        tithi_num = min(30, int(elong // 12.0) + 1)
+        rem_deg = (tithi_num * 12.0) - elong
+        end_est = jd_ut + (rem_deg / max(8.0, m_spd - s_spd))
+        target_elong = (tithi_num * 12.0) % 360.0
+        for _ in range(3):
+            s2, m2, ss2, ms2 = _sun_moon_sidereal(end_est)
+            el2 = (m2 - s2) % 360.0
+            diff = (target_elong - el2 + 540.0) % 360.0 - 180.0
+            end_est += diff / max(8.0, ms2 - ss2)
+        return tithi_num, elong, float(end_est)
+
+    out_days: list[_ScheduleDayEntry] = []
+    for offset in range(num_days):
+        cur_date = start_date + timedelta(days=offset)
+        jd_local_midnight_ut = adapter.julday(cur_date.year, cur_date.month, cur_date.day, 0.0) - (tz_offset_hours / 24.0)
+        jd_ref_ut = adapter.julday(cur_date.year, cur_date.month, cur_date.day, reference_hour_ut)
+        vara_idx = (cur_date.weekday() + 1) % 7
+        vara_name = VARA_NAMES[vara_idx]
+
+        sr_jd: float | None = None
+        ss_jd: float | None = None
+        try:
+            _, (cand_sr,) = adapter.rise_trans(jd_local_midnight_ut, "sun", CALC_RISE, (longitude_deg, latitude_deg, 0.0))
+            cand_sr_f = float(cand_sr)
+            if math.isfinite(cand_sr_f) and 0.0 <= (cand_sr_f - jd_local_midnight_ut) < 1.0:
+                _, (cand_ss,) = adapter.rise_trans(cand_sr_f, "sun", CALC_SET, (longitude_deg, latitude_deg, 0.0))
+                cand_ss_f = float(cand_ss)
+                if math.isfinite(cand_ss_f) and 0.0 < (cand_ss_f - cand_sr_f) < 1.05:
+                    sr_jd = round(cand_sr_f, 8)
+                    ss_jd = round(cand_ss_f, 8)
+        except EphemerisError:
+            sr_jd = None
+            ss_jd = None
+
+        eval_jd = sr_jd if sr_jd is not None else jd_ref_ut
+        s_lon, m_lon, _, _ = _sun_moon_sidereal(eval_jd)
+        tithi_num, elong, tithi_end_jd = _tithi_at(eval_jd)
+        nak_idx = int(m_lon // (360.0 / 27.0)) % 27
+        yoga_idx = int(((s_lon + m_lon) % 360.0) // (360.0 / 27.0)) % 27
+        karana_name = _karana_from_elongation(elong)
+        tithi_name = TITHI_NAMES[tithi_num - 1]
+
+        polar_label: str | None = None
+        vratas: list[str] = []
+        if sr_jd is None or ss_jd is None:
+            noon_topo = compute_topocentric_relativistic_astrometry(
+                jd_local_midnight_ut + 0.5,
+                latitude_deg,
+                longitude_deg,
+                ayanamsa=ayanamsa,
+                adapter=adapter,
+            ).bodies["sun"]
+            if noon_topo.apparent_altitude_deg >= 0.0:
+                polar_label = "UNAVAILABLE (circumpolar midnight sun)"
+            else:
+                polar_label = "UNAVAILABLE (circumpolar polar night)"
+        else:
+            if tithi_num in (11, 26):
+                arun_tithi, _, _ = _tithi_at(sr_jd - (96.0 / 1440.0))
+                ek_type = (
+                    "Smarta (Dashami-Viddha at Arunodaya)"
+                    if arun_tithi in (10, 25)
+                    else "Shuddha (Smarta & Vaishnava)"
+                )
+                vratas.append(f"Ekadashi ({ek_type})")
+            ss_tithi, _, _ = _tithi_at(ss_jd)
+            if ss_tithi in (13, 28):
+                vratas.append("Pradosha Vrata")
+            if tithi_num == 15:
+                vratas.append("Purnima")
+            if tithi_num == 30:
+                vratas.append("Amavasya")
+
+        out_days.append(
+            _ScheduleDayEntry(
+                civil_date=cur_date.isoformat(),
+                sunrise_jd_ut=sr_jd,
+                sunset_jd_ut=ss_jd,
+                vara_index=vara_idx,
+                vara_name=vara_name,
+                tithi_name=tithi_name if polar_label is None else f"{tithi_name} (ref-epoch; sunrise UNAVAILABLE)",
+                tithi_end_jd_ut=round(tithi_end_jd, 8),
+                nakshatra_name=(
+                    NAKSHATRA_NAMES[nak_idx]
+                    if polar_label is None
+                    else f"{NAKSHATRA_NAMES[nak_idx]} (ref-epoch; sunrise UNAVAILABLE)"
+                ),
+                yoga_name=(
+                    YOGA_NAMES[yoga_idx]
+                    if polar_label is None
+                    else f"{YOGA_NAMES[yoga_idx]} (ref-epoch; sunrise UNAVAILABLE)"
+                ),
+                karana_name=(
+                    karana_name
+                    if polar_label is None
+                    else f"{karana_name} (ref-epoch; sunrise UNAVAILABLE)"
+                ),
+                vratas=tuple(vratas),
+                polar_unavailable_label=polar_label,
+            )
+        )
+    return out_days
 
 
 @dataclass(frozen=True)
@@ -376,6 +572,10 @@ class HumanManualEphemerisCompendium:
         """Render a standalone, print-ready, richly formatted HTML book edition."""
         return _render_compendium_html(self)
 
+    def to_pdf(self, output_path: str | Path | None = None) -> bytes:
+        """Render a standalone, print-ready PDF edition of the 30-chapter compendium."""
+        return _render_compendium_pdf(self, output_path=output_path)
+
 
 def generate_human_manual_ephemeris_compendium(
     year: int = 2026,
@@ -386,6 +586,7 @@ def generate_human_manual_ephemeris_compendium(
     tz_offset_hours: float = 5.5,
     ayanamsa: str = "lahiri",
     reference_hour_ut: float = 0.0,  # 00:00 UTC = 05:30 IST (standard Indian Ephemeris daily epoch)
+    worked_day_index: int | None = None,
     adapter: EphemerisAdapter | None = None,
 ) -> HumanManualEphemerisCompendium:
     """Generate the complete 30-Chapter Human-Readable Classical Ephemeris & Jyotish Academy Compendium."""
@@ -397,18 +598,66 @@ def generate_human_manual_ephemeris_compendium(
     lon = float(longitude_deg)
     tz_off = float(tz_offset_hours)
     ref_h_ut = float(reference_hour_ut)
+    if not math.isfinite(lat) or not -90.0 <= lat <= 90.0:
+        raise ValueError(f"latitude_deg must be finite and within [-90.0, 90.0]; got {latitude_deg!r}")
+    if not math.isfinite(lon) or not -180.0 <= lon <= 180.0:
+        raise ValueError(f"longitude_deg must be finite and within [-180.0, 180.0]; got {longitude_deg!r}")
+    if not math.isfinite(tz_off):
+        raise ValueError(f"tz_offset_hours must be finite; got {tz_offset_hours!r}")
     ayanamsa = _canonical_ayanamsa(str(ayanamsa or "lahiri").strip().lower().replace("-", "_")).key
 
     ad = adapter if adapter is not None else EphemerisAdapter()
-    panchang_cal = generate_monthly_panchang(
-        yr,
-        mo,
-        lat,
-        lon,
-        tz_offset_hours=tz_off,
-        ayanamsa=ayanamsa,
-        adapter=ad,
-    )
+    schedule_days: list[_ScheduleDayEntry]
+    if -66.0 <= lat <= 66.0:
+        try:
+            panchang_cal = generate_monthly_panchang(
+                yr,
+                mo,
+                lat,
+                lon,
+                tz_offset_hours=tz_off,
+                ayanamsa=ayanamsa,
+                adapter=ad,
+            )
+            schedule_days = [
+                _ScheduleDayEntry(
+                    civil_date=d.civil_date,
+                    sunrise_jd_ut=d.sunrise_jd_ut,
+                    sunset_jd_ut=d.sunset_jd_ut,
+                    vara_index=d.vara_index,
+                    vara_name=d.vara_name,
+                    tithi_name=d.tithi_name,
+                    tithi_end_jd_ut=d.tithi_end_jd_ut,
+                    nakshatra_name=d.nakshatra_name,
+                    yoga_name=d.yoga_name,
+                    karana_name=d.karana_name,
+                    vratas=d.vratas,
+                    polar_unavailable_label=None,
+                )
+                for d in panchang_cal.days
+            ]
+        except EphemerisError:
+            schedule_days = _build_polar_safe_monthly_schedule(
+                yr,
+                mo,
+                lat,
+                lon,
+                tz_offset_hours=tz_off,
+                ayanamsa=ayanamsa,
+                reference_hour_ut=ref_h_ut,
+                adapter=ad,
+            )
+    else:
+        schedule_days = _build_polar_safe_monthly_schedule(
+            yr,
+            mo,
+            lat,
+            lon,
+            tz_offset_hours=tz_off,
+            ayanamsa=ayanamsa,
+            reference_hour_ut=ref_h_ut,
+            adapter=ad,
+        )
 
     bodies_order = (
         "sun",
@@ -430,7 +679,7 @@ def generate_human_manual_ephemeris_compendium(
     full_sky_rows: list[Mapping[str, FullAstronomicalBodyEphemeris]] = []
     kali_epoch_jd = 588465.5  # 3102 BCE Feb 18 00:00 UT
 
-    for p_day in panchang_cal.days:
+    for p_day in schedule_days:
         parts = [int(x) for x in p_day.civil_date.split("-")]
         jd_ref_ut = ad.julday(parts[0], parts[1], parts[2], ref_h_ut)
         ahargana = round(jd_ref_ut - kali_epoch_jd, 4)
@@ -441,7 +690,10 @@ def generate_human_manual_ephemeris_compendium(
         ay_s = (ay_sec % 3600) % 60
         ay_dms = f"{ay_d:02d}° {ay_m:02d}' {ay_s:02d}\""
 
-        houses_ref = ad.houses_ex(jd_ref_ut, lat, lon, b"P", FLG_SIDEREAL)
+        try:
+            houses_ref = ad.houses_ex(jd_ref_ut, lat, lon, b"P", FLG_SIDEREAL)
+        except EphemerisError:
+            houses_ref = ad.houses_ex(jd_ref_ut, lat, lon, b"W", FLG_SIDEREAL)
         armc_deg = float(houses_ref[1][2]) % 360.0
         lst_hours = armc_deg / 15.0
         lst_sec_total = int(round(lst_hours * 3600.0)) % 86400
@@ -471,23 +723,35 @@ def generate_human_manual_ephemeris_compendium(
                 d9_navamsa_sign=fb.d9_navamsa_sign,
             )
 
-        sr_jd = p_day.sunrise_jd_ut
-        ss_jd = p_day.sunset_jd_ut
-        dinamana_hours = max(0.0, (ss_jd - sr_jd) * 24.0)
-        dinamana_gp = format_ghati_pala(dinamana_hours)
-        tithi_end_hours_from_sr = max(0.0, (p_day.tithi_end_jd_ut - sr_jd) * 24.0)
-        tithi_end_gp = format_ghati_pala(tithi_end_hours_from_sr)
+        if p_day.sunrise_jd_ut is None or p_day.sunset_jd_ut is None:
+            unavail_lbl = p_day.polar_unavailable_label or "UNAVAILABLE (circumpolar)"
+            sr_hms_str = unavail_lbl
+            ss_hms_str = unavail_lbl
+            dinamana_hours = 0.0
+            dinamana_gp = "UNAVAILABLE (circumpolar)"
+            tithi_end_gp = "UNAVAILABLE (circumpolar)"
+            rahu_kala_str = unavail_lbl
+            abhijit_str = unavail_lbl
+        else:
+            sr_jd = p_day.sunrise_jd_ut
+            ss_jd = p_day.sunset_jd_ut
+            sr_hms_str = _jd_to_local_hhmmss(sr_jd, tz_off)
+            ss_hms_str = _jd_to_local_hhmmss(ss_jd, tz_off)
+            dinamana_hours = max(0.0, (ss_jd - sr_jd) * 24.0)
+            dinamana_gp = format_ghati_pala(dinamana_hours)
+            tithi_end_hours_from_sr = max(0.0, (p_day.tithi_end_jd_ut - sr_jd) * 24.0)
+            tithi_end_gp = format_ghati_pala(tithi_end_hours_from_sr)
 
-        octant_days = (ss_jd - sr_jd) / 8.0
-        rk_oct = RAHU_KALA_OCTANT[p_day.vara_index % 7]
-        rk_start = sr_jd + (rk_oct - 1) * octant_days
-        rk_end = sr_jd + rk_oct * octant_days
-        rahu_kala_str = f"{_jd_to_local_hhmm(rk_start, tz_off)}-{_jd_to_local_hhmm(rk_end, tz_off)}"
+            octant_days = (ss_jd - sr_jd) / 8.0
+            rk_oct = RAHU_KALA_OCTANT[p_day.vara_index % 7]
+            rk_start = sr_jd + (rk_oct - 1) * octant_days
+            rk_end = sr_jd + rk_oct * octant_days
+            rahu_kala_str = f"{_jd_to_local_hhmm(rk_start, tz_off)}-{_jd_to_local_hhmm(rk_end, tz_off)}"
 
-        muhurta_days = (ss_jd - sr_jd) / 15.0
-        ab_start = sr_jd + 7.0 * muhurta_days
-        ab_end = sr_jd + 8.0 * muhurta_days
-        abhijit_str = f"{_jd_to_local_hhmm(ab_start, tz_off)}-{_jd_to_local_hhmm(ab_end, tz_off)}"
+            muhurta_days = (ss_jd - sr_jd) / 15.0
+            ab_start = sr_jd + 7.0 * muhurta_days
+            ab_end = sr_jd + 8.0 * muhurta_days
+            abhijit_str = f"{_jd_to_local_hhmm(ab_start, tz_off)}-{_jd_to_local_hhmm(ab_end, tz_off)}"
 
         daily_rows.append(
             HumanDailyEphemerisRow(
@@ -497,8 +761,8 @@ def generate_human_manual_ephemeris_compendium(
                 ahargana_kali_days=ahargana,
                 ayanamsa_dms=ay_dms,
                 local_sidereal_time_hms=lst_hms,
-                sunrise_local_hms=_jd_to_local_hhmmss(sr_jd, tz_off),
-                sunset_local_hms=_jd_to_local_hhmmss(ss_jd, tz_off),
+                sunrise_local_hms=sr_hms_str,
+                sunset_local_hms=ss_hms_str,
                 dinamana_hours=dinamana_hours,
                 dinamana_ghati_pala=dinamana_gp,
                 tithi_name=p_day.tithi_name,
@@ -544,8 +808,11 @@ def generate_human_manual_ephemeris_compendium(
         "yogatara_report": yogatara_rep,
     }
 
-    # Construct the 15-Step Worked Example for the 15th day of the month at 10:42:00 Local Time (= +5h 12m after 05:30 IST)
-    sample_idx = min(14, len(daily_rows) - 1)
+    # Construct the 15-Step Worked Example (+5h 12m after daily tabular reference epoch)
+    if worked_day_index is not None:
+        sample_idx = min(max(0, int(worked_day_index)), len(daily_rows) - 1)
+    else:
+        sample_idx = min(14, len(daily_rows) - 1)
     row_d0 = daily_rows[sample_idx]
     sky_d0 = full_sky_rows[sample_idx]
     interp_hours = 5.2
@@ -586,7 +853,16 @@ def generate_human_manual_ephemeris_compendium(
             "d60_shashtiamsa_sign": varga_sign(exact_lon, "D60").sign_name,
         }
 
-    worked_houses = ad.houses_ut(jd_worked_ut, lat, lon, system="placidus", ayanamsa=ayanamsa)
+    def _asc_at_jd(j: float) -> float:
+        try:
+            return ad.houses_ut(j, lat, lon, system="placidus", ayanamsa=ayanamsa).ascendant_deg
+        except EphemerisError:
+            return ad.houses_ut(j, lat, lon, system="whole_sign", ayanamsa=ayanamsa).ascendant_deg
+
+    try:
+        worked_houses = ad.houses_ut(jd_worked_ut, lat, lon, system="placidus", ayanamsa=ayanamsa)
+    except EphemerisError:
+        worked_houses = ad.houses_ut(jd_worked_ut, lat, lon, system="whole_sign", ayanamsa=ayanamsa)
     moon_exact_lon = ad.calc_ut(jd_worked_ut, "moon", sidereal=True, ayanamsa=ayanamsa).longitude_deg % 360.0
     moon_nak = nakshatra_position(moon_exact_lon)
     rem_deg_in_nak = (360.0 / 27.0) - moon_nak.degree_in_nakshatra
@@ -601,49 +877,153 @@ def generate_human_manual_ephemeris_compendium(
 
     preceding_solar_days = [
         (idx, d)
-        for idx, d in enumerate(panchang_cal.days)
-        if d.sunrise_jd_ut is not None and math.isfinite(d.sunrise_jd_ut) and d.sunrise_jd_ut <= jd_worked_ut
+        for idx, d in enumerate(schedule_days)
+        if (
+            d.sunrise_jd_ut is not None
+            and d.sunset_jd_ut is not None
+            and math.isfinite(d.sunrise_jd_ut)
+            and math.isfinite(d.sunset_jd_ut)
+            and d.sunrise_jd_ut <= jd_worked_ut
+            and (jd_worked_ut - d.sunrise_jd_ut) <= 1.5
+        )
     ]
+    sr_worked_jd: float | None = None
+    ss_worked_jd: float | None = None
+    next_sr_worked_jd: float | None = None
+    solar_day_civil_date: str
+    solar_day_vara_index: int
+    solar_day_vara_name: str
+    polar_sunrise_unavailable = False
+    english_weekdays = ("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+
     if preceding_solar_days:
         worked_solar_idx, p_day_worked = preceding_solar_days[-1]
+        sr_worked_jd = float(p_day_worked.sunrise_jd_ut)  # type: ignore[arg-type]
+        ss_worked_jd = float(p_day_worked.sunset_jd_ut)   # type: ignore[arg-type]
+        solar_day_civil_date = p_day_worked.civil_date
+        solar_day_vara_index = p_day_worked.vara_index
+        solar_day_vara_name = f"{p_day_worked.vara_name} ({english_weekdays[solar_day_vara_index % 7]})"
         if (
-            worked_solar_idx + 1 < len(panchang_cal.days)
-            and panchang_cal.days[worked_solar_idx + 1].sunrise_jd_ut is not None
-            and math.isfinite(panchang_cal.days[worked_solar_idx + 1].sunrise_jd_ut)
+            worked_solar_idx + 1 < len(schedule_days)
+            and schedule_days[worked_solar_idx + 1].sunrise_jd_ut is not None
+            and math.isfinite(schedule_days[worked_solar_idx + 1].sunrise_jd_ut)  # type: ignore[arg-type]
         ):
-            next_sunrise_worked_jd = float(panchang_cal.days[worked_solar_idx + 1].sunrise_jd_ut)
+            next_sr_worked_jd = float(schedule_days[worked_solar_idx + 1].sunrise_jd_ut)  # type: ignore[arg-type]
         else:
-            next_sunrise_worked_jd = float(p_day_worked.sunrise_jd_ut) + 1.0
+            try:
+                _, (cand_nsr,) = ad.rise_trans(ss_worked_jd, "sun", CALC_RISE, (lon, lat, 0.0))
+                cand_nsr_f = float(cand_nsr)
+                if math.isfinite(cand_nsr_f) and 0.0 < (cand_nsr_f - sr_worked_jd) <= 1.5:
+                    next_sr_worked_jd = cand_nsr_f
+                else:
+                    next_sr_worked_jd = sr_worked_jd + 1.0
+            except EphemerisError:
+                next_sr_worked_jd = sr_worked_jd + 1.0
     else:
-        worked_solar_idx = sample_idx
-        p_day_worked = panchang_cal.days[sample_idx]
-        next_sunrise_worked_jd = float(p_day_worked.sunrise_jd_ut) + 1.0
+        base_civil_date = date.fromisoformat(row_d0.civil_date)
+        for back_days in (1, 2, 3):
+            prev_d = base_civil_date - timedelta(days=back_days)
+            jd_prev_mid_ut = ad.julday(prev_d.year, prev_d.month, prev_d.day, 0.0) - (tz_off / 24.0)
+            try:
+                _, (cand_sr,) = ad.rise_trans(jd_prev_mid_ut, "sun", CALC_RISE, (lon, lat, 0.0))
+                cand_sr_f = float(cand_sr)
+                if (
+                    math.isfinite(cand_sr_f)
+                    and 0.0 <= (cand_sr_f - jd_prev_mid_ut) < 1.0
+                    and cand_sr_f <= jd_worked_ut
+                    and (jd_worked_ut - cand_sr_f) <= 1.5
+                ):
+                    _, (cand_ss,) = ad.rise_trans(cand_sr_f, "sun", CALC_SET, (lon, lat, 0.0))
+                    cand_ss_f = float(cand_ss)
+                    if math.isfinite(cand_ss_f) and 0.0 < (cand_ss_f - cand_sr_f) < 1.05:
+                        sr_worked_jd = round(cand_sr_f, 8)
+                        ss_worked_jd = round(cand_ss_f, 8)
+                        if (
+                            schedule_days[sample_idx].sunrise_jd_ut is not None
+                            and math.isfinite(schedule_days[sample_idx].sunrise_jd_ut)  # type: ignore[arg-type]
+                            and float(schedule_days[sample_idx].sunrise_jd_ut) > jd_worked_ut  # type: ignore[arg-type]
+                        ):
+                            next_sr_worked_jd = float(schedule_days[sample_idx].sunrise_jd_ut)  # type: ignore[arg-type]
+                        else:
+                            try:
+                                _, (cand_nsr,) = ad.rise_trans(cand_ss_f, "sun", CALC_RISE, (lon, lat, 0.0))
+                                cand_nsr_f = float(cand_nsr)
+                                next_sr_worked_jd = (
+                                    round(cand_nsr_f, 8)
+                                    if math.isfinite(cand_nsr_f) and cand_nsr_f > jd_worked_ut
+                                    else round(cand_sr_f + 1.0, 8)
+                                )
+                            except EphemerisError:
+                                next_sr_worked_jd = round(cand_sr_f + 1.0, 8)
+                        solar_day_civil_date = prev_d.isoformat()
+                        solar_day_vara_index = (prev_d.weekday() + 1) % 7
+                        solar_day_vara_name = (
+                            f"{VARA_NAMES[solar_day_vara_index]} ({english_weekdays[solar_day_vara_index]})"
+                        )
+                        break
+            except EphemerisError:
+                continue
+        else:
+            polar_sunrise_unavailable = True
+            solar_day_civil_date = "UNAVAILABLE (circumpolar)"
+            solar_day_vara_index = schedule_days[sample_idx].vara_index
+            solar_day_vara_name = (
+                f"{row_d0.vara_name} ({english_weekdays[solar_day_vara_index % 7]}) "
+                "(civil date; sunrise-anchored Vara UNAVAILABLE — circumpolar)"
+            )
 
-    is_day_birth_worked = bool(
-        math.isfinite(p_day_worked.sunrise_jd_ut)
-        and math.isfinite(p_day_worked.sunset_jd_ut)
-        and p_day_worked.sunrise_jd_ut <= jd_worked_ut < p_day_worked.sunset_jd_ut
-    )
+    if polar_sunrise_unavailable or sr_worked_jd is None or ss_worked_jd is None or next_sr_worked_jd is None:
+        polar_sunrise_unavailable = True
+        is_day_birth_worked: bool | None = None
+        # Evaluate instantaneous non-sunrise points with explicit finite anchor while flagging sunrise points unavailable:
+        vishesha_worked = compute_vishesha_lagnas_and_special_points(
+            jd_worked_ut,
+            lat,
+            lon,
+            sunrise_jd_ut=jd_worked_ut,
+            ayanamsa=ayanamsa,
+            adapter=ad,
+        )
+        sun_w_lon = ad.calc_ut(jd_worked_ut, "sun", sidereal=True, ayanamsa=ayanamsa).longitude_deg % 360.0
+        upagrahas_worked = compute_11_upagrahas(
+            sun_w_lon,
+            jd_worked_ut - 0.25,
+            jd_worked_ut + 0.25,
+            jd_ut=jd_worked_ut,
+            next_sunrise_jd=jd_worked_ut + 0.75,
+            vara_index=solar_day_vara_index,
+            lagna_lon_deg=worked_houses.ascendant_deg,
+            ascendant_fn=_asc_at_jd,
+        )
+        day_flag_for_secondary = bool(
+            compute_topocentric_relativistic_astrometry(
+                jd_worked_ut, lat, lon, ayanamsa=ayanamsa, adapter=ad
+            ).bodies["sun"].apparent_altitude_deg
+            >= 0.0
+        )
+    else:
+        is_day_birth_worked = bool(sr_worked_jd <= jd_worked_ut < ss_worked_jd)
+        vishesha_worked = compute_vishesha_lagnas_and_special_points(
+            jd_worked_ut,
+            lat,
+            lon,
+            sunrise_jd_ut=sr_worked_jd,
+            ayanamsa=ayanamsa,
+            adapter=ad,
+        )
+        sun_w_lon = ad.calc_ut(jd_worked_ut, "sun", sidereal=True, ayanamsa=ayanamsa).longitude_deg % 360.0
+        upagrahas_worked = compute_11_upagrahas(
+            sun_w_lon,
+            sr_worked_jd,
+            ss_worked_jd,
+            jd_ut=jd_worked_ut,
+            next_sunrise_jd=next_sr_worked_jd,
+            vara_index=solar_day_vara_index,
+            lagna_lon_deg=worked_houses.ascendant_deg,
+            ascendant_fn=_asc_at_jd,
+        )
+        day_flag_for_secondary = is_day_birth_worked
 
-    vishesha_worked = compute_vishesha_lagnas_and_special_points(
-        jd_worked_ut,
-        lat,
-        lon,
-        sunrise_jd_ut=p_day_worked.sunrise_jd_ut,
-        ayanamsa=ayanamsa,
-        adapter=ad,
-    )
-    sun_w_lon = ad.calc_ut(jd_worked_ut, "sun", sidereal=True, ayanamsa=ayanamsa).longitude_deg % 360.0
-    upagrahas_worked = compute_11_upagrahas(
-        sun_w_lon,
-        p_day_worked.sunrise_jd_ut,
-        p_day_worked.sunset_jd_ut,
-        jd_ut=jd_worked_ut,
-        next_sunrise_jd=next_sunrise_worked_jd,
-        vara_index=p_day_worked.vara_index,
-        lagna_lon_deg=worked_houses.ascendant_deg,
-        ascendant_fn=lambda j: ad.houses_ut(j, lat, lon, system="placidus", ayanamsa=ayanamsa).ascendant_deg,
-    )
     sphutas_worked = compute_prashna_sphutas(
         worked_houses.ascendant_deg,
         sun_w_lon,
@@ -661,8 +1041,8 @@ def generate_human_manual_ephemeris_compendium(
         },
         worked_houses.ascendant_deg,
         jd_ut=jd_worked_ut,
-        sunrise_jd_ut=p_day_worked.sunrise_jd_ut,
-        sunset_jd_ut=p_day_worked.sunset_jd_ut,
+        sunrise_jd_ut=sr_worked_jd,
+        sunset_jd_ut=ss_worked_jd,
         ayanamsa_deg=ad.get_ayanamsa_ut(jd_worked_ut, mode=ayanamsa),
         ayanamsa_system=ayanamsa,
     )
@@ -673,7 +1053,7 @@ def generate_human_manual_ephemeris_compendium(
             for p in ("sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn")
         },
         worked_houses.ascendant_deg,
-        is_day_birth=is_day_birth_worked,
+        is_day_birth=day_flag_for_secondary,
     )
     natal_lons_worked = {
         p: ad.calc_ut(jd_worked_ut, p, sidereal=True, ayanamsa=ayanamsa).longitude_deg % 360.0
@@ -712,7 +1092,7 @@ def generate_human_manual_ephemeris_compendium(
         sun_w_lon,
         natal_lons_worked,
         jd_worked_ut,
-        is_day_birth=is_day_birth_worked,
+        is_day_birth=day_flag_for_secondary,
         query_jd=jd_worked_ut + 365.2425 * 24.0,
     )
     frontier_prana_worked = compute_vimshottari_5_level_prana_chronometer(
@@ -759,14 +1139,26 @@ def generate_human_manual_ephemeris_compendium(
         adapter=ad,
     )
 
+    tz_label = _format_utc_offset(tz_off)
+    worked_utc_iso = _format_jd_utc_iso(jd_worked_ut)
+    worked_loc_date, worked_loc_hms = _format_jd_local_datetime(jd_worked_ut, tz_off)
+    is_ujjain = _is_ujjain_reference(lat, lon, tz_off)
+    if is_ujjain and worked_loc_date == row_d0.civil_date:
+        birth_time_local_str = f"{worked_loc_hms} IST ({tz_label})"
+    else:
+        birth_time_local_str = f"{worked_loc_date} {worked_loc_hms} ({tz_label})"
+
     worked_example = {
         "civil_date": row_d0.civil_date,
-        "solar_day_civil_date": p_day_worked.civil_date,
-        "sunrise_jd_ut": round(float(p_day_worked.sunrise_jd_ut), 8),
-        "sunset_jd_ut": round(float(p_day_worked.sunset_jd_ut), 8),
-        "next_sunrise_jd_ut": round(float(next_sunrise_worked_jd), 8),
+        "worked_utc_iso": worked_utc_iso,
+        "solar_day_civil_date": solar_day_civil_date,
+        "solar_day_vara_name": solar_day_vara_name,
+        "polar_sunrise_unavailable": polar_sunrise_unavailable,
+        "sunrise_jd_ut": round(float(sr_worked_jd), 8) if sr_worked_jd is not None else None,
+        "sunset_jd_ut": round(float(ss_worked_jd), 8) if ss_worked_jd is not None else None,
+        "next_sunrise_jd_ut": round(float(next_sr_worked_jd), 8) if next_sr_worked_jd is not None else None,
         "is_day_birth": is_day_birth_worked,
-        "birth_time_local": "10:42:00 IST (UTC+05:30)",
+        "birth_time_local": birth_time_local_str,
         "elapsed_after_0530_ist": "5 hours 12 minutes (13 Ghatis 00 Palas)",
         "trairashika_fraction": round(interp_fraction, 6),
         "observer_location": f"Lat {lat:.4f} deg, Lon {lon:.4f} deg",
@@ -811,10 +1203,18 @@ def generate_human_manual_ephemeris_compendium(
     }
     receipt_sha256 = canonical_hash(receipt_payload)
 
+    if abs(ref_h_ut) < 1e-9 and abs(tz_off - 5.5) < 1e-6:
+        ref_epoch_lbl = "05:30:00 IST (00:00:00 UTC)"
+    else:
+        epoch_jd0 = daily_rows[0].jd_reference_ut
+        _, utc_ep_hms = _format_jd_local_datetime(epoch_jd0, 0.0)
+        _, loc_ep_hms = _format_jd_local_datetime(epoch_jd0, tz_off)
+        ref_epoch_lbl = f"{utc_ep_hms} UTC ({loc_ep_hms} {tz_label})"
+
     return HumanManualEphemerisCompendium(
         year=yr,
         month=mo,
-        reference_epoch_label="05:30:00 IST (00:00:00 UTC)",
+        reference_epoch_label=ref_epoch_lbl,
         observer_latitude_deg=lat,
         observer_longitude_deg=lon,
         tz_offset_hours=tz_off,
@@ -849,16 +1249,68 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
         "This 30-chapter master volume restores that unbroken lineage with sub-arcsecond NASA JPL DE440/DE441 astronomical precision."
     )
     lines.append("")
+    tz_hdr_label = _format_utc_offset(comp.tz_offset_hours)
+    is_ujjain_hdr = _is_ujjain_reference(
+        comp.observer_latitude_deg, comp.observer_longitude_deg, comp.tz_offset_hours
+    )
+    meridian_hdr_desc = (
+        f"{tz_hdr_label} — Ujjain Mahakaleshwar Prime Meridian"
+        if is_ujjain_hdr
+        else f"{tz_hdr_label} — Observer Meridian"
+    )
     lines.append("### Master Document Metadata & Cryptographic Provenance Receipt")
     lines.append(f"- **Ephemeris Month & Year:** `{comp.year}-{comp.month:02d}` (`30 Complete Chapters`)")
     lines.append(f"- **Daily Tabular Reference Epoch:** `{comp.reference_epoch_label}`")
     lines.append(
         f"- **Reference Meridian / Location:** Latitude `{comp.observer_latitude_deg:.4f}°`, "
-        f"Longitude `{comp.observer_longitude_deg:.4f}°` (UTC`+{comp.tz_offset_hours:.2f}h` — Ujjain Mahakaleshwar Prime Meridian)"
+        f"Longitude `{comp.observer_longitude_deg:.4f}°` (`{meridian_hdr_desc}`)"
     )
     lines.append(f"- **Primary Sidereal Ayanamsha:** `{comp.ayanamsa_mode}` (Chitrapaksha / IAE 1989 Lahiri Standard + 25-Ayanamsha Conversion Table in Chapter 1)")
     lines.append(f"- **Astronomical Kernel Backbone:** NASA JPL DE440 / DE441 + IAU 2006/2000A Precession-Nutation (`ephemeris-oss v{__version__}`)")
     lines.append(f"- **Cryptographic SHA-256 Receipt:** `sha256:{comp.receipt_sha256}`")
+    lines.append("")
+    lines.append("### Scientific Provenance, Timescales, Reference Frames, Error Bounds, & Epistemological Scope")
+    lines.append(
+        f"- **Clean-Room Provenance & Open-Source License:** `ephemeris-oss v{__version__}` (`Apache-2.0`) evaluates "
+        "public NASA JPL Planetary and Lunar Ephemerides (`DE440` / `DE441`), IAU `2000B` / `2006` precession-nutation "
+        "(ERFA / Capitaine et al. 2003), Vondrak-2011 long-term precession, and published classical Sanskrit *Jyotisha* "
+        "formulations from first principles with zero copyleft code or binary dependencies."
+    )
+    lines.append(
+        "- **Timescales (`UTC`, `UT1`, `TT`, `TDB`):** Civil timestamps (`UTC` + signed local offset) map to `UT1` "
+        "(via IERS EOP tables when supplied, or Stephenson–Morrison–Espenak `ΔT = TT − UT1` polynomials in Table 1D), "
+        "`TT = TAI + 32.184 s`, and relativistic `TDB` (Fairhead & Bretagnon) for Chebyshev kernel evaluation."
+    )
+    lines.append(
+        "- **Reference Frames & Units:** Barycentric and geocentric `ICRS` (`J2000.0`) state vectors are rotated to the "
+        "True Equator and Equinox of Date (*Sayana* / Tropical) and *Nirayana* (Sidereal, subtracting the selected Ayanamsha), "
+        "with WGS84 surface-observer topocentric coordinates (`elevation_m = 491.0 m` in Chapter 21, Saemundsson–Bennett refraction). "
+        "Angles are reported in `deg` and `Rashi DD° MM' SS\"`, distances in `AU` (`149,597,870.700 km` IAU 2012 exact) and `km`, "
+        "rates in `deg/day` and `km/s`, and Vedic intervals in *Ghati* (`24 min`) and *Pala* (`24 s`)."
+    )
+    lines.append(
+        "- **Supported Epochs, Measured Error Limits, & Polar Domain:** Embedded compact Chebyshev tables cover `1800–2100 CE` "
+        "core and `1550–2306 CE` extended wings within `<= 0.02\"` of full `DE440`; full `DE440` (`1550–2650 CE`) matches JPL "
+        "Horizons interpolation to `<= 0.001\"` and apparent geocentric ecliptic longitudes across the 9-body benchmark grid to "
+        "`<= 0.1\"` (`docs/ACCURACY.md`); `DE441` (when provisioned) spans `13,200 BCE–17,191 CE` alongside the `3102 BCE–3000 CE` "
+        "analytical historical tier. Daily sunrise Panchang requires latitudes within `[-66°, +66°]`, while this compendium "
+        "evaluates `[-90°, +90°]` and explicitly prints `UNAVAILABLE (circumpolar ...)` whenever solar rise/set events do not occur."
+    )
+    lines.append(
+        "- **Lunar-Node & Chart Invariants:** Mean and Osculating (*True*) Lunar Nodes follow Meeus Ch. 47 eq. `47.7` "
+        "(`ephemeris-oss-lunar-nodes-1.1.0-meeus47.7`) with exact antipodal closure `λ_Ketu = (λ_Rahu + 180°) mod 360°`; "
+        "all 16 *Shodashvarga* charts (`D1–D60`), the 7-planet *Sarvashtakavarga* total invariant (`337 Bindus`), and "
+        "`120-year` *Vimshottari* (`365.2425 d/y`) / `249 KP` sub-lord partitions are deterministic functions of these coordinates."
+    )
+    lines.append(
+        "- **Astronomical Verification vs. Traditional Jyotish Interpretation:** State vectors, timescales, light-time, "
+        "aberration, gravitational deflection, topocentric parallax, atmospheric refraction, eclipse obscuration, and "
+        "horizon rise/set times belong to **Astronomical Verification** (empirically testable physical observatory quantities). "
+        "Ayanamsha conventions, *Rashi/Nakshatra/Varga* mappings, *Vishesha Lagnas*, *Upagrahas*, *Dashas*, *Shadbala*, "
+        "*Ashtakavarga*, *Yogas*, *Muhurta* electional grades, and life-domain descriptions belong to **Traditional Jyotish "
+        "Interpretation** (deterministic implementations of classical Sanskrit astrological canons, distinct from empirical "
+        "physical, medical, or financial prediction)."
+    )
     lines.append("")
 
     # =========================================================================
@@ -2046,9 +2498,48 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     sah_rep = we["sahams_report"]
     kc_rep = we["kalachakra_report"]
 
-    lines.append(f"- **Case Study Date & Time:** `{we['civil_date']}` at `{we['birth_time_local']}`")
-    lines.append(f"- **Observer Location:** `{we['observer_location']}` (Ujjain Prime Meridian Reference)")
-    lines.append(f"- **Elapsed Time After `05:30 IST` Tabular Epoch:** `{we['elapsed_after_0530_ist']}` (Interpolation Fraction `f = {we['trairashika_fraction']:.6f}`)")
+    polar_unavail = bool(we.get("polar_sunrise_unavailable")) or we.get("sunrise_jd_ut") is None
+    we_loc_note = "Ujjain Prime Meridian Reference" if is_ujjain_hdr else f"Observer Meridian ({tz_hdr_label})"
+    tab_epoch_short = "05:30 IST" if is_ujjain_hdr else comp.reference_epoch_label
+    step12_col_d0 = "`05:30 IST` Day `D`" if is_ujjain_hdr else "Tabular Epoch Day `D`"
+    if polar_unavail or we.get("is_day_birth") is None:
+        day_birth_lbl = "UNAVAILABLE (circumpolar — sunrise/sunset undefined)"
+        sr_anchor_line = (
+            "- **Solar-Day Anchor (Preceding Sunrise -> Sunset -> Next Sunrise):** "
+            "Preceding Sunrise: `UNAVAILABLE (circumpolar)` | Sunset: `UNAVAILABLE (circumpolar)` | "
+            "Next Sunrise: `UNAVAILABLE (circumpolar)` | Elapsed Since Sunrise: `UNAVAILABLE (circumpolar)`"
+        )
+    else:
+        day_birth_lbl = (
+            "Day Birth"
+            if we.get("is_day_birth")
+            else "Night Birth (pre-sunrise / post-sunset of active solar day)"
+        )
+        sr_loc_d, sr_loc_t = _format_jd_local_datetime(float(we["sunrise_jd_ut"]), comp.tz_offset_hours)
+        ss_loc_d, ss_loc_t = _format_jd_local_datetime(float(we["sunset_jd_ut"]), comp.tz_offset_hours)
+        nsr_loc_d, nsr_loc_t = _format_jd_local_datetime(float(we["next_sunrise_jd_ut"]), comp.tz_offset_hours)
+        sr_anchor_line = (
+            f"- **Solar-Day Anchor (Preceding Sunrise -> Sunset -> Next Sunrise):** "
+            f"Preceding Sunrise `{sr_loc_d} {sr_loc_t} ({tz_hdr_label})` (`{_format_jd_utc_iso(float(we['sunrise_jd_ut']))}`) -> "
+            f"Sunset `{ss_loc_d} {ss_loc_t} ({tz_hdr_label})` (`{_format_jd_utc_iso(float(we['sunset_jd_ut']))}`) -> "
+            f"Next Sunrise `{nsr_loc_d} {nsr_loc_t} ({tz_hdr_label})` (`{_format_jd_utc_iso(float(we['next_sunrise_jd_ut']))}`) | "
+            f"Elapsed Since Sunrise: `{vis_rep.elapsed_hours_since_sunrise:.4f} h` (`{format_ghati_pala(vis_rep.elapsed_hours_since_sunrise)}`)"
+        )
+
+    lines.append(
+        f"- **Case Study Instant (UTC & Observer Local):** `{we.get('worked_utc_iso', we['civil_date'])}` | "
+        f"Local: `{we['birth_time_local']}` (Tabular Row Date: `{we['civil_date']}`)"
+    )
+    lines.append(f"- **Observer Location:** `{we['observer_location']}` ({we_loc_note})")
+    lines.append(
+        f"- **Active Vedic Solar Day (*Savana Dina* & *Vara*):** `{we.get('solar_day_civil_date', we['civil_date'])}` — "
+        f"**{we.get('solar_day_vara_name', '—')}** (**{day_birth_lbl}**)"
+    )
+    lines.append(sr_anchor_line)
+    lines.append(
+        f"- **Elapsed Time After `{tab_epoch_short}` Tabular Epoch:** `{we['elapsed_after_0530_ist']}` "
+        f"(Interpolation Fraction `f = {we['trairashika_fraction']:.6f}`)"
+    )
     lines.append(f"- **Manual Ascendant (*Udaya Lagna*):** `{we['ascendant_dms']}` | **10th Cusp (*Madhya Lagna*):** `{we['mc_10th_cusp_dms']}`")
     lines.append(f"- **Natal Moon Nakshatra & Pada:** `{we['moon_nakshatra']}` (`{we['remaining_arcminutes_bhogyamsha']:.2f}'` *Bhogyamsha* remaining)")
     lines.append(f"- **Natal *Vimshottari Dasha* Balance at Birth:** **`{we['vimshottari_dasha_balance_at_birth']}`**")
@@ -2056,7 +2547,9 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
 
     lines.append("### Step 1 & Step 2 — Complete 1st-Order (*Trairashika*) & 2nd-Order (*Bessel*) Manual *Spashta Graha* Worksheet")
     lines.append("")
-    lines.append("| Body | `05:30 IST` Day `D` | `05:30 IST` Day `D+1` | Daily Motion `v₁` | 1st-Order *Trairashika* | 2nd-Order *Bessel* Exact | `D9` Navamsa | `D10` Dasamsa | `D60` Shashtiamsa | *KP* Star / Sub / Sub-Sub |")
+    lines.append(
+        f"| Body | {step12_col_d0} | Motion Increment `f·v₁` | Daily Motion `v₁` | 1st-Order *Trairashika* | 2nd-Order *Bessel* Exact | `D9` Navamsa | `D10` Dasamsa | `D60` Shashtiamsa | *KP* Star / Sub / Sub-Sub |"
+    )
     lines.append("|---|---|---|---|---|---|---|---|---|---|")
     for b_key, b_label in (
         ("sun", "Surya (Sun)"),
@@ -2081,20 +2574,26 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
     lines.append("")
     lines.append("| Special Point Category | Point Name | Computed Sidereal Longitude (`DMS`) | Sign (`Rashi`) | `D9` Navamsa / Nakshatra Details |")
     lines.append("|---|---|---|---|---|")
-    for vl_pt in (
-        vis_rep.udaya_lagna,
-        vis_rep.hora_lagna,
-        vis_rep.ghati_lagna,
-        vis_rep.bhava_lagna,
-        vis_rep.sree_lagna,
-        vis_rep.indu_lagna,
-        vis_rep.pranapada_lagna,
-        vis_rep.varnada_lagna,
+    for vl_sunrise_dep, vl_pt in (
+        (False, vis_rep.udaya_lagna),
+        (True, vis_rep.hora_lagna),
+        (True, vis_rep.ghati_lagna),
+        (True, vis_rep.bhava_lagna),
+        (False, vis_rep.sree_lagna),
+        (False, vis_rep.indu_lagna),
+        (True, vis_rep.pranapada_lagna),
+        (True, vis_rep.varnada_lagna),
     ):
-        lines.append(
-            f"| **8 Vishesha Lagnas** | **{vl_pt.title}** | **`{vl_pt.classical_dms}`** | {vl_pt.rashi_name} ({vl_pt.rashi_lord}) | "
-            f"`D9:` **{vl_pt.d9_navamsa_sign}**; *{vl_pt.nakshatra_name}* P{vl_pt.pada} ({vl_pt.formula_summary}) |"
-        )
+        if polar_unavail and vl_sunrise_dep:
+            lines.append(
+                f"| **8 Vishesha Lagnas** | **{vl_pt.title}** | **`UNAVAILABLE (circumpolar — preceding sunrise undefined)`** | — | "
+                "Sunrise-anchored special lagna undefined during circumpolar sun/night |"
+            )
+        else:
+            lines.append(
+                f"| **8 Vishesha Lagnas** | **{vl_pt.title}** | **`{vl_pt.classical_dms}`** | {vl_pt.rashi_name} ({vl_pt.rashi_lord}) | "
+                f"`D9:` **{vl_pt.d9_navamsa_sign}**; *{vl_pt.nakshatra_name}* P{vl_pt.pada} ({vl_pt.formula_summary}) |"
+            )
     lines.append(
         f"| **Yogi & Avayogi** | **Yogi Point & Yogi Planet** | **`{vis_rep.yogi_point_dms}`** | Yogi: **{vis_rep.yogi_planet}** | "
         f"Nakshatra: *{vis_rep.yogi_nakshatra_name}*; Sahayogi: **{vis_rep.sahayogi_planet}** |"
@@ -2103,38 +2602,50 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
         f"| **Yogi & Avayogi** | **Avayogi Point & Planet** | **`{vis_rep.avayogi_point_dms}`** | Avayogi: **{vis_rep.avayogi_planet}** | "
         f"Nakshatra: *{vis_rep.avayogi_nakshatra_name}* |"
     )
-    for upa_k, upa_pt in (
-        ("Dhuma", upa_rep.dhuma),
-        ("Vyatipata", upa_rep.vyatipata),
-        ("Parivesha", upa_rep.parivesha),
-        ("Indrachapa", upa_rep.indrachapa),
-        ("Upaketu", upa_rep.upaketu),
-        ("Gulika (Mandi)", upa_rep.gulika),
-        ("Kala", upa_rep.kala),
-        ("Mrityu", upa_rep.mrityu),
-        ("Ardhaprahara", upa_rep.ardhaprahara),
-        ("Yamaghantaka", upa_rep.yamaghantaka),
-        ("Ochcha", upa_rep.ochcha),
+    for upa_k, upa_sunrise_dep, upa_pt in (
+        ("Dhuma", False, upa_rep.dhuma),
+        ("Vyatipata", False, upa_rep.vyatipata),
+        ("Parivesha", False, upa_rep.parivesha),
+        ("Indrachapa", False, upa_rep.indrachapa),
+        ("Upaketu", False, upa_rep.upaketu),
+        ("Gulika (Mandi)", True, upa_rep.gulika),
+        ("Kala", True, upa_rep.kala),
+        ("Mrityu", True, upa_rep.mrityu),
+        ("Ardhaprahara", True, upa_rep.ardhaprahara),
+        ("Yamaghantaka", True, upa_rep.yamaghantaka),
+        ("Ochcha", True, upa_rep.ochcha),
     ):
-        lines.append(
-            f"| **11 Upagrahas** | **{upa_k}** | `{format_classical_rashi_dms(upa_pt.longitude_deg)}` | "
-            f"{upa_pt.sign_name} | *{upa_pt.nakshatra.name}* Pada {upa_pt.nakshatra.pada} |"
-        )
-    for sph_pt in (
-        sph_rep.trisphuta,
-        sph_rep.chatusphuta,
-        sph_rep.panchasphuta,
-        sph_rep.prana_sphuta,
-        sph_rep.deha_sphuta,
-        sph_rep.mrityu_sphuta,
-        sph_rep.tithi_sphuta,
-        sph_rep.beeja_sphuta,
-        sph_rep.kshetra_sphuta,
+        if polar_unavail and upa_sunrise_dep:
+            lines.append(
+                f"| **11 Upagrahas** | **{upa_k}** | `UNAVAILABLE (circumpolar — Dinamana/Ratrimana octants undefined)` | — | "
+                "Kalavela sunrise/sunset octant undefined during circumpolar sun/night |"
+            )
+        else:
+            lines.append(
+                f"| **11 Upagrahas** | **{upa_k}** | `{format_classical_rashi_dms(upa_pt.longitude_deg)}` | "
+                f"{upa_pt.sign_name} | *{upa_pt.nakshatra.name}* Pada {upa_pt.nakshatra.pada} |"
+            )
+    for sph_gulika_dep, sph_pt in (
+        (True, sph_rep.trisphuta),
+        (True, sph_rep.chatusphuta),
+        (True, sph_rep.panchasphuta),
+        (True, sph_rep.prana_sphuta),
+        (True, sph_rep.deha_sphuta),
+        (True, sph_rep.mrityu_sphuta),
+        (False, sph_rep.tithi_sphuta),
+        (False, sph_rep.beeja_sphuta),
+        (False, sph_rep.kshetra_sphuta),
     ):
-        lines.append(
-            f"| **9 Prashna Sphutas** | **{sph_pt.name}** | `{format_classical_rashi_dms(sph_pt.longitude_deg)}` | "
-            f"{sph_pt.sign_name} | *{sph_pt.nakshatra.name}* Pada {sph_pt.nakshatra.pada} |"
-        )
+        if polar_unavail and sph_gulika_dep:
+            lines.append(
+                f"| **9 Prashna Sphutas** | **{sph_pt.name}** | `UNAVAILABLE (circumpolar — depends on Gulika)` | — | "
+                "Undefined when Kalavela Gulika is circumpolar-unavailable |"
+            )
+        else:
+            lines.append(
+                f"| **9 Prashna Sphutas** | **{sph_pt.name}** | `{format_classical_rashi_dms(sph_pt.longitude_deg)}` | "
+                f"{sph_pt.sign_name} | *{sph_pt.nakshatra.name}* Pada {sph_pt.nakshatra.pada} |"
+            )
     lines.append("")
 
     lines.append("### Step 5 & Step 6 — Worked Case Study: *Jaimini Chara Karakas*, 12 *Arudha Padas*, *Shadbala*, & *Sarvashtakavarga*")
@@ -2995,12 +3506,16 @@ def _render_compendium_html(comp: HumanManualEphemerisCompendium) -> str:
     word-break: break-word;
     overflow-wrap: anywhere;
   }}
+  @page {{
+    size: A4 landscape;
+    margin: 10mm;
+  }}
   @media print {{
-    body {{ background: #fff; padding: 0; margin: 0; }}
+    body {{ background: #fff; padding: 0; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
     .page-container {{ box-shadow: none; border: none; padding: 4px; max-width: 100%; width: 100%; }}
     .chapter-section {{ page-break-before: always; }}
-    table.ephemeris-table {{ font-size: 5.2pt; table-layout: fixed; width: 100%; max-width: 100%; }}
-    table.ephemeris-table th, table.ephemeris-table td {{ padding: 2px 2px; }}
+    table.ephemeris-table {{ font-size: 5.5pt; table-layout: fixed; width: 100%; max-width: 100%; }}
+    table.ephemeris-table th, table.ephemeris-table td {{ padding: 2px 3px; }}
   }}
 </style>
 </head>
@@ -3012,6 +3527,158 @@ def _render_compendium_html(comp: HumanManualEphemerisCompendium) -> str:
 </body>
 </html>
 """
+
+
+def _find_headless_pdf_browser() -> str | None:
+    for cmd_name in ("google-chrome", "chrome", "chromium", "chromium-browser", "msedge", "microsoft-edge"):
+        found = shutil.which(cmd_name)
+        if found:
+            return found
+    for candidate in (
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "/usr/bin/google-chrome",
+        "/usr/bin/chromium",
+        "/usr/bin/chromium-browser",
+    ):
+        if Path(candidate).is_file():
+            return candidate
+    return None
+
+
+def _build_minimal_text_pdf_bytes(markdown_text: str) -> bytes:
+    """Zero-dependency PDF 1.4 fallback writer when no headless Chromium/Edge binary is installed."""
+    replacements = {
+        "—": "--",
+        "–": "-",
+        "−": "-",
+        "×": "x",
+        "°": " deg ",
+        "Δ": "Delta ",
+        "λ": "lambda_",
+        "β": "beta_",
+        "δ": "delta_",
+        "α": "alpha_",
+        "ε": "eps_",
+        "τ": "tau_",
+        "μ": "u",
+        "≈": "~",
+        "⌊": "floor(",
+        "⌋": ")",
+    }
+    safe_text = markdown_text
+    for src_ch, dst_ch in replacements.items():
+        safe_text = safe_text.replace(src_ch, dst_ch)
+    wrapped_lines: list[str] = []
+    for raw_ln in safe_text.splitlines():
+        ascii_ln = raw_ln.encode("latin-1", errors="replace").decode("latin-1")
+        if not ascii_ln:
+            wrapped_lines.append("")
+            continue
+        while len(ascii_ln) > 150:
+            wrapped_lines.append(ascii_ln[:150])
+            ascii_ln = "  " + ascii_ln[150:]
+        wrapped_lines.append(ascii_ln)
+
+    lines_per_page = 62
+    pages_lines = [
+        wrapped_lines[idx : idx + lines_per_page]
+        for idx in range(0, max(1, len(wrapped_lines)), lines_per_page)
+    ]
+
+    def _pdf_esc(s: str) -> str:
+        return s.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+
+    objects: list[bytes] = []
+    # 1: Catalog, 2: Pages, 3: Font
+    page_obj_ids: list[int] = []
+    next_id = 4
+    page_entries: list[tuple[int, int, bytes]] = []
+    for pg in pages_lines:
+        content_cmds = ["BT", "/F1 7 Tf", "1 0 0 1 28 565 Tm", "8.5 TL"]
+        for ln in pg:
+            content_cmds.append(f"({_pdf_esc(ln)}) Tj T*")
+        content_cmds.append("ET")
+        stream_bytes = ("\n".join(content_cmds) + "\n").encode("latin-1", errors="replace")
+        p_id = next_id
+        c_id = next_id + 1
+        next_id += 2
+        page_obj_ids.append(p_id)
+        page_entries.append((p_id, c_id, stream_bytes))
+
+    kids_refs = " ".join(f"{pid} 0 R" for pid in page_obj_ids)
+    objects.append(b"1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n")
+    objects.append(f"2 0 obj\n<< /Type /Pages /Kids [{kids_refs}] /Count {len(page_obj_ids)} >>\nendobj\n".encode("ascii"))
+    objects.append(b"3 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>\nendobj\n")
+    for p_id, c_id, stream_bytes in page_entries:
+        objects.append(
+            f"{p_id} 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 842 595] "
+            f"/Resources << /Font << /F1 3 0 R >> >> /Contents {c_id} 0 R >>\nendobj\n".encode("ascii")
+        )
+        objects.append(
+            f"{c_id} 0 obj\n<< /Length {len(stream_bytes)} >>\nstream\n".encode("ascii")
+            + stream_bytes
+            + b"endstream\nendobj\n"
+        )
+
+    out = bytearray(b"%PDF-1.4\n%\xe2\xe3\xcf\xd3\n")
+    offsets = [0]
+    for obj in objects:
+        offsets.append(len(out))
+        out.extend(obj)
+    xref_pos = len(out)
+    out.extend(f"xref\n0 {len(objects) + 1}\n0000000000 65535 f \n".encode("ascii"))
+    for off in offsets[1:]:
+        out.extend(f"{off:010d} 00000 n \n".encode("ascii"))
+    out.extend(
+        f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\nstartxref\n{xref_pos}\n%%EOF\n".encode("ascii")
+    )
+    return bytes(out)
+
+
+def _render_compendium_pdf(
+    comp: HumanManualEphemerisCompendium,
+    *,
+    output_path: str | Path | None = None,
+) -> bytes:
+    """Render the compendium HTML book edition to a vector PDF via headless Chromium/Edge, with stdlib PDF fallback."""
+    pdf_bytes: bytes | None = None
+    browser_bin = _find_headless_pdf_browser()
+    if browser_bin is not None:
+        html_text = comp.to_html()
+        with tempfile.TemporaryDirectory(prefix="rdg-compendium-pdf-") as tmp_dir:
+            tmp_root = Path(tmp_dir)
+            html_file = tmp_root / "compendium.html"
+            pdf_file = tmp_root / "compendium.pdf"
+            html_file.write_text(html_text, encoding="utf-8", newline="\n")
+            proc = subprocess.run(
+                [
+                    browser_bin,
+                    "--headless=new",
+                    "--disable-gpu",
+                    "--no-sandbox",
+                    "--no-pdf-header-footer",
+                    f"--print-to-pdf={pdf_file}",
+                    html_file.as_uri(),
+                ],
+                capture_output=True,
+                timeout=180,
+                check=False,
+            )
+            if proc.returncode == 0 and pdf_file.is_file():
+                candidate_bytes = pdf_file.read_bytes()
+                if candidate_bytes.startswith(b"%PDF-"):
+                    pdf_bytes = candidate_bytes
+    if pdf_bytes is None:
+        pdf_bytes = _build_minimal_text_pdf_bytes(comp.to_markdown())
+    if output_path is not None:
+        target = Path(output_path)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(pdf_bytes)
+    return pdf_bytes
 
 
 __all__ = [

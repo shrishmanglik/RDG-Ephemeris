@@ -418,7 +418,7 @@ def main(argv: list[str] | None = None) -> int:
     he.add_argument("--lon", type=float, default=77.2090, help="Observer longitude in degrees")
     he.add_argument("--tz-offset", type=float, default=5.5, help="Timezone offset in hours from UTC (default: 5.5 IST)")
     he.add_argument("--ayanamsa", default="lahiri", help="Sidereal ayanamsa mode (default: lahiri)")
-    he.add_argument("--format", choices=("markdown", "html", "json"), default="markdown")
+    he.add_argument("--format", choices=("markdown", "html", "pdf", "json"), default="markdown")
     he.add_argument("--out", default=None, help="Optional file path to save the compendium")
 
     mc = commands.add_parser("mcp", help="start built-in Model Context Protocol (MCP) JSON-RPC 2.0 server over stdio")
@@ -485,6 +485,12 @@ def main(argv: list[str] | None = None) -> int:
                 tz_offset_hours=args.tz_offset,
                 ayanamsa=args.ayanamsa,
             )
+            if args.format == "pdf":
+                if args.out:
+                    comp.to_pdf(Path(args.out))
+                else:
+                    sys.stdout.buffer.write(comp.to_pdf())
+                return 0
             if args.format == "html":
                 rendered = comp.to_html()
             elif args.format == "json":

@@ -436,7 +436,10 @@ def compute_vishesha_lagnas_and_special_points(
     else:
         from ..adapter import CALC_RISE as _CALC_RISE
         ad = adapter
-    houses = ad.houses_ut(jd_ut, latitude_deg, longitude_deg, system="placidus", ayanamsa=ayanamsa)
+    try:
+        houses = ad.houses_ut(jd_ut, latitude_deg, longitude_deg, system="placidus", ayanamsa=ayanamsa)
+    except EphemerisError:
+        houses = ad.houses_ut(jd_ut, latitude_deg, longitude_deg, system="whole_sign", ayanamsa=ayanamsa)
     udaya_lagna_deg = normalize_degrees(houses.ascendant_deg)
 
     if sunrise_jd_ut is not None:

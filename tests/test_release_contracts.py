@@ -1271,3 +1271,192 @@ def test_round8_skewed_station_phase_spherical_geometry_arudha_and_vimshopaka_pa
             )
 
 
+def test_compendium_truthfulness_cross_month_presunrise_polar_provenance_and_pdf(tmp_path: Path) -> None:
+    """Verify truthful location/timezone/solar-day headers, Day-1 cross-month preceding sunrise,
+    explicit unavailable polar events, provenance/epistemological scope, and PDF generation.
+    """
+    from types import SimpleNamespace
+    from unittest.mock import patch
+
+    from ephemeris_oss import EphemerisAdapter
+    from ephemeris_oss._api import EphemerisError
+    from ephemeris_oss.almanac import human_ephemeris as h_mod
+    from ephemeris_oss.almanac.human_ephemeris import generate_human_manual_ephemeris_compendium
+    from ephemeris_oss.almanac.panchang_calendar import generate_monthly_panchang
+    from ephemeris_oss.cli import main as cli_main
+    from ephemeris_oss.jyotish.vishesha_lagnas import compute_vishesha_lagnas_and_special_points
+
+    ad = EphemerisAdapter()
+
+    # Fast patch helper for heavy multi-month scans when testing non-phenomena invariants:
+    ujjain_comp = generate_human_manual_ephemeris_compendium(2026, 11, adapter=ad)
+
+    def _fast_comp(*args: object, **kwargs: object):
+        with (
+            patch.object(
+                h_mod,
+                "scan_ingresses_and_aspects",
+                return_value=SimpleNamespace(rashi_ingresses=(), nakshatra_ingresses=(), aspects=()),
+            ),
+            patch.object(
+                h_mod,
+                "solve_krantisamya_mahapata_windows",
+                return_value=ujjain_comp.phenomena_summary["mahapata_report"],
+            ),
+            patch.object(
+                h_mod,
+                "solve_synodic_retrograde_loops_and_triple_passes",
+                return_value=ujjain_comp.worked_example["frontier_retro_report"],
+            ),
+            patch.object(
+                h_mod,
+                "evaluate_lifetime_eclipse_natal_sensitivity",
+                return_value=ujjain_comp.worked_example["frontier_eclipse_report"],
+            ),
+        ):
+            return generate_human_manual_ephemeris_compendium(*args, **kwargs)
+
+    # 1. Truthful location, signed UTC offset, local/UTC worked instant, and solar-day context:
+    ny_comp = _fast_comp(2026, 11, latitude_deg=40.7128, longitude_deg=-74.0060, tz_offset_hours=-5.0, adapter=ad)
+    ny_md = ny_comp.to_markdown()
+    ny_html = ny_comp.to_html()
+    assert "+-" not in ny_md and "+-" not in ny_html
+    assert "UTC-05:00" in ny_md and "UTC-05:00" in ny_html
+    assert "Ujjain Mahakaleshwar Prime Meridian" not in ny_md
+    assert "Ujjain Prime Meridian Reference" not in ny_md
+    assert "10:42:00 IST" not in ny_comp.worked_example["birth_time_local"]
+    assert "2026-11-15 00:12:00 (UTC-05:00)" in ny_comp.worked_example["birth_time_local"]
+    assert ny_comp.worked_example["worked_utc_iso"] == "2026-11-15T05:12:00Z"
+    assert ny_comp.worked_example["solar_day_civil_date"] == "2026-11-14"
+    assert "Shanivara (Saturday)" in ny_comp.worked_example["solar_day_vara_name"]
+    assert "2026-11-14" in ny_md.split("## Chapter 20", 1)[1].split("## Chapter 21", 1)[0]
+    assert "Shanivara (Saturday)" in ny_md.split("## Chapter 20", 1)[1].split("## Chapter 21", 1)[0]
+    assert "Night Birth" in ny_md.split("## Chapter 20", 1)[1].split("## Chapter 21", 1)[0]
+
+    la_comp = _fast_comp(2026, 11, latitude_deg=34.0522, longitude_deg=-118.2437, tz_offset_hours=-8.0, adapter=ad)
+    assert "2026-11-14 21:12:00 (UTC-08:00)" in la_comp.worked_example["birth_time_local"]
+    assert la_comp.worked_example["solar_day_civil_date"] == "2026-11-14"
+
+    uj_md = ujjain_comp.to_markdown()
+    assert "Ujjain Mahakaleshwar Prime Meridian" in uj_md
+    assert "10:42:00 IST (UTC+05:30)" in ujjain_comp.worked_example["birth_time_local"]
+    assert "Day Birth" in uj_md.split("## Chapter 20", 1)[1].split("## Chapter 21", 1)[0]
+
+    # 2. Cross-month pre-sunrise boundary (Day 1 at 00:12 local -> preceding sunrise on 2026-10-31):
+    ny_day1 = _fast_comp(
+        2026,
+        11,
+        latitude_deg=40.7128,
+        longitude_deg=-74.0060,
+        tz_offset_hours=-5.0,
+        worked_day_index=0,
+        adapter=ad,
+    )
+    we_d1 = ny_day1.worked_example
+    jd_d1 = ny_day1.daily_rows[0].jd_reference_ut + 5.2 / 24.0
+    assert we_d1["solar_day_civil_date"] == "2026-10-31"
+    assert "Shanivara (Saturday)" in we_d1["solar_day_vara_name"]
+    assert we_d1["sunrise_jd_ut"] < jd_d1 < we_d1["next_sunrise_jd_ut"]
+    assert we_d1["sunset_jd_ut"] < jd_d1
+    assert we_d1["is_day_birth"] is False
+    assert we_d1["vishesha_report"].elapsed_hours_since_sunrise > 15.0
+
+    # 3. Polar / circumpolar explicit unavailable events (Tromso 69.6492N in June & November):
+    with pytest.raises(ValueError):
+        generate_monthly_panchang(2026, 6, 69.6492, 18.9553)
+
+    # On 2026-11-01 at Tromso (69.6492N), sunrise DOES exist, so direct Vishesha Lagnas must succeed:
+    jd_tromso_nov1 = ad.julday(2026, 11, 1, 12.0)
+    vis_tromso_nov1 = compute_vishesha_lagnas_and_special_points(
+        jd_tromso_nov1, 69.6492, 18.9553, sunrise_jd_ut=None, adapter=ad
+    )
+    assert vis_tromso_nov1.elapsed_hours_since_sunrise > 0.0
+
+    # In June 2026 (midnight sun) and late November/December 2026 (polar night), compendium explicitly shows UNAVAILABLE:
+    tromso_jun = _fast_comp(2026, 6, latitude_deg=69.6492, longitude_deg=18.9553, tz_offset_hours=2.0, adapter=ad)
+    tj_md = tromso_jun.to_markdown()
+    assert "UNAVAILABLE (circumpolar" in tromso_jun.daily_rows[0].sunrise_local_hms
+    assert "UNAVAILABLE (circumpolar" in tromso_jun.daily_rows[0].sunset_local_hms
+    assert "UNAVAILABLE (circumpolar" in tromso_jun.daily_rows[0].rahu_kala_window
+    assert tromso_jun.worked_example["sunrise_jd_ut"] is None
+    assert tromso_jun.worked_example["is_day_birth"] is None
+    ch20_jun = tj_md.split("## Chapter 20", 1)[1].split("## Chapter 21", 1)[0]
+    assert "Hora Lagna" in ch20_jun and "UNAVAILABLE (circumpolar" in ch20_jun
+    assert "Gulika (Mandi)" in ch20_jun
+    ch28_jun = tj_md.split("## Chapter 28", 1)[1].split("## Chapter 29", 1)[0]
+    assert "Free of Rahu Kalam" not in ch28_jun
+
+    tromso_nov = _fast_comp(2026, 11, latitude_deg=69.6492, longitude_deg=18.9553, tz_offset_hours=1.0, adapter=ad)
+    assert "UNAVAILABLE" not in tromso_nov.daily_rows[0].sunrise_local_hms
+    assert "UNAVAILABLE (circumpolar" in tromso_nov.daily_rows[-1].sunrise_local_hms
+
+    # 4. Provenance, timescales, frames, units, supported range, error limits, node/chart invariants & epistemology:
+    for required_token in (
+        "Scientific Provenance, Timescales, Reference Frames, Error Bounds, & Epistemological Scope",
+        "Apache-2.0",
+        "DE440",
+        "1550–2306 CE",
+        "1800–2100 CE",
+        "0.02\"",
+        "0.1\"",
+        "ephemeris-oss-lunar-nodes-1.1.0-meeus47.7",
+        "337",
+        "Astronomical Verification",
+        "Traditional Jyotish",
+    ):
+        assert required_token in uj_md, required_token
+        assert required_token in ny_md, required_token
+
+    # 5. Production PDF generation via Python API and CLI:
+    pdf_api = tmp_path / "ny_api.pdf"
+    pdf_bytes = ny_comp.to_pdf(pdf_api)
+    assert pdf_bytes.startswith(b"%PDF-")
+    assert pdf_api.is_file() and pdf_api.stat().st_size > 20000
+
+    pdf_cli = tmp_path / "ny_cli.pdf"
+    with (
+        patch.object(
+            h_mod,
+            "scan_ingresses_and_aspects",
+            return_value=SimpleNamespace(rashi_ingresses=(), nakshatra_ingresses=(), aspects=()),
+        ),
+        patch.object(
+            h_mod,
+            "solve_krantisamya_mahapata_windows",
+            return_value=ujjain_comp.phenomena_summary["mahapata_report"],
+        ),
+        patch.object(
+            h_mod,
+            "solve_synodic_retrograde_loops_and_triple_passes",
+            return_value=ujjain_comp.worked_example["frontier_retro_report"],
+        ),
+        patch.object(
+            h_mod,
+            "evaluate_lifetime_eclipse_natal_sensitivity",
+            return_value=ujjain_comp.worked_example["frontier_eclipse_report"],
+        ),
+    ):
+        rc = cli_main(
+            [
+                "human-ephemeris",
+                "--year",
+                "2026",
+                "--month",
+                "11",
+                "--lat",
+                "40.7128",
+                "--lon",
+                "-74.0060",
+                "--tz-offset",
+                "-5.0",
+                "--format",
+                "pdf",
+                "--out",
+                str(pdf_cli),
+            ]
+        )
+    assert rc == 0
+    assert pdf_cli.is_file() and pdf_cli.read_bytes().startswith(b"%PDF-")
+
+
+
