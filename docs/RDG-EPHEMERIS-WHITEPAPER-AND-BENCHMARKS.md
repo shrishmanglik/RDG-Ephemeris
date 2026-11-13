@@ -3,12 +3,13 @@
 **Document Classification:** Public Technical White Paper & Reproducible Benchmark Report  
 **Package Version:** `ephemeris-oss 0.2.0.dev1`  
 **Open-Source License:** `Apache-2.0` (with explicit trademark reservation under Section 6 for `RDG™` / `Raj Dulari Gupta™`)  
-**Reproducible Evidence Artifacts:**
-- [`evidence/real-world-sota-head-to-head-benchmarks.json`](../evidence/real-world-sota-head-to-head-benchmarks.json) (`raw_benchmark_receipt_sha256: 7ddccc06799d4f76dbe0f3dca349d33205a98bf7e05d91beb8f93b9c12ed6393`)
-- [`evidence/monthly-full-span-de440-benchmark.json`](../evidence/monthly-full-span-de440-benchmark.json) (`receipt_sha256: 3baf421f91696e6bd684a71975e95a6a139ba448f0f8871e7aacd23d15f15e83`)
-- [`evidence/sota-ephemeris-evaluation-matrix.json`](../evidence/sota-ephemeris-evaluation-matrix.json) (`receipt_sha256: 66597bf9a98d7d4b6c491c19d2045dc4fbfc7e41c7da9a2cdb7ef5312a36d3df`)
-- [`evidence/horizons-iae-benchmark.json`](../evidence/horizons-iae-benchmark.json)
-- [`docs/ACCURACY.md`](ACCURACY.md)
+**Evidence Artifacts (In-Repo Clean-Room vs Retained External-Environment Measurements):**
+- **In-Repo Clean-Room Benchmarks (reproducible from a clean checkout):**
+  - [`evidence/monthly-full-span-de440-benchmark.json`](../evidence/monthly-full-span-de440-benchmark.json) (`receipt_sha256: 3baf421f91696e6bd684a71975e95a6a139ba448f0f8871e7aacd23d15f15e83`)
+  - [`evidence/sota-ephemeris-evaluation-matrix.json`](../evidence/sota-ephemeris-evaluation-matrix.json) (`receipt_sha256: 66597bf9a98d7d4b6c491c19d2045dc4fbfc7e41c7da9a2cdb7ef5312a36d3df`; third-party comparator slots intentionally marked `UNKNOWN` inside the clean-room tree)
+  - [`evidence/horizons-iae-benchmark.json`](../evidence/horizons-iae-benchmark.json), [`docs/ACCURACY.md`](ACCURACY.md), and [`docs/researcher-benchmark.json`](researcher-benchmark.json)
+- **Retained External-Environment Comparator Receipt (isolated outside the Apache-2.0 package tree):**
+  - [`evidence/real-world-sota-head-to-head-benchmarks.json`](../evidence/real-world-sota-head-to-head-benchmarks.json) (`raw_benchmark_receipt_sha256: 7ddccc06799d4f76dbe0f3dca349d33205a98bf7e05d91beb8f93b9c12ed6393`, canonical JSON payload digest excluding self-referential hash fields)
 
 ---
 
@@ -124,9 +125,9 @@ Computes *Ahargana* days since the `3102 BCE` Kali Yuga epoch (`JD 588465.5`) an
 
 ---
 
-## 6. Real-World Head-to-Head SOTA Ephemeris Benchmarks & Evaluations
+## 6. Retained External-Environment Head-to-Head SOTA Ephemeris Benchmarks & Evaluations
 
-To complement the in-repo clean-room benchmarks, [`evidence/real-world-sota-head-to-head-benchmarks.json`](../evidence/real-world-sota-head-to-head-benchmarks.json) (`raw_benchmark_receipt_sha256: 7ddccc06799d4f76dbe0f3dca349d33205a98bf7e05d91beb8f93b9c12ed6393`) records reproducible external head-to-head evaluations across eight state-of-the-art ephemeris configurations on identical `Windows 11` (`16-core AMD64`, `Python 3.13.13`, `rustc 1.96.0`, `Node V8 v24.16.0`) hardware, executed in an isolated external virtual environment so zero third-party copyleft packages or data files enter the `ephemeris-oss` build tree.
+Unlike Sections 2-5 (which run directly from a clean repository checkout using only `ephemeris-oss` and NASA JPL reference vectors), the four head-to-head third-party comparator tables in Sections 6.1-6.4 report **retained external-environment measurements** stored in [`evidence/real-world-sota-head-to-head-benchmarks.json`](../evidence/real-world-sota-head-to-head-benchmarks.json) (canonical JSON payload digest `raw_benchmark_receipt_sha256: 7ddccc06799d4f76dbe0f3dca349d33205a98bf7e05d91beb8f93b9c12ed6393`). Because `ephemeris-oss` strictly isolates its Apache-2.0 source, build, and runtime dependencies from third-party copyleft packages and external archives, the third-party comparator harness is intentionally not bundled inside the clean-room repository (`tools/evaluate_sota_ephemerides.py` leaves third-party comparator fields marked `UNKNOWN` in `evidence/sota-ephemeris-evaluation-matrix.json` by design). These head-to-head runs were executed in an isolated external virtual environment on identical `Windows 11` (`16-core AMD64`, `Python 3.13.13`, `rustc 1.96.0`, `Node V8 v24.16.0`) hardware against the exact `2,100` NASA JPL Horizons `DE441` vectors in `bench/studies/E2-accuracy/` and the SHA-256-verified `de440.bsp` kernel (`sha256: a4ce9bf9b3282becc9f4b2ac3cebe03a2ae7599981aabd7265fd8482fff7c4b5`), comparing `ephemeris-oss 0.2.0.dev1` (`6.68 MB` embedded Chebyshev, `de440.bsp`, native Rust `ephemeris-core`, and browser `web/ephemeris-browser.js`) against externally installed `SE 2.10.03` (Swiss-compatible convention, external archive and built-in Moshier), `Skyfield 1.55`, `Astropy 8.0.2`, and `PyEphem 4.2.1`.
 
 ### 6.1 Accuracy Against Independent NASA JPL Horizons `DE441` (`2,100` Rows, `1800..2100 CE`)
 
@@ -190,22 +191,26 @@ Evaluated across `300` independent timestamps x `7` physical bodies = `2,100` ap
 
 ---
 
-## 7. Reproducing All Benchmarks Locally
+## 7. Reproducing In-Repo Clean-Room Benchmarks vs Retained External Comparator Runs
 
-Every table and receipt in this white paper can be reproduced from a clean checkout once the reference NASA JPL `de440.bsp` kernel and Earth-orientation cache are provisioned (`ephemeris-oss kernels fetch --verify --eop`, or by pointing `EPHEMERIS_OSS_CACHE` and `EPHEMERIS_OSS_DE440_KERNEL` at your verified local cache):
+### 7.1 Reproducing In-Repo Clean-Room Evaluations From a Clean Checkout (Sections 2-5)
+
+Sections 2-5 (`evidence/monthly-full-span-de440-benchmark.json`, `evidence/sota-ephemeris-evaluation-matrix.json`, `evidence/horizons-iae-benchmark.json`, `docs/ACCURACY.md`, and `docs/researcher-benchmark.json`) are reproduced directly from a clean repository checkout once the reference NASA JPL `de440.bsp` kernel (`sha256: a4ce9bf9b3282becc9f4b2ac3cebe03a2ae7599981aabd7265fd8482fff7c4b5`) and Earth-orientation cache are provisioned (`ephemeris-oss kernels fetch --verify --eop`, or by pointing `EPHEMERIS_OSS_CACHE` and `EPHEMERIS_OSS_DE440_KERNEL` at a verified local cache). By clean-room design, `tools/evaluate_sota_ephemerides.py` evaluates only `ephemeris-oss` against public-domain NASA JPL `DE440`/`DE441` references and leaves third-party comparator slots marked `UNKNOWN`:
 
 ```bash
 export PYTHONPATH=src
 export EPHEMERIS_OSS_CACHE="$HOME/.cache/ephemeris-oss"
 export EPHEMERIS_OSS_DE440_KERNEL="$EPHEMERIS_OSS_CACHE/de440.bsp"
 
-# 1. Run the full 9,074-month DE440 sweep, 459-epoch 3102 BCE..3000 CE sweep, and 5-solver benchmark
+# 1. Run the in-repo 9,074-month DE440 sweep, 459-epoch 3102 BCE..3000 CE sweep, and 5-solver benchmark (Sections 2-5)
 python tools/evaluate_sota_ephemerides.py
 
-# 2. Run the CLI personalized astrological fingerprint solver
+# 2. Run the in-repo CLI benchmark, Rust core tests, and personalized astrological fingerprint solver
+ephemeris-oss bench
+cargo test --manifest-path rust/ephemeris-core/Cargo.toml
 ephemeris-oss fingerprint --at 2026-10-06T12:00:00Z --lat 28.6139 --lon 77.2090 --uncertainty-sec 60
 
-# 3. Inspect all 9 MCP tools for LLM / AI agent integration
+# 3. Inspect the registered MCP tools for LLM / AI agent integration
 rdg-ephemeris-mcp --dump-tools
 
 # 4. Run the full verification, provenance, internal-ID, and claim-hygiene gates
@@ -214,3 +219,7 @@ python tools/check_provenance.py src --allow tools/provenance-allow.txt
 python tools/check_internal_ids.py src tests
 python tools/check_claims.py
 ```
+
+### 7.2 Scope & Inputs of the Retained External Comparator Receipt (Section 6)
+
+The four head-to-head third-party comparator tables in Sections 6.1-6.4 are **not** regenerated by `tools/evaluate_sota_ephemerides.py` from a clean checkout because third-party copyleft packages and archives are excluded from this repository. Instead, [`evidence/real-world-sota-head-to-head-benchmarks.json`](../evidence/real-world-sota-head-to-head-benchmarks.json) (`raw_benchmark_receipt_sha256: 7ddccc06799d4f76dbe0f3dca349d33205a98bf7e05d91beb8f93b9c12ed6393`) records the retained external-environment benchmark artifact alongside its exact comparator package versions (`SE 2.10.03` under Swiss-compatible convention with external archive and built-in Moshier, `Skyfield 1.55`, `Astropy 8.0.2`, and `PyEphem 4.2.1`) and its exact public-domain reference inputs (`bench/studies/E2-accuracy/` `2,100` Horizons `DE441` `QUANTITIES=45` apparent ICRF vectors across `1800..2100 CE`, Horizons dual-altitude `0 km` / `1 km` geodetic vertical vectors, and `de440.bsp` `sha256: a4ce9bf9b3282becc9f4b2ac3cebe03a2ae7599981aabd7265fd8482fff7c4b5`). Independent researchers wishing to re-measure third-party comparators must provision those external packages and archives in a separate environment outside the `ephemeris-oss` tree.

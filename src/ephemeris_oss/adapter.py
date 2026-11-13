@@ -1499,99 +1499,6 @@ class EphemerisAdapter:
         )
         asc_deg = houses.ascendant_deg
 
-        vedic_analysis = compute_vedic_chart_analysis(
-            planet_longitudes=cap_lon_map,
-            lagna_lon_deg=asc_deg,
-            jd_ut=jd_ut,
-            ayanamsa_deg=ayan_deg,
-            ayanamsa_system=ayanamsa,
-            planet_speeds_deg_per_day=cap_speed_map,
-            ce_year=ce_year,
-        )
-
-        kp_sublords: dict[str, KpPositionLords] = {
-            body: kp_coordinate_lords(pos.longitude_deg)
-            for body, pos in positions.items()
-        }
-        kp_sublords["ascendant"] = kp_coordinate_lords(asc_deg)
-
-        classical_yogas = evaluate_classical_yogas(lon_map, asc_deg)
-        jaimini_karakamsa = compute_karakamsa_analysis(asc_deg, cap_lon_map)
-        jaimini_ayurdaya = compute_jaimini_ayurdaya(asc_deg, cap_lon_map)
-
-        bhrigu_bindu = compute_bhrigu_bindu(
-            positions["moon"].longitude_deg,
-            positions["rahu"].longitude_deg,
-            transit_longitudes=lon_map,
-        )
-        khara_points = compute_khara_points(asc_deg, label="lagna")
-
-        boundary_margins: dict[str, BoundarySensitivityEnvelope] = {}
-        for body, pos in positions.items():
-            eff_speed = abs(pos.longitude_speed_deg_per_day)
-            if eff_speed <= 1e-9:
-                eff_speed = 0.0529539
-            boundary_margins[body] = compute_boundary_sensitivity(
-                pos.longitude_deg,
-                eff_speed,
-                is_ascendant=False,
-            )
-        boundary_margins["ascendant"] = compute_boundary_sensitivity(
-            asc_deg,
-            360.0,
-            is_ascendant=True,
-        )
-
-        ai_fact_sheet = compile_ai_fact_sheet(
-            lon_map,
-            asc_deg,
-            planet_speeds_deg_per_day=speed_map,
-            birth_jd_ut=jd_ut,
-            latitude_deg=float(latitude_deg),
-            max_bytes=3000,
-        )
-
-        north_svg: SvgChartArtifact | None = None
-        south_svg: SvgChartArtifact | None = None
-        if include_svg:
-            north_svg = render_north_indian_svg(
-                cap_lon_map,
-                asc_deg,
-                theme=svg_theme,
-                retrograde_planets=retro_map,
-            )
-            south_svg = render_south_indian_svg(
-                cap_lon_map,
-                asc_deg,
-                theme=svg_theme,
-                retrograde_planets=retro_map,
-            )
-
-        bundle_receipt_payload = {
-            "schema": "ephemeris-oss.adapter.complete-kundali-bundle.v1",
-            "version": __version__,
-            "jd_ut": round(jd_ut, 9),
-            "latitude_deg": round(float(latitude_deg), 8),
-            "longitude_deg": round(float(longitude_deg), 8),
-            "ayanamsa_system": str(ayanamsa).lower(),
-            "ayanamsa_deg": round(ayan_deg, 9),
-            "position_receipts": {b: p.receipt_sha256 for b, p in positions.items()},
-            "houses_receipt": houses.receipt_sha256,
-            "vedic_analysis_receipt": vedic_analysis.receipt_sha256,
-            "kp_sublords_receipts": {b: k.receipt_sha256 for b, k in kp_sublords.items()},
-            "classical_yogas_receipt": classical_yogas.receipt_sha256,
-            "jaimini_karakamsa_atmakaraka": jaimini_karakamsa.atmakaraka_planet,
-            "jaimini_karakamsa_sign": jaimini_karakamsa.karakamsa_sign,
-            "jaimini_ayurdaya_category": jaimini_ayurdaya.final_category,
-            "bhrigu_bindu_receipt": bhrigu_bindu.receipt_sha256,
-            "khara_points_receipt": khara_points.receipt_sha256,
-            "boundary_margin_receipts": {b: m.receipt_sha256 for b, m in boundary_margins.items()},
-            "ai_fact_sheet_receipt": ai_fact_sheet.receipt_sha256,
-            "north_indian_svg_receipt": north_svg.receipt_sha256 if north_svg is not None else None,
-            "south_indian_svg_receipt": south_svg.receipt_sha256 if south_svg is not None else None,
-        }
-        bundle_receipt_sha256 = canonical_hash(bundle_receipt_payload)
-
         jd_tt_bundle = self._jd_ut_to_jd_tt(jd_ut)
         angles_bundle = house_angles(
             tt_jd=jd_tt_bundle,
@@ -1642,6 +1549,148 @@ class EphemerisAdapter:
                 ayanamsa=ayanamsa,
             ).ascendant_deg,
         )
+
+        sr_status = str(sunrise_dependent.get("sunrise_status", ""))
+        sr_available = (
+            bool(sunrise_dependent.get("available"))
+            if "available" in sunrise_dependent
+            else (sr_status == "AVAILABLE")
+        )
+        if (
+            sr_available
+            and sunrise_dependent.get("active_sunrise_jd_ut") is not None
+            and sunrise_dependent.get("sunset_jd_ut") is not None
+        ):
+            sr_jd_val: float | None = float(sunrise_dependent["active_sunrise_jd_ut"])
+            ss_jd_val: float | None = float(sunrise_dependent["sunset_jd_ut"])
+            nsr_jd_val: float | None = (
+                float(sunrise_dependent["next_sunrise_jd_ut"])
+                if sunrise_dependent.get("next_sunrise_jd_ut") is not None
+                else None
+            )
+            vara_dict = sunrise_dependent.get("vara") or {}
+            vara_idx_val: int | None = (
+                int(vara_dict["index"]) if vara_dict.get("index") is not None else None
+            )
+            sr_unavail_reason: str | None = None
+        else:
+            sr_available = False
+            sr_jd_val = None
+            ss_jd_val = None
+            nsr_jd_val = None
+            vara_idx_val = None
+            sr_unavail_reason = str(
+                sunrise_dependent.get("unavailable_reason")
+                or (sunrise_dependent.get("vara") or {}).get("reason")
+                or "SUNRISE_UNAVAILABLE"
+            )
+
+        vedic_analysis = compute_vedic_chart_analysis(
+            planet_longitudes=cap_lon_map,
+            lagna_lon_deg=asc_deg,
+            jd_ut=jd_ut,
+            sunrise_jd_ut=sr_jd_val,
+            sunset_jd_ut=ss_jd_val,
+            next_sunrise_jd_ut=nsr_jd_val,
+            vara_index=vara_idx_val,
+            solar_day_available=sr_available,
+            solar_day_unavailable_reason=sr_unavail_reason,
+            ayanamsa_deg=ayan_deg,
+            ayanamsa_system=ayanamsa,
+            planet_speeds_deg_per_day=cap_speed_map,
+            ce_year=ce_year,
+        )
+
+        kp_sublords: dict[str, KpPositionLords] = {
+            body: kp_coordinate_lords(pos.longitude_deg)
+            for body, pos in positions.items()
+        }
+        kp_sublords["ascendant"] = kp_coordinate_lords(asc_deg)
+
+        classical_yogas = evaluate_classical_yogas(lon_map, asc_deg)
+        jaimini_karakamsa = compute_karakamsa_analysis(asc_deg, cap_lon_map)
+        jaimini_ayurdaya = compute_jaimini_ayurdaya(asc_deg, cap_lon_map)
+
+        bhrigu_bindu = compute_bhrigu_bindu(
+            positions["moon"].longitude_deg,
+            positions["rahu"].longitude_deg,
+            transit_longitudes=lon_map,
+        )
+        khara_points = compute_khara_points(asc_deg, label="lagna")
+
+        boundary_margins: dict[str, BoundarySensitivityEnvelope] = {}
+        for body, pos in positions.items():
+            eff_speed = abs(pos.longitude_speed_deg_per_day)
+            if eff_speed <= 1e-9:
+                eff_speed = 0.0529539
+            boundary_margins[body] = compute_boundary_sensitivity(
+                pos.longitude_deg,
+                eff_speed,
+                is_ascendant=False,
+            )
+        boundary_margins["ascendant"] = compute_boundary_sensitivity(
+            asc_deg,
+            360.0,
+            is_ascendant=True,
+        )
+
+        ai_fact_sheet = compile_ai_fact_sheet(
+            lon_map,
+            asc_deg,
+            planet_speeds_deg_per_day=speed_map,
+            birth_jd_ut=jd_ut,
+            sunrise_jd_ut=sr_jd_val,
+            sunset_jd_ut=ss_jd_val,
+            next_sunrise_jd_ut=nsr_jd_val,
+            vara_index=vara_idx_val,
+            solar_day_available=sr_available,
+            solar_day_unavailable_reason=sr_unavail_reason,
+            latitude_deg=float(latitude_deg),
+            max_bytes=3000,
+        )
+
+        north_svg: SvgChartArtifact | None = None
+        south_svg: SvgChartArtifact | None = None
+        if include_svg:
+            north_svg = render_north_indian_svg(
+                cap_lon_map,
+                asc_deg,
+                theme=svg_theme,
+                retrograde_planets=retro_map,
+            )
+            south_svg = render_south_indian_svg(
+                cap_lon_map,
+                asc_deg,
+                theme=svg_theme,
+                retrograde_planets=retro_map,
+            )
+
+        bundle_receipt_payload = {
+            "schema": "ephemeris-oss.adapter.complete-kundali-bundle.v1",
+            "version": __version__,
+            "jd_ut": round(jd_ut, 9),
+            "latitude_deg": round(float(latitude_deg), 8),
+            "longitude_deg": round(float(longitude_deg), 8),
+            "ayanamsa_system": str(ayanamsa).lower(),
+            "ayanamsa_deg": round(ayan_deg, 9),
+            "position_receipts": {b: p.receipt_sha256 for b, p in positions.items()},
+            "houses_receipt": houses.receipt_sha256,
+            "vedic_analysis_receipt": vedic_analysis.receipt_sha256,
+            "kp_sublords_receipts": {b: k.receipt_sha256 for b, k in kp_sublords.items()},
+            "classical_yogas_receipt": classical_yogas.receipt_sha256,
+            "jaimini_karakamsa_atmakaraka": jaimini_karakamsa.atmakaraka_planet,
+            "jaimini_karakamsa_sign": jaimini_karakamsa.karakamsa_sign,
+            "jaimini_ayurdaya_category": jaimini_ayurdaya.final_category,
+            "bhrigu_bindu_receipt": bhrigu_bindu.receipt_sha256,
+            "khara_points_receipt": khara_points.receipt_sha256,
+            "boundary_margin_receipts": {b: m.receipt_sha256 for b, m in boundary_margins.items()},
+            "ai_fact_sheet_receipt": ai_fact_sheet.receipt_sha256,
+            "north_indian_svg_receipt": north_svg.receipt_sha256 if north_svg is not None else None,
+            "south_indian_svg_receipt": south_svg.receipt_sha256 if south_svg is not None else None,
+            "sunrise_dependent": sunrise_dependent,
+            "polar_geometry": polar_geometry,
+        }
+        bundle_receipt_sha256 = canonical_hash(bundle_receipt_payload)
 
         return CompleteKundaliBundle(
             jd_ut=jd_ut,

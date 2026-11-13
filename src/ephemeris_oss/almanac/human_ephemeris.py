@@ -1043,6 +1043,10 @@ def generate_human_manual_ephemeris_compendium(
         jd_ut=jd_worked_ut,
         sunrise_jd_ut=sr_worked_jd,
         sunset_jd_ut=ss_worked_jd,
+        next_sunrise_jd_ut=next_sr_worked_jd,
+        vara_index=(solar_day_vara_index if not polar_sunrise_unavailable else None),
+        solar_day_available=(not polar_sunrise_unavailable),
+        solar_day_unavailable_reason=("CIRCUMPOLAR_SUNRISE_UNAVAILABLE" if polar_sunrise_unavailable else None),
         ayanamsa_deg=ad.get_ayanamsa_ut(jd_worked_ut, mode=ayanamsa),
         ayanamsa_system=ayanamsa,
     )
@@ -2661,10 +2665,16 @@ def _render_compendium_markdown(comp: HumanManualEphemerisCompendium) -> str:
             sb_p = kun_rep.shadbala.planets[p_name]
             vm_p = kun_rep.vimshopaka_shodashvarga[p_name]
             bav_p = kun_rep.ashtakavarga.bhinna_tables[p_name].total_bindus
-            lines.append(
-                f"| **{p_name}** | {c7_s} | {c8_s} | **`{sb_p.total_virupas:.1f}v` (`{sb_p.total_rupas:.2f}R`)** | "
-                f"`{sb_p.required_rupas:.2f}R` | `{sb_p.strength_ratio:.2f}x` | `{vm_p.total_score:.2f} / 20` | `{bav_p} Bindus` |"
-            )
+            if sb_p.total_virupas is None or sb_p.total_rupas is None or sb_p.strength_ratio is None:
+                lines.append(
+                    f"| **{p_name}** | {c7_s} | {c8_s} | **`UNAVAILABLE (circumpolar Kala Bala)`** | "
+                    f"`{sb_p.required_rupas:.2f}R` | `UNAVAILABLE` | `{vm_p.total_score:.2f} / 20` | `{bav_p} Bindus` |"
+                )
+            else:
+                lines.append(
+                    f"| **{p_name}** | {c7_s} | {c8_s} | **`{sb_p.total_virupas:.1f}v` (`{sb_p.total_rupas:.2f}R`)** | "
+                    f"`{sb_p.required_rupas:.2f}R` | `{sb_p.strength_ratio:.2f}x` | `{vm_p.total_score:.2f} / 20` | `{bav_p} Bindus` |"
+                )
         else:
             lines.append(f"| **{p_name}** | {c7_s} | {c8_s} | — (Shadow Node) | — | — | — | — |")
     lines.append("")

@@ -218,6 +218,10 @@ def compile_ai_fact_sheet(
     query_jd_ut: float | None = None,
     sunrise_jd_ut: float | None = None,
     sunset_jd_ut: float | None = None,
+    next_sunrise_jd_ut: float | None = None,
+    vara_index: int | None = None,
+    solar_day_available: bool = True,
+    solar_day_unavailable_reason: str | None = None,
     latitude_deg: float = 0.0,
     max_bytes: int = 3000,
 ) -> AIFactSheet:
@@ -340,6 +344,10 @@ def compile_ai_fact_sheet(
             planet_speeds_deg_per_day=cap_speeds,
             sunrise_jd_ut=sunrise_jd_ut,
             sunset_jd_ut=sunset_jd_ut,
+            next_sunrise_jd_ut=next_sunrise_jd_ut,
+            vara_index=vara_index,
+            solar_day_available=solar_day_available,
+            solar_day_unavailable_reason=solar_day_unavailable_reason,
         )
         if analysis.panchanga is not None:
             p = analysis.panchanga
@@ -360,7 +368,7 @@ def compile_ai_fact_sheet(
             }
         if analysis.shadbala is not None:
             strength_summary = {
-                b.lower(): round(s.total_rupas, 2)
+                b.lower(): (round(s.total_rupas, 2) if s.total_rupas is not None else None)
                 for b, s in analysis.shadbala.planets.items()
             }
 

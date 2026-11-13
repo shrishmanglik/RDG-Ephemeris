@@ -258,20 +258,23 @@ class ArudhaPadaSet:
 class SpecialLagnas:
     """Special mathematical Lagnas from BPHS and Jaimini Sutras."""
 
-    bhava_lagna_deg: float
-    bhava_lagna_sign: int
-    hora_lagna_deg: float
-    hora_lagna_sign: int
-    ghatika_lagna_deg: float
-    ghatika_lagna_sign: int
+    bhava_lagna_deg: float | None
+    bhava_lagna_sign: int | None
+    hora_lagna_deg: float | None
+    hora_lagna_sign: int | None
+    ghatika_lagna_deg: float | None
+    ghatika_lagna_sign: int | None
     sree_lagna_deg: float
     sree_lagna_sign: int
-    pranapada_lagna_deg: float
-    pranapada_lagna_sign: int
+    pranapada_lagna_deg: float | None
+    pranapada_lagna_sign: int | None
     indu_lagna_sign: int
     indu_lagna_name: str
-    varnada_lagna_deg: float
-    varnada_lagna_sign: int
+    varnada_lagna_deg: float | None
+    varnada_lagna_sign: int | None
+    available: bool = True
+    status: str = "AVAILABLE"
+    unavailable_reason: str | None = None
 
 
 def _part_and_rem(deg_in_sign: float, n: int) -> tuple[int, float]:
@@ -713,15 +716,39 @@ def compute_special_lagnas(
     lagna_lon_deg: float,
     sun_lon_deg: float,
     moon_lon_deg: float,
-    hours_since_sunrise: float,
+    hours_since_sunrise: float | None,
+    *,
+    available: bool = True,
+    unavailable_reason: str | None = None,
 ) -> SpecialLagnas:
     """Compute all classical special mathematical Lagnas at once."""
+    sl = sree_lagna(lagna_lon_deg, moon_lon_deg)
+    il_sign, il_name = indu_lagna(lagna_lon_deg, moon_lon_deg)
+    if not available or hours_since_sunrise is None:
+        return SpecialLagnas(
+            bhava_lagna_deg=None,
+            bhava_lagna_sign=None,
+            hora_lagna_deg=None,
+            hora_lagna_sign=None,
+            ghatika_lagna_deg=None,
+            ghatika_lagna_sign=None,
+            sree_lagna_deg=sl,
+            sree_lagna_sign=min(int(sl // 30.0), 11),
+            pranapada_lagna_deg=None,
+            pranapada_lagna_sign=None,
+            indu_lagna_sign=il_sign,
+            indu_lagna_name=il_name,
+            varnada_lagna_deg=None,
+            varnada_lagna_sign=None,
+            available=False,
+            status="UNAVAILABLE",
+            unavailable_reason=unavailable_reason or "SUNRISE_UNAVAILABLE",
+        )
+
     bl = bhava_lagna(sun_lon_deg, hours_since_sunrise)
     hl = hora_lagna(sun_lon_deg, hours_since_sunrise)
     gl = ghatika_lagna(sun_lon_deg, hours_since_sunrise)
-    sl = sree_lagna(lagna_lon_deg, moon_lon_deg)
     pl = pranapada_lagna(sun_lon_deg, hours_since_sunrise)
-    il_sign, il_name = indu_lagna(lagna_lon_deg, moon_lon_deg)
     vl = varnada_lagna(lagna_lon_deg, hl)
 
     return SpecialLagnas(
@@ -739,6 +766,9 @@ def compute_special_lagnas(
         indu_lagna_name=il_name,
         varnada_lagna_deg=vl,
         varnada_lagna_sign=min(int(vl // 30.0), 11),
+        available=True,
+        status="AVAILABLE",
+        unavailable_reason=None,
     )
 
 
