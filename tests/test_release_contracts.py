@@ -1458,5 +1458,12 @@ def test_compendium_truthfulness_cross_month_presunrise_polar_provenance_and_pdf
     assert rc == 0
     assert pdf_cli.is_file() and pdf_cli.read_bytes().startswith(b"%PDF-")
 
+    # 6. HTML inline nested bold+italic formatting and dark table-header code contrast:
+    ny_html = ny_comp.to_html()
+    assert "<strong>Active Vedic Solar Day (<em>Savana Dina</em> &amp; <em>Vara</em>):</strong>" in ny_html
+    assert "**Active Vedic Solar Day" not in ny_html
+    assert "table.ephemeris-table th code" in ny_html
+
+
 
 

@@ -3245,8 +3245,9 @@ def _format_inline_md(text: str) -> str:
     cleaned = text.replace("<br/>", br_token).replace("<br>", br_token)
     escaped = html_mod.escape(cleaned)
     escaped = re.sub(r"`([^`]+)`", r"<code>\1</code>", escaped)
-    escaped = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", escaped)
-    escaped = re.sub(r"\*([^*]+)\*", r"<em>\1</em>", escaped)
+    escaped = re.sub(r"\*\*\*([^*]+)\*\*\*", r"<strong><em>\1</em></strong>", escaped)
+    escaped = re.sub(r"\*\*((?:(?!\*\*).)+?)\*\*", r"<strong>\1</strong>", escaped)
+    escaped = re.sub(r"(?<!\*)\*([^*\n]+?)\*(?!\*)", r"<em>\1</em>", escaped)
     escaped = escaped.replace(br_token, "<br/>")
     return escaped
 
@@ -3495,6 +3496,10 @@ def _render_compendium_html(comp: HumanManualEphemerisCompendium) -> str:
   }}
   table.ephemeris-table tbody tr:nth-child(even) {{
     background: var(--row-alt);
+  }}
+  table.ephemeris-table th code {{
+    background: rgba(255, 255, 255, 0.16);
+    color: #fdfaf3;
   }}
   code {{
     background: var(--code-bg);
