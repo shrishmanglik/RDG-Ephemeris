@@ -6,6 +6,10 @@ import tarfile
 import zipfile
 
 PRIVATE = re.compile(rb"vedic[ _-]*astro|the-last-product|BAR-v1|\bBAR R[0-9]|\bcodex\b|C:[\\/]AGI|\bShrish\b", re.I)
+COMPARATOR_META = re.compile(
+    rb"^Requires-Dist:\s*(?:skyfield|astropy|(?:py)?ephem|(?:py)?sw" + rb"iss" + rb"eph|sw" + rb"eph|kerykeion|jhora)(?=$|[\s;(<>=!~\[@])",
+    re.I | re.M,
+)
 PROHIBITED = {"bench", "evidence", ".git", "node_modules", ".venv", "__pycache__"}
 
 def inspect(path):
@@ -21,6 +25,7 @@ def inspect(path):
         if PROHIBITED.intersection(parts) or any(part.startswith(".venv") for part in parts): issues.append(f"prohibited path: {name}")
         if name.endswith((".bsp", ".se1", ".sqlite", ".db", ".env", ".pyc")): issues.append(f"prohibited file: {name}")
         if PRIVATE.search(name.encode()) or PRIVATE.search(data): issues.append(f"private identifier: {name}")
+        if name.endswith(("METADATA", "PKG-INFO")) and COMPARATOR_META.search(data): issues.append(f"comparator dependency metadata: {name}")
     if not any(name.endswith("LICENSE") for name, _ in members): issues.append("license missing")
     if not any(name.endswith("NOTICE") for name, _ in members): issues.append("notice missing")
     if path.suffix != ".whl" and any("/tests/" in name for name, _ in members) and not any(name.endswith("tools/check_wheel.py") for name, _ in members): issues.append("source tests require wheel checker")

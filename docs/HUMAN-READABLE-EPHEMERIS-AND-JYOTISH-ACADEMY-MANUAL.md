@@ -6,10 +6,18 @@
 ### Master Document Metadata & Cryptographic Provenance Receipt
 - **Ephemeris Month & Year:** `2026-11` (`30 Complete Chapters`)
 - **Daily Tabular Reference Epoch:** `05:30:00 IST (00:00:00 UTC)`
-- **Reference Meridian / Location:** Latitude `23.1765°`, Longitude `75.7885°` (UTC`+5.50h` — Ujjain Mahakaleshwar Prime Meridian)
+- **Reference Meridian / Location:** Latitude `23.1765°`, Longitude `75.7885°` (`UTC+05:30 — Ujjain Mahakaleshwar Prime Meridian`)
 - **Primary Sidereal Ayanamsha:** `lahiri` (Chitrapaksha / IAE 1989 Lahiri Standard + 25-Ayanamsha Conversion Table in Chapter 1)
 - **Astronomical Kernel Backbone:** NASA JPL DE440 / DE441 + IAU 2006/2000A Precession-Nutation (`ephemeris-oss v0.2.0.dev1`)
 - **Cryptographic SHA-256 Receipt:** `sha256:1c1f878f6ea66828da96dc3f58231bf3ee2d3bbf46555ec21fcaf60640ce11de`
+
+### Scientific Provenance, Timescales, Reference Frames, Error Bounds, & Epistemological Scope
+- **Clean-Room Provenance & Open-Source License:** `ephemeris-oss v0.2.0.dev1` (`Apache-2.0`) evaluates public NASA JPL Planetary and Lunar Ephemerides (`DE440` / `DE441`), IAU `2000B` / `2006` precession-nutation (ERFA / Capitaine et al. 2003), Vondrak-2011 long-term precession, and published classical Sanskrit *Jyotisha* formulations from first principles with zero copyleft code or binary dependencies.
+- **Timescales (`UTC`, `UT1`, `TT`, `TDB`):** Civil timestamps (`UTC` + signed local offset) map to `UT1` (via IERS EOP tables when supplied, or Stephenson–Morrison–Espenak `ΔT = TT − UT1` polynomials in Table 1D), `TT = TAI + 32.184 s`, and relativistic `TDB` (Fairhead & Bretagnon) for Chebyshev kernel evaluation.
+- **Reference Frames & Units:** Barycentric and geocentric `ICRS` (`J2000.0`) state vectors are rotated to the True Equator and Equinox of Date (*Sayana* / Tropical) and *Nirayana* (Sidereal, subtracting the selected Ayanamsha), with WGS84 surface-observer topocentric coordinates (`elevation_m = 491.0 m` in Chapter 21, Saemundsson–Bennett refraction). Angles are reported in `deg` and `Rashi DD° MM' SS"`, distances in `AU` (`149,597,870.700 km` IAU 2012 exact) and `km`, rates in `deg/day` and `km/s`, and Vedic intervals in *Ghati* (`24 min`) and *Pala* (`24 s`).
+- **Supported Epochs, Measured Error Limits, & Polar Domain:** Embedded compact Chebyshev tables cover `1800–2100 CE` core and `1550–2306 CE` extended wings within `<= 0.02"` of full `DE440`; full `DE440` (`1550–2650 CE`) matches JPL Horizons interpolation to `<= 0.001"` and apparent geocentric ecliptic longitudes across the 9-body benchmark grid to `<= 0.1"` (`docs/ACCURACY.md`); `DE441` (when provisioned) spans `13,200 BCE–17,191 CE` alongside the `3102 BCE–3000 CE` analytical historical tier. Daily sunrise Panchang requires latitudes within `[-66°, +66°]`, while this compendium evaluates `[-90°, +90°]` and explicitly prints `UNAVAILABLE (circumpolar ...)` whenever solar rise/set events do not occur.
+- **Lunar-Node & Chart Invariants:** Mean and Osculating (*True*) Lunar Nodes follow Meeus Ch. 47 eq. `47.7` (`ephemeris-oss-lunar-nodes-1.1.0-meeus47.7`) with exact antipodal closure `λ_Ketu = (λ_Rahu + 180°) mod 360°`; all 16 *Shodashvarga* charts (`D1–D60`), the 7-planet *Sarvashtakavarga* total invariant (`337 Bindus`), and `120-year` *Vimshottari* (`365.2425 d/y`) / `249 KP` sub-lord partitions are deterministic functions of these coordinates.
+- **Astronomical Verification vs. Traditional Jyotish Interpretation:** State vectors, timescales, light-time, aberration, gravitational deflection, topocentric parallax, atmospheric refraction, eclipse obscuration, and horizon rise/set times belong to **Astronomical Verification** (empirically testable physical observatory quantities). Ayanamsha conventions, *Rashi/Nakshatra/Varga* mappings, *Vishesha Lagnas*, *Upagrahas*, *Dashas*, *Shadbala*, *Ashtakavarga*, *Yogas*, *Muhurta* electional grades, and life-domain descriptions belong to **Traditional Jyotish Interpretation** (deterministic implementations of classical Sanskrit astrological canons, distinct from empirical physical, medical, or financial prediction).
 
 ## Chapter 1 — Fundamental Astronomical Constants, Julian Day Tables (`1900–2050`), ΔT, & 25-Ayanamsha Master Conversion Table
 
@@ -1525,8 +1533,10 @@
 
 ## Chapter 20 — Section 7 — Pt. Maheshji's Jyotish Academy Step-by-Step Worked Manual Kundali Worksheet (Complete 15-Step Master Case Study)
 
-- **Case Study Date & Time:** `2026-11-15` at `10:42:00 IST (UTC+05:30)`
+- **Case Study Instant (UTC & Observer Local):** `2026-11-15T05:12:00Z` | Local: `10:42:00 IST (UTC+05:30)` (Tabular Row Date: `2026-11-15`)
 - **Observer Location:** `Lat 23.1765 deg, Lon 75.7885 deg` (Ujjain Prime Meridian Reference)
+- **Active Vedic Solar Day (*Savana Dina* & *Vara*):** `2026-11-15` — **Ravivara (Sunday)** (**Day Birth**)
+- **Solar-Day Anchor (Preceding Sunrise -> Sunset -> Next Sunrise):** Preceding Sunrise `2026-11-15 06:40:21 (UTC+05:30)` (`2026-11-15T01:10:21Z`) -> Sunset `2026-11-15 17:42:16 (UTC+05:30)` (`2026-11-15T12:12:16Z`) -> Next Sunrise `2026-11-16 06:41:00 (UTC+05:30)` (`2026-11-16T01:11:00Z`) | Elapsed Since Sunrise: `4.0276 h` (`10g 04p`)
 - **Elapsed Time After `05:30 IST` Tabular Epoch:** `5 hours 12 minutes (13 Ghatis 00 Palas)` (Interpolation Fraction `f = 0.216667`)
 - **Manual Ascendant (*Udaya Lagna*):** `Dhanu 22° 18' 00"` | **10th Cusp (*Madhya Lagna*):** `Tula 05° 57' 51"`
 - **Natal Moon Nakshatra & Pada:** `Uttara Ashadha Pada 3 (Lord: Sun)` (`378.34'` *Bhogyamsha* remaining)
@@ -1534,7 +1544,7 @@
 
 ### Step 1 & Step 2 — Complete 1st-Order (*Trairashika*) & 2nd-Order (*Bessel*) Manual *Spashta Graha* Worksheet
 
-| Body | `05:30 IST` Day `D` | `05:30 IST` Day `D+1` | Daily Motion `v₁` | 1st-Order *Trairashika* | 2nd-Order *Bessel* Exact | `D9` Navamsa | `D10` Dasamsa | `D60` Shashtiamsa | *KP* Star / Sub / Sub-Sub |
+| Body | `05:30 IST` Day `D` | Motion Increment `f·v₁` | Daily Motion `v₁` | 1st-Order *Trairashika* | 2nd-Order *Bessel* Exact | `D9` Navamsa | `D10` Dasamsa | `D60` Shashtiamsa | *KP* Star / Sub / Sub-Sub |
 |---|---|---|---|---|---|---|---|---|---|
 | **Surya (Sun)** | `Tula 28° 23' 45"` | `+00° 13' 06"` | `+01° 00' 25"` | `Tula 28° 36' 50"` | **`Tula 28° 36' 50"`** | **Mithuna** | **Karka** | Karka | `venus / jupiter / venus / mercury` |
 | **Chandra (Moon)** | `Makara 01° 08' 07"` | `+02° 33' 27"` | `+11° 48' 14"` | `Makara 03° 41' 34"` | **`Makara 03° 41' 38"`** | **Kumbha** | **Tula** | Simha | `saturn / sun / saturn / ketu` |

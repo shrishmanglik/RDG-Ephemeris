@@ -274,7 +274,7 @@ class VedicChartAnalysis:
     arudha_padas: ArudhaPadaSet
     panchanga: PanchangaSummary
     hora_table: tuple[HoraWindow, ...]
-    muhurta_windows: MuhurtaWindows
+    muhurta_windows: MuhurtaWindows | None
     vimshottari_dasha: DashaTimeline
     vimshottari_active_5_levels: tuple[DashaPeriod, DashaPeriod, DashaPeriod, DashaPeriod, DashaPeriod]
     ashtottari_dasha: DashaTimeline
@@ -287,6 +287,8 @@ class VedicChartAnalysis:
     gochara_transits: Mapping[str, GocharaPlanetTransit]
     receipt: Mapping[str, Any]
     receipt_sha256: str
+    solar_day_status: str = "AVAILABLE"
+    solar_day_unavailable_reason: str | None = None
 
 
 def compute_vedic_chart_analysis(
@@ -296,6 +298,10 @@ def compute_vedic_chart_analysis(
     jd_ut: float = 2451545.0,
     sunrise_jd_ut: float | None = None,
     sunset_jd_ut: float | None = None,
+    next_sunrise_jd_ut: float | None = None,
+    vara_index: int | None = None,
+    solar_day_available: bool = True,
+    solar_day_unavailable_reason: str | None = None,
     ayanamsa_deg: float = 24.0,
     ayanamsa_system: str = "lahiri",
     year_days: float = SOLAR_YEAR_DAYS,
@@ -320,10 +326,37 @@ def compute_vedic_chart_analysis(
         norm_lons["Ketu"] = 180.0
 
     l_lon = normalize_degrees(lagna_lon_deg)
-    sr_jd = float(sunrise_jd_ut) if sunrise_jd_ut is not None else (float(int(jd_ut - 0.5)) + 0.75)
-    ss_jd = float(sunset_jd_ut) if sunset_jd_ut is not None else (sr_jd + 0.5)
-    hours_since_sr = ((jd_ut - sr_jd) % 1.0) * 24.0
     q_jd = float(query_jd) if query_jd is not None else float(jd_ut)
+
+    if solar_day_available:
+        sr_jd: float | None = (
+            float(sunrise_jd_ut)
+            if sunrise_jd_ut is not None
+            else (float(int(jd_ut - 0.5)) + 0.75)
+        )
+        ss_jd: float | None = (
+            float(sunset_jd_ut)
+            if sunset_jd_ut is not None
+            else (sr_jd + 0.5)
+        )
+        next_sr_jd: float | None = (
+            float(next_sunrise_jd_ut)
+            if next_sunrise_jd_ut is not None
+            else None
+        )
+        if sunrise_jd_ut is not None and jd_ut >= sr_jd:
+            hours_since_sr: float | None = (jd_ut - sr_jd) * 24.0
+        else:
+            hours_since_sr = ((jd_ut - sr_jd) % 1.0) * 24.0
+        solar_status = "AVAILABLE"
+        unavail_reason: str | None = None
+    else:
+        sr_jd = None
+        ss_jd = None
+        next_sr_jd = None
+        hours_since_sr = None
+        solar_status = "UNAVAILABLE"
+        unavail_reason = solar_day_unavailable_reason or "SUNRISE_UNAVAILABLE"
 
     lagna_nak = nakshatra_position(l_lon)
     moon_lon = norm_lons["Moon"]
@@ -352,7 +385,14 @@ def compute_vedic_chart_analysis(
         for g in SEVEN_GRAHAS
     }
 
-    spec_lagnas = compute_special_lagnas(l_lon, sun_lon, moon_lon, hours_since_sr)
+    spec_lagnas = compute_special_lagnas(
+        l_lon,
+        sun_lon,
+        moon_lon,
+        hours_since_sr,
+        available=solar_day_available,
+        unavailable_reason=unavail_reason,
+    )
     arudhas = arudha_padas(l_lon, norm_lons)
 
     panch = compute_panchanga(
@@ -360,10 +400,27 @@ def compute_vedic_chart_analysis(
         moon_lon,
         jd_ut=jd_ut,
         sunrise_jd_ut=sr_jd,
+        vara_index=vara_index,
         ce_year=ce_year,
+        solar_day_available=solar_day_available,
+        solar_day_unavailable_reason=unavail_reason,
     )
-    horas = compute_hora_table(sr_jd, ss_jd)
-    muhurtas = compute_muhurta_windows(sr_jd, ss_jd)
+    if solar_day_available and sr_jd is not None and ss_jd is not None:
+        horas: tuple[HoraWindow, ...] = compute_hora_table(
+            sr_jd,
+            ss_jd,
+            next_sunrise_jd=next_sr_jd,
+            vara_index=vara_index,
+        )
+        muhurtas: MuhurtaWindows | None = compute_muhurta_windows(
+            sr_jd,
+            ss_jd,
+            next_sunrise_jd=next_sr_jd,
+            vara_index=vara_index,
+        )
+    else:
+        horas = ()
+        muhurtas = None
 
     vim_dasha = compute_vimshottari_dasha(moon_lon, jd_ut, year_days=year_days, max_level=2)
     vim_5 = resolve_dasha_5_levels(vim_dasha, q_jd)
@@ -380,6 +437,10 @@ def compute_vedic_chart_analysis(
         jd_ut=jd_ut,
         sunrise_jd_ut=sr_jd,
         sunset_jd_ut=ss_jd,
+        next_sunrise_jd_ut=next_sr_jd,
+        vara_index=vara_index,
+        solar_day_available=solar_day_available,
+        solar_day_unavailable_reason=unavail_reason,
         ayanamsa_deg=ayanamsa_deg,
         planet_speeds_deg_per_day=planet_speeds_deg_per_day,
     )
@@ -392,6 +453,10 @@ def compute_vedic_chart_analysis(
         "jd_ut": float(jd_ut),
         "sunrise_jd_ut": sr_jd,
         "sunset_jd_ut": ss_jd,
+        "next_sunrise_jd_ut": next_sr_jd,
+        "vara_index": vara_index,
+        "solar_day_available": bool(solar_day_available),
+        "solar_day_unavailable_reason": unavail_reason,
         "lagna_lon_deg": l_lon,
         "planet_longitudes": norm_lons,
         "ayanamsa_deg": float(ayanamsa_deg),
@@ -403,13 +468,24 @@ def compute_vedic_chart_analysis(
         "lagna_nakshatra": lagna_nak.name,
         "moon_nakshatra": p_naks["Moon"].name,
         "tithi": panch.tithi.number,
+        "vara": panch.vara.english_name,
+        "vara_available": panch.vara.available,
+        "hora_count": len(horas),
+        "solar_day_status": solar_status,
         "yoga": panch.yoga.number,
         "karana": panch.karana.number,
         "vimshottari_opening_lord": vim_dasha.opening_lord,
         "atmakaraka_7": ck_7[0].planet,
         "sav_7": list(ashta.sarvashtakavarga_7),
         "sav_total": ashta.sarvashtakavarga_7_total,
-        "shadbala_rupas": {g: round(shad.planets[g].total_rupas, 6) for g in SEVEN_GRAHAS},
+        "shadbala_rupas": {
+            g: (
+                round(shad.planets[g].total_rupas, 6)
+                if shad.planets[g].total_rupas is not None
+                else None
+            )
+            for g in SEVEN_GRAHAS
+        },
     }
     receipt: dict[str, Any] = {
         "package": "ephemeris-oss",
@@ -451,6 +527,8 @@ def compute_vedic_chart_analysis(
         gochara_transits=gochara,
         receipt=receipt,
         receipt_sha256=receipt_sha256,
+        solar_day_status=solar_status,
+        solar_day_unavailable_reason=unavail_reason,
     )
 
 

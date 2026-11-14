@@ -25,6 +25,10 @@ BANNED_NAMES = (
     re.compile(r"(^|/)comparators/"),
 )
 BANNED_TEXT = re.compile(rb"swisseph|sweph", re.I)
+BANNED_REQUIRES_DIST = re.compile(
+    rb"^Requires-Dist:\s*(skyfield|astropy|(?:py)?ephem|pyswisseph|swisseph|sweph|kerykeion|jhora)(?=$|[\s;(<>=!~\[@])",
+    re.I | re.M,
+)
 COMPATIBILITY_PATH = ""
 
 
@@ -53,8 +57,13 @@ def scan(wheel: Path) -> list[str]:
                 if pattern.search(name):
                     problems.append(f"{name}: banned path ({pattern.pattern})")
             banned_name = name != COMPATIBILITY_PATH and BANNED_TEXT.search(name.encode())
-            if banned_name or BANNED_TEXT.search(_scanned_content(name, archive.read(name))):
+            raw_content = archive.read(name)
+            if banned_name or BANNED_TEXT.search(_scanned_content(name, raw_content)):
                 problems.append(f"{name}: contains a swisseph/sweph string")
+            if name.endswith("/METADATA"):
+                for match in BANNED_REQUIRES_DIST.finditer(raw_content):
+                    dep = match.group(1).decode("ascii", errors="replace")
+                    problems.append(f"{name}: comparator dependency in Requires-Dist ({dep})")
     return problems
 
 
@@ -62,9 +71,14 @@ def self_test() -> int:
     with tempfile.TemporaryDirectory() as tmp:
         clean = Path(tmp) / "clean.whl"
         dirty = Path(tmp) / "dirty.whl"
+        ephem_dirty = Path(tmp) / "ephem_dirty.whl"
         with zipfile.ZipFile(clean, "w") as archive:
             archive.writestr("pkg/__init__.py", "PLANET = 'planet'\n")
             archive.writestr(COMPATIBILITY_PATH, "VALUE = 1\n")
+            archive.writestr(
+                "pkg-0.0.dist-info/METADATA",
+                "Metadata-Version: 2.1\nName: pkg\nRequires-Dist: jplephem>=2.21\nRequires-Dist: pytest>=8; extra == \"test\"\n",
+            )
             archive.writestr("pkg-0.0.dist-info/RECORD", COMPATIBILITY_PATH + ",sha256-test,10\n")
         with zipfile.ZipFile(dirty, "w") as archive:
             archive.writestr("pkg/__init__.py", "x = 1\n")
@@ -73,11 +87,23 @@ def self_test() -> int:
             archive.writestr("pkg/comparators/c.py", "x = 1\n")
             archive.writestr("pkg/leak.py", "import swisseph\n")
             archive.writestr(COMPATIBILITY_PATH, "import swisseph\n")
+            archive.writestr(
+                "pkg-0.0.dist-info/METADATA",
+                "Metadata-Version: 2.1\nName: pkg\nRequires-Dist: skyfield==1.55; extra == \"test\"\n",
+            )
             archive.writestr("pkg-0.0.dist-info/RECORD", "swisseph.py,sha256-test,10\n")
-        clean_problems, dirty_problems = scan(clean), scan(dirty)
+        with zipfile.ZipFile(ephem_dirty, "w") as archive:
+            archive.writestr("pkg/__init__.py", "PLANET = 'planet'\n")
+            archive.writestr(
+                "pkg-0.0.dist-info/METADATA",
+                "Metadata-Version: 2.1\nName: pkg\nRequires-Dist: jplephem>=2.21\nRequires-Dist: ephem==4.2.1; extra == \"test\"\n",
+            )
+        clean_problems, dirty_problems, ephem_problems = scan(clean), scan(dirty), scan(ephem_dirty)
     expected = ("sepl_18.se1", "bench/run.py", "comparators/c.py", "leak.py",
-                COMPATIBILITY_PATH, "pkg-0.0.dist-info/RECORD")
+                COMPATIBILITY_PATH, "pkg-0.0.dist-info/METADATA", "pkg-0.0.dist-info/RECORD")
     missed = [item for item in expected if not any(item in problem for problem in dirty_problems)]
+    if not any("Requires-Dist (ephem)" in problem for problem in ephem_problems):
+        missed.append("Requires-Dist (ephem)")
     for problem in clean_problems:
         print(f"SELF-TEST FALSE POSITIVE {problem}")
     for item in missed:

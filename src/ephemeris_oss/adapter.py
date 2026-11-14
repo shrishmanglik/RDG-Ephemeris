@@ -47,6 +47,7 @@ from .engine.uncertainty_envelope import (
 )
 from .fact_sheet import AIFactSheet, compile_ai_fact_sheet
 from .jyotish import VedicChartAnalysis, compute_vedic_chart_analysis
+from .jyotish.panchanga import compute_hora_table, compute_vara
 from .jyotish_advanced.kp import KpPositionLords, kp_coordinate_lords
 from .jyotish_advanced.yogas import ClassicalYogaReport, evaluate_classical_yogas
 from .jyotish_jaimini.sutras import (
@@ -57,6 +58,7 @@ from .jyotish_jaimini.sutras import (
 )
 from .jyotish_nadi.bhrigu import BhriguBinduReport, compute_bhrigu_bindu
 from .jyotish_nadi.khara_mrityu import KharaPointsReport, compute_khara_points
+from .jyotish_transit.prashna import compute_kalavela_upagrahas
 from .visualization.kundali_svg import (
     SvgChartArtifact,
     render_north_indian_svg,
@@ -472,6 +474,8 @@ class CompleteKundaliBundle:
     north_indian_svg: SvgChartArtifact | None
     south_indian_svg: SvgChartArtifact | None
     bundle_receipt_sha256: str
+    sunrise_dependent: Mapping[str, Any] | None = None
+    polar_geometry: Mapping[str, Any] | None = None
 
     @property
     def receipt_sha256(self) -> str:
@@ -1495,10 +1499,102 @@ class EphemerisAdapter:
         )
         asc_deg = houses.ascendant_deg
 
+        jd_tt_bundle = self._jd_ut_to_jd_tt(jd_ut)
+        angles_bundle = house_angles(
+            tt_jd=jd_tt_bundle,
+            ut1_jd=jd_ut,
+            longitude_deg=float(longitude_deg),
+            latitude_deg=float(latitude_deg),
+        )
+        placidus_supported = True
+        placidus_cusps: list[float] | None = None
+        placidus_reason: str | None = None
+        try:
+            placidus_res = self.houses_ut(
+                jd_ut,
+                latitude_deg,
+                longitude_deg,
+                system="placidus",
+                ayanamsa=ayanamsa,
+                tt_jd=jd_tt_bundle,
+            )
+            placidus_cusps = list(placidus_res.cusps_deg)
+        except EphemerisError:
+            placidus_supported = False
+            placidus_reason = "CIRCUMPOLAR_SEMIARC_UNDEFINED"
+
+        is_polar_circle = bool(abs(float(latitude_deg)) >= (90.0 - angles_bundle.true_obliquity_deg))
+        polar_geometry: dict[str, Any] = {
+            "is_polar_circle": is_polar_circle,
+            "polar_ascendant_discontinuity_zone": is_polar_circle,
+            "ascendant_defined": True,
+            "whole_sign_cusps_deg": list(houses.cusps_deg),
+            "placidus_supported": placidus_supported,
+            "placidus_cusps_deg": placidus_cusps,
+            "placidus_unavailable_reason": placidus_reason,
+        }
+
+        sunrise_dependent = resolve_observer_sunrise_dependent_outputs(
+            jd_ut=jd_ut,
+            latitude_deg=float(latitude_deg),
+            longitude_deg=float(longitude_deg),
+            provider=self,
+            ayanamsa=ayanamsa,
+            reference_lagna_deg=asc_deg,
+            ascendant_fn=lambda j: self.houses_ut(
+                j,
+                latitude_deg,
+                longitude_deg,
+                system="whole_sign",
+                ayanamsa=ayanamsa,
+            ).ascendant_deg,
+        )
+
+        sr_status = str(sunrise_dependent.get("sunrise_status", ""))
+        sr_available = (
+            bool(sunrise_dependent.get("available"))
+            if "available" in sunrise_dependent
+            else (sr_status == "AVAILABLE")
+        )
+        if (
+            sr_available
+            and sunrise_dependent.get("active_sunrise_jd_ut") is not None
+            and sunrise_dependent.get("sunset_jd_ut") is not None
+        ):
+            sr_jd_val: float | None = float(sunrise_dependent["active_sunrise_jd_ut"])
+            ss_jd_val: float | None = float(sunrise_dependent["sunset_jd_ut"])
+            nsr_jd_val: float | None = (
+                float(sunrise_dependent["next_sunrise_jd_ut"])
+                if sunrise_dependent.get("next_sunrise_jd_ut") is not None
+                else None
+            )
+            vara_dict = sunrise_dependent.get("vara") or {}
+            vara_idx_val: int | None = (
+                int(vara_dict["index"]) if vara_dict.get("index") is not None else None
+            )
+            sr_unavail_reason: str | None = None
+        else:
+            sr_available = False
+            sr_jd_val = None
+            ss_jd_val = None
+            nsr_jd_val = None
+            vara_idx_val = None
+            sr_unavail_reason = str(
+                sunrise_dependent.get("unavailable_reason")
+                or (sunrise_dependent.get("vara") or {}).get("reason")
+                or "SUNRISE_UNAVAILABLE"
+            )
+
         vedic_analysis = compute_vedic_chart_analysis(
             planet_longitudes=cap_lon_map,
             lagna_lon_deg=asc_deg,
             jd_ut=jd_ut,
+            sunrise_jd_ut=sr_jd_val,
+            sunset_jd_ut=ss_jd_val,
+            next_sunrise_jd_ut=nsr_jd_val,
+            vara_index=vara_idx_val,
+            solar_day_available=sr_available,
+            solar_day_unavailable_reason=sr_unavail_reason,
             ayanamsa_deg=ayan_deg,
             ayanamsa_system=ayanamsa,
             planet_speeds_deg_per_day=cap_speed_map,
@@ -1543,6 +1639,12 @@ class EphemerisAdapter:
             asc_deg,
             planet_speeds_deg_per_day=speed_map,
             birth_jd_ut=jd_ut,
+            sunrise_jd_ut=sr_jd_val,
+            sunset_jd_ut=ss_jd_val,
+            next_sunrise_jd_ut=nsr_jd_val,
+            vara_index=vara_idx_val,
+            solar_day_available=sr_available,
+            solar_day_unavailable_reason=sr_unavail_reason,
             latitude_deg=float(latitude_deg),
             max_bytes=3000,
         )
@@ -1585,6 +1687,8 @@ class EphemerisAdapter:
             "ai_fact_sheet_receipt": ai_fact_sheet.receipt_sha256,
             "north_indian_svg_receipt": north_svg.receipt_sha256 if north_svg is not None else None,
             "south_indian_svg_receipt": south_svg.receipt_sha256 if south_svg is not None else None,
+            "sunrise_dependent": sunrise_dependent,
+            "polar_geometry": polar_geometry,
         }
         bundle_receipt_sha256 = canonical_hash(bundle_receipt_payload)
 
@@ -1608,6 +1712,8 @@ class EphemerisAdapter:
             north_indian_svg=north_svg,
             south_indian_svg=south_svg,
             bundle_receipt_sha256=bundle_receipt_sha256,
+            sunrise_dependent=sunrise_dependent,
+            polar_geometry=polar_geometry,
         )
 
     def houses_ex(
@@ -1875,28 +1981,327 @@ def _solve_spherical_rise_set_jd(
             - (T * T * T) / 38710000.0
         ) % 360.0
 
+    last_circumpolar_err: EphemerisError | None = None
     for day_offset in (-1, 0, 1, 2):
         noon_cand = base_noon_ut + float(day_offset)
-        ra_deg, _dec_deg, H0_deg = _ra_dec_h0_at(noon_cand)
-        target_ha = -H0_deg if event_flag == CALC_RISE else H0_deg
-        lst_noon = (_gmst_deg(noon_cand) + lon_deg) % 360.0
-        ha_noon = (lst_noon - ra_deg + 540.0) % 360.0 - 180.0
-        t_est = noon_cand + ((target_ha - ha_noon + 540.0) % 360.0 - 180.0) / 360.98564736629
-
-        for _ in range(4):
-            ra_deg, _dec_deg, H0_deg = _ra_dec_h0_at(t_est)
+        try:
+            ra_deg, _dec_deg, H0_deg = _ra_dec_h0_at(noon_cand)
             target_ha = -H0_deg if event_flag == CALC_RISE else H0_deg
-            lst_est = (_gmst_deg(t_est) + lon_deg) % 360.0
-            ha_est = (lst_est - ra_deg + 540.0) % 360.0 - 180.0
-            delta_ha = (target_ha - ha_est + 540.0) % 360.0 - 180.0
-            t_est += delta_ha / 360.98564736629
-            if abs(delta_ha) < 1e-6:
-                break
+            lst_noon = (_gmst_deg(noon_cand) + lon_deg) % 360.0
+            ha_noon = (lst_noon - ra_deg + 540.0) % 360.0 - 180.0
+            t_est = noon_cand + ((target_ha - ha_noon + 540.0) % 360.0 - 180.0) / 360.98564736629
+
+            for _ in range(4):
+                ra_deg, _dec_deg, H0_deg = _ra_dec_h0_at(t_est)
+                target_ha = -H0_deg if event_flag == CALC_RISE else H0_deg
+                lst_est = (_gmst_deg(t_est) + lon_deg) % 360.0
+                ha_est = (lst_est - ra_deg + 540.0) % 360.0 - 180.0
+                delta_ha = (target_ha - ha_est + 540.0) % 360.0 - 180.0
+                t_est += delta_ha / 360.98564736629
+                if abs(delta_ha) < 1e-6:
+                    break
+        except EphemerisError as err:
+            last_circumpolar_err = err
+            continue
 
         if t_est >= jd_start - 1e-7:
             return float(t_est)
 
+    if last_circumpolar_err is not None:
+        raise last_circumpolar_err
     raise EphemerisError(f"Unable to converge rise/set for {body_key!r} after JD {jd_start}")
+
+
+def _classify_circumpolar_sun_reason(
+    jd_ut: float,
+    latitude_deg: float,
+    tropical_sun_lon_deg: float,
+    tropical_sun_lat_deg: float = 0.0,
+) -> tuple[str, str, float]:
+    """Return ``(reason_code, detail, cos_h0)`` without clamping ``cos(H0)``."""
+    deg_to_rad = math.pi / 180.0
+    T = (float(jd_ut) - J2000_JD) / 36525.0
+    eps_deg = 23.43929111 - (46.8150 * T + 0.00059 * T * T - 0.001813 * T * T * T) / 3600.0
+    eps_rad = eps_deg * deg_to_rad
+    lam_rad = float(tropical_sun_lon_deg) * deg_to_rad
+    beta_rad = float(tropical_sun_lat_deg) * deg_to_rad
+    sin_dec = math.sin(beta_rad) * math.cos(eps_rad) + math.cos(beta_rad) * math.sin(eps_rad) * math.sin(lam_rad)
+    sin_dec = max(-1.0, min(1.0, sin_dec))
+    cos_dec = max(1e-12, math.cos(math.asin(sin_dec)))
+    sin_phi = math.sin(float(latitude_deg) * deg_to_rad)
+    cos_phi = max(1e-12, math.cos(float(latitude_deg) * deg_to_rad))
+    sin_h0 = math.sin(-0.8333333333333334 * deg_to_rad)
+    cos_h0 = (sin_h0 - sin_phi * sin_dec) / (cos_phi * cos_dec)
+    if cos_h0 < -1.0:
+        return (
+            "CIRCUMPOLAR_MIDNIGHT_SUN",
+            (
+                "Geometric sunrise and sunset do not occur at this latitude and epoch; "
+                "solar disk remains continuously above the horizon (cos(H0) < -1)."
+            ),
+            float(cos_h0),
+        )
+    if cos_h0 > 1.0:
+        return (
+            "CIRCUMPOLAR_POLAR_NIGHT",
+            (
+                "Geometric sunrise and sunset do not occur at this latitude and epoch; "
+                "solar disk remains continuously below the horizon (cos(H0) > +1)."
+            ),
+            float(cos_h0),
+        )
+    return (
+        "CIRCUMPOLAR_DIURNAL_TRANSITION",
+        (
+            "Complete sunrise-sunset-sunrise diurnal cycle does not occur across this "
+            "high-latitude polar transition window."
+        ),
+        float(cos_h0),
+    )
+
+
+def resolve_observer_solar_day_window(
+    jd_ut: float,
+    latitude_deg: float,
+    longitude_deg: float,
+    *,
+    provider: Any | None = None,
+) -> dict[str, Any]:
+    """Resolve physical preceding sunrise ``r_j <= jd_ut``, sunset, next sunrise, and polar status.
+
+    Never clamps ``cos(H0)`` or fabricates sunrise/daylength when circumpolar.
+    """
+    jd_val = float(jd_ut)
+    lat = float(latitude_deg)
+    lon = float(longitude_deg)
+    active_provider: Any = provider if provider is not None else AnalyticalEphemerisProvider()
+    is_adapter = isinstance(active_provider, EphemerisAdapter)
+    body_name = "sun" if is_adapter else "Sun"
+
+    rises: list[float] = []
+    for offset in (-2.0, -1.5, -1.0, -0.5, 0.0, 0.5):
+        try:
+            _, (cand_raw,) = active_provider.rise_trans(
+                jd_val + offset,
+                body_name,
+                CALC_RISE,
+                (lon, lat, 0.0),
+            )
+            cand_f = float(cand_raw)
+            if math.isfinite(cand_f) and all(abs(cand_f - prev) > 1e-3 for prev in rises):
+                rises.append(cand_f)
+        except Exception:
+            continue
+    rises.sort()
+
+    local_solar_day_floor = math.floor(jd_val + lon / 360.0 + 0.5) - 0.5
+    local_midnight_ut = local_solar_day_floor - (lon / 360.0)
+    civil_candidates = [r for r in rises if (local_midnight_ut - 0.05) <= r < (local_midnight_ut + 1.05)]
+
+    preceding = [r for r in rises if (jd_val - 1.25) <= r <= (jd_val + 1e-9)]
+    following = [r for r in rises if (jd_val + 1e-9) < r <= (jd_val + 1.25)]
+    civil_sr = civil_candidates[0] if civil_candidates else (following[0] if following else None)
+
+    if preceding:
+        active_sr = preceding[-1]
+        sunset_jd: float | None = None
+        next_sr: float | None = following[0] if following else None
+        try:
+            _, (ss_raw,) = active_provider.rise_trans(
+                active_sr + 1e-4,
+                body_name,
+                CALC_SET,
+                (lon, lat, 0.0),
+            )
+            ss_cand = float(ss_raw)
+            if math.isfinite(ss_cand) and ss_cand > active_sr:
+                sunset_jd = ss_cand
+            if next_sr is None and sunset_jd is not None:
+                _, (ns_raw,) = active_provider.rise_trans(
+                    sunset_jd + 1e-4,
+                    body_name,
+                    CALC_RISE,
+                    (lon, lat, 0.0),
+                )
+                ns_cand = float(ns_raw)
+                if math.isfinite(ns_cand) and ns_cand > sunset_jd:
+                    next_sr = ns_cand
+        except Exception:
+            sunset_jd = None
+
+        if (
+            sunset_jd is not None
+            and next_sr is not None
+            and active_sr <= jd_val + 1e-9
+            and active_sr < sunset_jd < next_sr
+            and (next_sr - active_sr) <= 1.5
+        ):
+            local_sunrise_solar_jd = float(active_sr) + (lon / 360.0)
+            vara_idx = (math.floor(local_sunrise_solar_jd + 0.5) + 1) % 7
+            return {
+                "available": True,
+                "status": "AVAILABLE",
+                "civil_sunrise_jd_ut": civil_sr if civil_sr is not None else next_sr,
+                "active_sunrise_jd_ut": active_sr,
+                "sunset_jd_ut": sunset_jd,
+                "next_sunrise_jd_ut": next_sr,
+                "vara_index": vara_idx,
+                "is_day_birth": bool(active_sr <= jd_val < sunset_jd),
+                "elapsed_hours_since_sunrise": max(0.0, (jd_val - active_sr) * 24.0),
+                "reason": None,
+                "detail": None,
+                "cos_h0": None,
+            }
+
+    if is_adapter:
+        sun_trop = active_provider.calc_ut(jd_val, "sun", sidereal=False)
+        trop_lon, trop_lat = sun_trop.longitude_deg, sun_trop.latitude_deg
+    else:
+        s_res, _ = active_provider.calc_ut(jd_val, "Sun", flags=0)
+        trop_lon, trop_lat = float(s_res[0]), float(s_res[1])
+
+    reason_code, detail_msg, cos_h0 = _classify_circumpolar_sun_reason(jd_val, lat, trop_lon, trop_lat)
+    return {
+        "available": False,
+        "status": "UNAVAILABLE",
+        "civil_sunrise_jd_ut": None,
+        "active_sunrise_jd_ut": None,
+        "sunset_jd_ut": None,
+        "next_sunrise_jd_ut": None,
+        "vara_index": None,
+        "is_day_birth": None,
+        "elapsed_hours_since_sunrise": None,
+        "reason": reason_code,
+        "detail": detail_msg,
+        "cos_h0": cos_h0,
+    }
+
+
+def resolve_observer_sunrise_dependent_outputs(
+    *,
+    jd_ut: float,
+    latitude_deg: float,
+    longitude_deg: float,
+    provider: Any | None = None,
+    ayanamsa: str = "lahiri",
+    reference_lagna_deg: float = 0.0,
+    ascendant_fn: Callable[[float], float] | None = None,
+) -> dict[str, Any]:
+    """Compute structured ``AVAILABLE`` or ``UNAVAILABLE`` sunrise-dependent Jyotish limbs."""
+    _ = ayanamsa
+    win = resolve_observer_solar_day_window(jd_ut, latitude_deg, longitude_deg, provider=provider)
+    if not win["available"]:
+        unavail = {
+            "status": "UNAVAILABLE",
+            "available": False,
+            "value": None,
+            "reason": win["reason"],
+            "detail": win["detail"],
+        }
+        return {
+            "sunrise_status": "UNAVAILABLE",
+            "available": False,
+            "unavailable_reason": win["reason"],
+            "unavailable_detail": win["detail"],
+            "cos_h0": win["cos_h0"],
+            "civil_sunrise_jd_ut": None,
+            "active_sunrise_jd_ut": None,
+            "sunset_jd_ut": None,
+            "next_sunrise_jd_ut": None,
+            "vara": dict(unavail),
+            "hora": dict(unavail),
+            "gulika_mandi": dict(unavail),
+            "sunrise_ghati": dict(unavail),
+        }
+
+    active_sr = float(win["active_sunrise_jd_ut"])
+    sunset_jd = float(win["sunset_jd_ut"])
+    next_sr = float(win["next_sunrise_jd_ut"])
+    vara_idx = int(win["vara_index"])
+    is_day = bool(win["is_day_birth"])
+    elapsed_h = float(win["elapsed_hours_since_sunrise"])
+    elapsed_g = elapsed_h * 2.5
+    total_palas = int(round(elapsed_g * 60.0))
+
+    vara = compute_vara(active_sr, sunrise_jd_ut=active_sr, vara_index=vara_idx)
+    horas = compute_hora_table(active_sr, sunset_jd, next_sunrise_jd=next_sr, vara_index=vara_idx)
+    active_hora = horas[-1]
+    for h_win in horas:
+        if h_win.start_jd - 1e-9 <= float(jd_ut) <= h_win.end_jd + 1e-9:
+            active_hora = h_win
+            break
+
+    kalavela = compute_kalavela_upagrahas(
+        active_sr,
+        sunset_jd,
+        next_sunrise_jd=next_sr,
+        is_daytime=is_day,
+        vara_index=vara_idx,
+        reference_jd=float(jd_ut),
+        reference_lagna_deg=float(reference_lagna_deg),
+        ascendant_fn=ascendant_fn,
+    )
+    gul = kalavela["Gulika"]
+    man = kalavela["Mandi"]
+
+    return {
+        "sunrise_status": "AVAILABLE",
+        "available": True,
+        "unavailable_reason": None,
+        "unavailable_detail": None,
+        "cos_h0": None,
+        "civil_sunrise_jd_ut": win["civil_sunrise_jd_ut"],
+        "active_sunrise_jd_ut": active_sr,
+        "sunset_jd_ut": sunset_jd,
+        "next_sunrise_jd_ut": next_sr,
+        "vara": {
+            "status": "AVAILABLE",
+            "available": True,
+            "index": vara.index,
+            "sanskrit_name": vara.sanskrit_name,
+            "english_name": vara.english_name,
+            "ruler": vara.ruler,
+            "anchored_sunrise_jd_ut": active_sr,
+        },
+        "hora": {
+            "status": "AVAILABLE",
+            "available": True,
+            "hora_number": active_hora.hora_number,
+            "ruler": active_hora.ruler,
+            "is_daytime": active_hora.is_daytime,
+            "start_jd_ut": active_hora.start_jd,
+            "end_jd_ut": active_hora.end_jd,
+        },
+        "gulika_mandi": {
+            "status": "AVAILABLE",
+            "available": True,
+            "gulika": {
+                "longitude_deg": gul.longitude_deg,
+                "sign_index": gul.sign_index,
+                "sign_name": gul.sign_name,
+                "octant_number": gul.octant_number,
+                "start_jd_ut": gul.start_jd,
+                "end_jd_ut": gul.end_jd,
+            },
+            "mandi": {
+                "longitude_deg": man.longitude_deg,
+                "sign_index": man.sign_index,
+                "sign_name": man.sign_name,
+                "octant_number": man.octant_number,
+                "transition_jd_ut": man.transition_jd,
+            },
+        },
+        "sunrise_ghati": {
+            "status": "AVAILABLE",
+            "available": True,
+            "elapsed_hours_since_sunrise": elapsed_h,
+            "elapsed_ghatis": elapsed_g,
+            "ghati_pala": f"{total_palas // 60:02d}g {total_palas % 60:02d}p",
+            "is_day_birth": is_day,
+            "dinamana_hours": (sunset_jd - active_sr) * 24.0,
+            "ratrimana_hours": (next_sr - sunset_jd) * 24.0,
+        },
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -2604,5 +3009,7 @@ __all__ = [
     "VENUS",
     "nakshatra_from_longitude",
     "normalize_ephemeris_source",
+    "resolve_observer_solar_day_window",
+    "resolve_observer_sunrise_dependent_outputs",
     "sign_from_longitude",
 ]

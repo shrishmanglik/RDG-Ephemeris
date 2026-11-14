@@ -118,13 +118,16 @@ class SthanaBalaBreakdown:
 class KalaBalaBreakdown:
     """Six-component breakdown of Kala Bala (Temporal Strength) in Virupas."""
 
-    nathonnatha_bala: float
+    nathonnatha_bala: float | None
     paksha_bala: float
-    tribhaga_bala: float
-    varsha_masa_dina_hora_bala: float
+    tribhaga_bala: float | None
+    varsha_masa_dina_hora_bala: float | None
     ayana_bala: float
-    yuddha_bala: float
-    total_virupas: float
+    yuddha_bala: float | None
+    total_virupas: float | None
+    available: bool = True
+    status: str = "AVAILABLE"
+    unavailable_reason: str | None = None
 
 
 @dataclass(frozen=True)
@@ -138,13 +141,16 @@ class PlanetShadbala:
     cheshta_bala: float
     naisargika_bala: float
     drik_bala: float
-    total_virupas: float
-    total_rupas: float
+    total_virupas: float | None
+    total_rupas: float | None
     required_rupas: float
-    strength_ratio: float
-    meets_minimum: bool
+    strength_ratio: float | None
+    meets_minimum: bool | None
     ishta_phala: float
     kashta_phala: float
+    available: bool = True
+    status: str = "AVAILABLE"
+    unavailable_reason: str | None = None
 
 
 @dataclass(frozen=True)
@@ -156,11 +162,14 @@ class BhavaBalaEntry:
     sign_name: str
     sign_lord: str
     cusp_lon_deg: float
-    bhava_adhipati_bala: float
+    bhava_adhipati_bala: float | None
     bhava_dig_bala: float
     bhava_drishti_bala: float
-    total_virupas: float
-    total_rupas: float
+    total_virupas: float | None
+    total_rupas: float | None
+    available: bool = True
+    status: str = "AVAILABLE"
+    unavailable_reason: str | None = None
 
 
 @dataclass(frozen=True)
@@ -169,9 +178,12 @@ class ShadbalaSummary:
 
     planets: Mapping[str, PlanetShadbala]
     bhavas: tuple[BhavaBalaEntry, ...]
-    strongest_planet: str
-    weakest_planet: str
-    strongest_bhava: int
+    strongest_planet: str | None
+    weakest_planet: str | None
+    strongest_bhava: int | None
+    available: bool = True
+    status: str = "AVAILABLE"
+    unavailable_reason: str | None = None
 
 
 def _shortest_arc_deg(lon_a: float, lon_b: float) -> float:
@@ -440,6 +452,10 @@ def compute_shadbala(
     jd_ut: float = 2451545.0,
     sunrise_jd_ut: float | None = None,
     sunset_jd_ut: float | None = None,
+    next_sunrise_jd_ut: float | None = None,
+    vara_index: int | None = None,
+    solar_day_available: bool = True,
+    solar_day_unavailable_reason: str | None = None,
     ayanamsa_deg: float = 24.0,
     planet_speeds_deg_per_day: Mapping[str, float] | None = None,
     mc_lon_deg: float | None = None,
@@ -450,13 +466,130 @@ def compute_shadbala(
         if g not in norm_lons:
             raise ValueError(f"Missing longitude for {g!r} in planet_longitudes")
 
+    # Paksha base (0..60) is instantaneous and defined at all latitudes
+    paksha_arc = _shortest_arc_deg(norm_lons["Moon"], norm_lons["Sun"])
+    paksha_base = paksha_arc / 3.0
+
+    if not solar_day_available:
+        unavail_reason = solar_day_unavailable_reason or "SUNRISE_UNAVAILABLE"
+        planets_unavail: dict[str, PlanetShadbala] = {}
+        for g in SEVEN_GRAHAS:
+            sthana = compute_sthana_bala(g, norm_lons, lagna_lon_deg)
+            dig = compute_dig_bala(g, norm_lons[g], lagna_lon_deg, mc_lon_deg=mc_lon_deg)
+            if g in ("Jupiter", "Venus", "Mercury", "Moon"):
+                paksha = paksha_base * (2.0 if g == "Moon" else 1.0)
+            else:
+                paksha = 60.0 - paksha_base
+            ayana = compute_ayana_bala(g, norm_lons[g], ayanamsa_deg=ayanamsa_deg)
+            kala_bd = KalaBalaBreakdown(
+                nathonnatha_bala=None,
+                paksha_bala=paksha,
+                tribhaga_bala=None,
+                varsha_masa_dina_hora_bala=None,
+                ayana_bala=ayana,
+                yuddha_bala=None,
+                total_virupas=None,
+                available=False,
+                status="UNAVAILABLE",
+                unavailable_reason=unavail_reason,
+            )
+            cheshta = compute_cheshta_bala(
+                g,
+                norm_lons,
+                ayanamsa_deg=ayanamsa_deg,
+                planet_speeds_deg_per_day=planet_speeds_deg_per_day,
+            )
+            naisargika = NAISARGIKA_BALA_VIRUPAS[g]
+            drik = compute_drik_bala(g, norm_lons)
+            req_rupas = REQUIRED_SHADBALA_RUPAS[g]
+            uchcha = sthana.uchcha_bala
+            ishta = math.sqrt(max(0.0, uchcha * cheshta))
+            kashta = math.sqrt(max(0.0, (60.0 - uchcha) * (60.0 - cheshta)))
+            planets_unavail[g] = PlanetShadbala(
+                planet=g,
+                sthana_bala=sthana,
+                dig_bala=dig,
+                kala_bala=kala_bd,
+                cheshta_bala=cheshta,
+                naisargika_bala=naisargika,
+                drik_bala=drik,
+                total_virupas=None,
+                total_rupas=None,
+                required_rupas=req_rupas,
+                strength_ratio=None,
+                meets_minimum=None,
+                ishta_phala=ishta,
+                kashta_phala=kashta,
+                available=False,
+                status="UNAVAILABLE",
+                unavailable_reason=unavail_reason,
+            )
+
+        l_lon = normalize_degrees(lagna_lon_deg)
+        l_sign = min(int(l_lon // 30.0), 11)
+        deg_in_lagna = l_lon - l_sign * 30.0
+        bhavas_unavail: list[BhavaBalaEntry] = []
+        moon_waxing = normalize_degrees(norm_lons["Moon"] - norm_lons["Sun"]) < 180.0
+        for h in range(1, 13):
+            h_sign = (l_sign + h - 1) % 12
+            cusp_lon = normalize_degrees(h_sign * 30.0 + deg_in_lagna)
+            lord = RASI_LORDS[h_sign]
+            if h_sign in (2, 5, 6, 10):
+                powerless_house = 7
+            elif h_sign in (3, 11):
+                powerless_house = 10
+            elif h_sign == 7:
+                powerless_house = 1
+            else:
+                powerless_house = 4
+            house_dist = abs(h - powerless_house)
+            if house_dist > 6:
+                house_dist = 12 - house_dist
+            bhava_dig = (house_dist / 6.0) * 60.0
+            bhava_drishti = 0.0
+            for g in SEVEN_GRAHAS:
+                asp = parashari_aspect_virupas(g, norm_lons[g], cusp_lon)
+                is_ben = g in ("Jupiter", "Venus", "Mercury") or (g == "Moon" and moon_waxing)
+                bhava_drishti += (asp / 4.0) if is_ben else (-asp / 4.0)
+            bhavas_unavail.append(
+                BhavaBalaEntry(
+                    house_number=h,
+                    sign_index=h_sign,
+                    sign_name=RASI_NAMES[h_sign],
+                    sign_lord=lord,
+                    cusp_lon_deg=cusp_lon,
+                    bhava_adhipati_bala=None,
+                    bhava_dig_bala=bhava_dig,
+                    bhava_drishti_bala=bhava_drishti,
+                    total_virupas=None,
+                    total_rupas=None,
+                    available=False,
+                    status="UNAVAILABLE",
+                    unavailable_reason=unavail_reason,
+                )
+            )
+
+        return ShadbalaSummary(
+            planets=planets_unavail,
+            bhavas=tuple(bhavas_unavail),
+            strongest_planet=None,
+            weakest_planet=None,
+            strongest_bhava=None,
+            available=False,
+            status="UNAVAILABLE",
+            unavailable_reason=unavail_reason,
+        )
+
     sr_jd = float(sunrise_jd_ut) if sunrise_jd_ut is not None else (math.floor(jd_ut - 0.5) + 0.75)
     ss_jd = float(sunset_jd_ut) if sunset_jd_ut is not None else (sr_jd + 0.5)
     if ss_jd <= sr_jd:
         ss_jd = sr_jd + 0.5
+    next_sr_jd = float(next_sunrise_jd_ut) if next_sunrise_jd_ut is not None else (sr_jd + 1.0)
+    if next_sr_jd <= ss_jd:
+        next_sr_jd = ss_jd + 0.5
 
     day_span = ss_jd - sr_jd
-    night_span = 1.0 - day_span
+    night_span = (next_sr_jd - ss_jd) if next_sunrise_jd_ut is not None else (1.0 - day_span)
     midday_jd = sr_jd + 0.5 * day_span
     midnight_jd = midday_jd - 0.5
 
@@ -464,29 +597,32 @@ def compute_shadbala(
     dist_from_midnight_days = abs(((jd_ut - midnight_jd + 0.5) % 1.0) - 0.5)
     unnatha_virupas = (dist_from_midnight_days / 0.5) * 60.0
 
-    # Paksha base (0..60)
-    paksha_arc = _shortest_arc_deg(norm_lons["Moon"], norm_lons["Sun"])
-    paksha_base = paksha_arc / 3.0
-
     # Tribhaga winner
     is_day = sr_jd <= jd_ut < ss_jd
     if is_day:
-        third_idx = min(int(((jd_ut - sr_jd) / day_span) * 3.0), 2)
+        third_idx = min(max(int(((jd_ut - sr_jd) / day_span) * 3.0), 0), 2)
         tribhaga_lord = ("Mercury", "Sun", "Saturn")[third_idx]
     else:
-        night_elapsed = (jd_ut - ss_jd) % 1.0
-        third_idx = min(int((night_elapsed / night_span) * 3.0), 2)
+        if next_sunrise_jd_ut is not None and ss_jd <= jd_ut <= next_sr_jd + 1e-9:
+            night_elapsed = max(0.0, jd_ut - ss_jd)
+        else:
+            night_elapsed = (jd_ut - ss_jd) % 1.0
+        third_idx = min(max(int((night_elapsed / night_span) * 3.0), 0), 2)
         tribhaga_lord = ("Moon", "Venus", "Mars")[third_idx]
 
     # Varsha, Masa, Dina, Hora lords
-    vara = compute_vara(jd_ut, sunrise_jd_ut=sr_jd)
+    vara = compute_vara(jd_ut, sunrise_jd_ut=sr_jd, vara_index=vara_index)
+    assert vara.ruler is not None
     dina_lord = vara.ruler
     hora_start_idx = HORA_CHALDEAN_ORDER.index(dina_lord)
     if is_day:
-        hora_num = min(int(((jd_ut - sr_jd) / day_span) * 12.0), 11)
+        hora_num = min(max(int(((jd_ut - sr_jd) / day_span) * 12.0), 0), 11)
     else:
-        night_elapsed = (jd_ut - ss_jd) % 1.0
-        hora_num = 12 + min(int((night_elapsed / night_span) * 12.0), 11)
+        if next_sunrise_jd_ut is not None and ss_jd <= jd_ut <= next_sr_jd + 1e-9:
+            night_elapsed = max(0.0, jd_ut - ss_jd)
+        else:
+            night_elapsed = (jd_ut - ss_jd) % 1.0
+        hora_num = 12 + min(max(int((night_elapsed / night_span) * 12.0), 0), 11)
     hora_lord = HORA_CHALDEAN_ORDER[(hora_start_idx + hora_num) % 7]
 
     days_since_epoch = int(max(0.0, jd_ut - 588465.5))

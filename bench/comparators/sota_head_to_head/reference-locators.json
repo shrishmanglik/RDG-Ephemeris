@@ -1,0 +1,91 @@
+{
+  "schema": "rdg-sota-reference-locators-v1",
+  "isolation_boundary": "All files in bench/comparators/sota_head_to_head/ are excluded from runtime wheels and sdist archives (MANIFEST.in 'prune bench'; pyproject.toml packages only src/). Third-party comparator libraries must be installed only in an isolated external virtual environment outside the clean ephemeris-oss runtime.",
+  "in_repo_references": {
+    "horizons_de441_e2_accuracy": {
+      "raw_t1_relpath": "bench/studies/E2-accuracy/raw-t1.json",
+      "manifest_relpath": "bench/studies/E2-accuracy/manifest.json",
+      "sha256_raw_t1": "def08c7b5664a5c8f03566482df6db8253581e647adf96f7fd1242a85b680be2",
+      "rows": 2100,
+      "epochs": 300,
+      "physical_bodies": 7,
+      "span": "1800..2100 CE",
+      "source_oracle": "NASA JPL Horizons DE441 QUANTITIES=45 apparent geocentric ICRF RA/DEC",
+      "license": "Public Domain (NASA JPL / Caltech)"
+    },
+    "horizons_geodetic_vertical_vectors": {
+      "relpath": "bench/comparators/sota_head_to_head/horizons-geodetic-vertical-vectors.json",
+      "sha256": "19f2e63f3df1ae3bcf73023a6622ac14a6d2ef07d3a486e71a7bb1eb95d27493",
+      "cases": 5,
+      "raw_vector_cases": 4,
+      "outward_vertical_formula": "up_icrf = (r_0km_icrf_km - r_1km_icrf_km) / ||r_0km_icrf_km - r_1km_icrf_km||",
+      "source_oracle": "NASA JPL Horizons COMMAND='399' / CENTER='coord@399' EPHEM_TYPE=VECTORS dual-altitude (0 km and 1 km) ICRF state vectors + USNO/IERS finals2000A.all snapshot",
+      "license": "Public Domain (NASA JPL / USNO / IERS)"
+    },
+    "retained_head_to_head_receipt": {
+      "relpath": "evidence/real-world-sota-head-to-head-benchmarks.json",
+      "raw_benchmark_receipt_sha256": "7ddccc06799d4f76dbe0f3dca349d33205a98bf7e05d91beb8f93b9c12ed6393"
+    }
+  },
+  "public_download_references": {
+    "nasa_jpl_de440_bsp": {
+      "url": "https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440.bsp",
+      "cli_provision_command": "ephemeris-oss kernels fetch --verify --eop",
+      "sha256": "a4ce9bf9b3282becc9f4b2ac3cebe03a2ae7599981aabd7265fd8482fff7c4b5",
+      "size_bytes": 119799808,
+      "license": "Public Domain (NASA JPL / Caltech)"
+    },
+    "iers_finals2000a_all": {
+      "url": "https://datacenter.iers.org/data/latestVersion/finals.all.iau2000.txt",
+      "cli_provision_command": "ephemeris-oss kernels fetch --verify --eop",
+      "retained_snapshot_sha256": "0baf00f67a39ab362a3e4f07d2a1f084842178523f56bcf5a861e7ac084d411a",
+      "note": "IERS Rapid Service updates Bulletin A daily. Historical finals rows (1975, 2000, 2016, 2019) are fixed; 2026-11-03 EOP varies by less than 0.01 arcsec across Bulletin A updates, and the exact snapshot from the retained run is preserved in horizons-geodetic-vertical-vectors.json."
+    }
+  },
+  "external_comparator_packages": {
+    "requirements_relpath": "bench/comparators/sota_head_to_head/requirements-external-venv.txt",
+    "packages": [
+      {
+        "pypi_spec": "skyfield==1.55",
+        "license": "MIT",
+        "used_in_modes": ["permissive-only", "full"]
+      },
+      {
+        "pypi_spec": "astropy==8.0.2",
+        "license": "BSD-3-Clause",
+        "used_in_modes": ["permissive-only", "full"]
+      },
+      {
+        "pypi_spec": "ephem==4.2.1",
+        "license": "LGPL",
+        "used_in_modes": ["full"]
+      },
+      {
+        "pypi_spec": "pyswisseph==2.10.3.2",
+        "c_library_version": "2.10.03",
+        "license": "GPL v2+ / AGPL v3",
+        "used_in_modes": ["full"]
+      }
+    ]
+  },
+  "external_archive_disclosure": {
+    "applies_to_slot": "se_2_10_03_se1_provisioned",
+    "redistribution_limitation": "External .se1 planetary and lunar ephemeris files (sepl_18.se1, semo_18.se1, seas_18.se1 for 1800..2399 CE) are third-party copyleft upstream assets and cannot be redistributed inside this Apache-2.0 repository or its release archives.",
+    "upstream_public_locator": "https://github.com/aloistr/swisseph/tree/master/ephe",
+    "files": {
+      "sepl_18.se1": {
+        "size_bytes": 484055,
+        "sha256": "0b7e416e3c1be9e6a0dd1d711dae7f7685793a0e7df13f76363a493dc27b6ea1"
+      },
+      "semo_18.se1": {
+        "size_bytes": 1304771,
+        "sha256": "ecfa54dbf5bc0b5a9bc3e04ed28629a821e98625eacae38f4070593bba0e2980"
+      },
+      "seas_18.se1": {
+        "size_bytes": 223002,
+        "sha256": "5fd9c2aa1654e37c09a6aeb558076e795409b7dc4bd948ebc0faa7d4a7686b5b"
+      }
+    },
+    "behavior_when_omitted": "When --se1-dir is omitted, run_sota_head_to_head.py still executes all zero-download and SPK-backed slots (including SE 2.10.03 built-in Moshier, Skyfield 1.55, Astropy 8.0.2, PyEphem 4.2.1, and RDG-Ephemeris) and marks only the external .se1 slot SKIPPED_NO_EXTERNAL_SE1_ARCHIVE."
+  }
+}

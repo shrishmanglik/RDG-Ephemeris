@@ -189,12 +189,15 @@ class TithiInfo:
 
 @dataclass(frozen=True)
 class VaraInfo:
-    """Computed Vedic weekday (Vara) anchored to local sunrise."""
+    """Computed Vedic weekday (Vara) anchored to local sunrise, or explicit UNAVAILABLE."""
 
-    index: int
+    index: int | None
     sanskrit_name: str
     english_name: str
-    ruler: str
+    ruler: str | None
+    available: bool = True
+    status: str = "AVAILABLE"
+    reason: str | None = None
 
 
 @dataclass(frozen=True)
@@ -575,6 +578,19 @@ def compute_muhurta_windows(
     )
 
 
+def unavailable_vara(reason: str | None = None) -> VaraInfo:
+    """Return an explicit ``UNAVAILABLE`` Vara record when no physical sunrise cycle exists."""
+    return VaraInfo(
+        index=None,
+        sanskrit_name="UNAVAILABLE",
+        english_name="UNAVAILABLE",
+        ruler=None,
+        available=False,
+        status="UNAVAILABLE",
+        reason=reason or "SUNRISE_UNAVAILABLE",
+    )
+
+
 def compute_panchanga(
     sun_lon_deg: float,
     moon_lon_deg: float,
@@ -583,10 +599,15 @@ def compute_panchanga(
     sunrise_jd_ut: float | None = None,
     vara_index: int | None = None,
     ce_year: int | None = None,
+    solar_day_available: bool = True,
+    solar_day_unavailable_reason: str | None = None,
 ) -> PanchangaSummary:
     """Compute the complete Five-Limb Vedic Almanac (Panchanga) at an instant."""
     tithi = compute_tithi(sun_lon_deg, moon_lon_deg)
-    vara = compute_vara(jd_ut, sunrise_jd_ut=sunrise_jd_ut, vara_index=vara_index)
+    if not solar_day_available:
+        vara = unavailable_vara(solar_day_unavailable_reason)
+    else:
+        vara = compute_vara(jd_ut, sunrise_jd_ut=sunrise_jd_ut, vara_index=vara_index)
     nak = nakshatra_position(moon_lon_deg)
     yoga = compute_yoga(sun_lon_deg, moon_lon_deg)
     karana = compute_karana(sun_lon_deg, moon_lon_deg)

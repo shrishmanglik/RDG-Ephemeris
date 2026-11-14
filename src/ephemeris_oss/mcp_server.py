@@ -551,6 +551,31 @@ def execute_mcp_tool(name: str, arguments: Mapping[str, Any] | None = None) -> d
             include_svg=False,
         )
         ephem_source = "de440-chebyshev" if 2287184.5 <= jd_ut <= 2563392.5 else "vondrak2011-analytical"
+        panchanga_dict = _to_jsonable(bundle.vedic_analysis.panchanga)
+        sr_dep = dict(bundle.sunrise_dependent or {})
+        if sr_dep.get("sunrise_status") == "UNAVAILABLE":
+            vara_unavail = dict(sr_dep.get("vara") or {})
+            panchanga_dict["vara"] = {
+                "status": "UNAVAILABLE",
+                "available": False,
+                "index": None,
+                "sanskrit_name": "UNAVAILABLE",
+                "english_name": "UNAVAILABLE",
+                "ruler": None,
+                "reason": vara_unavail.get("reason"),
+                "detail": vara_unavail.get("detail"),
+            }
+        elif sr_dep.get("sunrise_status") == "AVAILABLE":
+            vara_avail = dict(sr_dep.get("vara") or {})
+            panchanga_dict["vara"] = {
+                "status": "AVAILABLE",
+                "available": True,
+                "index": vara_avail.get("index"),
+                "sanskrit_name": vara_avail.get("sanskrit_name"),
+                "english_name": vara_avail.get("english_name"),
+                "ruler": vara_avail.get("ruler"),
+                "anchored_sunrise_jd_ut": vara_avail.get("anchored_sunrise_jd_ut"),
+            }
         return _to_jsonable(
             {
                 "jd_ut": bundle.jd_ut,
@@ -561,10 +586,19 @@ def execute_mcp_tool(name: str, arguments: Mapping[str, Any] | None = None) -> d
                 "node_mode": "true" if use_true_node else "mean",
                 "ascendant_deg": bundle.houses.ascendant_deg,
                 "mc_deg": bundle.houses.mc_deg,
+                "houses_whole_sign_cusps_deg": bundle.houses.cusps_deg,
+                "polar_geometry": bundle.polar_geometry,
                 "planets": bundle.positions,
+                "planet_nakshatras": bundle.vedic_analysis.planet_nakshatras,
                 "planet_vargas": bundle.vedic_analysis.planet_vargas,
                 "lagna_vargas": bundle.vedic_analysis.lagna_vargas,
-                "panchanga": bundle.vedic_analysis.panchanga,
+                "solar_day_status": bundle.vedic_analysis.solar_day_status,
+                "solar_day_unavailable_reason": bundle.vedic_analysis.solar_day_unavailable_reason,
+                "panchanga": panchanga_dict,
+                "hora_table": bundle.vedic_analysis.hora_table,
+                "muhurta_windows": bundle.vedic_analysis.muhurta_windows,
+                "special_lagnas": bundle.vedic_analysis.special_lagnas,
+                "sunrise_dependent": bundle.sunrise_dependent,
                 "vimshottari_dasha": bundle.vedic_analysis.vimshottari_dasha,
                 "ashtottari_dasha": bundle.vedic_analysis.ashtottari_dasha,
                 "yogini_dasha": bundle.vedic_analysis.yogini_dasha,

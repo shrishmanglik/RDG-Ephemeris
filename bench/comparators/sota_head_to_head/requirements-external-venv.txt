@@ -1,0 +1,11 @@
+# Isolated External Comparator Virtual-Environment Dependencies
+#
+# IMPORTANT CLEAN-ROOM & LICENSING BOUNDARY:
+# Do NOT install this file into the clean `ephemeris-oss` runtime environment or
+# add these packages to `pyproject.toml`. Create a separate virtual environment
+# outside the repository tree solely for head-to-head benchmark reproduction.
+
+skyfield==1.55
+astropy==8.0.2
+ephem==4.2.1
+pyswisseph==2.10.3.2

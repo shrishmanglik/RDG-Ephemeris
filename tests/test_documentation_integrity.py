@@ -73,6 +73,7 @@ def test_public_documentation_files_exist_and_have_zero_em_dashes() -> None:
         ROOT / "README.md",
         ROOT / "docs" / "ACCURACY.md",
         ROOT / "docs" / "ARCHITECTURE-AND-MATHEMATICAL-REFERENCE.md",
+        ROOT / "docs" / "RDG-EPHEMERIS-WHITEPAPER-AND-BENCHMARKS.md",
         ROOT / "docs" / "claims.yaml",
         ROOT / "docs" / "benchmark-portal" / "index.html",
         ROOT / "web" / "ephemeris-browser.js",
@@ -83,6 +84,16 @@ def test_public_documentation_files_exist_and_have_zero_em_dashes() -> None:
         content = path.read_text(encoding="utf-8")
         assert len(content.strip()) > 100
         assert "\u2014" not in content, f"Em dash found in {path}"
+
+    wp_text = (ROOT / "docs" / "RDG-EPHEMERIS-WHITEPAPER-AND-BENCHMARKS.md").read_text(encoding="utf-8")
+    readme_text = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "Every table and receipt in this white paper can be reproduced from a clean checkout" not in wp_text
+    assert "retained external-environment" in wp_text.lower()
+    assert "retained external-environment" in readme_text.lower()
+    assert "7ddccc06799d4f76dbe0f3dca349d33205a98bf7e05d91beb8f93b9c12ed6393" in wp_text
+    assert "bench/studies/E2-accuracy/" in wp_text
+    assert "bench/comparators/sota_head_to_head/run_sota_head_to_head.py" in wp_text
+    assert "bench/comparators/sota_head_to_head/run_sota_head_to_head.py" in readme_text
 
 
 def test_architecture_reference_covers_all_required_mathematical_sections() -> None:

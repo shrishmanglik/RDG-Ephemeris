@@ -274,7 +274,12 @@ def compute_continuous_dignity_and_heliacal_phenomena(
         ad = adapter
     ay_key = ayanamsa.strip().lower()
 
-    houses = ad.houses_ut(jd_ut, latitude_deg, longitude_deg, system="placidus", ayanamsa=ay_key)
+    from .._api import EphemerisError
+
+    try:
+        houses = ad.houses_ut(jd_ut, latitude_deg, longitude_deg, system="placidus", ayanamsa=ay_key)
+    except EphemerisError:
+        houses = ad.houses_ut(jd_ut, latitude_deg, longitude_deg, system="whole_sign", ayanamsa=ay_key)
     asc_deg = float(houses.ascendant_deg)
     mc_deg = float(houses.mc_deg)
     desc_deg = _wrap360(asc_deg + 180.0)
@@ -649,7 +654,12 @@ def compute_shodhya_pinda_transit_triggers_and_harmonic_yogas(
         ad = adapter
     ay_key = ayanamsa.strip().lower()
 
-    houses = ad.houses_ut(jd_ut, latitude_deg, longitude_deg, system="placidus", ayanamsa=ay_key)
+    from .._api import EphemerisError
+
+    try:
+        houses = ad.houses_ut(jd_ut, latitude_deg, longitude_deg, system="placidus", ayanamsa=ay_key)
+    except EphemerisError:
+        houses = ad.houses_ut(jd_ut, latitude_deg, longitude_deg, system="whole_sign", ayanamsa=ay_key)
     asc_deg = float(houses.ascendant_deg)
     asc_sign = int(_wrap360(asc_deg) // 30.0) % 12
 

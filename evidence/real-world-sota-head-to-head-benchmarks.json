@@ -1,0 +1,290 @@
+{
+  "schema": "rdg-real-world-sota-head-to-head-v1",
+  "generated_utc": "2026-11-13T21:37:35Z",
+  "execution_isolation": "Executed in an isolated external benchmark virtual environment outside the clean-room package build; zero third-party copyleft packages or data files are vendored, imported, or distributed by ephemeris-oss.",
+  "total_benchmark_wall_seconds": 229.27,
+  "environment": {
+    "os": "Windows-11-10.0.26300-SP0",
+    "cpu": "AMD64 Family 25 Model 117 Stepping 2, AuthenticAMD",
+    "cpu_logical_cores": 16,
+    "python_version": "3.13.13",
+    "rust_compiler": "rustc 1.96.0 (ac68faa20 2026-05-25)",
+    "node_v8_version": "v24.16.0",
+    "ephemeris_oss_version": "0.2.0.dev1",
+    "se_c_library_version": "2.10.03 (Swiss-compatible convention)",
+    "skyfield_version": "1.55",
+    "astropy_version": "8.0.2",
+    "pyephem_version": "4.2.1",
+    "pyerfa_version": "2.0.1.5",
+    "jplephem_version": "2.24",
+    "numpy_version": "2.4.6",
+    "de440_bsp_sha256": "a4ce9bf9b3282becc9f4b2ac3cebe03a2ae7599981aabd7265fd8482fff7c4b5"
+  },
+  "eval1_horizons_de441_2100_rows": {
+    "corpus": "NASA JPL Horizons DE441 (QUANTITIES=45 Apparent Geocentric ICRF RA/DEC, 300 epochs x 7 physical bodies = 2,100 rows, 1800-2100 CE)",
+    "se_steelmanned_frame_candidates_mars_sample0_arcsec": {
+      "ecl_of_date_via_iau2006_icrf": 0.018287,
+      "eq_of_date_via_pnm06a_icrf": 0.018313,
+      "flg_equatorial_j2000_icrs": 0.017215
+    },
+    "se_selected_frame": "flg_equatorial_j2000_icrs",
+    "pyephem_steelmanned_mars_sample0_arcsec": {
+      "apparent_of_date_via_pnm06a": 0.153536,
+      "astrometric_a_ra_a_dec": 16.287916
+    },
+    "engines": {
+      "rdg_embedded_chebyshev_zero_download": {
+        "label": "RDG-Ephemeris 0.2.0.dev1 (Embedded 6.68 MB Chebyshev, Zero External Download)",
+        "license": "Apache-2.0",
+        "external_files_required": false,
+        "eval_ms": 1653.09,
+        "total_samples": 2100,
+        "overall_median_arcsec": 0.000229,
+        "overall_p95_arcsec": 0.009523,
+        "overall_mean_arcsec": 0.001487,
+        "overall_max_arcsec": 0.035737,
+        "by_body": {
+          "sun": { "samples": 300, "median_arcsec": 0.00026, "p95_arcsec": 0.000495, "mean_arcsec": 0.000272, "max_arcsec": 0.00074 },
+          "moon": { "samples": 300, "median_arcsec": 0.007707, "p95_arcsec": 0.020497, "mean_arcsec": 0.008811, "max_arcsec": 0.035737 },
+          "mercury": { "samples": 300, "median_arcsec": 0.000367, "p95_arcsec": 0.000867, "mean_arcsec": 0.000425, "max_arcsec": 0.001564 },
+          "venus": { "samples": 300, "median_arcsec": 0.000315, "p95_arcsec": 0.001243, "mean_arcsec": 0.000427, "max_arcsec": 0.002489 },
+          "mars": { "samples": 300, "median_arcsec": 0.000215, "p95_arcsec": 0.000692, "mean_arcsec": 0.000283, "max_arcsec": 0.001957 },
+          "jupiter": { "samples": 300, "median_arcsec": 0.000097, "p95_arcsec": 0.000196, "mean_arcsec": 0.0001, "max_arcsec": 0.000293 },
+          "saturn": { "samples": 300, "median_arcsec": 0.000089, "p95_arcsec": 0.00018, "mean_arcsec": 0.000093, "max_arcsec": 0.000265 }
+        }
+      },
+      "rdg_full_de440_bsp": {
+        "label": "RDG-Ephemeris 0.2.0.dev1 (Provisioned 114 MB de440.bsp)",
+        "license": "Apache-2.0",
+        "external_files_required": true,
+        "eval_ms": 2492.55,
+        "total_samples": 2100,
+        "overall_median_arcsec": 0.000002,
+        "overall_p95_arcsec": 0.004149,
+        "overall_mean_arcsec": 0.000653,
+        "overall_max_arcsec": 0.025335,
+        "by_body": {
+          "sun": { "samples": 300, "median_arcsec": 0.000002, "p95_arcsec": 0.000003, "mean_arcsec": 0.000002, "max_arcsec": 0.000004 },
+          "moon": { "samples": 300, "median_arcsec": 0.002438, "p95_arcsec": 0.017314, "mean_arcsec": 0.004562, "max_arcsec": 0.025335 },
+          "mercury": { "samples": 300, "median_arcsec": 0.000002, "p95_arcsec": 0.000003, "mean_arcsec": 0.000002, "max_arcsec": 0.000005 },
+          "venus": { "samples": 300, "median_arcsec": 0.000002, "p95_arcsec": 0.000003, "mean_arcsec": 0.000002, "max_arcsec": 0.000008 },
+          "mars": { "samples": 300, "median_arcsec": 0.000001, "p95_arcsec": 0.000003, "mean_arcsec": 0.000001, "max_arcsec": 0.000004 },
+          "jupiter": { "samples": 300, "median_arcsec": 0.000001, "p95_arcsec": 0.000002, "mean_arcsec": 0.000001, "max_arcsec": 0.000003 },
+          "saturn": { "samples": 300, "median_arcsec": 0.000001, "p95_arcsec": 0.000002, "mean_arcsec": 0.000001, "max_arcsec": 0.000003 }
+        }
+      },
+      "se_2_10_03_moshier_zero_download": {
+        "label": "SE 2.10.03 (Swiss-compatible convention, Built-in Moshier, Zero External Files)",
+        "license": "GPL v2+ / AGPL v3",
+        "external_files_required": false,
+        "eval_ms": 36.0,
+        "total_samples": 2100,
+        "overall_median_arcsec": 0.068255,
+        "overall_p95_arcsec": 0.870226,
+        "overall_mean_arcsec": 0.192176,
+        "overall_max_arcsec": 2.7614,
+        "by_body": {
+          "sun": { "samples": 300, "median_arcsec": 0.02672, "p95_arcsec": 0.058278, "mean_arcsec": 0.029173, "max_arcsec": 0.09639 },
+          "moon": { "samples": 300, "median_arcsec": 0.70363, "p95_arcsec": 1.543666, "mean_arcsec": 0.776146, "max_arcsec": 2.7614 },
+          "mercury": { "samples": 300, "median_arcsec": 0.031688, "p95_arcsec": 0.078206, "mean_arcsec": 0.038828, "max_arcsec": 0.697139 },
+          "venus": { "samples": 300, "median_arcsec": 0.043324, "p95_arcsec": 0.193141, "mean_arcsec": 0.065243, "max_arcsec": 0.484629 },
+          "mars": { "samples": 300, "median_arcsec": 0.058159, "p95_arcsec": 0.311642, "mean_arcsec": 0.08581, "max_arcsec": 0.929363 },
+          "jupiter": { "samples": 300, "median_arcsec": 0.160922, "p95_arcsec": 0.456701, "mean_arcsec": 0.1972, "max_arcsec": 0.789225 },
+          "saturn": { "samples": 300, "median_arcsec": 0.130409, "p95_arcsec": 0.341685, "mean_arcsec": 0.152832, "max_arcsec": 0.531447 }
+        }
+      },
+      "se_2_10_03_se1_provisioned": {
+        "label": "SE 2.10.03 (Swiss-compatible convention, External Archive Files)",
+        "license": "GPL v2+ / AGPL v3",
+        "external_files_required": true,
+        "eval_ms": 75.67,
+        "total_samples": 2100,
+        "overall_median_arcsec": 0.001666,
+        "overall_p95_arcsec": 0.018287,
+        "overall_mean_arcsec": 0.004679,
+        "overall_max_arcsec": 0.672586,
+        "by_body": {
+          "sun": { "samples": 300, "median_arcsec": 0.000937, "p95_arcsec": 0.002478, "mean_arcsec": 0.00112, "max_arcsec": 0.003834 },
+          "moon": { "samples": 300, "median_arcsec": 0.002148, "p95_arcsec": 0.009797, "mean_arcsec": 0.003277, "max_arcsec": 0.013032 },
+          "mercury": { "samples": 300, "median_arcsec": 0.001098, "p95_arcsec": 0.004099, "mean_arcsec": 0.003758, "max_arcsec": 0.672586 },
+          "venus": { "samples": 300, "median_arcsec": 0.00118, "p95_arcsec": 0.003558, "mean_arcsec": 0.001448, "max_arcsec": 0.007761 },
+          "mars": { "samples": 300, "median_arcsec": 0.002902, "p95_arcsec": 0.036284, "mean_arcsec": 0.008365, "max_arcsec": 0.060416 },
+          "jupiter": { "samples": 300, "median_arcsec": 0.01268, "p95_arcsec": 0.023656, "mean_arcsec": 0.013247, "max_arcsec": 0.031179 },
+          "saturn": { "samples": 300, "median_arcsec": 0.001284, "p95_arcsec": 0.003837, "mean_arcsec": 0.00154, "max_arcsec": 0.005796 }
+        }
+      },
+      "skyfield_1_55_de440_bsp": {
+        "label": "Skyfield 1.55 (Provisioned 114 MB de440.bsp)",
+        "license": "MIT",
+        "external_files_required": true,
+        "eval_ms": 3791.83,
+        "total_samples": 2100,
+        "overall_median_arcsec": 0.000002,
+        "overall_p95_arcsec": 0.004158,
+        "overall_mean_arcsec": 0.000975,
+        "overall_max_arcsec": 0.676582,
+        "by_body": {
+          "sun": { "samples": 300, "median_arcsec": 0.000002, "p95_arcsec": 0.000003, "mean_arcsec": 0.000002, "max_arcsec": 0.000004 },
+          "moon": { "samples": 300, "median_arcsec": 0.002476, "p95_arcsec": 0.017283, "mean_arcsec": 0.004559, "max_arcsec": 0.025167 },
+          "mercury": { "samples": 300, "median_arcsec": 0.000002, "p95_arcsec": 0.000003, "mean_arcsec": 0.002257, "max_arcsec": 0.676582 },
+          "venus": { "samples": 300, "median_arcsec": 0.000001, "p95_arcsec": 0.000003, "mean_arcsec": 0.000001, "max_arcsec": 0.000003 },
+          "mars": { "samples": 300, "median_arcsec": 0.000001, "p95_arcsec": 0.000002, "mean_arcsec": 0.000001, "max_arcsec": 0.000003 },
+          "jupiter": { "samples": 300, "median_arcsec": 0.000001, "p95_arcsec": 0.000002, "mean_arcsec": 0.000001, "max_arcsec": 0.000002 },
+          "saturn": { "samples": 300, "median_arcsec": 0.000002, "p95_arcsec": 0.000004, "mean_arcsec": 0.000002, "max_arcsec": 0.000037 }
+        }
+      },
+      "astropy_8_0_2_builtin_zero_download": {
+        "label": "Astropy 8.0.2 (Built-in Ephemeris, Zero External Download, Vectorized)",
+        "license": "BSD-3-Clause",
+        "external_files_required": false,
+        "eval_ms": 660.84,
+        "total_samples": 2100,
+        "overall_median_arcsec": 1.672544,
+        "overall_p95_arcsec": 33.00083,
+        "overall_mean_arcsec": 7.226181,
+        "overall_max_arcsec": 93.359855,
+        "by_body": {
+          "sun": { "samples": 300, "median_arcsec": 0.006593, "p95_arcsec": 0.058753, "mean_arcsec": 0.014987, "max_arcsec": 0.235711 },
+          "moon": { "samples": 300, "median_arcsec": 2.077613, "p95_arcsec": 5.758751, "mean_arcsec": 2.436805, "max_arcsec": 11.612177 },
+          "mercury": { "samples": 300, "median_arcsec": 0.197203, "p95_arcsec": 0.701339, "mean_arcsec": 0.26933, "max_arcsec": 1.765441 },
+          "venus": { "samples": 300, "median_arcsec": 0.728726, "p95_arcsec": 3.420703, "mean_arcsec": 1.060266, "max_arcsec": 11.193206 },
+          "mars": { "samples": 300, "median_arcsec": 3.671105, "p95_arcsec": 18.513564, "mean_arcsec": 5.49448, "max_arcsec": 43.692551 },
+          "jupiter": { "samples": 300, "median_arcsec": 12.405776, "p95_arcsec": 38.014045, "mean_arcsec": 15.623454, "max_arcsec": 79.204947 },
+          "saturn": { "samples": 300, "median_arcsec": 20.21543, "p95_arcsec": 66.315601, "mean_arcsec": 25.683946, "max_arcsec": 93.359855 }
+        }
+      },
+      "astropy_8_0_2_de440_bsp": {
+        "label": "Astropy 8.0.2 (Provisioned 114 MB de440.bsp, Vectorized)",
+        "license": "BSD-3-Clause",
+        "external_files_required": true,
+        "eval_ms": 154.91,
+        "total_samples": 2100,
+        "overall_median_arcsec": 0.000002,
+        "overall_p95_arcsec": 0.012284,
+        "overall_mean_arcsec": 0.002925,
+        "overall_max_arcsec": 0.676577,
+        "by_body": {
+          "sun": { "samples": 300, "median_arcsec": 0.004599, "p95_arcsec": 0.054756, "mean_arcsec": 0.013653, "max_arcsec": 0.239412 },
+          "moon": { "samples": 300, "median_arcsec": 0.002477, "p95_arcsec": 0.017282, "mean_arcsec": 0.004559, "max_arcsec": 0.025167 },
+          "mercury": { "samples": 300, "median_arcsec": 0.000002, "p95_arcsec": 0.000003, "mean_arcsec": 0.002257, "max_arcsec": 0.676577 },
+          "venus": { "samples": 300, "median_arcsec": 0.000001, "p95_arcsec": 0.000003, "mean_arcsec": 0.000002, "max_arcsec": 0.000004 },
+          "mars": { "samples": 300, "median_arcsec": 0.000001, "p95_arcsec": 0.000002, "mean_arcsec": 0.000001, "max_arcsec": 0.000003 },
+          "jupiter": { "samples": 300, "median_arcsec": 0.000001, "p95_arcsec": 0.000002, "mean_arcsec": 0.000001, "max_arcsec": 0.000003 },
+          "saturn": { "samples": 300, "median_arcsec": 0.000001, "p95_arcsec": 0.000002, "mean_arcsec": 0.000001, "max_arcsec": 0.000003 }
+        }
+      },
+      "pyephem_4_2_1_zero_download": {
+        "label": "PyEphem 4.2.1 (Built-in VSOP87/Chapront, Zero External Download)",
+        "license": "Lesser Copyleft",
+        "external_files_required": false,
+        "eval_ms": 48.0,
+        "total_samples": 2100,
+        "overall_median_arcsec": 0.978196,
+        "overall_p95_arcsec": 32.151046,
+        "overall_mean_arcsec": 5.745458,
+        "overall_max_arcsec": 131.292211,
+        "by_body": {
+          "sun": { "samples": 300, "median_arcsec": 1.455351, "p95_arcsec": 8.196416, "mean_arcsec": 2.29504, "max_arcsec": 10.282375 },
+          "moon": { "samples": 300, "median_arcsec": 16.041284, "p95_arcsec": 103.273024, "mean_arcsec": 29.875786, "max_arcsec": 131.292211 },
+          "mercury": { "samples": 300, "median_arcsec": 1.318811, "p95_arcsec": 11.245325, "mean_arcsec": 2.866941, "max_arcsec": 15.472111 },
+          "venus": { "samples": 300, "median_arcsec": 1.298761, "p95_arcsec": 9.309172, "mean_arcsec": 2.463921, "max_arcsec": 12.507884 },
+          "mars": { "samples": 300, "median_arcsec": 0.891004, "p95_arcsec": 5.023534, "mean_arcsec": 1.480281, "max_arcsec": 7.340815 },
+          "jupiter": { "samples": 300, "median_arcsec": 0.552825, "p95_arcsec": 1.635479, "mean_arcsec": 0.674163, "max_arcsec": 2.846267 },
+          "saturn": { "samples": 300, "median_arcsec": 0.507021, "p95_arcsec": 1.250688, "mean_arcsec": 0.562076, "max_arcsec": 2.293732 }
+        }
+      }
+    }
+  },
+  "eval2_zero_download_756yr_63518_points": {
+    "span": "1550-01-15 to 2306-02-15 (9,074 consecutive calendar months x 7 bodies = 63,518 evaluations)",
+    "reference": "Full 114 MB NASA JPL de440.bsp (sha256=a4ce9bf9b3282becc9f4b2ac3cebe03a2ae7599981aabd7265fd8482fff7c4b5)",
+    "zero_download_engines": {
+      "rdg_embedded_chebyshev": {
+        "total_samples": 63518,
+        "overall_median_arcsec": 0.000099,
+        "overall_p95_arcsec": 0.005456,
+        "overall_mean_arcsec": 0.000854,
+        "overall_max_arcsec": 0.026041
+      },
+      "se_2_10_03_moshier": {
+        "label": "SE 2.10.03 (Swiss-compatible convention, Built-in Moshier)",
+        "total_samples": 63518,
+        "overall_median_arcsec": 0.070218,
+        "overall_p95_arcsec": 1.13075,
+        "overall_mean_arcsec": 0.254582,
+        "overall_max_arcsec": 5.279657
+      },
+      "astropy_8_0_2_builtin": {
+        "total_samples": 63518,
+        "overall_median_arcsec": 1.658412,
+        "overall_p95_arcsec": 35.554768,
+        "overall_mean_arcsec": 7.657748,
+        "overall_max_arcsec": 100.258718
+      },
+      "pyephem_4_2_1": {
+        "total_samples": 63518,
+        "overall_median_arcsec": 21.101276,
+        "overall_p95_arcsec": 81.042625,
+        "overall_mean_arcsec": 31.744874,
+        "overall_max_arcsec": 471.023129
+      }
+    },
+    "zero_download_accuracy_ratios_vs_rdg": {
+      "se_moshier_vs_rdg_max_error_ratio": 202.74,
+      "se_moshier_vs_rdg_median_error_ratio": 709.27,
+      "astropy_builtin_vs_rdg_max_error_ratio": 3850.03,
+      "astropy_builtin_vs_rdg_median_error_ratio": 16751.64,
+      "pyephem_vs_rdg_max_error_ratio": 18087.75,
+      "pyephem_vs_rdg_median_error_ratio": 213144.2
+    }
+  },
+  "eval3_throughput_10000_charts_and_streaming": {
+    "workload_10000_full_kundalis": {
+      "description": "10,000 complete Vedic natal charts (9 sidereal Grahas + 12 house cusps + 16 Shodashvarga D1..D60 + 337-bindu Ashtakavarga + 120-year 9x9 Vimshottari Dasha)",
+      "charts_evaluated": 10000,
+      "sav_invariant_verified": 337,
+      "rdg_rust_native_median_ms": 164.928,
+      "rdg_rust_native_per_chart_us": 16.493,
+      "rdg_rust_native_charts_per_sec": 60632.6,
+      "rdg_browser_v8_median_ms": 2253.929,
+      "rdg_browser_v8_per_chart_ms": 0.2254,
+      "rdg_browser_v8_charts_per_sec": 4436.7,
+      "python_plus_se_2_10_03_full_kundali_10k_ms": 28845.65,
+      "python_plus_se_2_10_03_per_chart_ms": 2.8846,
+      "python_plus_se_2_10_03_charts_per_sec": 346.7,
+      "se_2_10_03_coords_and_houses_only_10k_ms": 587.06,
+      "se_2_10_03_moshier_coords_and_houses_only_10k_ms": 1017.73,
+      "throughput_multipliers": {
+        "rdg_rust_full_kundali_vs_python_se_full_kundali_x": 174.9,
+        "rdg_rust_full_kundali_vs_se_coords_only_x": 3.56,
+        "rdg_rust_full_kundali_vs_se_moshier_coords_only_x": 6.17,
+        "rdg_browser_v8_full_kundali_vs_python_se_full_kundali_x": 12.8
+      }
+    },
+    "workload_1000_epoch_7body_interactive_python_api": {
+      "epochs": 1000,
+      "body_evaluations": 7000,
+      "rdg_python_embedded_chebyshev_ms": 6295.42,
+      "rdg_python_de440_bsp_ms": 7299.3,
+      "skyfield_1_55_de440_bsp_ms": 11143.38,
+      "astropy_8_0_2_de440_bsp_100_epochs_ms": 5153.52,
+      "astropy_8_0_2_de440_bsp_scaled_1000_epochs_ms": 51535.22,
+      "interactive_python_multipliers": {
+        "rdg_python_vs_skyfield_per_epoch_x": 1.53,
+        "rdg_python_vs_astropy_scalar_per_epoch_x": 7.06
+      }
+    }
+  },
+  "eval4_wgs84_geodetic_houses_vs_horizons_vertical": {
+    "oracle": "NASA JPL Horizons dual-altitude ICRF observer vectors (0 km and 1 km height at identical geodetic site -> physical geodetic vertical)",
+    "root_cause_in_legacy_se": "Legacy house calculation (Swiss-compatible convention) omits IERS polar motion of the physical geodetic vertical, shifting Ascendant/cusps by 0.61 to 8.36 arcseconds and flipping cusp-adjacent Nakshatra padas/Vargas (e.g. 2019-06-22 10:55 UTC Magha Pada 4 -> Pada 3, D9 Aries -> Pisces).",
+    "benchmarks": [
+      { "sample": "Delhi-1975", "se_2_10_03_asc_discrepancy_arcsec": 8.223485, "rdg_wgs84_polar_motion_max_err_arcsec": 0.002047, "precision_improvement_factor_x": 4017.3 },
+      { "sample": "Toronto-J2000", "se_2_10_03_asc_discrepancy_arcsec": 4.49152, "rdg_wgs84_polar_motion_max_err_arcsec": 0.001938, "precision_improvement_factor_x": 2317.6 },
+      { "sample": "Singapore-2016", "se_2_10_03_asc_discrepancy_arcsec": 3.044462, "rdg_wgs84_polar_motion_max_err_arcsec": 0.001601, "precision_improvement_factor_x": 1901.6 },
+      { "sample": "Delhi-2026", "se_2_10_03_asc_discrepancy_arcsec": 0.605789, "rdg_wgs84_polar_motion_max_err_arcsec": 0.009008, "precision_improvement_factor_x": 67.3 },
+      { "sample": "Boundary-2019-06-22 (Magha Pada 4 vs 3)", "se_2_10_03_asc_discrepancy_arcsec": null, "rdg_wgs84_polar_motion_max_err_arcsec": 0.002637 }
+    ]
+  },
+  "raw_benchmark_receipt_sha256": "7ddccc06799d4f76dbe0f3dca349d33205a98bf7e05d91beb8f93b9c12ed6393"
+}

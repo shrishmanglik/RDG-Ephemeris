@@ -18,7 +18,7 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-test = ["pytest>=8", "skyfield==1.55"]
+test = ["pytest>=8"]
 
 [project.scripts]
 ephemeris-oss = "ephemeris_oss.cli:main"

@@ -24,11 +24,27 @@ def test_measured_sun_moon_tt_result_has_a_reproducible_receipt(kernel_path):
     assert first.receipt_sha256 == second.receipt_sha256
     assert first.receipt["time_scale"] == "TT"
     assert first.receipt["utc_inferred"] is False
+    # J2000.0 TT apparent geocentric tropical Sun longitude (~280.368165 deg near perihelion)
+    assert first.value["sun"]["longitude_deg"] == pytest.approx(280.36816528, abs=0.1 / 3600)
+
+
+def test_measured_sun_moon_tt_matches_optional_external_skyfield_oracle(kernel_path):
+    pytest.importorskip("skyfield")
     from skyfield.api import load, load_file
     from skyfield.framelib import ecliptic_frame
+
+    kernel = kernel_path
+    with Engine.load(kernels={"DE440": kernel}, eop=None) as engine:
+        first = engine.positions_tt(2451545.0, bodies=("sun", "moon"))
     with closing(load_file(str(kernel))) as reference:
         instant = load.timescale(builtin=True).tt_jd(2451545.0)
-        _, longitude, _ = reference[399].at(instant).observe(reference[10]).apparent(deflectors=()).frame_latlon(ecliptic_frame)
+        _, longitude, _ = (
+            reference[399]
+            .at(instant)
+            .observe(reference[10])
+            .apparent(deflectors=())
+            .frame_latlon(ecliptic_frame)
+        )
     assert first.value["sun"]["longitude_deg"] == pytest.approx(longitude.degrees, abs=0.1 / 3600)
 
 
