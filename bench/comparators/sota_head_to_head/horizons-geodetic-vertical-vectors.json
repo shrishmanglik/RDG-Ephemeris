@@ -1,0 +1,193 @@
+{
+  "schema": "rdg-horizons-geodetic-vertical-vectors-v1",
+  "oracle_description": "Public-domain NASA JPL Horizons (https://ssd.jpl.nasa.gov/api/horizons.api) dual-altitude ICRF observer state vectors (EPHEM_TYPE='VECTORS', CENTER='coord@399', COORD_TYPE='GEODETIC', REF_SYSTEM='ICRF', altitudes 0 km and 1 km at identical geodetic latitude and longitude). The normalized difference (r_1km - r_0km) / ||r_1km - r_0km|| defines the physical geodetic vertical in ICRF.",
+  "horizons_api_endpoint": "https://ssd.jpl.nasa.gov/api/horizons.api",
+  "common_query_parameters": {
+    "format": "json",
+    "COMMAND": "'399'",
+    "OBJ_DATA": "'NO'",
+    "MAKE_EPHEM": "'YES'",
+    "EPHEM_TYPE": "'VECTORS'",
+    "CENTER": "'coord@399'",
+    "COORD_TYPE": "'GEODETIC'",
+    "REF_PLANE": "'FRAME'",
+    "REF_SYSTEM": "'ICRF'",
+    "OUT_UNITS": "'KM-S'",
+    "VEC_TABLE": "'2'",
+    "CSV_FORMAT": "'YES'"
+  },
+  "cases": [
+    {
+      "sample": "Delhi-1975",
+      "instant_utc": "1975-03-01T06:00:00+00:00",
+      "jd_utc": 2442472.75,
+      "latitude_deg": 28.6139,
+      "longitude_deg": 77.209,
+      "up_icrf": [
+        0.7262208188503791,
+        -0.4915329160157853,
+        0.4806232565570099
+      ],
+      "r_0km_icrf_km": [
+        -4635.544510472439,
+        3137.473300780491,
+        -3047.373209918095
+      ],
+      "r_1km_icrf_km": [
+        -4636.270731291289,
+        3137.964833696507,
+        -3047.853833174652
+      ],
+      "jpl_dut1_seconds": 0.53724,
+      "horizons_response_sha256": [
+        "2f2e798114308b448c8cebcffc4ebf357a350ffd59aebd0638bd70d48ed45720",
+        "5c19c2d347eb54a1e9164f5430c442b72d45250c4d5a0cda06ed8c0b1caa06e8"
+      ],
+      "iers_eop_snapshot": {
+        "dut1_seconds": 0.5397250000000007,
+        "xp_arcsec": -0.00475,
+        "yp_arcsec": 0.32725000000000004,
+        "quality": "final",
+        "source_sha256": "0baf00f67a39ab362a3e4f07d2a1f084842178523f56bcf5a861e7ac084d411a"
+      },
+      "expected_rdg_max_error_arcsec": 0.002047,
+      "retained_se_2_10_03_asc_discrepancy_arcsec": 8.223485
+    },
+    {
+      "sample": "Toronto-J2000",
+      "instant_utc": "2000-01-01T12:00:00+00:00",
+      "jd_utc": 2451545.0,
+      "latitude_deg": 43.6532,
+      "longitude_deg": -79.3832,
+      "up_icrf": [
+        -0.675134266061832,
+        -0.260239325629982,
+        0.6902674961111188
+      ],
+      "r_0km_icrf_km": [
+        4312.982562763634,
+        1662.49496730188,
+        -4380.138468234061
+      ],
+      "r_1km_icrf_km": [
+        4313.657697029696,
+        1662.75520662751,
+        -4380.828735730172
+      ],
+      "jpl_dut1_seconds": 0.35517,
+      "horizons_response_sha256": [
+        "a1d4f0b4574bf672127fc5b986554788b782333b9ebb6d09e3d6fc4debb5d4b6",
+        "016a5609d9a1402ccb0b92acd9f30840f064befd78a1bd8f63890cbce174dddc"
+      ],
+      "iers_eop_snapshot": {
+        "dut1_seconds": 0.35506600000000077,
+        "xp_arcsec": 0.043335,
+        "yp_arcsec": 0.37760499999999997,
+        "quality": "final",
+        "source_sha256": "0baf00f67a39ab362a3e4f07d2a1f084842178523f56bcf5a861e7ac084d411a"
+      },
+      "expected_rdg_max_error_arcsec": 0.001938,
+      "retained_se_2_10_03_asc_discrepancy_arcsec": 4.49152
+    },
+    {
+      "sample": "Singapore-2016",
+      "instant_utc": "2016-06-21T00:00:00+00:00",
+      "jd_utc": 2457560.5,
+      "latitude_deg": 1.3521,
+      "longitude_deg": 103.8198,
+      "up_icrf": [
+        0.9732234423381669,
+        0.22880049438799688,
+        0.022055952747308538
+      ],
+      "r_0km_icrf_km": [
+        -6207.362408980848,
+        -1459.323668255589,
+        -139.668638223742
+      ],
+      "r_1km_icrf_km": [
+        -6208.335632423186,
+        -1459.552468749977,
+        -139.6906941764893
+      ],
+      "jpl_dut1_seconds": -0.20492,
+      "horizons_response_sha256": [
+        "06bd378bf7bfdd202ca3023da9c43d5ab5e09f2c92a507f1eb7eff5dd4e2d3df",
+        "149bb21f858072f0a67c87452a8927a4dd46903108748cb47a12e749e4d10505"
+      ],
+      "iers_eop_snapshot": {
+        "dut1_seconds": -0.20485359999999986,
+        "xp_arcsec": 0.132244,
+        "yp_arcsec": 0.491491,
+        "quality": "final",
+        "source_sha256": "0baf00f67a39ab362a3e4f07d2a1f084842178523f56bcf5a861e7ac084d411a"
+      },
+      "expected_rdg_max_error_arcsec": 0.001601,
+      "retained_se_2_10_03_asc_discrepancy_arcsec": 3.044462
+    },
+    {
+      "sample": "Delhi-2026",
+      "instant_utc": "2026-11-03T00:00:00+00:00",
+      "jd_utc": 2461347.5,
+      "latitude_deg": 28.6139,
+      "longitude_deg": 77.209,
+      "up_icrf": [
+        -0.42613335576425015,
+        0.766817869622173,
+        0.48000074785068136
+      ],
+      "r_0km_icrf_km": [
+        2720.079489289426,
+        -4894.627747661453,
+        -3043.399724974958
+      ],
+      "r_1km_icrf_km": [
+        2720.50562264519,
+        -4895.394565531075,
+        -3043.879725722809
+      ],
+      "jpl_dut1_seconds": -0.05709,
+      "horizons_response_sha256": [
+        "724ae65a5fe6305c7627378fb95679cd9b9af2e468949b60c199a3ad923bb50e",
+        "8b4fa210465b8e7da54233585ceb8ddf730dcd7f731335a016f7b42ab82b428d"
+      ],
+      "iers_eop_snapshot": {
+        "dut1_seconds": -0.058298399999998196,
+        "xp_arcsec": 0.141208,
+        "yp_arcsec": 0.323132,
+        "quality": "predicted",
+        "source_sha256": "0baf00f67a39ab362a3e4f07d2a1f084842178523f56bcf5a861e7ac084d411a"
+      },
+      "expected_rdg_max_error_arcsec": 0.009008,
+      "retained_se_2_10_03_asc_discrepancy_arcsec": 0.605789
+    },
+    {
+      "sample": "Boundary-2019-06-22 (Magha Pada 4 vs 3)",
+      "instant_utc": "2019-06-22T10:55:00+00:00",
+      "jd_utc": 2458656.954861111,
+      "latitude_deg": -35.7,
+      "longitude_deg": -0.8,
+      "up_icrf": [
+        0.2358032856270711,
+        0.7767768682351743,
+        -0.583964474484219
+      ],
+      "jpl_dut1_seconds": -0.17437,
+      "horizons_response_sha256": [
+        "bff912e239547f4ffdcd79a447fdedbdf51caf1fc4076f4fef7789fc97596343",
+        "d7f0db9dfa6ee56d06630981a5b5e570bd1bcfefa0146e0a2e95c1c97e633f7e",
+        "79c89df74738d6ed6c52b1d9f3b33dd3342efc0ade5a4bcd0c7a53a310ec0828"
+      ],
+      "iers_eop_snapshot": {
+        "dut1_seconds": -0.17441363194445358,
+        "xp_arcsec": 0.14883920486101415,
+        "yp_arcsec": 0.42585689236111657,
+        "quality": "final",
+        "source_sha256": "0baf00f67a39ab362a3e4f07d2a1f084842178523f56bcf5a861e7ac084d411a"
+      },
+      "expected_rdg_asc_error_arcsec": 0.002637,
+      "expected_rdg_max_error_arcsec": 0.004921,
+      "retained_se_2_10_03_asc_discrepancy_arcsec": null
+    }
+  ]
+}

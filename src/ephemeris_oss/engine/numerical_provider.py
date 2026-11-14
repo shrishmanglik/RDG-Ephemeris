@@ -1271,18 +1271,45 @@ class JplErfaAstronomyProvider(AstronomyProvider):
         times = self.utc_time_scales(instant_utc)
         eop = self._resolve_eop(instant_utc)
         ut1 = erfa.utcut1(*times.utc, eop.dut1_seconds)
+        if eop.xp_arcsec != 0.0 or eop.yp_arcsec != 0.0:
+            lon_rad = math.radians(observer.longitude_deg)
+            lat_rad = math.radians(observer.latitude_deg)
+            vertical_itrs = np.array(
+                [
+                    math.cos(lat_rad) * math.cos(lon_rad),
+                    math.cos(lat_rad) * math.sin(lon_rad),
+                    math.sin(lat_rad),
+                ],
+                dtype=np.float64,
+            )
+            polar = erfa.pom00(
+                math.radians(eop.xp_arcsec / 3600.0),
+                math.radians(eop.yp_arcsec / 3600.0),
+                erfa.sp00(*times.tt),
+            )
+            vertical_tirs = polar.T @ vertical_itrs
+            house_lon_deg = math.degrees(math.atan2(float(vertical_tirs[1]), float(vertical_tirs[0])))
+            house_lat_deg = math.degrees(
+                math.atan2(
+                    float(vertical_tirs[2]),
+                    math.hypot(float(vertical_tirs[0]), float(vertical_tirs[1])),
+                )
+            )
+        else:
+            house_lon_deg = observer.longitude_deg
+            house_lat_deg = observer.latitude_deg
         angles = house_angles(
             tt_jd=times.tt_jd,
             ut1_jd=float(ut1[0] + ut1[1]),
-            longitude_deg=observer.longitude_deg,
-            latitude_deg=observer.latitude_deg,
+            longitude_deg=house_lon_deg,
+            latitude_deg=house_lat_deg,
         )
         layout = house_layout(
             system,
             ascendant_deg=angles.ascendant_deg,
             midheaven_deg=angles.midheaven_deg,
             local_apparent_sidereal_deg=angles.local_apparent_sidereal_deg,
-            latitude_deg=observer.latitude_deg,
+            latitude_deg=house_lat_deg,
             true_obliquity_deg=angles.true_obliquity_deg,
         )
         zodiac_mode = settings.zodiac_mode.strip().lower()

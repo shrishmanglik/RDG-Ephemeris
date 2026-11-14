@@ -92,6 +92,8 @@ def test_public_documentation_files_exist_and_have_zero_em_dashes() -> None:
     assert "retained external-environment" in readme_text.lower()
     assert "7ddccc06799d4f76dbe0f3dca349d33205a98bf7e05d91beb8f93b9c12ed6393" in wp_text
     assert "bench/studies/E2-accuracy/" in wp_text
+    assert "bench/comparators/sota_head_to_head/run_sota_head_to_head.py" in wp_text
+    assert "bench/comparators/sota_head_to_head/run_sota_head_to_head.py" in readme_text
 
 
 def test_architecture_reference_covers_all_required_mathematical_sections() -> None:

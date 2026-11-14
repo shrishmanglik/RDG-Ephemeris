@@ -8,8 +8,9 @@
   - [`evidence/monthly-full-span-de440-benchmark.json`](../evidence/monthly-full-span-de440-benchmark.json) (`receipt_sha256: 3baf421f91696e6bd684a71975e95a6a139ba448f0f8871e7aacd23d15f15e83`)
   - [`evidence/sota-ephemeris-evaluation-matrix.json`](../evidence/sota-ephemeris-evaluation-matrix.json) (`receipt_sha256: 66597bf9a98d7d4b6c491c19d2045dc4fbfc7e41c7da9a2cdb7ef5312a36d3df`; third-party comparator slots intentionally marked `UNKNOWN` inside the clean-room tree)
   - [`evidence/horizons-iae-benchmark.json`](../evidence/horizons-iae-benchmark.json), [`docs/ACCURACY.md`](ACCURACY.md), and [`docs/researcher-benchmark.json`](researcher-benchmark.json)
-- **Retained External-Environment Comparator Receipt (isolated outside the Apache-2.0 package tree):**
+- **Retained External-Environment Comparator Receipt & Distributable Isolated Harness (excluded from runtime wheels/sdists):**
   - [`evidence/real-world-sota-head-to-head-benchmarks.json`](../evidence/real-world-sota-head-to-head-benchmarks.json) (`raw_benchmark_receipt_sha256: 7ddccc06799d4f76dbe0f3dca349d33205a98bf7e05d91beb8f93b9c12ed6393`, canonical JSON payload digest excluding self-referential hash fields)
+  - [`bench/comparators/sota_head_to_head/run_sota_head_to_head.py`](../bench/comparators/sota_head_to_head/run_sota_head_to_head.py), [`bench/comparators/sota_head_to_head/reference-locators.json`](../bench/comparators/sota_head_to_head/reference-locators.json), [`bench/comparators/sota_head_to_head/horizons-geodetic-vertical-vectors.json`](../bench/comparators/sota_head_to_head/horizons-geodetic-vertical-vectors.json), and [`bench/comparators/sota_head_to_head/requirements-external-venv.txt`](../bench/comparators/sota_head_to_head/requirements-external-venv.txt)
 
 ---
 
@@ -127,7 +128,7 @@ Computes *Ahargana* days since the `3102 BCE` Kali Yuga epoch (`JD 588465.5`) an
 
 ## 6. Retained External-Environment Head-to-Head SOTA Ephemeris Benchmarks & Evaluations
 
-Unlike Sections 2-5 (which run directly from a clean repository checkout using only `ephemeris-oss` and NASA JPL reference vectors), the four head-to-head third-party comparator tables in Sections 6.1-6.4 report **retained external-environment measurements** stored in [`evidence/real-world-sota-head-to-head-benchmarks.json`](../evidence/real-world-sota-head-to-head-benchmarks.json) (canonical JSON payload digest `raw_benchmark_receipt_sha256: 7ddccc06799d4f76dbe0f3dca349d33205a98bf7e05d91beb8f93b9c12ed6393`). Because `ephemeris-oss` strictly isolates its Apache-2.0 source, build, and runtime dependencies from third-party copyleft packages and external archives, the third-party comparator harness is intentionally not bundled inside the clean-room repository (`tools/evaluate_sota_ephemerides.py` leaves third-party comparator fields marked `UNKNOWN` in `evidence/sota-ephemeris-evaluation-matrix.json` by design). These head-to-head runs were executed in an isolated external virtual environment on identical `Windows 11` (`16-core AMD64`, `Python 3.13.13`, `rustc 1.96.0`, `Node V8 v24.16.0`) hardware against the exact `2,100` NASA JPL Horizons `DE441` vectors in `bench/studies/E2-accuracy/` and the SHA-256-verified `de440.bsp` kernel (`sha256: a4ce9bf9b3282becc9f4b2ac3cebe03a2ae7599981aabd7265fd8482fff7c4b5`), comparing `ephemeris-oss 0.2.0.dev1` (`6.68 MB` embedded Chebyshev, `de440.bsp`, native Rust `ephemeris-core`, and browser `web/ephemeris-browser.js`) against externally installed `SE 2.10.03` (Swiss-compatible convention, external archive and built-in Moshier), `Skyfield 1.55`, `Astropy 8.0.2`, and `PyEphem 4.2.1`.
+Unlike Sections 2-5 (which run directly inside the clean runtime environment using only `ephemeris-oss` and NASA JPL reference vectors), the four head-to-head third-party comparator tables in Sections 6.1-6.4 report **retained external-environment measurements** stored in [`evidence/real-world-sota-head-to-head-benchmarks.json`](../evidence/real-world-sota-head-to-head-benchmarks.json) (canonical JSON payload digest `raw_benchmark_receipt_sha256: 7ddccc06799d4f76dbe0f3dca349d33205a98bf7e05d91beb8f93b9c12ed6393`) and reproduced via the isolated comparator runner in [`bench/comparators/sota_head_to_head/run_sota_head_to_head.py`](../bench/comparators/sota_head_to_head/run_sota_head_to_head.py). Because `ephemeris-oss` strictly isolates its Apache-2.0 runtime package (`src/ephemeris_oss`), `pyproject.toml` dependencies, and `wheel`/`sdist` distribution archives from third-party copyleft packages and external archives, `tools/evaluate_sota_ephemerides.py` leaves third-party comparator fields marked `UNKNOWN` in `evidence/sota-ephemeris-evaluation-matrix.json`, while `bench/comparators/sota_head_to_head/` provides the isolated external-venv runner and SHA-256 reference locators outside the packaged wheel/sdist (Section 7.2). These head-to-head runs were executed in an isolated external virtual environment on identical `Windows 11` (`16-core AMD64`, `Python 3.13.13`, `rustc 1.96.0`, `Node V8 v24.16.0`) hardware against the exact `2,100` NASA JPL Horizons `DE441` vectors in `bench/studies/E2-accuracy/` and the SHA-256-verified `de440.bsp` kernel (`sha256: a4ce9bf9b3282becc9f4b2ac3cebe03a2ae7599981aabd7265fd8482fff7c4b5`), comparing `ephemeris-oss 0.2.0.dev1` (`6.68 MB` embedded Chebyshev, `de440.bsp`, native Rust `ephemeris-core`, and browser `web/ephemeris-browser.js`) against externally installed `SE 2.10.03` (Swiss-compatible convention, external archive and built-in Moshier), `Skyfield 1.55`, `Astropy 8.0.2`, and `PyEphem 4.2.1`.
 
 ### 6.1 Accuracy Against Independent NASA JPL Horizons `DE441` (`2,100` Rows, `1800..2100 CE`)
 
@@ -220,6 +221,33 @@ python tools/check_internal_ids.py src tests
 python tools/check_claims.py
 ```
 
-### 7.2 Scope & Inputs of the Retained External Comparator Receipt (Section 6)
+### 7.2 Reproducing the External-Environment Head-to-Head Comparator Suite (Section 6)
 
-The four head-to-head third-party comparator tables in Sections 6.1-6.4 are **not** regenerated by `tools/evaluate_sota_ephemerides.py` from a clean checkout because third-party copyleft packages and archives are excluded from this repository. Instead, [`evidence/real-world-sota-head-to-head-benchmarks.json`](../evidence/real-world-sota-head-to-head-benchmarks.json) (`raw_benchmark_receipt_sha256: 7ddccc06799d4f76dbe0f3dca349d33205a98bf7e05d91beb8f93b9c12ed6393`) records the retained external-environment benchmark artifact alongside its exact comparator package versions (`SE 2.10.03` under Swiss-compatible convention with external archive and built-in Moshier, `Skyfield 1.55`, `Astropy 8.0.2`, and `PyEphem 4.2.1`) and its exact public-domain reference inputs (`bench/studies/E2-accuracy/` `2,100` Horizons `DE441` `QUANTITIES=45` apparent ICRF vectors across `1800..2100 CE`, Horizons dual-altitude `0 km` / `1 km` geodetic vertical vectors, and `de440.bsp` `sha256: a4ce9bf9b3282becc9f4b2ac3cebe03a2ae7599981aabd7265fd8482fff7c4b5`). Independent researchers wishing to re-measure third-party comparators must provision those external packages and archives in a separate environment outside the `ephemeris-oss` tree.
+To preserve strict licensing and runtime hygiene (`MANIFEST.in` `prune bench`; `pyproject.toml` packaging `src/ephemeris_oss` only), all third-party comparator packages stay out of `ephemeris-oss` runtime dependencies and release archives, while the repository ships the complete isolated comparator harness in [`bench/comparators/sota_head_to_head/`](../bench/comparators/sota_head_to_head/README.md):
+
+- **Isolated Comparator Runner:** `bench/comparators/sota_head_to_head/run_sota_head_to_head.py` (imports zero third-party comparators at module load time; loads external comparators dynamically only inside an external virtual environment).
+- **Exact Reference Locators & SHA-256 Digests:** `bench/comparators/sota_head_to_head/reference-locators.json` and `bench/comparators/sota_head_to_head/horizons-geodetic-vertical-vectors.json` (pinning `bench/studies/E2-accuracy/raw-t1.json` `sha256: def08c7b5664a5c8f03566482df6db8253581e647adf96f7fd1242a85b680be2`, public NASA JPL `de440.bsp` `sha256: a4ce9bf9b3282becc9f4b2ac3cebe03a2ae7599981aabd7265fd8482fff7c4b5`, USNO/IERS `finals2000A.all`, and the 5 NASA JPL Horizons `0 km`/`1 km` geodetic vertical vectors).
+- **External Comparator Package Specs & Archive Disclosure:** `bench/comparators/sota_head_to_head/requirements-external-venv.txt` (`Skyfield 1.55`, `Astropy 8.0.2`, `PyEphem 4.2.1`, and `SE 2.10.03` under Swiss-compatible convention). Upstream binary archive tables for `SE 2.10.03` (`1800..2399 CE`) are third-party copyleft assets not redistributed inside this Apache-2.0 repository; their upstream public locator and file SHA-256 digests are documented in `bench/comparators/sota_head_to_head/reference-locators.json` (when `--se1-dir` is omitted, the runner executes built-in Moshier and all other comparators cleanly and marks only the external-archive slot `SKIPPED_NO_EXTERNAL_SE1_ARCHIVE`).
+
+```bash
+# 1. Verify in-repo reference digests in any clean non-copyleft runtime environment
+python bench/comparators/sota_head_to_head/run_sota_head_to_head.py \
+  --mode verify-locators \
+  --out /tmp/rdg-verify-locators.json
+
+# 2. Provision NASA JPL de440.bsp, IERS finals2000A.all, and the native Rust cdylib (outside repo tree)
+ephemeris-oss kernels fetch --verify --eop
+CARGO_TARGET_DIR=/tmp/rdg-rust-target cargo build --release --manifest-path rust/ephemeris-core/Cargo.toml
+
+# 3. Provision a separate external virtual environment outside the clean runtime environment
+python3 -m venv /tmp/rdg-sota-comparator-venv
+/tmp/rdg-sota-comparator-venv/bin/pip install .
+/tmp/rdg-sota-comparator-venv/bin/pip install -r bench/comparators/sota_head_to_head/requirements-external-venv.txt
+
+# 4. Run the isolated head-to-head benchmark suite (pass --quick-smoke for a fast smoke check,
+#    --mode permissive-only for MIT/BSD comparators only, or --se1-dir /path/to/external-archive)
+/tmp/rdg-sota-comparator-venv/bin/python bench/comparators/sota_head_to_head/run_sota_head_to_head.py \
+  --mode full \
+  --rust-cdylib /tmp/rdg-rust-target/release/libephemeris_core.so \
+  --out /tmp/rdg-sota-head-to-head-results.json
+```
