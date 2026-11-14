@@ -12,8 +12,8 @@ This directory (`bench/comparators/sota_head_to_head/`) provides the distributab
 
 - [`run_sota_head_to_head.py`](run_sota_head_to_head.py): Multi-mode CLI runner (`--mode verify-locators`, `--mode rdg-only`, `--mode permissive-only`, and `--mode full`, plus `--quick-smoke`).
 - [`reference-locators.json`](reference-locators.json): SHA-256-pinned manifest of committed NASA JPL Horizons reference vectors, public NASA JPL / IERS download URLs, external PyPI comparator specs, and upstream `.se1` archive digests.
-- [`horizons-geodetic-vertical-vectors.json`](horizons-geodetic-vertical-vectors.json): Public-domain NASA JPL Horizons `coord@399` dual-altitude (`0 km` and `1 km`) ICRF observer vectors and IERS `finals2000A.all` EOP snapshots for Evaluation 4 (`WGS84 + IERS Polar-Motion Geodetic Houses`).
-- [`requirements-external-venv.txt`](requirements-external-venv.txt): Pinned external-venv package list (`skyfield==1.55`, `astropy==8.0.2`, `ephem==4.2.1`, `pyswisseph==2.10.3.2`).
+- [`horizons-geodetic-vertical-vectors.json`](horizons-geodetic-vertical-vectors.json): Public-domain NASA JPL Horizons `COMMAND='399'` / `CENTER='coord@399'` dual-altitude (`0 km` and `1 km`) ICRF state vectors (`up_icrf = normalize(r_0km - r_1km)`) and IERS `finals2000A.all` EOP snapshots for Evaluation 4 (`WGS84 + IERS Polar-Motion Geodetic Houses`).
+- [`requirements-external-venv.txt`](requirements-external-venv.txt): Pinned external-venv package list (`skyfield==1.55`, `astropy==8.0.2`, `ephem==4.2.1`, `pyswisseph==2.10.3.2`; note that `pyswisseph==2.10.3.2` publishes prebuilt binary wheels on Python 3.11 and 3.12, whereas Python 3.13+ builds from source with a C toolchain).
 
 ## Step 1: Verify In-Repo Reference Locators (Clean Non-Copyleft Runtime)
 

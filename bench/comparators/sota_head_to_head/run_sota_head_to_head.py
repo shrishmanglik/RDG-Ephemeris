@@ -161,6 +161,109 @@ def _has_valid_se1_files(se1_dir: Path | None, locators: dict[str, Any]) -> bool
     return all((se1_dir / fname).is_file() for fname in expected_files)
 
 
+def validate_horizons_vertical_vectors(
+    vert_data: dict[str, Any],
+    *,
+    expected_cases: int = 5,
+    expected_raw_vector_cases: int = 4,
+) -> tuple[bool, dict[str, Any]]:
+    """Verify outward vertical convention (COMMAND=399 / CENTER=coord@399: up_icrf = normalize(r_0km - r_1km))."""
+    cases = vert_data.get("cases", [])
+    if not isinstance(cases, list) or len(cases) != expected_cases:
+        return False, {
+            "cases": len(cases) if isinstance(cases, list) else 0,
+            "raw_vector_cases": 0,
+            "outward_direction_verified": False,
+            "min_raw_dot_product": None,
+            "min_wgs84_dot_product": None,
+        }
+
+    raw_vector_cases = 0
+    raw_dots: list[float] = []
+    wgs84_dots: list[float] = []
+    all_valid = True
+
+    for case in cases:
+        try:
+            up = np.asarray(case["up_icrf"], dtype=np.float64)
+            if up.shape != (3,) or not np.all(np.isfinite(up)):
+                all_valid = False
+                continue
+            up_norm = float(np.linalg.norm(up))
+            if abs(up_norm - 1.0) > 1e-9:
+                all_valid = False
+                continue
+            up_unit = up / up_norm
+
+            # Independent WGS84 + IERS outward normal check across all 5 cases
+            dt = datetime.fromisoformat(case["instant_utc"])
+            lat_rad = math.radians(float(case["latitude_deg"]))
+            lon_rad = math.radians(float(case["longitude_deg"]))
+            up_itrs = np.array(
+                [
+                    math.cos(lat_rad) * math.cos(lon_rad),
+                    math.cos(lat_rad) * math.sin(lon_rad),
+                    math.sin(lat_rad),
+                ],
+                dtype=np.float64,
+            )
+            jd1, jd2 = erfa.dtf2d(
+                "UTC",
+                dt.year,
+                dt.month,
+                dt.day,
+                dt.hour,
+                dt.minute,
+                dt.second + dt.microsecond / 1e6,
+            )
+            tai1, tai2 = erfa.utctai(jd1, jd2)
+            tt1, tt2 = erfa.taitt(tai1, tai2)
+            iers_snap = case["iers_eop_snapshot"]
+            ut11, ut12 = erfa.utcut1(jd1, jd2, float(iers_snap["dut1_seconds"]))
+            xp_rad = math.radians(float(iers_snap["xp_arcsec"]) / 3600.0)
+            yp_rad = math.radians(float(iers_snap["yp_arcsec"]) / 3600.0)
+            c2t = np.asarray(erfa.c2t06a(tt1, tt2, ut11, ut12, xp_rad, yp_rad), dtype=np.float64)
+            up_wgs84_icrf = c2t.T @ up_itrs
+            dot_wgs84 = float(np.dot(up_wgs84_icrf, up_unit))
+            wgs84_dots.append(dot_wgs84)
+            if dot_wgs84 <= 0.999999999:
+                all_valid = False
+
+            has_r0 = "r_0km_icrf_km" in case
+            has_r1 = "r_1km_icrf_km" in case
+            if has_r0 != has_r1:
+                all_valid = False
+            elif has_r0 and has_r1:
+                raw_vector_cases += 1
+                r0 = np.asarray(case["r_0km_icrf_km"], dtype=np.float64)
+                r1 = np.asarray(case["r_1km_icrf_km"], dtype=np.float64)
+                # Horizons COMMAND='399' / CENTER='coord@399' returns r_Earth - r_observer,
+                # so raising the observer from 0 km to 1 km shifts r by -1 km * up_icrf.
+                diff = r0 - r1
+                diff_norm = float(np.linalg.norm(diff))
+                if abs(diff_norm - 1.0) > 1e-5:
+                    all_valid = False
+                    continue
+                derived_up = diff / diff_norm
+                dot_raw = float(np.dot(derived_up, up_unit))
+                raw_dots.append(dot_raw)
+                if dot_raw <= 0.999999999:
+                    all_valid = False
+        except (KeyError, TypeError, ValueError):
+            all_valid = False
+
+    if raw_vector_cases != expected_raw_vector_cases:
+        all_valid = False
+
+    return all_valid, {
+        "cases": len(cases),
+        "raw_vector_cases": raw_vector_cases,
+        "outward_direction_verified": all_valid,
+        "min_raw_dot_product": round(min(raw_dots), 12) if raw_dots else None,
+        "min_wgs84_dot_product": round(min(wgs84_dots), 12) if wgs84_dots else None,
+    }
+
+
 def verify_locators(
     repo_root: Path,
     *,
@@ -169,7 +272,8 @@ def verify_locators(
     se1_dir: Path | None,
     rust_cdylib: Path | None,
 ) -> dict[str, Any]:
-    locators_path = HERE / "reference-locators.json"
+    candidate_locators = repo_root / "bench" / "comparators" / "sota_head_to_head" / "reference-locators.json"
+    locators_path = candidate_locators if candidate_locators.is_file() else (HERE / "reference-locators.json")
     locators = json.loads(locators_path.read_text(encoding="utf-8"))
 
     raw_t1_rel = locators["in_repo_references"]["horizons_de441_e2_accuracy"]["raw_t1_relpath"]
@@ -181,16 +285,31 @@ def verify_locators(
     raw_t1_ok = raw_t1_path.is_file() and _sha256_file(raw_t1_path) == exp_raw_sha
     manifest_ok = manifest_path.is_file()
 
-    vert_rel = locators["in_repo_references"]["horizons_geodetic_vertical_vectors"]["relpath"]
+    vert_meta = locators["in_repo_references"]["horizons_geodetic_vertical_vectors"]
+    vert_rel = vert_meta["relpath"]
+    exp_vert_sha = vert_meta["sha256"]
+    exp_vert_cases = int(vert_meta["cases"])
+    exp_raw_vec_cases = int(vert_meta.get("raw_vector_cases", 4))
     vert_path = repo_root / vert_rel
-    vert_ok = False
-    vert_cases = 0
+    vert_sha_ok = False
+    actual_vert_sha: str | None = None
+    vert_details: dict[str, Any] = {
+        "cases": 0,
+        "raw_vector_cases": 0,
+        "outward_direction_verified": False,
+        "min_raw_dot_product": None,
+        "min_wgs84_dot_product": None,
+    }
     if vert_path.is_file():
+        actual_vert_sha = _sha256_file(vert_path)
+        vert_sha_ok = actual_vert_sha == exp_vert_sha
         vert_data = json.loads(vert_path.read_text(encoding="utf-8"))
-        vert_cases = len(vert_data.get("cases", []))
-        vert_ok = vert_cases == int(
-            locators["in_repo_references"]["horizons_geodetic_vertical_vectors"]["cases"]
+        _, vert_details = validate_horizons_vertical_vectors(
+            vert_data,
+            expected_cases=exp_vert_cases,
+            expected_raw_vector_cases=exp_raw_vec_cases,
         )
+    vert_ok = bool(vert_sha_ok and vert_details["outward_direction_verified"])
 
     exp_de440_sha = locators["public_download_references"]["nasa_jpl_de440_bsp"]["sha256"]
     de440_status: dict[str, Any] = {"provisioned": False, "verified": False}
@@ -235,7 +354,10 @@ def verify_locators(
             "horizons_geodetic_vertical_vectors": {
                 "relpath": vert_rel,
                 "verified": vert_ok,
-                "cases": vert_cases,
+                "sha256_matches_pinned": vert_sha_ok,
+                "expected_sha256": exp_vert_sha,
+                "actual_sha256": actual_vert_sha,
+                **vert_details,
             },
             "nasa_jpl_de440_bsp": de440_status,
             "iers_finals2000a_all": eop_status,
@@ -1028,9 +1150,13 @@ def eval4_wgs84_geodetic_houses_vs_horizons_physical_vertical(
     eop_path: Path | None,
     mods: dict[str, Any],
 ) -> dict[str, Any]:
-    """Live-compute WGS84 + IERS polar-motion geodetic house cusps vs Horizons 0-to-1 km physical vertical."""
-    vectors_path = HERE / "horizons-geodetic-vertical-vectors.json"
+    """Live-compute WGS84 + IERS polar-motion geodetic house cusps vs Horizons COMMAND=399 / CENTER=coord@399 outward vertical up_icrf = normalize(r_0km - r_1km)."""
+    candidate_vert = repo_root / "bench" / "comparators" / "sota_head_to_head" / "horizons-geodetic-vertical-vectors.json"
+    vectors_path = candidate_vert if candidate_vert.is_file() else (HERE / "horizons-geodetic-vertical-vectors.json")
     vectors_data = json.loads(vectors_path.read_text(encoding="utf-8"))
+    valid_vert, vert_info = validate_horizons_vertical_vectors(vectors_data)
+    if not valid_vert:
+        raise ValueError(f"Invalid Horizons geodetic vertical reference vectors: {vert_info}")
     swe = mods.get("swe")
 
     eop_table: IersFinals2000A | None = None
@@ -1167,7 +1293,7 @@ def eval4_wgs84_geodetic_houses_vs_horizons_physical_vertical(
         benchmarks.append(row_out)
 
     return {
-        "oracle": "NASA JPL Horizons dual-altitude ICRF observer vectors (0 km and 1 km height at identical geodetic site -> physical geodetic vertical)",
+        "oracle": "NASA JPL Horizons COMMAND='399' / CENTER='coord@399' dual-altitude ICRF state vectors (0 km and 1 km height at identical geodetic site -> outward physical geodetic vertical up_icrf = normalize(r_0km - r_1km))",
         "eop_source": eop_source,
         "benchmarks": benchmarks,
     }

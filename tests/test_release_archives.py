@@ -11,9 +11,10 @@ def test_release_gate_clean_and_private_control(tmp_path):
         with zipfile.ZipFile(p,"w") as z:
             for key,value in files.items():z.writestr(key,value)
         return p
-    clean={"pkg/__init__.py":"VALUE=1", "pkg.dist-info/licenses/LICENSE":"Apache-2.0", "pkg.dist-info/licenses/NOTICE":"Copyright owner"}
+    clean={"pkg/__init__.py":"VALUE=1", "pkg.dist-info/METADATA":"Metadata-Version: 2.1\nName: pkg\nRequires-Dist: jplephem>=2.21\nRequires-Dist: pytest>=8; extra == \"test\"\n", "pkg.dist-info/licenses/LICENSE":"Apache-2.0", "pkg.dist-info/licenses/NOTICE":"Copyright owner"}
     for _ in range(2):
         assert gate.inspect(build("clean.whl",clean)) == []
         assert gate.inspect(build("private.whl",{**clean,"evidence/internal.txt":"private"}))
         assert gate.inspect(build("kernel.whl",{**clean,"pkg/input.bsp":"data"}))
         assert gate.inspect(build("identifier.whl",{**clean,"pkg/doc.txt":"the-last-" + "product"}))
+        assert gate.inspect(build("comparator_meta.whl",{**clean,"pkg.dist-info/METADATA":"Metadata-Version: 2.1\nName: pkg\nRequires-Dist: skyfield==1.55; extra == \"test\"\n"}))

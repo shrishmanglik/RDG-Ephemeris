@@ -1,6 +1,6 @@
 {
   "schema": "rdg-horizons-geodetic-vertical-vectors-v1",
-  "oracle_description": "Public-domain NASA JPL Horizons (https://ssd.jpl.nasa.gov/api/horizons.api) dual-altitude ICRF observer state vectors (EPHEM_TYPE='VECTORS', CENTER='coord@399', COORD_TYPE='GEODETIC', REF_SYSTEM='ICRF', altitudes 0 km and 1 km at identical geodetic latitude and longitude). The normalized difference (r_1km - r_0km) / ||r_1km - r_0km|| defines the physical geodetic vertical in ICRF.",
+  "oracle_description": "Public-domain NASA JPL Horizons (https://ssd.jpl.nasa.gov/api/horizons.api) dual-altitude ICRF state vectors for COMMAND='399' (Earth center) relative to CENTER='coord@399' (topocentric geodetic observer at altitudes 0 km and 1 km at identical geodetic latitude and longitude, EPHEM_TYPE='VECTORS', COORD_TYPE='GEODETIC', REF_SYSTEM='ICRF'). Because Horizons returns Earth-center position relative to the observer (r = r_Earth - r_observer), raising the observer by 1 km shifts r by -1 km along the outward vertical, so the normalized difference up_icrf = (r_0km - r_1km) / ||r_0km - r_1km|| defines the physical outward geodetic vertical in ICRF.",
   "horizons_api_endpoint": "https://ssd.jpl.nasa.gov/api/horizons.api",
   "common_query_parameters": {
     "format": "json",

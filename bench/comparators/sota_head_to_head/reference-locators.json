@@ -15,8 +15,11 @@
     },
     "horizons_geodetic_vertical_vectors": {
       "relpath": "bench/comparators/sota_head_to_head/horizons-geodetic-vertical-vectors.json",
+      "sha256": "19f2e63f3df1ae3bcf73023a6622ac14a6d2ef07d3a486e71a7bb1eb95d27493",
       "cases": 5,
-      "source_oracle": "NASA JPL Horizons EPHEM_TYPE=VECTORS CENTER='coord@399' dual-altitude (0 km and 1 km) ICRF observer vectors + USNO/IERS finals2000A.all snapshot",
+      "raw_vector_cases": 4,
+      "outward_vertical_formula": "up_icrf = (r_0km_icrf_km - r_1km_icrf_km) / ||r_0km_icrf_km - r_1km_icrf_km||",
+      "source_oracle": "NASA JPL Horizons COMMAND='399' / CENTER='coord@399' EPHEM_TYPE=VECTORS dual-altitude (0 km and 1 km) ICRF state vectors + USNO/IERS finals2000A.all snapshot",
       "license": "Public Domain (NASA JPL / USNO / IERS)"
     },
     "retained_head_to_head_receipt": {

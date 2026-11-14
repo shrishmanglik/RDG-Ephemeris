@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+import hashlib
 import importlib.util
 import json
 import math
@@ -52,11 +53,45 @@ def test_distributable_comparator_runner_and_locators_exist_and_pass_hygiene() -
     assert locators["in_repo_references"]["horizons_de441_e2_accuracy"]["sha256_raw_t1"] == (
         "def08c7b5664a5c8f03566482df6db8253581e647adf96f7fd1242a85b680be2"
     )
+    vert_bytes = (COMPARATOR_DIR / "horizons-geodetic-vertical-vectors.json").read_bytes()
+    vert_sha256 = hashlib.sha256(vert_bytes).hexdigest()
+    assert (
+        locators["in_repo_references"]["horizons_geodetic_vertical_vectors"]["sha256"]
+        == vert_sha256
+    )
+    vert_json = json.loads(vert_bytes.decode("utf-8"))
+    oracle_desc = vert_json["oracle_description"]
+    assert "(r_0km - r_1km) / ||r_0km - r_1km||" in oracle_desc
+    assert "(r_1km - r_0km)" not in oracle_desc
+    raw_count = 0
+    for case in vert_json["cases"]:
+        if "r_0km_icrf_km" in case and "r_1km_icrf_km" in case:
+            raw_count += 1
+            r0 = np.asarray(case["r_0km_icrf_km"], dtype=np.float64)
+            r1 = np.asarray(case["r_1km_icrf_km"], dtype=np.float64)
+            up = np.asarray(case["up_icrf"], dtype=np.float64)
+            diff = r0 - r1
+            derived = diff / np.linalg.norm(diff)
+            assert float(np.dot(derived, up)) > 0.999999999, case["sample"]
+    assert raw_count == 4
     assert locators["public_download_references"]["nasa_jpl_de440_bsp"]["sha256"] == (
         "a4ce9bf9b3282becc9f4b2ac3cebe03a2ae7599981aabd7265fd8482fff7c4b5"
     )
     assert "external_comparator_packages" in locators
     assert "external_archive_disclosure" in locators
+
+    import re
+    import tomllib
+
+    pyproject_data = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    declared_reqs = list(pyproject_data.get("project", {}).get("dependencies", []))
+    for extra_reqs in pyproject_data.get("project", {}).get("optional-dependencies", {}).values():
+        declared_reqs.extend(extra_reqs)
+    declared_pkg_names = {
+        re.split(r"[=<>!~;\s\[]", req.strip(), maxsplit=1)[0].lower() for req in declared_reqs
+    }
+    for banned_comp in ("skyfield", "astropy", "ephem", "pyephem", "sw" + "isseph", "py" + "sw" + "isseph"):
+        assert banned_comp not in declared_pkg_names, f"Comparator {banned_comp} leaked into pyproject.toml"
 
     readme_text = (ROOT / "README.md").read_text(encoding="utf-8")
     wp_text = (ROOT / "docs" / "RDG-EPHEMERIS-WHITEPAPER-AND-BENCHMARKS.md").read_text(encoding="utf-8")
@@ -98,7 +133,86 @@ def test_comparator_runner_verify_locators_executes_without_third_party_comparat
     assert receipt["in_repo_references_verified"] is True
     assert receipt["checks"]["horizons_de441_raw_t1"]["verified"] is True
     assert receipt["checks"]["horizons_geodetic_vertical_vectors"]["verified"] is True
+    assert receipt["checks"]["horizons_geodetic_vertical_vectors"]["sha256_matches_pinned"] is True
+    assert receipt["checks"]["horizons_geodetic_vertical_vectors"]["outward_direction_verified"] is True
     assert len(receipt["receipt_sha256"]) == 64
+
+
+def test_verify_locators_rejects_reversed_vertical_and_digest_mutation(
+    tmp_path: Path, monkeypatch
+) -> None:
+    runner_mod = _load_tool_module(
+        "sota_runner_verify_mod",
+        "bench/comparators/sota_head_to_head/run_sota_head_to_head.py",
+    )
+
+    clean = runner_mod.verify_locators(
+        ROOT, de440_path=None, eop_path=None, se1_dir=None, rust_cdylib=None
+    )
+    assert clean["in_repo_references_verified"] is True
+    vert_check = clean["checks"]["horizons_geodetic_vertical_vectors"]
+    assert vert_check["verified"] is True
+    assert vert_check["sha256_matches_pinned"] is True
+    assert vert_check["outward_direction_verified"] is True
+    assert vert_check["min_raw_dot_product"] > 0.999999999
+
+    # Negative Control 1: in-memory negation of first case's up_icrf (raw bytes unchanged)
+    orig_loads = json.loads
+
+    def _negate_case0_loads(s, *args, **kwargs):
+        obj = orig_loads(s, *args, **kwargs)
+        if isinstance(obj, dict) and obj.get("schema") == "rdg-horizons-geodetic-vertical-vectors-v1":
+            obj["cases"][0]["up_icrf"] = [-float(v) for v in obj["cases"][0]["up_icrf"]]
+        return obj
+
+    monkeypatch.setattr(json, "loads", _negate_case0_loads)
+    negated_0 = runner_mod.verify_locators(
+        ROOT, de440_path=None, eop_path=None, se1_dir=None, rust_cdylib=None
+    )
+    assert negated_0["in_repo_references_verified"] is False
+    assert negated_0["checks"]["horizons_geodetic_vertical_vectors"]["verified"] is False
+    assert negated_0["checks"]["horizons_geodetic_vertical_vectors"]["outward_direction_verified"] is False
+
+    # Negative Control 2: in-memory negation of 5th case's up_icrf (case without raw r_0km/r_1km)
+    def _negate_case4_loads(s, *args, **kwargs):
+        obj = orig_loads(s, *args, **kwargs)
+        if isinstance(obj, dict) and obj.get("schema") == "rdg-horizons-geodetic-vertical-vectors-v1":
+            obj["cases"][4]["up_icrf"] = [-float(v) for v in obj["cases"][4]["up_icrf"]]
+        return obj
+
+    monkeypatch.setattr(json, "loads", _negate_case4_loads)
+    negated_4 = runner_mod.verify_locators(
+        ROOT, de440_path=None, eop_path=None, se1_dir=None, rust_cdylib=None
+    )
+    assert negated_4["in_repo_references_verified"] is False
+    assert negated_4["checks"]["horizons_geodetic_vertical_vectors"]["verified"] is False
+    assert negated_4["checks"]["horizons_geodetic_vertical_vectors"]["outward_direction_verified"] is False
+    monkeypatch.setattr(json, "loads", orig_loads)
+
+    # Negative Control 3: on-disk content mutation breaks pinned SHA-256 digest verification
+    fake_root = tmp_path / "repo"
+    (fake_root / "bench" / "studies" / "E2-accuracy").mkdir(parents=True)
+    (fake_root / "bench" / "comparators" / "sota_head_to_head").mkdir(parents=True)
+    for rel in (
+        "bench/studies/E2-accuracy/raw-t1.json",
+        "bench/studies/E2-accuracy/manifest.json",
+        "bench/comparators/sota_head_to_head/reference-locators.json",
+    ):
+        (fake_root / rel).write_bytes((ROOT / rel).read_bytes())
+    mutated_vert = orig_loads(
+        (COMPARATOR_DIR / "horizons-geodetic-vertical-vectors.json").read_text(encoding="utf-8")
+    )
+    mutated_vert["oracle_description"] += " [mutated]"
+    (
+        fake_root / "bench" / "comparators" / "sota_head_to_head" / "horizons-geodetic-vertical-vectors.json"
+    ).write_text(json.dumps(mutated_vert, indent=2) + "\n", encoding="utf-8")
+
+    tampered = runner_mod.verify_locators(
+        fake_root, de440_path=None, eop_path=None, se1_dir=None, rust_cdylib=None
+    )
+    assert tampered["in_repo_references_verified"] is False
+    assert tampered["checks"]["horizons_geodetic_vertical_vectors"]["sha256_matches_pinned"] is False
+    assert tampered["checks"]["horizons_geodetic_vertical_vectors"]["verified"] is False
 
 
 def test_wgs84_polar_motion_geodetic_houses_match_horizons_physical_vertical() -> None:
