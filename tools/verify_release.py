@@ -7,7 +7,7 @@ import zipfile
 
 PRIVATE = re.compile(rb"vedic[ _-]*astro|the-last-product|BAR-v1|\bBAR R[0-9]|\bcodex\b|C:[\\/]AGI|\bShrish\b", re.I)
 COMPARATOR_META = re.compile(
-    rb"^Requires-Dist:\s*(?:skyfield|astropy|py?ephem|(?:py)?sw" + rb"iss" + rb"eph|sw" + rb"eph|kerykeion|jhora)\b",
+    rb"^Requires-Dist:\s*(?:skyfield|astropy|(?:py)?ephem|(?:py)?sw" + rb"iss" + rb"eph|sw" + rb"eph|kerykeion|jhora)(?=$|[\s;(<>=!~\[@])",
     re.I | re.M,
 )
 PROHIBITED = {"bench", "evidence", ".git", "node_modules", ".venv", "__pycache__"}

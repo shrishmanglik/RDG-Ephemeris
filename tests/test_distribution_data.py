@@ -41,6 +41,20 @@ def test_wheel_accepts_clean_module_and_refuses_banned_names(tmp_path):
         )
     assert wheel_gate.scan(comparator_meta_wheel)
 
+    for idx, spec_line in enumerate((
+        'Requires-Dist: ephem==4.2.1; extra == "test"',
+        "Requires-Dist: ephem==4.2.1",
+        'Requires-Dist: pyephem==4.2.1; extra == "test"',
+    )):
+        ephem_wheel = tmp_path / f"ephem_meta_{idx}.whl"
+        with zipfile.ZipFile(ephem_wheel, "w") as archive:
+            archive.writestr("ephemeris_oss/engine.py", "VALUE = 1\n")
+            archive.writestr(
+                "ephemeris_oss-0.0.dist-info/METADATA",
+                f"Metadata-Version: 2.1\nName: ephemeris-oss\nRequires-Dist: jplephem>=2.21\n{spec_line}\n",
+            )
+        assert wheel_gate.scan(ephem_wheel), f"wheel scanner missed {spec_line}"
+
 
 @pytest.mark.parametrize("name,content", [
     ("ephemeris_oss/swisseph_compat.py", "VALUE = 1\n"),
